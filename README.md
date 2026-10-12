@@ -22,6 +22,7 @@ src/app/core/       config, i18n, ERPNext client
 src/app/shared/ui/  reusable presenters
 src/app/features/   one folder per business area (containers, components, data-access)
 public/             static assets, translations (i18n/), runtime config.json
+assets/             source artwork for app icons and splash screens
 android/, ios/      Capacitor native projects
 docker/             nginx config and startup script for the release image
 docs/               product brief, design handoff, and the Madar.pen design file
@@ -55,11 +56,18 @@ npm test
 
 ### Mobile
 
+Requires Xcode (iOS) and Android Studio with the Android SDK (`ANDROID_HOME`).
+
 ```sh
-npm run cap:sync
-npx cap open android   # needs Android Studio
-npx cap open ios       # needs Xcode
+npm run android:dev    # run on the Android emulator against local ERPNext
+npm run ios:dev        # run on the iOS simulator against local ERPNext
+
+npm run cap:sync       # production build for store releases
+npx cap open android   # then Build → Generate Signed App Bundle
+npx cap open ios       # then Product → Archive
 ```
+
+Icons and splash screens come from `assets/` (`npx capacitor-assets generate`).
 
 ## Release image
 

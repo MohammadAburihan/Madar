@@ -32,13 +32,27 @@ All in `docs/`:
 npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :8080
 npm test              # unit tests, single run
 npm run build         # production build to dist/madar/browser
-npm run cap:sync      # build and copy into the android/ and ios/ projects
+npm run cap:sync      # production build copied into the android/ and ios/ projects
+npm run android:dev   # dev build on the Android emulator, talking to local ERPNext
+npm run ios:dev       # dev build on the iOS simulator, talking to local ERPNext
 npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
 ```
 
 Runtime config: `public/config.json` (`erpnextUrl`, empty = same origin). In the Docker image it is written at
 container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/private/files` to
 `ERPNEXT_UPSTREAM` (default `http://frontend:8080`, the frappe_docker service).
+
+### Mobile
+
+- Native apps have no proxy: when `erpnextUrl` is empty they use `environment.nativeErpnextUrl[platform]`.
+  Dev builds point the Android emulator at `http://10.0.2.2:8080` and the iOS simulator at
+  `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
+- `cap:sync:dev` sets `MADAR_NATIVE_DEV=1`, which allows cleartext HTTP. Always run plain `cap:sync` before a
+  store build so the native projects don't ship with cleartext enabled.
+- `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
+- `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.
+- Icons and splash screens are generated from `assets/` with `npx capacitor-assets generate`. The current
+  artwork is a placeholder.
 
 ## Architecture: container/presenter
 

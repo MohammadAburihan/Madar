@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, inject, viewChild } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
+import { NativeShellService } from './core/platform/native-shell.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,11 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular';
     </ion-app>
   `,
 })
-export class App {}
+export class App implements AfterViewInit {
+  private readonly nativeShell = inject(NativeShellService);
+  private readonly outlet = viewChild.required(IonRouterOutlet);
+
+  ngAfterViewInit(): void {
+    void this.nativeShell.init(this.outlet());
+  }
+}
