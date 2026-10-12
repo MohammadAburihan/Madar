@@ -19,9 +19,26 @@ All in `docs/`:
 - Angular 22 (TypeScript, strict mode): standalone components, signals, `input()`/`output()`, new control
   flow (`@if`, `@for`). No NgModules.
 - Capacitor 8 wraps the same app for Android and iOS; Ionic 9 for Angular for mobile-style UI.
+  In Ionic 9 standalone components come from `@ionic/angular` (there is no `@ionic/angular/standalone`).
 - Typed reactive forms; `HttpClient` with interceptors for auth and the active business.
 - Runtime English/Arabic switching (Transloco) with full RTL. Use CSS logical properties (`margin-inline-start`,
-  not `margin-left`) so layouts flip correctly.
+  not `margin-left`) so layouts flip correctly. Translations live in `public/i18n/{en,ar}.json`; Arabic terms
+  must follow `docs/LOCALIZATION-GLOSSARY.md`.
+- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs.
+
+## Commands
+
+```sh
+npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :8080
+npm test              # unit tests, single run
+npm run build         # production build to dist/madar/browser
+npm run cap:sync      # build and copy into the android/ and ios/ projects
+npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
+```
+
+Runtime config: `public/config.json` (`erpnextUrl`, empty = same origin). In the Docker image it is written at
+container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/private/files` to
+`ERPNEXT_UPSTREAM` (default `http://frontend:8080`, the frappe_docker service).
 
 ## Architecture: container/presenter
 
@@ -76,7 +93,8 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 
 ### Release rules
 
-- `development` is the default branch. Releases are git tags `vX.Y.Z`.
+- `development` is the default branch. Work happens on feature branches merged through PRs.
+- Releases are git tags `vX.Y.Z`, matching `version` in `package.json`.
 - The image tag matches the release version (`madar-web:X.Y.Z`). Deploy by explicit version, never only
   `latest`.
 - Never rebuild or overwrite an existing version tag; a fix is a new version.

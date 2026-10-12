@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "مدار"
+  },
+  "connection": {
+    "checking": "جارٍ التحقق من الاتصال…",
+    "online": "متصل بـ ERPNext",
+    "offline": "تعذّر الوصول إلى ERPNext",
+    "retry": "المحاولة مجدداً"
+  },
+  "home": {
+    "quickActions": "إجراءات سريعة",
+    "comingSoon": "هذه الشاشة غير متاحة بعد.",
+    "actions": {
+      "sell": "بيع",
+      "buy": "شراء",
+      "receivePayment": "استلام دفعة",
+      "paySupplier": "الدفع لمورد",
+      "recordExpense": "تسجيل مصروف",
+      "transferStock": "تحويل مخزون",
+      "supplyProject": "توريد لمشروع"
+    }
+  },
+  "language": {
+    "switchTo": "تغيير اللغة إلى {{language}}"
+  }
+}

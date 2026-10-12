@@ -18,11 +18,15 @@ scope.
 ## Repository layout
 
 ```
-docs/       product brief, design handoff, and the Madar.pen design file
-CLAUDE.md   conventions for AI-assisted development
+src/app/core/       config, i18n, ERPNext client
+src/app/shared/ui/  reusable presenters
+src/app/features/   one folder per business area (containers, components, data-access)
+public/             static assets, translations (i18n/), runtime config.json
+android/, ios/      Capacitor native projects
+docker/             nginx config and startup script for the release image
+docs/               product brief, design handoff, and the Madar.pen design file
+CLAUDE.md           conventions for AI-assisted development
 ```
-
-The Angular app has not been scaffolded yet.
 
 ## Local development
 
@@ -39,7 +43,46 @@ Open http://localhost:8080 and sign in as `Administrator` / `admin` (local devel
 
 Stop it with `docker compose -f pwd.yml down`. Adding `-v` deletes the local data.
 
+### Frontend
+
+Requires Node.js 24 or newer.
+
+```sh
+npm install
+npm start          # http://localhost:4200, proxies API calls to ERPNext on :8080
+npm test
+```
+
+### Mobile
+
+```sh
+npm run cap:sync
+npx cap open android   # needs Android Studio
+npx cap open ios       # needs Xcode
+```
+
+## Release image
+
+```sh
+npm run docker:build   # builds madar-web:<version> for linux/amd64
+```
+
+Run it next to ERPNext:
+
+```sh
+docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<version>
+```
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ERPNEXT_UPSTREAM` | `http://frontend:8080` | ERPNext address nginx proxies `/api` and `/files` to |
+| `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
+| `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
+
+Health check: `GET /healthz`. The deployed version is served at `/version.txt`.
+
 ## Branches and releases
 
 - `development` is the default branch.
-- Releases are tagged `vX.Y.Z`, and each one produces a Docker image tagged with the same version.
+- Work happens on feature branches merged into `development` through pull requests.
+- Releases are tagged `vX.Y.Z` (matching `package.json`), and each one produces a Docker image tagged with the same version.

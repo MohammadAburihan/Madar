@@ -1,0 +1,11 @@
+.git
+.angular
+.vscode
+node_modules
+dist
+docs
+android
+ios
+*.md
+.env
+.env.*
