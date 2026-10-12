@@ -1,0 +1,89 @@
+@let v = view();
+@let txt = text();
+@let status = facade.status();
+
+@if (desktop()) {
+  <app-home-header
+    layout="desktop"
+    [title]="v.title"
+    [subtitle]="v.desktopSubtitle"
+    [newLabel]="txt.newLabel"
+    (createNew)="openNew()"
+  />
+  <app-language-switcher [language]="language()" (languageChange)="changeLanguage($event)" />
+  <div class="work-area">
+    <section class="primary">
+      <h2>{{ txt.actionsHeading }}</h2>
+      <app-action-grid
+        [actions]="v.actions"
+        [columns]="v.actionColumns"
+        (actionSelected)="openAction($event)"
+      />
+      <h2>{{ txt.attentionHeading }}</h2>
+      <ng-container *ngTemplateOutlet="attention; context: { $implicit: 'table' }" />
+    </section>
+    @if (status === 'ready') {
+      <app-glance-panel
+        class="glance"
+        [heading]="txt.glanceHeading"
+        [cards]="v.glance"
+        [note]="v.glanceNote"
+      />
+    }
+  </div>
+  @if (status === 'ready' && v.draftsLink) {
+    <button type="button" class="drafts-link" (click)="openDrafts()">{{ v.draftsLink }}</button>
+  }
+} @else {
+  <app-language-switcher [language]="language()" (languageChange)="changeLanguage($event)" />
+  <app-home-header
+    [title]="v.title"
+    [subtitle]="v.subtitle"
+    [newLabel]="txt.newLabel"
+    (createNew)="openNew()"
+  />
+  <h2>{{ txt.actionsHeading }}</h2>
+  <app-action-grid [actions]="v.actions" [columns]="2" (actionSelected)="openAction($event)" />
+  <h2>{{ txt.attentionHeading }}</h2>
+  <ng-container *ngTemplateOutlet="attention; context: { $implicit: 'cards' }" />
+  @if (status === 'ready') {
+    @if (v.summary) {
+      <p class="muted">{{ v.summary }}</p>
+    }
+    @if (v.note) {
+      <p class="muted">{{ v.note }}</p>
+    }
+  }
+}
+
+<ng-template #attention let-mode>
+  @switch (status) {
+    @case ('ready') {
+      @if (mode === 'table') {
+        <app-attention-table [headers]="txt.headers" [rows]="v.rows" [empty]="v.emptyAttention" />
+      } @else {
+        <app-attention-cards [cards]="v.cards" [empty]="v.emptyAttention" />
+      }
+    }
+    @case ('offline') {
+      <app-feedback-card tone="warning" [title]="txt.offline.title" [message]="txt.offline.message">
+        <button type="button" class="md-btn md-btn--primary" (click)="facade.load()">
+          {{ txt.offline.retry }}
+        </button>
+      </app-feedback-card>
+    }
+    @case ('error') {
+      <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message">
+        <button type="button" class="md-btn" (click)="facade.load()">{{ txt.error.retry }}</button>
+      </app-feedback-card>
+    }
+    @default {
+      <app-feedback-card
+        role="status"
+        aria-live="polite"
+        [title]="txt.loading.title"
+        [message]="txt.loading.message"
+      />
+    }
+  }
+</ng-template>

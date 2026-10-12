@@ -26,7 +26,7 @@ export class NativeShellService {
       }
     });
 
-    await StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
+    await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
     await SplashScreen.hide();
   }
 }

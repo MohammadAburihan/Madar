@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { IonButton } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Language } from '../../core/i18n/language.service';
 
@@ -7,22 +6,30 @@ const ENDONYMS: Record<Language, string> = { en: 'English', ar: 'العربية'
 
 @Component({
   selector: 'app-language-switcher',
-  imports: [IonButton, TranslocoPipe],
+  imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ion-button
-      fill="outline"
-      size="small"
+    <button
+      type="button"
+      class="md-btn md-btn--language"
       [attr.lang]="target()"
       [attr.aria-label]="'language.switchTo' | transloco: { language: endonyms[target()] }"
       (click)="languageChange.emit(target())"
     >
       {{ endonyms[target()] }}
-    </ion-button>
+    </button>
   `,
   styles: `
-    ion-button {
-      text-transform: none;
+    :host {
+      display: block;
+    }
+
+    button[lang='ar'] {
+      font-family: 'Noto Sans Arabic Variable', system-ui, sans-serif;
+    }
+
+    button[lang='en'] {
+      font-family: 'Inter Variable', system-ui, sans-serif;
     }
   `,
 })

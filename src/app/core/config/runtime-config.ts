@@ -19,11 +19,13 @@ export class RuntimeConfigService {
 
   // Native apps have no same-origin proxy, so they fall back to the build's per-platform default.
   readonly erpnextUrl = computed(() =>
-    (this.config().erpnextUrl || environment.nativeErpnextUrl[this.platform] || '').replace(
-      /\/+$/,
-      '',
-    ),
+    normalizeUrl(this.config().erpnextUrl || environment.nativeErpnextUrl[this.platform] || ''),
   );
+  /** Host of the configured ERPNext, or null when requests go to the same origin. */
+  readonly erpnextHost = computed(() => {
+    const url = this.erpnextUrl();
+    return url ? new URL(url).host : null;
+  });
 
   async load(): Promise<void> {
     try {
@@ -32,5 +34,20 @@ export class RuntimeConfigService {
     } catch {
       this.config.set(DEFAULT_CONFIG);
     }
+  }
+}
+
+/** Accepts `erp.example.com` as well as full URLs; anything unparseable falls back to same origin. */
+export function normalizeUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+  try {
+    const url = new URL(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
+    return `${url.origin}${url.pathname}`.replace(/\/+$/, '');
+  } catch {
+    console.warn(`Ignoring invalid erpnextUrl "${value}"`);
+    return '';
   }
 }
