@@ -56,7 +56,8 @@ npm test
 
 ### Mobile
 
-Requires Xcode (iOS) and Android Studio with the Android SDK (`ANDROID_HOME`).
+Requires Xcode (iOS) and Android Studio with the Android SDK (`ANDROID_HOME`). Android builds need Java 21:
+`export JAVA_HOME=$(/usr/libexec/java_home -v 21)`.
 
 ```sh
 npm run android:dev    # run on the Android emulator against local ERPNext

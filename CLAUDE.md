@@ -49,6 +49,9 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
   `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
 - `cap:sync:dev` sets `MADAR_NATIVE_DEV=1`, which allows cleartext HTTP. Always run plain `cap:sync` before a
   store build so the native projects don't ship with cleartext enabled.
+- Toolchain: Gradle needs Java 21 (`JAVA_HOME=$(/usr/libexec/java_home -v 21)`); Android Studio's bundled
+  Java 25 fails with "Unsupported class file major version 69". If `xcode-select -p` still points at
+  CommandLineTools, prefix iOS commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
 - `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.
 - Icons and splash screens are generated from `assets/` with `npx capacitor-assets generate`. The current
