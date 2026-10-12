@@ -231,6 +231,7 @@ Technical details should stay out of daily user flows unless users need them to 
 - The frontend is developed locally on the team's development machine, in the Madar git repository.
 - `development` is the default branch.
 - Each release is marked with a version tag in git (for example `v1.0.0`).
+- ERPNext for development runs locally in Docker using the official Frappe Docker setup (`frappe_docker`, started with `docker compose -f pwd.yml up -d`), so testing never touches business data on the AWS server.
 
 ### 9.2 Release images
 - Every release produces a new Docker image of the web frontend.
@@ -294,7 +295,6 @@ Design inspection does not establish runtime accessibility. Completion of extern
 - Container registry for release images (for example Amazon ECR or Docker Hub).
 - AWS server type and size, domain names, HTTPS/reverse proxy, and backup policy.
 - One ERPNext setup hosting multiple business sites versus a separate container stack per business.
-- Local ERPNext setup for development and testing.
 - Whether image build and deployment are manual or automated (CI/CD).
 - Authentication and onboarding method.
 - Detailed role/permission matrix.

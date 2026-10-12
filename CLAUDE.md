@@ -21,6 +21,19 @@ All in `docs/`:
 - ERPNext runs on the same AWS server as Docker containers (official Frappe/ERPNext Docker setup).
 - Each business is a separate ERPNext installation (site). Never mix data across businesses.
 
+### Local ERPNext
+
+ERPNext for development runs in Docker on this machine from `../frappe_docker` (a clone of the official
+frappe/frappe_docker repo), using its `pwd.yml` compose file:
+
+```sh
+cd ../frappe_docker && docker compose -f pwd.yml up -d
+```
+
+- `frappe/erpnext:v16.50.0`, served at http://localhost:8080.
+- Site `frontend`, login `Administrator` / `admin` (local only; never reuse on AWS).
+- Stop with `docker compose -f pwd.yml down`. Don't add `-v` unless you mean to wipe the local data.
+
 ### Release rules
 
 - `development` is the default branch. Releases are git tags `vX.Y.Z`.
@@ -43,5 +56,5 @@ All in `docs/`:
 ## Not decided yet
 
 Frontend framework, ERPNext version, authentication, container registry, AWS server and domain setup,
-local ERPNext setup for development, and CI/CD. Ask before choosing any of these; don't assume. See
+and CI/CD. Ask before choosing any of these; don't assume. See
 section 12 of the overview.
