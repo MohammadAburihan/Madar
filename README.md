@@ -61,12 +61,14 @@ Requires Xcode (iOS) and Android Studio with the Android SDK (`ANDROID_HOME`). A
 
 ```sh
 npm run android:dev    # run on the Android emulator against local ERPNext
-npm run ios:dev        # run on the iOS simulator against local ERPNext
+npm run ios:dev        # run on the iOS simulator against local ERPNext (optional: simulator UDID)
 
 npm run cap:sync       # production build for store releases
 npx cap open android   # then Build → Generate Signed App Bundle
 npx cap open ios       # then Product → Archive
 ```
+
+`ios:dev` uses Xcode directly through `DEVELOPER_DIR`, so the system `xcode-select` setting is left alone.
 
 Icons and splash screens come from `assets/` (`npx capacitor-assets generate`).
 

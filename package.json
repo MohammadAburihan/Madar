@@ -12,7 +12,7 @@
     "docker:build": "docker buildx build --platform linux/amd64 --build-arg VERSION=$npm_package_version -t madar-web:$npm_package_version --load .",
     "cap:sync:dev": "ng build --configuration development && MADAR_NATIVE_DEV=1 cap sync",
     "android:dev": "npm run cap:sync:dev && cap run android",
-    "ios:dev": "npm run cap:sync:dev && cap run ios"
+    "ios:dev": "npm run cap:sync:dev && sh scripts/ios-dev.sh"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
