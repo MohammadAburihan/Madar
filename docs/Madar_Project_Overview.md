@@ -1,7 +1,7 @@
 # Madar — مدار
 ## Project overview and first-release scope
 
-Version: 1.1  
+Version: 1.2  
 Date: 12 October 2026  
 Purpose: A shared product brief for design, development, and scope decisions.
 
@@ -32,7 +32,7 @@ Madar is an independent, generic brand. Initial businesses include Rehan Nursery
 | Backend | ERPNext, with a separate installation for each business |
 | Design workspace | pen.dev/Pencil |
 | Connectivity | Online-first for release 1 |
-| Frontend framework | Not selected yet |
+| Frontend framework | Angular, with Ionic and Capacitor for Android and iOS (see section 9.2) |
 | Development | Frontend developed locally on the team's development machine |
 | Deployment | Each release is shipped as a versioned Docker image running on an AWS server |
 | Backend hosting | ERPNext runs as Docker containers on the AWS server |
@@ -221,7 +221,7 @@ The starting visual direction is a light theme with deep teal, warm neutral back
 - Keep accounting, stock valuation, and authoritative business rules on the backend.
 - Add custom backend methods only where needed for simplified workflows.
 - Do not duplicate business data across installations through business switching.
-- The framework, ERPNext version, authentication approach, and exact API mappings remain to be selected. Hosting is defined in section 9.
+- The ERPNext version, authentication approach, and exact API mappings remain to be selected. The frontend stack and hosting are defined in section 9.
 
 Technical details should stay out of daily user flows unless users need them to make a decision.
 
@@ -233,21 +233,38 @@ Technical details should stay out of daily user flows unless users need them to 
 - Each release is marked with a version tag in git (for example `v1.0.0`).
 - ERPNext for development runs locally in Docker using the official Frappe Docker setup (`frappe_docker`, started with `docker compose -f pwd.yml up -d`), so testing never touches business data on the AWS server.
 
-### 9.2 Release images
+### 9.2 Frontend stack and structure
+One Angular codebase serves the website and the Android and iOS apps.
+
+| Layer | Choice |
+|---|---|
+| Framework | Angular (TypeScript), standalone components and signals |
+| Mobile apps | Capacitor wraps the same app for Android and iOS |
+| Mobile-style UI | Ionic for Angular where native-feeling navigation and controls matter |
+| Forms | Angular typed reactive forms |
+| Translation | Runtime English/Arabic switching with full RTL |
+| Web hosting | Static build served by nginx in the release Docker image |
+
+The code follows the **container/presenter** pattern:
+- **Containers** load and change data through services, hold screen state, and handle navigation. They pass data down to presenters and react to their events.
+- **Presenters** only display what they receive and report user actions. They do not call services, the backend, or the router, which keeps them simple to reuse and test.
+- Code is organized by business area (Sales, Purchasing, Inventory, and so on), with shared presenters and core services (sign-in, active business, backend access) kept separate.
+
+### 9.3 Release images
 - Every release produces a new Docker image of the web frontend.
 - The image tag matches the release version (for example `madar-web:1.0.0`). Deployments always use a specific version tag, never only `latest`.
 - Images are built for the AWS server's CPU architecture. The development machine (Apple Silicon) may differ from the server (often x86_64).
 - Released images are immutable: a fix becomes a new version, not a rebuilt image under an existing tag.
 - Configuration that differs per environment (backend addresses, keys) is supplied when the container starts, not built into the image.
 
-### 9.3 AWS server
+### 9.4 AWS server
 - The frontend container and the ERPNext backend containers run on the AWS server.
 - ERPNext runs from Docker images (based on the official Frappe/ERPNext Docker setup), with its database, cache, and workers as containers.
 - Each business remains a separate ERPNext installation (site) with isolated data, as required in section 8.
 - Business data (database and uploaded files) lives in persistent volumes and is backed up. Deploying a new frontend image must never affect backend data.
 - Previous image versions remain available so a release can be rolled back.
 
-### 9.4 Mobile apps
+### 9.5 Mobile apps
 The Docker image covers the web frontend. Android and iOS apps are distributed through the app stores and connect to the same ERPNext backend.
 
 ## 10. Future areas — outside release 1
@@ -290,7 +307,6 @@ Design inspection does not establish runtime accessibility. Completion of extern
 
 ## 12. Open decisions
 
-- Frontend framework and project structure.
 - ERPNext version.
 - Container registry for release images (for example Amazon ECR or Docker Hub).
 - AWS server type and size, domain names, HTTPS/reverse proxy, and backup policy.

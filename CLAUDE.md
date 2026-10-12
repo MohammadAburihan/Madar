@@ -14,6 +14,46 @@ All in `docs/`:
 - `Madar.pen` — the design file. It is encrypted: read it only through the Pencil MCP tools, never with
   file reads or grep.
 
+## Frontend stack
+
+- Angular 22 (TypeScript, strict mode): standalone components, signals, `input()`/`output()`, new control
+  flow (`@if`, `@for`). No NgModules.
+- Capacitor 8 wraps the same app for Android and iOS; Ionic 9 for Angular for mobile-style UI.
+- Typed reactive forms; `HttpClient` with interceptors for auth and the active business.
+- Runtime English/Arabic switching (Transloco) with full RTL. Use CSS logical properties (`margin-inline-start`,
+  not `margin-left`) so layouts flip correctly.
+
+## Architecture: container/presenter
+
+Every screen is split into a container and presenters.
+
+**Containers** (`*.container.ts`, routed pages and feature shells)
+- Inject facades/services, load and mutate data, own screen state (signals), handle navigation.
+- Pass data to presenters via inputs and handle their outputs.
+- Keep templates thin: compose presenters, avoid layout and styling detail.
+
+**Presenters** (`*.component.ts`)
+- `ChangeDetectionStrategy.OnPush`, only `input()` / `output()` / `model()`.
+- Never inject data services, `HttpClient`, `Router`, or stores; no side effects. Translation pipes and
+  pure UI helpers are fine.
+- Emit intent (`save`, `selectCustomer`), not implementation (`callApi`).
+- Local UI-only state (expanded panel, active tab) may live in the presenter.
+
+**Layout**
+
+```
+src/app/
+  core/            auth, active business connection, HTTP interceptors, runtime config, ERPNext client
+  shared/ui/       reusable presenters (selectors, money display, status badges, empty/error states)
+  features/<area>/ sales, purchasing, inventory, contacts, payments, projects, items
+    containers/    routed containers
+    components/    presenters for this area
+    data-access/   facade + API services and models for the area's ERPNext doctypes
+```
+
+- Features must not import from other features; share through `shared/` or `core/`.
+- Only `data-access/` talks to ERPNext. Containers go through the area facade, never `HttpClient` directly.
+
 ## Development and deployment model
 
 - The frontend is developed locally on this machine in this repo.
@@ -55,6 +95,5 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 
 ## Not decided yet
 
-Frontend framework, ERPNext version, authentication, container registry, AWS server and domain setup,
-and CI/CD. Ask before choosing any of these; don't assume. See
-section 12 of the overview.
+ERPNext version for production, authentication, container registry, AWS server and domain setup, and
+CI/CD. Ask before choosing any of these; don't assume. See section 12 of the overview.
