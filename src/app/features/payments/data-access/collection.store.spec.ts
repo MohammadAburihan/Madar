@@ -279,6 +279,21 @@ describe('CollectionStore', () => {
     expect(store.state()).toBe('idle');
   });
 
+  it('starts a half-done collection over on a fresh visit, but keeps an unresolved one', async () => {
+    const { store, api } = await ready();
+    store.resume();
+    expect(store.customer()).toBeNull();
+    expect(store.invoices()).toEqual([]);
+
+    await store.selectCustomer(LINA);
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
+    const reference = store.reference();
+    store.resume();
+    expect(store.reference()).toBe(reference);
+    expect(store.state()).toBe('unresolved');
+  });
+
   it('clears an old failure when the customer or invoices change', async () => {
     const { store, api } = await ready();
     api.confirm.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));

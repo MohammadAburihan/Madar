@@ -212,9 +212,12 @@ export class CollectionStore {
     }
   }
 
-  /** A fresh visit to the task: anything but an unresolved confirmation starts over. */
+  /**
+   * A fresh visit to the task: anything but an unresolved confirmation starts over, so invoices paid
+   * elsewhere since the last visit are never offered again from a stale list.
+   */
   resume(): void {
-    if (this.state() !== 'idle' || this.draft()) {
+    if (!this.busy()) {
       this.start();
     }
   }
