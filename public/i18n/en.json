@@ -34,12 +34,14 @@
     },
     "title": {
       "salesperson": "Ready for your next sale?",
-      "warehouse": "Today in the warehouse"
+      "warehouse": "Today in the warehouse",
+      "storeAssociate": "Today at the store"
     },
     "role": {
       "owner": "Owner",
       "salesperson": "Salesperson",
-      "warehouse": "Warehouse worker"
+      "warehouse": "Warehouse worker",
+      "storeAssociate": "Store associate"
     },
     "new": "+ New",
     "actionsHeading": "What needs doing?",
@@ -216,5 +218,229 @@
   "placeholder": {
     "title": "{{area}} isn't available yet",
     "message": "This part of Madar is planned for a later step. Use Home for now."
+  },
+  "sale": {
+    "back": "Back",
+    "step": "{{step}} of 4 · {{label}}",
+    "walkInName": "Walk-in customer",
+    "saveDraft": "Save draft",
+    "cancel": "Cancel",
+    "total": "Total  {{amount}}",
+    "customer": {
+      "title": "New sale",
+      "stepLabel": "Customer",
+      "search": "Search",
+      "placeholder": "Search name, phone or code",
+      "noUnpaid": "No previous unpaid invoices",
+      "outstanding": "Outstanding {{amount}}",
+      "continueWith": "Continue with {{name}}",
+      "walkIn": "Walk-in customer",
+      "add": "+ Add customer",
+      "note": "Walk-in sales need permission. The business stays fixed throughout this sale.",
+      "noResults": "No customers match “{{term}}”.",
+      "loading": "Searching…"
+    },
+    "items": {
+      "title": "Add items",
+      "search": "Search",
+      "placeholder": "Search name, code or barcode",
+      "warehouse": "Fulfillment warehouse",
+      "chooseWarehouse": "Choose a warehouse",
+      "meta": "{{code}} · {{uom}}",
+      "detailProduct": "{{price}} · {{count}} available",
+      "detailService": "{{price}} · Service",
+      "add": "Add {{item}}",
+      "basket": {
+        "one": "Basket · 1 unit",
+        "other": "Basket · {{count}} units"
+      },
+      "basketTotal": "Total {{amount}}",
+      "review": "Review basket · {{amount}}",
+      "empty": "Add an item to start the sale.",
+      "noResults": "No items match “{{term}}”.",
+      "warehouseFirst": "Choose the warehouse to see what's available.",
+      "loading": "Loading items…"
+    },
+    "basket": {
+      "title": "Your sale",
+      "stock": "Stock fulfillment",
+      "supplyNow": "{{warehouse}} · Supply now",
+      "metaProduct": "{{code}} · {{price}} each",
+      "metaService": "{{code}} · {{price}} / {{uom}}",
+      "detailProduct": "{{qty}} × {{rate}} = {{total}} · {{count}} available",
+      "detailService": "{{qty}} × {{rate}} = {{total}}",
+      "discount": " · {{discount}}% off",
+      "priceOptions": "Price & discount options",
+      "note": "No tax applies. Services are invoiced but not delivered from stock.",
+      "continue": "Continue to payment",
+      "quantity": "Quantity of {{item}}",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity"
+    },
+    "review": {
+      "title": "Review & payment",
+      "status": "Payment status",
+      "paid": "Paid",
+      "partial": "Partially paid",
+      "unpaid": "Unpaid",
+      "amount": "Amount received",
+      "account": "Payment account",
+      "invoiceTotal": "Invoice total",
+      "amountPaid": "Amount paid",
+      "outstanding": "Outstanding",
+      "createsMobile": "What confirmation creates",
+      "createsDesktop": "Before you confirm",
+      "createsPaymentDelivery": "A confirmed invoice for {{total}}, a receipt into {{account}} for {{paid}}, and a delivery of {{items}} from {{warehouse}}.",
+      "createsPayment": "A confirmed invoice for {{total}} and a receipt into {{account}} for {{paid}}.",
+      "createsDelivery": "A confirmed invoice for {{total}} and a delivery of {{items}} from {{warehouse}}. No payment record.",
+      "createsInvoice": "A confirmed invoice for {{total}}. No payment record.",
+      "servicesNote": "{{services}}: invoiced, not marked completed.",
+      "owes": "Customer owes {{amount}}.",
+      "confirm": "Confirm sale · {{amount}}",
+      "confirming": "Confirming…",
+      "invalidAmount": "Amount must be more than zero and less than the total.",
+      "noAccount": {
+        "title": "No payment account",
+        "message": "No payment account is set up for your role. Record the sale as unpaid, or ask your business owner."
+      },
+      "failed": {
+        "stock": {
+          "title": "Not enough stock",
+          "message": "Stock changed since you added it. Check the quantities and try again."
+        },
+        "permission": {
+          "title": "You can't confirm this sale",
+          "message": "Your role isn't allowed to create this invoice. Ask your business owner."
+        },
+        "offline": {
+          "title": "Connection unavailable",
+          "message": "Nothing was saved. Check your connection and try again."
+        },
+        "error": {
+          "title": "The sale wasn't confirmed",
+          "message": "Nothing was saved. Try again in a moment."
+        }
+      },
+      "notCreated": {
+        "title": "The sale wasn't created",
+        "message": "Review it and confirm again."
+      }
+    },
+    "receipt": {
+      "title": "Sale confirmed",
+      "invoice": "Invoice: Confirmed",
+      "payment": {
+        "paid": "Payment: Paid",
+        "partial": "Payment: Partially paid",
+        "unpaid": "Payment: Unpaid"
+      },
+      "goods": "Goods: Delivered",
+      "lineTitle": "{{qty}} × {{item}}",
+      "serviceMeta": "Service completion not recorded",
+      "receiptLine": "Receipt {{payment}} · {{account}}",
+      "businessLine": "{{business}} · {{date}}",
+      "share": "Share receipt or invoice",
+      "another": "Start another sale",
+      "shared": "Receipt copied",
+      "shareText": "{{business}} · {{invoice}}\nTotal {{total}} · Paid {{paid}} · Outstanding {{outstanding}}",
+      "paymentFailed": {
+        "title": "Payment not recorded",
+        "message": "The invoice is confirmed, but the payment couldn't be saved. Record it from Receive payment."
+      }
+    },
+    "checking": {
+      "title": "Checking your sale",
+      "card": {
+        "title": "Confirmation not yet resolved",
+        "message": "The request timed out. The sale may already exist. Do not create it again."
+      },
+      "plannedInvoice": "Planned invoice",
+      "plannedReceipt": "Planned receipt",
+      "due": "Due if confirmed",
+      "reference": "Reference: {{reference}}\nKeep this reference while checking the result.",
+      "check": "Check result",
+      "checkingNow": "Checking…",
+      "home": "Back to Home",
+      "pending": "Still not resolved. Try again in a moment."
+    },
+    "newCustomer": {
+      "title": "Add customer",
+      "subtitle": "Your current basket stays saved.",
+      "name": "Customer name *",
+      "phone": "Phone",
+      "email": "Email (optional)",
+      "address": "Address (optional)",
+      "save": "Save & return to sale",
+      "saving": "Saving…",
+      "nameRequired": "Enter the customer's name.",
+      "failed": {
+        "title": "The customer wasn't saved",
+        "message": "Check the details and try again."
+      }
+    },
+    "line": {
+      "title": "Edit sale price",
+      "quantity": "Quantity",
+      "price": "Unit price",
+      "discount": "Discount",
+      "lineTotal": "Line total · {{amount}}",
+      "detail": "{{qty}} × {{price}} · No discount",
+      "detailDiscount": "{{qty}} × {{price}} · {{discount}}% discount",
+      "apply": "Apply to basket",
+      "remove": "Remove from sale",
+      "priceLocked": {
+        "title": "Price cannot be changed",
+        "message": "Your role cannot change this price. Ask your business owner."
+      },
+      "discountLimit": "Your role can give up to {{max}}% discount.",
+      "invalidQty": "Enter a quantity above zero.",
+      "invalidPrice": "Enter a price above zero.",
+      "invalidDiscount": "Discount must be between 0 and {{max}}%."
+    },
+    "stock": {
+      "title": "Check quantity",
+      "requested": "Requested quantity",
+      "error": "Only {{count}} available in {{warehouse}}. Choose a smaller quantity or another warehouse.",
+      "errorNone": "None left in {{warehouse}}. Choose another warehouse.",
+      "other": "Other warehouse",
+      "otherOption": "{{warehouse}} · {{count}} available",
+      "use": "Use {{count}} from {{warehouse}}",
+      "choose": "Choose warehouse",
+      "note": "Stock is checked again at confirmation. Draft saving stays available.",
+      "noneElsewhere": "No other warehouse has this item in stock."
+    },
+    "workspace": {
+      "subtitle": "{{customer}} · {{business}}",
+      "subtitleWarehouse": "{{customer}} · {{business}} · {{warehouse}}",
+      "filters": "Show",
+      "all": "All",
+      "products": "Products",
+      "services": "Services",
+      "item": "Item / service",
+      "availability": "Availability",
+      "price": "Unit price",
+      "availabilityValue": "{{count}} · {{warehouse}}",
+      "service": "Service",
+      "hint": "Enter searches. Arrow keys select a result. Enter adds it. Quantity and price edits follow permissions.",
+      "panelMeta": "{{qty}} × {{price}}",
+      "panelEmpty": "Add items from the list.",
+      "review": "Review & payment"
+    },
+    "draft": {
+      "title": "Draft saved",
+      "message": "Continue from Home → Unfinished work.",
+      "failed": "The draft wasn't saved. Try again."
+    },
+    "unsaved": {
+      "title": "Keep your changes?",
+      "message": "Save draft or continue editing.",
+      "save": "Save draft",
+      "discard": "Discard",
+      "stay": "Keep editing"
+    },
+    "noAccess": {
+      "title": "You can't make sales",
+      "message": "Your role doesn't include sales. Ask your business owner for access."
+    }
   }
 }

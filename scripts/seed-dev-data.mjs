@@ -84,11 +84,37 @@ const warehouse = await ensure(
   },
 );
 
+// A second warehouse, so the quick sale's warehouse choice and stock check have somewhere to go.
+const gardenShop = await ensure(
+  'Warehouse',
+  { warehouse_name: 'Garden shop', company: COMPANY },
+  { warehouse_name: 'Garden shop', company: COMPANY, parent_warehouse: `All Warehouses - ${ABBR}` },
+);
+
+for (const uom of ['Unit', 'Visit']) {
+  await ensure('UOM', { uom_name: uom }, { uom_name: uom });
+}
+
+// Mirrors the catalogue in the quick-sale mocks (OLV-20, POT-30, SRV-GARDEN), plus two low-stock items for Home.
 const items = [
-  { item_code: 'CERAMIC-PLANTER', item_name: 'Ceramic planter', rate: 40, stock: 8, reorder: 20 },
-  { item_code: 'GREEN-CLAY', item_name: 'Green clay 10 kg', rate: 25, stock: 3, reorder: 10 },
-  { item_code: 'POTTING-SOIL', item_name: 'Potting soil 20 L', rate: 18, stock: 4, reorder: 12 },
-  { item_code: 'OLIVE-SAPLING', item_name: 'Olive sapling', rate: 55, stock: 30, reorder: 5 },
+  { item_code: 'OLV-20', item_name: 'Olive tree · 20 L', rate: 85, stock: 24, shop: 6, reorder: 5 },
+  { item_code: 'POT-30', item_name: 'Ceramic planter', rate: 45, stock: 8, shop: 0, reorder: 20 },
+  {
+    item_code: 'GREEN-CLAY',
+    item_name: 'Green clay 10 kg',
+    rate: 25,
+    stock: 3,
+    shop: 0,
+    reorder: 10,
+  },
+  {
+    item_code: 'POTTING-SOIL',
+    item_name: 'Potting soil 20 L',
+    rate: 18,
+    stock: 4,
+    shop: 0,
+    reorder: 12,
+  },
 ];
 for (const i of items) {
   await ensure(
@@ -98,7 +124,7 @@ for (const i of items) {
       item_code: i.item_code,
       item_name: i.item_name,
       item_group: 'Products',
-      stock_uom: 'Nos',
+      stock_uom: 'Unit',
       is_stock_item: 1,
       standard_rate: i.rate,
       valuation_rate: i.rate / 2,
@@ -115,16 +141,26 @@ for (const i of items) {
 }
 await ensure(
   'Item',
-  { item_code: 'GARDEN-DESIGN' },
+  { item_code: 'SRV-GARDEN' },
   {
-    item_code: 'GARDEN-DESIGN',
-    item_name: 'Garden design consultation',
+    item_code: 'SRV-GARDEN',
+    item_name: 'Garden consultation',
     item_group: 'Services',
-    stock_uom: 'Nos',
+    stock_uom: 'Visit',
     is_stock_item: 0,
-    standard_rate: 300,
+    standard_rate: 150,
   },
 );
+for (const [item_code, price_list_rate] of [
+  ...items.map((i) => [i.item_code, i.rate]),
+  ['SRV-GARDEN', 150],
+]) {
+  await ensure(
+    'Item Price',
+    { item_code, price_list: 'Standard Selling' },
+    { item_code, price_list: 'Standard Selling', price_list_rate },
+  );
+}
 
 const [receipt] = await list('Stock Entry', { remarks: 'Madar seed opening stock', docstatus: 1 });
 if (!receipt) {
@@ -133,27 +169,68 @@ if (!receipt) {
     stock_entry_type: 'Material Receipt',
     company: COMPANY,
     remarks: 'Madar seed opening stock',
-    items: items.map((i) => ({
-      item_code: i.item_code,
-      qty: i.stock,
-      t_warehouse: warehouse,
-      basic_rate: i.rate / 2,
-    })),
+    items: items.flatMap((i) => [
+      { item_code: i.item_code, qty: i.stock, t_warehouse: warehouse, basic_rate: i.rate / 2 },
+      ...(i.shop
+        ? [{ item_code: i.item_code, qty: i.shop, t_warehouse: gardenShop, basic_rate: i.rate / 2 }]
+        : []),
+    ]),
   });
   await submit(entry);
 }
 
-for (const name of ['Lina Haddad', 'Samir Nasser']) {
+// ERPNext creates the primary contact and address from these quick-entry fields.
+const { country } = await call('frappe.client.get_value', {
+  doctype: 'Company',
+  filters: COMPANY,
+  fieldname: 'country',
+});
+const customers = [
+  {
+    customer_name: 'Lina Haddad',
+    mobile_no: '059-000-0142',
+    address_line1: 'Ramallah',
+    city: 'Ramallah',
+  },
+  {
+    customer_name: 'Samir Nasser',
+    mobile_no: '059-000-0177',
+    address_line1: 'Hebron',
+    city: 'Hebron',
+  },
+  // Anonymous counter sales go to this shared customer (decided for release 1).
+  { customer_name: 'Walk-in Customer' },
+];
+for (const c of customers) {
   await ensure(
     'Customer',
-    { customer_name: name },
+    { customer_name: c.customer_name },
     {
-      customer_name: name,
       customer_type: 'Individual',
       customer_group: 'Individual',
       territory: 'All Territories',
+      ...(c.address_line1 ? { country } : {}),
+      ...c,
     },
   );
+}
+
+// Card payments go to a bank account; cash keeps the setup wizard's "Cash - RN".
+const bank = await ensure(
+  'Account',
+  { account_name: 'Main bank', company: COMPANY },
+  {
+    account_name: 'Main bank',
+    company: COMPANY,
+    parent_account: `Bank Accounts - ${ABBR}`,
+    account_type: 'Bank',
+    account_currency: 'ILS',
+  },
+);
+const card = await call('frappe.client.get', { doctype: 'Mode of Payment', name: 'Credit Card' });
+if (!card.accounts.some((a) => a.company === COMPANY)) {
+  card.accounts.push({ company: COMPANY, default_account: bank });
+  await call('frappe.client.save', { doc: card });
 }
 await ensure(
   'Supplier',
@@ -174,7 +251,7 @@ const invoice = (customer, rate, extra = {}) => ({
   set_posting_time: 1,
   taxes_and_charges: '',
   taxes: [],
-  items: [{ item_code: 'GARDEN-DESIGN', qty: 1, rate }],
+  items: [{ item_code: 'SRV-GARDEN', qty: 1, rate }],
   ...extra,
 });
 
@@ -183,6 +260,9 @@ const payInFull = async (invoiceName) => {
     'erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry',
     { dt: 'Sales Invoice', dn: invoiceName },
   );
+  // With a bank account present ERPNext defaults to it, and bank payments need a reference; pay into cash.
+  payment.mode_of_payment = 'Cash';
+  payment.paid_to = `Cash - ${ABBR}`;
   await submit(await insert(payment));
 };
 
@@ -199,7 +279,7 @@ if (!(await list('Sales Order', { customer: 'Samir Nasser', docstatus: 0 })).len
     delivery_date: plusDays(3),
     taxes_and_charges: '',
     taxes: [],
-    items: [{ item_code: 'OLIVE-SAPLING', qty: 2, rate: 55, warehouse }],
+    items: [{ item_code: 'OLV-20', qty: 2, rate: 85, warehouse }],
   });
 }
 
@@ -212,9 +292,7 @@ if (!(await list('Purchase Order', { supplier: 'Green Clay', docstatus: 1 })).le
       schedule_date: iso(today),
       taxes_and_charges: '',
       taxes: [],
-      items: [
-        { item_code: 'CERAMIC-PLANTER', qty: 10, rate: 20, warehouse, schedule_date: iso(today) },
-      ],
+      items: [{ item_code: 'POT-30', qty: 10, rate: 20, warehouse, schedule_date: iso(today) }],
     }),
   );
 }
@@ -233,7 +311,7 @@ if (
       set_warehouse: `Stores - ${ABBR}`,
       items: [
         {
-          item_code: 'CERAMIC-PLANTER',
+          item_code: 'POT-30',
           qty: 12,
           schedule_date: iso(today),
           from_warehouse: warehouse,
@@ -266,6 +344,13 @@ const users = [
     roles: ['Sales User', 'Accounts User'],
   },
   { email: 'omar@rehan.example', first_name: 'Omar', last_name: 'Khalil', roles: ['Stock User'] },
+  {
+    email: 'sami@rehan.example',
+    first_name: 'Sami',
+    last_name: 'Odeh',
+    // Store associate: sells at the counter and handles stock (see docs/PERMISSIONS.md).
+    roles: ['Sales User', 'Accounts User', 'Stock User'],
+  },
 ];
 for (const u of users) {
   const [existing] = await list('User', { name: u.email });

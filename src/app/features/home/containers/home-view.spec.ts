@@ -148,6 +148,45 @@ describe('buildHomeView', () => {
     expect(view.summary).toBe('Your sales today: ILS 640');
   });
 
+  it('builds the store associate home from sales and stock work', () => {
+    const view = buildHomeView(
+      input({
+        persona: 'storeAssociate',
+        data: {
+          todaySales: 640,
+          drafts: DATA.drafts,
+          invoicesDue: DATA.invoicesDue,
+          lowStock: DATA.lowStock,
+        },
+      }),
+      realTranslator('en'),
+    );
+
+    expect(view.title).toBe('Today at the store');
+    expect(view.subtitle).toBe('Store associate · Sunday, 11 October');
+    expect(view.actions.map((a) => a.id)).toEqual([
+      'sell',
+      'receivePayment',
+      'receiveGoods',
+      'transferStock',
+    ]);
+    expect(view.cards[0]).toEqual({
+      title: 'Continue your sale',
+      message: 'Lina Haddad · ILS 320.00 · Draft',
+    });
+    expect(view.cards[1].title).toBe('3 items running low');
+    expect(view.summary).toBe('Your sales today: ILS 640');
+  });
+
+  it('uses the Arabic store associate title and role', () => {
+    const view = buildHomeView(
+      input({ persona: 'storeAssociate', language: 'ar', data: {} }),
+      realTranslator('ar'),
+    );
+    expect(view.title).toBe('اليوم في المتجر');
+    expect(view.subtitle.startsWith('موظف المتجر')).toBe(true);
+  });
+
   it('builds the warehouse home without money', () => {
     const view = buildHomeView(
       input({

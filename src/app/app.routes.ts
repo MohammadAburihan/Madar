@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
+import { saleRoutes } from './features/sales/sale.routes';
 
 const placeholder = (path: string, titleKey: string) => ({
   path,
@@ -27,6 +28,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/home/containers/home.container').then((m) => m.HomeContainer),
       },
+      saleRoutes,
       placeholder('sales', 'nav.sales'),
       placeholder('purchases', 'nav.purchases'),
       placeholder('inventory', 'nav.inventory'),

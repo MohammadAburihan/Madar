@@ -7,6 +7,7 @@ export interface Business {
   name: string;
   currency: string;
   abbr: string;
+  country: string;
 }
 
 const LAST_BUSINESS_KEY = 'madar.lastBusiness';
@@ -37,14 +38,22 @@ export class BusinessService {
 
   async load(): Promise<Business | null> {
     const [company] = await firstValueFrom(
-      this.erpnext.list<{ name: string; default_currency: string; abbr: string }>('Company', {
-        fields: ['name', 'default_currency', 'abbr'],
-        orderBy: 'creation asc',
-        limit: 1,
-      }),
+      this.erpnext.list<{ name: string; default_currency: string; abbr: string; country: string }>(
+        'Company',
+        {
+          fields: ['name', 'default_currency', 'abbr', 'country'],
+          orderBy: 'creation asc',
+          limit: 1,
+        },
+      ),
     );
     const business = company
-      ? { name: company.name, currency: company.default_currency, abbr: company.abbr }
+      ? {
+          name: company.name,
+          currency: company.default_currency,
+          abbr: company.abbr,
+          country: company.country,
+        }
       : null;
     this.current.set(business);
     if (business) {

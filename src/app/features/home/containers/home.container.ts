@@ -118,7 +118,7 @@ export class HomeContainer {
   }
 
   protected openAction(id: string): void {
-    void this.router.navigate(['/task', id]);
+    void this.router.navigate(id === 'sell' ? ['/sales/new'] : ['/task', id]);
   }
 
   protected openDrafts(): void {

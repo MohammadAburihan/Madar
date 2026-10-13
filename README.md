@@ -25,7 +25,7 @@ public/             static assets, translations (i18n/), runtime config.json
 assets/             source artwork for app icons and splash screens
 android/, ios/      Capacitor native projects
 docker/             nginx config and startup script for the release image
-docs/               product brief, design handoff, and the Madar.pen design file
+docs/               product brief, design handoff, roles (PERMISSIONS.md), and the Madar.pen design file
 CLAUDE.md           conventions for AI-assisted development
 ```
 
@@ -60,6 +60,10 @@ It never touches the `frontend` site. Users (password `Madar-Dev-2026`):
 | `rehan@rehan.example` | System Manager and managers | Owner |
 | `lina@rehan.example` | Sales User, Accounts User | Salesperson |
 | `omar@rehan.example` | Stock User | Warehouse worker |
+| `sami@rehan.example` | Sales User, Accounts User, Stock User | Store associate |
+
+The site also has the quick-sale catalogue from the mocks (olive tree, ceramic planter, garden consultation),
+stock in Main warehouse and Garden shop, a Walk-in Customer, and Cash and Card (Main bank) payment accounts.
 
 "Today" data is created for the day the script runs; rerun it to refresh.
 

@@ -60,6 +60,7 @@ const ACTIONS: Record<Persona, string[]> = {
     'supplyProject',
   ],
   salesperson: ['sell', 'receivePayment', 'customers', 'catalog'],
+  storeAssociate: ['sell', 'receivePayment', 'receiveGoods', 'transferStock'],
   warehouse: ['receiveGoods', 'transferStock', 'countStock', 'supplyProjectShort'],
 };
 
@@ -145,10 +146,34 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
         }
       : null;
 
+  const own = drafts[0];
+  const invoice = invoices[0];
+  const continueSaleCard: CardView | null = own
+    ? {
+        title: tr.t('home.cards.continueSale'),
+        message: tr.t('home.cards.continueSaleMessage', {
+          party: own.party,
+          amount: formatMoney(own.total, own.currency || business.currency),
+        }),
+      }
+    : null;
+  const followUpCard: CardView | null = invoice
+    ? {
+        title: tr.t('home.cards.followUp'),
+        message: tr.t(
+          `home.cards.followUpMessage.${dueKey(invoice.dueDate) === 'later' ? 'tomorrow' : dueKey(invoice.dueDate)}`,
+          { customer: invoice.customer },
+        ),
+      }
+    : null;
+
   let cards: CardView[];
-  if (persona === 'salesperson') {
-    const own = drafts[0];
-    const invoice = invoices[0];
+  if (persona === 'storeAssociate') {
+    // Counter sales first, then the stock that keeps the counter going.
+    cards = [continueSaleCard, lowStockCard, followUpCard, ...supplyCards].filter(
+      (c): c is CardView => !!c,
+    );
+  } else if (persona === 'salesperson') {
     cards = [
       own && {
         title: tr.t('home.cards.continueSale'),
@@ -210,7 +235,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
             collect: money(data.receivables, 0),
           })
         : null
-      : persona === 'salesperson'
+      : persona === 'salesperson' || persona === 'storeAssociate'
         ? data.todaySales !== undefined
           ? tr.t('home.summary.salesperson', { sales: money(data.todaySales, 0) })
           : null
@@ -227,7 +252,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     glance.push({
       numeric: true,
       title: money(data.todaySales),
-      message: tr.t(persona === 'salesperson' ? 'home.glance.salesOwn' : 'home.glance.sales'),
+      message: tr.t(persona === 'owner' ? 'home.glance.sales' : 'home.glance.salesOwn'),
     });
   }
   if (data.receivables !== undefined) {

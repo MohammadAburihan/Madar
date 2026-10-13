@@ -136,6 +136,12 @@ src/app/
 - Guests get 403 (not `"Guest"`) from `frappe.auth.get_logged_user`. 403 also means "no permission", so
   after a 403 call `SessionService.checkExpired()` to tell the two apart.
 - Default `Sales User` can't read Sales Invoices in v16; Home hides whatever a role can't read.
+- `apply_price_list` takes `ctx`; give each item `parenttype: 'Sales Invoice'`, `uom`, `stock_uom` and
+  `conversion_factor`, or ERPNext silently returns no price. Sales roles can't read Item Price directly.
+- Frappe checks CSRF only when the session holds a `csrf_token`, which `/api/method/login` never sets (Desk
+  does). Madar's writes therefore send no token; if Desk is ever served on Madar's origin, add the header.
+- Writes are idempotent through a Madar reference (`SALE-…`) in the invoice `remarks` and the payment
+  `reference_no`. After a timeout, look the reference up (`SalesApiService.find`) instead of resubmitting.
 - Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.
 - Ionic caches pages: reset per-visit state (notices, password) instead of relying on a fresh component.
 
@@ -184,6 +190,12 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 - Keep environment-specific config (ERPNext URLs, keys, secrets) out of the image; supply it at container
   start. Never commit secrets.
 - Frontend deploys must not touch ERPNext containers, volumes, or data.
+
+## Roles and permissions
+
+`docs/PERMISSIONS.md` is the approved role matrix. `personaFor` (`core/auth/persona.ts`) maps ERPNext roles to a
+Madar role and `capabilitiesFor` (`core/auth/capabilities.ts`) holds the finer rules ERPNext can't express
+(discount cap, price edits, payment accounts). Change the doc first, then the code.
 
 ## Implementation boundaries
 

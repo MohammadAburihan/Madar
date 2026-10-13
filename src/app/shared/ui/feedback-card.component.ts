@@ -39,6 +39,7 @@ export type FeedbackTone = 'tint' | 'warning' | 'danger';
     .message {
       color: var(--md-ink);
       font: 400 15px / var(--md-lh) var(--md-font);
+      white-space: pre-line;
     }
 
     :host(.tone-warning) {
