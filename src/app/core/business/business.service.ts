@@ -29,6 +29,12 @@ export class BusinessService {
     return active ? Promise.resolve(active) : this.loadShared();
   }
 
+  /** Reloads after a sign-in, sharing the request with any concurrent ensure(). */
+  refresh(): Promise<Business | null> {
+    this.current.set(null);
+    return this.loadShared();
+  }
+
   async load(): Promise<Business | null> {
     const [company] = await firstValueFrom(
       this.erpnext.list<{ name: string; default_currency: string; abbr: string }>('Company', {

@@ -9,7 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { SessionService } from '../../../core/auth/session.service';
+import { SessionNotKeptError, SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { RuntimeConfigService } from '../../../core/config/runtime-config';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -25,7 +25,14 @@ import {
 } from '../components/sign-in-form.component';
 
 type NoticeKey =
-  'missing' | 'invalid' | 'offline' | 'error' | 'expired' | 'forgotMissing' | 'forgotSent';
+  | 'missing'
+  | 'invalid'
+  | 'noSession'
+  | 'offline'
+  | 'error'
+  | 'expired'
+  | 'forgotMissing'
+  | 'forgotSent';
 
 @Component({
   selector: 'app-sign-in',
@@ -84,7 +91,6 @@ type NoticeKey =
   `,
 })
 export class SignInContainer {
-  // Bound from query params; absent params arrive as undefined.
   readonly expired = input<string | undefined>();
   readonly returnUrl = input<string | undefined>();
 
@@ -185,12 +191,18 @@ export class SignInContainer {
     this.noticeKey.set(null);
     try {
       await this.session.signIn(email, password);
-      await this.business.load().catch(() => null);
+      await this.business.refresh().catch(() => null);
       await this.router.navigateByUrl(this.safeReturnUrl());
     } catch (error) {
       const kind = ErpnextError.from(error).kind;
       this.noticeKey.set(
-        kind === 'offline' ? 'offline' : kind === 'unauthorized' ? 'invalid' : 'error',
+        error instanceof SessionNotKeptError
+          ? 'noSession'
+          : kind === 'offline'
+            ? 'offline'
+            : kind === 'unauthorized'
+              ? 'invalid'
+              : 'error',
       );
     } finally {
       this.submitting.set(false);

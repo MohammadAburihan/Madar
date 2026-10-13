@@ -31,10 +31,11 @@ function setup(options: {
     persona: () => 'salesperson' as const,
     ensure: options.ensure ?? (() => Promise.resolve(true)),
     checkExpired: vi.fn(() => Promise.resolve(false)),
+    status: () => 'signed-in',
   };
   const api = {
     load: vi.fn(
-      options.load ?? (() => Promise.resolve({ data: { todaySales: 1 }, forbidden: false })),
+      options.load ?? (() => Promise.resolve({ data: { todaySales: 1 }, allForbidden: false })),
     ),
   };
   TestBed.configureTestingModule({
@@ -107,13 +108,13 @@ describe('HomeFacade', () => {
     let resolveSlow!: (r: HomeLoadResult) => void;
     const results = [
       new Promise<HomeLoadResult>((resolve) => (resolveSlow = resolve)),
-      Promise.resolve({ data: { todaySales: 2 }, forbidden: false }),
+      Promise.resolve({ data: { todaySales: 2 }, allForbidden: false }),
     ];
     const { facade } = setup({ load: () => results.shift()! });
 
     const slow = facade.load();
     await facade.load();
-    resolveSlow({ data: { todaySales: 1 }, forbidden: false });
+    resolveSlow({ data: { todaySales: 1 }, allForbidden: false });
     await slow;
 
     expect(facade.data()).toEqual({ todaySales: 2 });
@@ -131,8 +132,27 @@ describe('HomeFacade', () => {
     await vi.waitFor(() => expect(api.load).toHaveBeenCalledTimes(2));
 
     expect(facade.data()).toBeNull();
-    finish({ data: { lowStock: { count: 1, warehouse: 'Main warehouse' } }, forbidden: false });
+    finish({ data: { lowStock: { count: 1, warehouse: 'Main warehouse' } }, allForbidden: false });
     await loading;
     expect(facade.data()).toEqual({ lowStock: { count: 1, warehouse: 'Main warehouse' } });
+  });
+
+  it('sends someone who was never signed in to sign-in without an "expired" notice', async () => {
+    const { facade, session } = setup({ user: null, ensure: () => Promise.resolve(false) });
+    (session as unknown as { status: () => string }).status = () => 'signed-out';
+
+    await facade.load();
+
+    expect(facade.status()).toBe('signed-out');
+  });
+
+  it('skips the session check when only some data was refused', async () => {
+    const { facade, session } = setup({
+      load: () => Promise.resolve({ data: { todaySales: 1 }, allForbidden: false }),
+    });
+
+    await facade.load();
+
+    expect(session.checkExpired).not.toHaveBeenCalled();
   });
 });

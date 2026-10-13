@@ -77,10 +77,12 @@ export class ErpnextClient {
 
   /** Every matching row, fetched page by page so no single response or URL grows unbounded. */
   async listAll<T>(doctype: string, query: Omit<ListQuery, 'limit' | 'limitStart'>): Promise<T[]> {
+    // Offset paging needs a unique sort, or rows that tie on the default timestamp sort can repeat or vanish.
+    const ordered = { orderBy: 'name asc', ...query };
     const rows: T[] = [];
     for (let start = 0; ; start += PAGE_SIZE) {
       const page = await firstValueFrom(
-        this.list<T>(doctype, { ...query, limit: PAGE_SIZE, limitStart: start }),
+        this.list<T>(doctype, { ...ordered, limit: PAGE_SIZE, limitStart: start }),
       );
       rows.push(...page);
       if (page.length < PAGE_SIZE) {

@@ -1,7 +1,7 @@
 import { Persona } from '../../../core/auth/persona';
 import { daysUntil, formatLongDate, formatMoney, minutesSince } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
-import { Translator } from '../../../core/i18n/translator';
+import { isolate, Translator } from '../../../core/i18n/translator';
 import { HomeData } from '../data-access/home.models';
 
 export interface HomeViewInput {
@@ -66,22 +66,7 @@ const ACTIONS: Record<Persona, string[]> = {
 const MOBILE_CARD_LIMIT = 2;
 const TABLE_ROW_LIMIT = 5;
 
-/** Unicode first-strong isolate: keeps a value's own direction inside text of the other direction. */
-export const isolate = (value: unknown) => `\u2068${value}\u2069`;
-
-/** Isolates every interpolated value, as the glossary requires for names, numbers and amounts. */
-function isolating(tr: Translator): Translator {
-  const wrap = (params: Record<string, unknown> = {}) =>
-    Object.fromEntries(Object.entries(params).map(([key, value]) => [key, isolate(value)]));
-  return {
-    t: (key, params) => tr.t(key, wrap(params)),
-    // `count` is interpolated too, so it needs isolating like the other values.
-    plural: (key, count, params) => tr.plural(key, count, wrap({ count, ...params })),
-  };
-}
-
-export function buildHomeView(input: HomeViewInput, raw: Translator): HomeView {
-  const tr = isolating(raw);
+export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
   const { data, persona, business, language, now } = input;
   const money = (amount: number, decimals: 0 | 2 = 2) =>
     formatMoney(amount, business.currency, decimals);
@@ -253,10 +238,14 @@ export function buildHomeView(input: HomeViewInput, raw: Translator): HomeView {
     });
   }
   if (lowStock) {
-    glance.push({
-      title: tr.plural('home.glance.lowStock', lowStock.count),
-      message: lowStock.warehouse ? isolate(lowStock.warehouse) : tr.t('home.glance.allStocked'),
-    });
+    glance.push(
+      lowStock.count === 0
+        ? { title: tr.t('home.glance.noLowStock'), message: tr.t('home.glance.allStocked') }
+        : {
+            title: tr.plural('home.glance.lowStock', lowStock.count),
+            message: lowStock.warehouse ? isolate(lowStock.warehouse) : '',
+          },
+    );
   }
 
   return {

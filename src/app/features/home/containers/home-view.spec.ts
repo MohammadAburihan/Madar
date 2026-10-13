@@ -1,6 +1,7 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { HomeData } from '../data-access/home.models';
-import { buildHomeView as build, HomeViewInput, isolate } from './home-view';
+import { isolate } from '../../../core/i18n/translator';
+import { buildHomeView as build, HomeViewInput } from './home-view';
 
 // Mirrors the data in the design mocks (Sunday 11 October, 09:00).
 const NOW = new Date(2026, 9, 11, 9, 0);
@@ -218,5 +219,29 @@ describe('buildHomeView', () => {
     );
     expect(view.summary).toContain(isolate('Main warehouse'));
     expect(view.summary).toContain(isolate(3));
+  });
+
+  it('shows a zero-state glance card instead of "0 low-stock items"', () => {
+    const view = buildHomeView(
+      input({ persona: 'warehouse', data: { lowStock: { count: 0, warehouse: null } } }),
+      realTranslator('en'),
+    );
+    expect(view.glance).toEqual([
+      { title: 'No low-stock items', message: 'All items above reorder level' },
+    ]);
+  });
+
+  it('uses the Arabic forms for 11–99 and for 100+', () => {
+    const at = (count: number) =>
+      buildHomeView(
+        input({
+          persona: 'warehouse',
+          language: 'ar',
+          data: { lowStock: { count, warehouse: 'Main warehouse' } },
+        }),
+        realTranslator('ar'),
+      ).cards[0].title;
+    expect(at(11)).toBe('11 صنفاً قارب على النفاد');
+    expect(at(100)).toBe('100 صنف قارب على النفاد');
   });
 });

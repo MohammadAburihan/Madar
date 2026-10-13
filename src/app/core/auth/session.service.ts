@@ -20,6 +20,13 @@ interface UserDoc {
 
 export type SessionStatus = 'unknown' | 'signed-in' | 'signed-out' | 'expired';
 
+/** ERPNext accepted the password, but the session cookie didn't come back (blocked or cross-site cookies). */
+export class SessionNotKeptError extends Error {
+  constructor() {
+    super('Signed in, but the session cookie was not kept');
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly erpnext = inject(ErpnextClient);
@@ -44,7 +51,7 @@ export class SessionService {
     await firstValueFrom(this.erpnext.post('login', { usr: email, pwd: password }));
     const id = await this.loggedInUser();
     if (!id) {
-      throw new ErpnextError('unauthorized', 'Signed in, but ERPNext reports no session', 401);
+      throw new SessionNotKeptError();
     }
     await this.loadUser(id);
   }
@@ -82,7 +89,7 @@ export class SessionService {
   private async restoreSession(): Promise<boolean> {
     const id = await this.loggedInUser();
     if (!id) {
-      this.currentStatus.set(this.currentStatus() === 'expired' ? 'expired' : 'signed-out');
+      this.currentStatus.set('signed-out');
       return false;
     }
     await this.loadUser(id);

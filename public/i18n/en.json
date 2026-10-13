@@ -148,7 +148,8 @@
         "other": "{{count}} low-stock items"
       },
       "allStocked": "All items above reorder level",
-      "note": "All summaries belong to {{business}}. Choose another business from the sidebar."
+      "note": "All summaries belong to {{business}}. Choose another business from the sidebar.",
+      "noLowStock": "No low-stock items"
     },
     "warehouseNote": "Only permitted stock actions are shown. Money and sales amounts stay hidden.",
     "draftCount": {
@@ -207,6 +208,10 @@
     "error": {
       "title": "Couldn't sign in",
       "message": "Something went wrong on the server. Try again in a moment."
+    },
+    "noSession": {
+      "title": "Signed in, but the session wasn't kept",
+      "message": "This browser didn't keep the sign-in. Allow cookies for this site, then try again."
     }
   },
   "placeholder": {

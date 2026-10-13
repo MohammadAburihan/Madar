@@ -6,7 +6,7 @@ import { SiteClockService } from '../../../core/time/site-clock.service';
 import { HomeApiService } from './home-api.service';
 import { HomeData } from './home.models';
 
-export type HomeStatus = 'loading' | 'ready' | 'offline' | 'error' | 'expired';
+export type HomeStatus = 'loading' | 'ready' | 'offline' | 'error' | 'expired' | 'signed-out';
 
 @Injectable({ providedIn: 'root' })
 export class HomeFacade {
@@ -34,7 +34,7 @@ export class HomeFacade {
       // The route guard lets the shell through when ERPNext is unreachable, so the user may be unknown here.
       if (!this.session.user() && !(await this.session.ensure())) {
         if (isCurrent()) {
-          this.currentStatus.set('expired');
+          this.currentStatus.set(this.session.status() === 'expired' ? 'expired' : 'signed-out');
         }
         return;
       }
@@ -59,7 +59,7 @@ export class HomeFacade {
         userId: user.id,
         today,
       });
-      const expired = result.forbidden && (await this.session.checkExpired());
+      const expired = result.allForbidden && (await this.session.checkExpired());
       if (!isCurrent()) {
         return;
       }

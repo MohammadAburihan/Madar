@@ -101,8 +101,9 @@ export class HomeContainer {
       untracked(() => void this.facade.load());
     });
     effect(() => {
-      if (this.facade.status() === 'expired') {
-        untracked(() => this.signInAgain());
+      const status = this.facade.status();
+      if (status === 'expired' || status === 'signed-out') {
+        untracked(() => this.signInAgain(status === 'expired'));
       }
     });
   }
@@ -111,9 +112,9 @@ export class HomeContainer {
     this.i18n.use(language);
   }
 
-  protected signInAgain(): void {
+  protected signInAgain(expired = true): void {
     void this.router.navigate(['/sign-in'], {
-      queryParams: { expired: 1, returnUrl: this.router.url },
+      queryParams: { expired: expired ? 1 : null, returnUrl: this.router.url },
     });
   }
 

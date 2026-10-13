@@ -5,7 +5,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SessionService } from './session.service';
+import { SessionNotKeptError, SessionService } from './session.service';
 
 const LOGGED_USER = '/api/method/frappe.auth.get_logged_user';
 const GET_DOC = '/api/method/frappe.client.get';
@@ -131,5 +131,15 @@ describe('SessionService', () => {
     });
     request!.error(new ProgressEvent('error'), { status: 0 });
     await expect(offline).rejects.toMatchObject({ kind: 'offline' });
+  });
+
+  it('reports a session cookie that was not kept, rather than a wrong password', async () => {
+    const { session, http } = setup();
+
+    const signingIn = session.signIn('lina@rehan.example', 'secret');
+    http.expectOne('/api/method/login').flush({ message: 'Logged In' });
+    await flushNext(http, LOGGED_USER, { exc_type: 'PermissionError' }, 403);
+
+    await expect(signingIn).rejects.toBeInstanceOf(SessionNotKeptError);
   });
 });

@@ -86,9 +86,9 @@ describe('HomeApiService', () => {
       Quotation: 'forbidden',
     });
 
-    const { data, forbidden } = await api.load(scope('salesperson'));
+    const { data, allForbidden } = await api.load(scope('salesperson'));
 
-    expect(forbidden).toBe(true);
+    expect(allForbidden).toBe(true);
     expect(data.todaySales).toBeUndefined();
     expect(data.drafts).toBeUndefined();
     expect(data.invoicesDue).toBeUndefined();
@@ -110,8 +110,9 @@ describe('HomeApiService', () => {
     denySales = false;
     const second = api.load(scope('warehouse'));
 
-    expect((await first).forbidden).toBe(true);
-    expect((await second).forbidden).toBe(false);
+    expect((await first).allForbidden).toBe(false);
+    expect((await first).data.todaySales).toBeUndefined();
+    expect((await second).allForbidden).toBe(false);
   });
 
   it('sums sales in company currency and converts grouped foreign receivables', async () => {
@@ -235,6 +236,71 @@ describe('HomeApiService', () => {
         itemName: 'Planter',
         qty: 10,
       },
+    ]);
+  });
+
+  it('does not report "all forbidden" when some data was readable', async () => {
+    const { api } = setup({ 'Sales Invoice': 'forbidden', 'Sales Order': () => [] });
+
+    const { allForbidden } = await api.load(scope('salesperson'));
+
+    expect(allForbidden).toBe(false);
+  });
+
+  it('shows what a project still needs and counts stock in the request’s source warehouse', async () => {
+    const { api } = setup({
+      Warehouse: WAREHOUSES,
+      'Material Request': () => [
+        {
+          name: 'MR-1',
+          schedule_date: '2026-10-13',
+          material_request_type: 'Material Transfer',
+          project: 'P-1',
+          item_code: 'PLANTER',
+          item_name: 'Planter',
+          qty: 100,
+          ordered_qty: 80,
+          from_warehouse: 'Main warehouse - RN',
+          warehouse: 'Stores - RN',
+        },
+        {
+          name: 'MR-2',
+          schedule_date: '2026-10-13',
+          material_request_type: 'Material Issue',
+          project: 'P-1',
+          item_code: 'SOIL',
+          item_name: 'Soil',
+          qty: 5,
+          ordered_qty: 0,
+          from_warehouse: null,
+          warehouse: 'Stores - RN',
+        },
+        {
+          name: 'MR-3',
+          schedule_date: '2026-10-13',
+          material_request_type: 'Material Transfer',
+          project: 'P-1',
+          item_code: 'CLAY',
+          item_name: 'Clay',
+          qty: 4,
+          ordered_qty: 4,
+          from_warehouse: null,
+          warehouse: null,
+        },
+      ],
+      Project: () => [{ name: 'P-1', project_name: 'Garden installation' }],
+      Bin: () => [
+        { item_code: 'PLANTER', warehouse: 'Main warehouse - RN', actual_qty: 8 },
+        { item_code: 'SOIL', warehouse: 'Stores - RN', actual_qty: 2 },
+        { item_code: 'SOIL', warehouse: 'Main warehouse - RN', actual_qty: 50 },
+      ],
+    });
+
+    const { data } = await api.load(scope('warehouse'));
+
+    expect(data.supply?.map((n) => [n.name, n.qty, n.available])).toEqual([
+      ['MR-1', 20, 8],
+      ['MR-2', 5, 2],
     ]);
   });
 });

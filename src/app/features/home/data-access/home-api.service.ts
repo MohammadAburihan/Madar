@@ -18,11 +18,13 @@ export interface HomeScope {
 
 export interface HomeLoadResult {
   data: HomeData;
-  forbidden: boolean;
+  /** Every query was refused, which is what an expired session looks like. */
+  allForbidden: boolean;
 }
 
 interface LoadContext extends HomeScope {
   forbidden: boolean;
+  succeeded: boolean;
   warehouses?: Promise<string[]>;
 }
 
@@ -38,7 +40,7 @@ export class HomeApiService {
   private readonly erpnext = inject(ErpnextClient);
 
   async load(scope: HomeScope): Promise<HomeLoadResult> {
-    const ctx: LoadContext = { ...scope, forbidden: false };
+    const ctx: LoadContext = { ...scope, forbidden: false, succeeded: false };
     const { persona } = ctx;
     const sells = persona !== 'warehouse';
     const stocks = persona !== 'salesperson';
@@ -54,7 +56,7 @@ export class HomeApiService {
       ]);
     return {
       data: { todaySales, receivables, invoicesDue, drafts, deliveries, supply, lowStock },
-      forbidden: ctx.forbidden,
+      allForbidden: ctx.forbidden && !ctx.succeeded,
     };
   }
 
@@ -220,12 +222,18 @@ export class HomeApiService {
       item_code: string;
       item_name: string;
       qty: number;
+      ordered_qty: number;
+      material_request_type: string;
       from_warehouse: string | null;
+      warehouse: string | null;
     }>(
       'Material Request',
       [
         'name',
         'schedule_date',
+        'material_request_type',
+        'items.ordered_qty as ordered_qty',
+        'items.warehouse as warehouse',
         'items.project as project',
         'items.item_code as item_code',
         'items.item_name as item_name',
@@ -240,7 +248,11 @@ export class HomeApiService {
       ],
       { orderBy: 'schedule_date asc', limit: CHILD_ROW_LIMIT },
     );
-    const needs = firstPerName(rows.filter((r) => r.project)).slice(0, ATTENTION_LIMIT);
+    // ordered_qty is what has already been transferred or issued against the request.
+    const needs = firstPerName(rows.filter((r) => r.project && r.qty > r.ordered_qty)).slice(
+      0,
+      ATTENTION_LIMIT,
+    );
     if (!needs.length) {
       return [];
     }
@@ -260,19 +272,21 @@ export class HomeApiService {
         warehouses,
       ),
     );
-    return needs.map((n) => ({
-      name: n.name,
-      projectName: projects?.find((p) => p.name === n.project)?.project_name ?? n.project ?? '',
-      scheduleDate: n.schedule_date,
-      itemName: n.item_name,
-      qty: n.qty,
-      available: (bins ?? [])
-        .filter(
-          (b) =>
-            b.item_code === n.item_code && (!n.from_warehouse || b.warehouse === n.from_warehouse),
-        )
-        .reduce((total, b) => total + b.actual_qty, 0),
-    }));
+    return needs.map((n) => {
+      // A Material Issue takes stock out of its item warehouse; a transfer moves it out of from_warehouse.
+      const source =
+        n.from_warehouse ?? (n.material_request_type === 'Material Issue' ? n.warehouse : null);
+      return {
+        name: n.name,
+        projectName: projects?.find((p) => p.name === n.project)?.project_name ?? n.project ?? '',
+        scheduleDate: n.schedule_date,
+        itemName: n.item_name,
+        qty: n.qty - n.ordered_qty,
+        available: (bins ?? [])
+          .filter((b) => b.item_code === n.item_code && (!source || b.warehouse === source))
+          .reduce((total, b) => total + b.actual_qty, 0),
+      };
+    });
   }
 
   private async lowStock(ctx: LoadContext): Promise<LowStock> {
@@ -311,7 +325,6 @@ export class HomeApiService {
     return { count, warehouse: busiest ? stripAbbr(busiest[0], ctx.companyAbbr) : null };
   }
 
-  /** Stock rows for the given items in the given warehouses, in URL-safe batches. */
   private async stockFor(itemCodes: string[], warehouses: string[]) {
     const unique = [...new Set(itemCodes)];
     if (!unique.length || !warehouses.length) {
@@ -334,7 +347,6 @@ export class HomeApiService {
     return results.flat();
   }
 
-  /** Shared by the stock queries of one load. */
   private companyWarehouses(ctx: LoadContext): Promise<string[]> {
     ctx.warehouses ??= this.erpnext
       .listAll<{ name: string }>('Warehouse', {
@@ -369,7 +381,9 @@ export class HomeApiService {
 
   private async optional<T>(ctx: LoadContext, load: () => Promise<T>): Promise<T | undefined> {
     try {
-      return await load();
+      const result = await load();
+      ctx.succeeded = true;
+      return result;
     } catch (error) {
       if (ErpnextError.from(error).kind === 'forbidden') {
         ctx.forbidden = true;
