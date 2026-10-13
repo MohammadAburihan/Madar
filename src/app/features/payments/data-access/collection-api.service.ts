@@ -145,7 +145,8 @@ export class CollectionApiService {
         firstValueFrom(
           this.erpnext.post<PaymentDoc & { references: Record<string, unknown>[] }>(
             'erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry',
-            { dt: 'Sales Invoice', dn: a.invoice },
+            // bank_account makes ERPNext fill paid_to's currency and type from the chosen account.
+            { dt: 'Sales Invoice', dn: a.invoice, bank_account: request.account.account },
           ),
         ),
       ),
@@ -157,6 +158,8 @@ export class CollectionApiService {
       paid_to: request.account.account,
       paid_amount: request.amount,
       received_amount: request.amount,
+      // An early-payment discount adds a deduction; Madar collects the full amount, so none apply.
+      deductions: [],
       // Bank modes require a reference; it also lets "Check result" find this payment.
       reference_no: request.reference,
       reference_date: first.posting_date,

@@ -122,7 +122,11 @@ describe('CollectionApiService', () => {
       reference_no: 'COLL-ABC1234',
       reference_date: '2026-10-14',
       remarks: 'Madar collection COLL-ABC1234',
+      deductions: [],
     });
+    expect(
+      postCalls.filter((c) => c.method === GET_PAYMENT_ENTRY).map((c) => c.body['bank_account']),
+    ).toEqual(['Cash - RN', 'Cash - RN']);
     expect(doc.references).toEqual([
       expect.objectContaining({ reference_name: 'SI-1', allocated_amount: 50, total_amount: 320 }),
       expect.objectContaining({ reference_name: 'SI-2', allocated_amount: 70 }),

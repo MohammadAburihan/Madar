@@ -337,8 +337,12 @@ describe('SalesApiService', () => {
       received_amount: 100,
       reference_no: 'SALE-ABC1234',
       reference_date: '2026-10-13',
+      deductions: [],
     });
     expect(payment.references[0]['allocated_amount']).toBe(100);
+    expect(
+      postCalls.find((c) => c.method.endsWith('get_payment_entry'))!.body['bank_account'],
+    ).toBe('Cash - RN');
     expect(result).toMatchObject({
       paid: 100,
       outstanding: 203,

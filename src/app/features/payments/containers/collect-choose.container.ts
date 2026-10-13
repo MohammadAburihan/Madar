@@ -226,7 +226,7 @@ export class CollectChooseContainer implements OnInit {
     const navigation = this.ctx.router.getCurrentNavigation();
     const editing =
       navigation?.extras.state?.['edit'] === true || navigation?.trigger === 'popstate';
-    if (!editing) {
+    if (!editing || store.state() === 'confirmed') {
       store.resume();
     }
     void this.ctx.clock.ensure();

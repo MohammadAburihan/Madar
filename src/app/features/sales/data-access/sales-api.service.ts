@@ -252,11 +252,13 @@ export class SalesApiService {
       const payment = await firstValueFrom(
         this.erpnext.post<Record<string, unknown> & { references: Record<string, unknown>[] }>(
           'erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry',
-          { dt: 'Sales Invoice', dn: invoice.name },
+          // bank_account makes ERPNext fill paid_to's currency and type from the chosen account.
+          { dt: 'Sales Invoice', dn: invoice.name, bank_account: sale.account.account },
         ),
       );
       const amount = round2(Math.min(sale.amountPaid, invoice.outstanding_amount));
       Object.assign(payment, {
+        deductions: [],
         mode_of_payment: sale.account.mode,
         paid_to: sale.account.account,
         paid_amount: amount,
