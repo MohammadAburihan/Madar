@@ -4,7 +4,8 @@ import { NEVER, Observable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { ErpnextClient, ListQuery } from '../../../core/erpnext/erpnext-client';
 import { CatalogItem, SaleRequest } from './sale.models';
-import { SalesApiService, SaleUnresolvedError, WALK_IN_CUSTOMER } from './sales-api.service';
+import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
 type Lister = (query: ListQuery) => unknown[];
 type Poster = (body: Record<string, unknown>) => Observable<unknown> | unknown;
@@ -176,13 +177,22 @@ describe('SalesApiService', () => {
           primary_address: 'Ramallah<br>Palestine',
         },
       ],
-      'Sales Invoice': () => [{ customer: 'Lina Haddad', 'SUM(`outstanding_amount`)': 460 }],
+      'Sales Invoice': () => [
+        { customer: 'Lina Haddad', 'SUM(`outstanding_amount`)': 460, 'COUNT(`name`)': 2 },
+      ],
     });
 
     const customers = await api.searchCustomers('lin');
 
     expect(customers).toEqual([
-      { id: 'Lina Haddad', name: 'Lina Haddad', phone: '059', city: 'Ramallah', outstanding: 460 },
+      {
+        id: 'Lina Haddad',
+        name: 'Lina Haddad',
+        phone: '059',
+        city: 'Ramallah',
+        outstanding: 460,
+        unpaidInvoices: 2,
+      },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', WALK_IN_CUSTOMER]);
   });
@@ -360,7 +370,7 @@ describe('SalesApiService', () => {
           'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status })),
         },
       );
-      await expect(api.confirm(sale(), null)).rejects.toBeInstanceOf(SaleUnresolvedError);
+      await expect(api.confirm(sale(), null)).rejects.toBeInstanceOf(UnresolvedError);
     }
   });
 
@@ -368,7 +378,7 @@ describe('SalesApiService', () => {
     vi.useFakeTimers();
     const { api } = setup({}, { 'frappe.client.insert': () => NEVER });
     const confirming = api.confirm(sale(), null);
-    const outcome = expect(confirming).rejects.toBeInstanceOf(SaleUnresolvedError);
+    const outcome = expect(confirming).rejects.toBeInstanceOf(UnresolvedError);
     await vi.advanceTimersByTimeAsync(30_000);
     await outcome;
   });
@@ -380,7 +390,7 @@ describe('SalesApiService', () => {
         'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 417 })),
       },
     );
-    await expect(api.confirm(sale(), null)).rejects.not.toBeInstanceOf(SaleUnresolvedError);
+    await expect(api.confirm(sale(), null)).rejects.not.toBeInstanceOf(UnresolvedError);
   });
 
   describe('find', () => {

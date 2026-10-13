@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -44,7 +46,7 @@ import { buildShellView } from './shell-view';
       <router-outlet />
     </main>
     @if (viewport() === 'mobile') {
-      <app-bottom-nav [items]="text().mobileNav" [navLabel]="text().navLabel" />
+      <app-bottom-nav [items]="text().mobileNav" [navLabel]="text().navLabel" [url]="url()" />
     }
   `,
   styles: `
@@ -81,6 +83,13 @@ export class ShellContainer implements OnInit {
   private readonly business = inject(BusinessService);
   private readonly i18n = injectI18n();
   private readonly router = inject(Router);
+  protected readonly url = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
 
   protected readonly viewport = inject(ViewportService).viewport;
   private readonly tr = this.i18n.tr;

@@ -41,7 +41,7 @@ const SEARCH_DELAY_MS = 250;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.desktop]': 'ctx.desktop()', '[class.tablet]': "ctx.viewport() === 'tablet'" },
-  styleUrl: './sale-page.scss',
+  styleUrl: '../../../shared/ui/task-page.scss',
   template: `
     @let txt = text();
     @if (ctx.desktop()) {

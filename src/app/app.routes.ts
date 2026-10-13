@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
-import { saleRoutes } from './features/sales/sale.routes';
+import { paymentRoutes } from './features/payments/payment.routes';
+import { invoiceRoute, saleRoutes } from './features/sales/sale.routes';
 
 const placeholder = (path: string, titleKey: string) => ({
   path,
@@ -29,11 +30,12 @@ export const routes: Routes = [
           import('./features/home/containers/home.container').then((m) => m.HomeContainer),
       },
       saleRoutes,
+      invoiceRoute,
+      ...paymentRoutes,
       placeholder('sales', 'nav.sales'),
       placeholder('purchases', 'nav.purchases'),
       placeholder('inventory', 'nav.inventory'),
       placeholder('contacts', 'nav.contacts'),
-      placeholder('money', 'nav.money'),
       placeholder('projects', 'nav.projects'),
       placeholder('settings', 'nav.settings'),
       placeholder('more', 'nav.more'),

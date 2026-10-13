@@ -1,18 +1,12 @@
-export interface CustomerOption {
-  id: string;
-  name: string;
-  phone: string | null;
-  city: string | null;
-  /** Unpaid balance on submitted invoices, in company currency. */
-  outstanding: number;
-}
+import type { PaymentAccount } from '../../../core/money/payment-accounts.service';
+import { round2 } from '../../../core/format/number';
 
-export interface NewCustomer {
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-}
+export { parseNumber, round2 } from '../../../core/format/number';
+export type {
+  CustomerOption,
+  NewCustomer,
+} from '../../../core/customers/customer-directory.service';
+export type { PaymentAccount };
 
 export interface CatalogItem {
   code: string;
@@ -37,14 +31,6 @@ export interface SaleLine {
 export interface WarehouseOption {
   id: string;
   name: string;
-}
-
-export interface PaymentAccount {
-  mode: string;
-  account: string;
-  label: string;
-  /** Bank modes need a reference number and date on the payment. */
-  isBank: boolean;
 }
 
 export type PaymentStatus = 'paid' | 'partial' | 'unpaid';
@@ -78,19 +64,4 @@ export function lineTotal(line: Pick<SaleLine, 'qty' | 'rate' | 'discount'>): nu
 
 export function unitRate(line: Pick<SaleLine, 'rate' | 'discount'>): number {
   return round2(line.rate * (1 - line.discount / 100));
-}
-
-/** Parses typed numbers, accepting Arabic-Indic digits and separators from Arabic keyboards. */
-export function parseNumber(text: string): number {
-  const western = text
-    .trim()
-    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-    .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
-    .replace(/\u066b/g, '.')
-    .replace(/[,\u066c]/g, '');
-  return western === '' ? NaN : Number(western);
-}
-
-export function round2(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }

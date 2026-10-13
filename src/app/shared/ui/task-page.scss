@@ -1,4 +1,4 @@
-// Shared layout for quick-sale screens: the mobile task body, or on desktop the body at 640px (interaction
+// Shared layout for task screens: the mobile task body, or on desktop the body centered at 640px (interaction
 // contract: task steps keep the desktop shell and render the canonical body at 640px).
 :host {
   display: flex;
@@ -12,8 +12,8 @@
   padding: 40px;
 }
 
-:host(.desktop.task) > * {
-  max-inline-size: 640px;
+:host(.desktop.task) {
+  padding-inline: max(40px, calc((100% - 640px) / 2));
 }
 
 .stack {

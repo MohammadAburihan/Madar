@@ -24,7 +24,7 @@ import { injectSaleContext } from './sale-context';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'task', '[class.desktop]': 'ctx.desktop()' },
-  styleUrl: './sale-page.scss',
+  styleUrl: '../../../shared/ui/task-page.scss',
   template: `
     @let txt = text();
     <app-language-switcher

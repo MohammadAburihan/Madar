@@ -1,0 +1,183 @@
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import {
+  CollectedInvoice,
+  CollectionRequest,
+  CollectionResult,
+  UnpaidInvoice,
+} from './collection.models';
+
+interface PaymentDoc {
+  name: string;
+  docstatus: number;
+  posting_date: string;
+  paid_amount: number;
+  references: { reference_name: string; allocated_amount: number }[];
+  [key: string]: unknown;
+}
+
+/** Customer collections: a submitted Payment Entry (Receive) allocated to the customer's unpaid invoices. */
+@Injectable({ providedIn: 'root' })
+export class CollectionApiService {
+  private readonly erpnext = inject(ErpnextClient);
+
+  async unpaidInvoices(customer: string, company: string): Promise<UnpaidInvoice[]> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        posting_date: string;
+        due_date: string | null;
+        grand_total: number;
+        outstanding_amount: number;
+      }>('Sales Invoice', {
+        fields: ['name', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount'],
+        filters: [
+          ['customer', '=', customer],
+          ['company', '=', company],
+          ['docstatus', '=', 1],
+          ['outstanding_amount', '>', 0],
+        ],
+        orderBy: 'posting_date asc',
+        limit: 50,
+      }),
+    );
+    return rows.map((r) => ({
+      name: r.name,
+      postingDate: r.posting_date,
+      dueDate: r.due_date,
+      total: r.grand_total,
+      outstanding: r.outstanding_amount,
+    }));
+  }
+
+  /**
+   * Inserts and submits the payment. A timeout or lost connection throws UnresolvedError: the payment may
+   * exist, so callers must look it up with find(), not resubmit.
+   */
+  async confirm(
+    request: CollectionRequest,
+    draft: string | null,
+    onInserted: (draft: string) => void = () => undefined,
+  ): Promise<CollectionResult> {
+    let payment: PaymentDoc;
+    try {
+      let doc: PaymentDoc;
+      if (draft) {
+        const current = await confirmRequest(this.erpnext.doc<PaymentDoc>('Payment Entry', draft));
+        // The fresh template is a new document (`__islocal`, no name); submitting it as-is would insert a
+        // second payment. Keep the draft's identity and drop the template's new-document flags.
+        const fresh = withoutLocalFlags(await this.paymentDoc(request));
+        doc = {
+          ...current,
+          ...fresh,
+          name: current.name,
+          modified: current['modified'],
+          docstatus: 0,
+        };
+      } else {
+        doc = await confirmRequest(
+          this.erpnext.post<PaymentDoc>('frappe.client.insert', {
+            doc: await this.paymentDoc(request),
+          }),
+        );
+        onInserted(doc.name);
+      }
+      payment = await confirmRequest(
+        this.erpnext.post<PaymentDoc>('frappe.client.submit', { doc }),
+      );
+    } catch (error) {
+      throw unresolvedOr(error);
+    }
+    return this.result(payment);
+  }
+
+  /** Looks a collection up by its Madar reference after an unresolved confirmation. */
+  async find(reference: string): Promise<CollectionResult | 'not-found' | { draft: string }> {
+    const [payment] = await firstValueFrom(
+      this.erpnext.list<{ name: string; docstatus: number }>('Payment Entry', {
+        fields: ['name', 'docstatus'],
+        filters: [
+          ['reference_no', '=', reference],
+          ['docstatus', '!=', 2],
+        ],
+        orderBy: 'docstatus desc',
+        limit: 1,
+      }),
+    );
+    if (!payment) {
+      return 'not-found';
+    }
+    if (payment.docstatus === 0) {
+      return { draft: payment.name };
+    }
+    return this.result(
+      await firstValueFrom(this.erpnext.doc<PaymentDoc>('Payment Entry', payment.name)),
+    );
+  }
+
+  private async paymentDoc(request: CollectionRequest): Promise<Record<string, unknown>> {
+    // ERPNext's own "Get Payment Entry" fills party, receivable account, currencies and each reference's
+    // totals, exactly as its Sales Invoice form does; Madar then sets the amounts and account.
+    const entries = await Promise.all(
+      request.allocations.map((a) =>
+        firstValueFrom(
+          this.erpnext.post<PaymentDoc & { references: Record<string, unknown>[] }>(
+            'erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry',
+            { dt: 'Sales Invoice', dn: a.invoice },
+          ),
+        ),
+      ),
+    );
+    const [first] = entries;
+    return {
+      ...first,
+      mode_of_payment: request.account.mode,
+      paid_to: request.account.account,
+      paid_amount: request.amount,
+      received_amount: request.amount,
+      // Bank modes require a reference; it also lets "Check result" find this payment.
+      reference_no: request.reference,
+      reference_date: first.posting_date,
+      remarks: `Madar collection ${request.reference}`,
+      references: entries.map((entry, i) => ({
+        ...entry.references[0],
+        allocated_amount: request.allocations[i].amount,
+      })),
+    };
+  }
+
+  private async result(payment: PaymentDoc): Promise<CollectionResult> {
+    const names = payment.references.map((r) => r.reference_name);
+    const invoices = await firstValueFrom(
+      this.erpnext.list<{ name: string; grand_total: number; outstanding_amount: number }>(
+        'Sales Invoice',
+        {
+          fields: ['name', 'grand_total', 'outstanding_amount'],
+          filters: [['name', 'in', names]],
+          limit: 0,
+        },
+      ),
+    ).catch(() => []);
+    return {
+      payment: payment.name,
+      postingDate: payment.posting_date,
+      amount: payment.paid_amount,
+      invoices: payment.references.map((r): CollectedInvoice => {
+        const invoice = invoices.find((i) => i.name === r.reference_name);
+        return {
+          invoice: r.reference_name,
+          allocated: r.allocated_amount,
+          total: invoice?.grand_total ?? 0,
+          paid: invoice ? invoice.grand_total - invoice.outstanding_amount : 0,
+          outstanding: invoice?.outstanding_amount ?? 0,
+        };
+      }),
+    };
+  }
+}
+
+function withoutLocalFlags(doc: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(doc).filter(([key]) => !key.startsWith('__')));
+}

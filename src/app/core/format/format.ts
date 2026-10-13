@@ -18,6 +18,15 @@ export function formatLongDate(date: Date, language: Language): string {
   return `${part({ weekday: 'long' })}${language === 'ar' ? '، ' : ', '}${part({ day: 'numeric' })} ${part({ month: 'long' })}`;
 }
 
+/** An ERPNext `YYYY-MM-DD` date as "11 Oct 2026" / "11 أكتوبر 2026". */
+export function formatShortDate(isoDate: string, language: Language): string {
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const locale = language === 'ar' ? 'ar-u-nu-latn' : 'en-GB';
+  const month = new Intl.DateTimeFormat(locale, { month: language === 'ar' ? 'long' : 'short' });
+  return `${d} ${month.format(date)} ${y}`;
+}
+
 /** Calendar days from `today` to an ERPNext `YYYY-MM-DD` date (negative when overdue). */
 export function daysUntil(isoDate: string, today: Date): number {
   const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);

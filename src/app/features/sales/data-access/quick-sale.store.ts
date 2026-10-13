@@ -2,12 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import {
-  CatalogFilter,
-  SalesApiService,
-  SaleUnresolvedError,
-  WALK_IN_CUSTOMER,
-} from './sales-api.service';
+import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import { CatalogFilter, SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 import {
   CatalogItem,
   CustomerOption,
@@ -34,7 +30,7 @@ export class QuickSaleStore {
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
 
-  readonly reference = signal(newReference());
+  readonly reference = signal(newReference('SALE'));
   readonly customer = signal<CustomerOption | null>(null);
   readonly walkIn = signal(false);
   readonly warehouses = signal<WarehouseOption[]>([]);
@@ -83,7 +79,7 @@ export class QuickSaleStore {
   });
 
   start(): void {
-    this.reference.set(newReference());
+    this.reference.set(newReference('SALE'));
     this.customer.set(null);
     this.walkIn.set(false);
     this.warehouse.set(null);
@@ -191,7 +187,7 @@ export class QuickSaleStore {
       );
       this.finish(result, lines);
     } catch (error) {
-      if (error instanceof SaleUnresolvedError) {
+      if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
         return;
       }
@@ -257,11 +253,3 @@ export class QuickSaleStore {
 }
 
 /** Short, readable reference the user can quote while a confirmation is unresolved. */
-function newReference(): string {
-  const random = crypto
-    .getRandomValues(new Uint32Array(1))[0]
-    .toString(36)
-    .toUpperCase()
-    .padStart(7, '0');
-  return `SALE-${random}`;
-}

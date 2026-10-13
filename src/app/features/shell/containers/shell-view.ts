@@ -31,7 +31,12 @@ const MOBILE_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
   { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse'] },
   { id: 'stock', icon: LucideBoxes, route: '/inventory' },
-  { id: 'more', icon: LucideMenu, route: '/more' },
+  {
+    id: 'more',
+    icon: LucideMenu,
+    route: '/more',
+    also: ['/money', '/purchases', '/contacts', '/projects', '/settings'],
+  },
 ];
 
 export interface ShellViewInput {

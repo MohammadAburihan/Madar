@@ -27,10 +27,12 @@ ERPNext lets them read.
 | Sell to the walk-in customer | ✅ | ✅ | ✅ | — | — | — |
 | Give a discount | ✅ any | up to 10% | up to 10% | — | — | — |
 | Change a selling price | ✅ | — | — | — | — | — |
+| Receive customer payments (collections) | ✅ | ✅ | ✅ | — | — | — |
 | Take payment into Cash or Card | ✅ | ✅ | ✅ | — | — | — |
 | Take payment into other accounts | ✅ | — | — | — | — | — |
 | See cost prices and profit | ✅ | — | — | — | ✅ | — |
 | See today's money summaries | ✅ | own sales | own sales | — | — | — |
+| See payment history (Money) | ✅ all | own payments | own payments | — | — | — |
 | Add customers | ✅ | ✅ | ✅ | — | — | ✅ |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |

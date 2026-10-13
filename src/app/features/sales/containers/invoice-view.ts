@@ -1,0 +1,77 @@
+import { formatMoney, formatShortDate } from '../../../core/format/format';
+import { Language } from '../../../core/i18n/language.service';
+import { Translator } from '../../../core/i18n/translator';
+import { InvoiceDetail } from '../data-access/invoice-api.service';
+import { paymentStatusOf } from './quick-sale-view';
+
+type Tone = 'tint' | 'warning' | 'danger';
+
+export function invoiceView(
+  invoice: InvoiceDetail,
+  after: string | null,
+  currency: string,
+  language: Language,
+  tr: Translator,
+) {
+  const money = (amount: number) => formatMoney(amount, currency);
+  const paid = invoice.total - invoice.outstanding;
+  const payment = paymentStatusOf(paid, invoice.total);
+  const count = invoice.payments.length;
+  const accounts = [...new Set(invoice.payments.map((p) => p.account))];
+  const chips: { label: string; tone: Tone }[] = [
+    {
+      label: tr.t(`invoice.status.${invoice.status}`),
+      tone: invoice.status === 'cancelled' ? 'danger' : 'tint',
+    },
+  ];
+  if (invoice.status === 'confirmed') {
+    chips.push({
+      label: tr.t(`invoice.payment.${payment}`),
+      tone: payment === 'paid' ? 'tint' : payment === 'partial' ? 'warning' : 'danger',
+    });
+  }
+  if (invoice.delivered) {
+    chips.push({ label: tr.t('invoice.goods'), tone: 'tint' });
+  }
+  const received =
+    accounts.length === 1
+      ? tr.t(
+          count === 1
+            ? 'invoice.receivedIn'
+            : count === 2
+              ? 'invoice.receivedBoth'
+              : 'invoice.receivedAll',
+          {
+            accounts: accounts[0],
+          },
+        )
+      : null;
+  return {
+    title: tr.t('invoice.title', { invoice: invoice.name }),
+    subtitle: after
+      ? tr.t('invoice.after', { customer: invoice.customerName, payment: after })
+      : tr.t('invoice.subtitle', {
+          customer: invoice.customerName,
+          date: formatShortDate(invoice.postingDate, language),
+        }),
+    chips,
+    totals: [
+      { label: tr.t('sale.review.invoiceTotal'), value: money(invoice.total) },
+      { label: tr.t('sale.review.amountPaid'), value: money(paid) },
+      { label: tr.t('sale.review.outstanding'), value: money(invoice.outstanding) },
+    ],
+    payments: {
+      title: count
+        ? count === 2
+          ? tr.t('invoice.paymentsTwo')
+          : tr.plural('invoice.payments', count)
+        : tr.t('invoice.noPayments'),
+      message: [
+        ...invoice.payments.map((p) =>
+          tr.t('invoice.paymentLine', { payment: p.name, amount: money(p.amount) }),
+        ),
+        ...(received ? [received] : []),
+      ].join('\n'),
+    },
+  };
+}

@@ -47,6 +47,28 @@ describe('Shell presenters', () => {
     expect(links.map((a) => a.getAttribute('href'))).toEqual(['/', '/sales']);
   });
 
+  it('BottomNav highlights the item for the current section, including sections it covers', async () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const fixture = TestBed.createComponent(BottomNavComponent);
+    fixture.componentRef.setInput('items', [
+      ...ITEMS,
+      { id: 'more', label: 'More', icon: LucideHouse, route: '/more', also: ['/money'] },
+    ]);
+    fixture.componentRef.setInput('navLabel', 'Main navigation');
+    const current = async (url: string) => {
+      fixture.componentRef.setInput('url', url);
+      await fixture.whenStable();
+      return [...fixture.nativeElement.querySelectorAll('a[aria-current=page]')].map((a) =>
+        a.textContent?.trim(),
+      );
+    };
+
+    expect(await current('/')).toEqual(['Home']);
+    expect(await current('/sales/new/items?x=1')).toEqual(['Sales']);
+    expect(await current('/money/receive')).toEqual(['More']);
+    expect(await current('/salesman')).toEqual([]);
+  });
+
   it('SidebarNav (full) shows the business, labels, and user, and emits switchBusiness', async () => {
     const fixture = await renderSidebar('full');
     const el: HTMLElement = fixture.nativeElement;

@@ -442,5 +442,180 @@
       "title": "You can't make sales",
       "message": "Your role doesn't include sales. Ask your business owner for access."
     }
+  },
+  "collect": {
+    "title": "Receive customer payment",
+    "step": "1 of 2 · Choose customer and unpaid invoice",
+    "search": "Search",
+    "placeholder": "Search name, code or barcode",
+    "noResults": "No customers match.",
+    "customerMeta": "Customer · {{details}}",
+    "customerMetaPlain": "Customer",
+    "balance": {
+      "one": "1 invoice with {{amount}} outstanding",
+      "other": "{{count}} invoices with {{amount}} outstanding"
+    },
+    "noBalance": "No unpaid invoices",
+    "loadingInvoices": "Loading unpaid invoices…",
+    "noInvoices": {
+      "title": "Nothing to collect",
+      "message": "This customer has no unpaid invoices."
+    },
+    "invoiceTitle": "{{invoice}} · {{date}}",
+    "invoiceStatus": {
+      "partial": "Partially paid · {{amount}} due",
+      "unpaid": "Unpaid · {{amount}} due",
+      "overdue": "Overdue · {{amount}} due"
+    },
+    "selectInvoice": "Pay {{invoice}}",
+    "amount": "Amount to receive",
+    "invalidAmount": "Enter an amount above zero.",
+    "tooMuch": "The chosen invoices owe {{amount}}. Enter that or less.",
+    "chooseInvoice": "Choose at least one invoice.",
+    "dueBefore": {
+      "one": "Invoice due before",
+      "other": "Invoices due before"
+    },
+    "receiveNow": "Receive now",
+    "dueAfter": "Due after save",
+    "account": "Receive into",
+    "noAccount": {
+      "title": "No payment account",
+      "message": "Ask your business owner to set up a Cash or Card account for your role."
+    },
+    "review": "Review payment",
+    "noAccess": {
+      "title": "You can't receive payments",
+      "message": "Your role doesn't include customer payments. Ask your business owner for access."
+    },
+    "reviewTitle": "Review payment",
+    "receivedNow": "Received now",
+    "allocateTo": {
+      "one": "Allocate to invoice",
+      "other": "Allocate to invoices"
+    },
+    "allocationLine": "{{invoice}} · {{amount}}",
+    "balanceTitle": {
+      "one": "Invoice balance after payment",
+      "other": "Invoice balances after payment"
+    },
+    "balanceOne": "Invoice {{total}} · Previously paid {{paid}}. This payment adds {{amount}}; paid total becomes {{after}} and {{due}} remains due.",
+    "balanceOneSettled": "Invoice {{total}} · Previously paid {{paid}}. This payment adds {{amount}} and settles the invoice.",
+    "balanceMany": "This payment adds {{amount}} across {{count}} invoices, oldest first; {{due}} remains due.",
+    "confirm": "Confirm receipt · {{amount}}",
+    "confirming": "Confirming…",
+    "edit": "Edit allocation",
+    "failed": {
+      "permission": {
+        "title": "You can't record this payment",
+        "message": "ERPNext didn't allow it for your role. Nothing was recorded."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "The payment wasn't sent. Check the connection and confirm again."
+      },
+      "error": {
+        "title": "The payment wasn't recorded",
+        "message": "ERPNext rejected it. Check the details and try again."
+      }
+    },
+    "notCreated": {
+      "title": "The payment wasn't recorded",
+      "message": "Review it and confirm again."
+    },
+    "recordedTitle": "Collection recorded",
+    "recorded": "Recorded",
+    "collected": "{{amount}} collected",
+    "allocatedOne": "Allocated to {{invoice}}. Paid total is now {{paid}}; {{due}} remains outstanding.",
+    "allocatedOneSettled": "Allocated to {{invoice}}. The invoice is now fully paid.",
+    "allocatedMany": "Allocated to {{invoices}}. {{due}} remains outstanding on them.",
+    "viewInvoice": "View invoice {{invoice}}",
+    "viewHistory": "View payment history",
+    "another": "New collection",
+    "checkingTitle": "Checking your payment",
+    "checkingCard": {
+      "title": "Check before trying again",
+      "message": "Your request timed out. The payment may already exist. Do not record it again."
+    },
+    "plannedReceipt": "Planned receipt",
+    "plannedDue": "Due if confirmed"
+  },
+  "money": {
+    "title": "Payments & expenses",
+    "subtitle": "{{business}} · All accounts",
+    "subtitleDesktop": "{{business}} · Cash and bank",
+    "newPayment": "+ New payment",
+    "receive": "Receive payment",
+    "paySupplier": "Pay supplier",
+    "expense": "Record expense",
+    "search": "Search",
+    "placeholder": "Search name, code or barcode",
+    "headers": {
+      "record": "Record",
+      "account": "Account",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "received": "{{payment}} · Received {{amount}}",
+    "paid": "{{payment}} · Paid {{amount}}",
+    "recordName": "{{record}} · {{party}}",
+    "partyAccount": "{{party}} · {{account}}",
+    "allocatedTo": "Allocated to {{invoices}}",
+    "notAllocated": "Not allocated to an invoice",
+    "status": {
+      "confirmed": "Confirmed",
+      "draft": "Draft",
+      "cancelled": "Cancelled"
+    },
+    "customerDue": "{{party}} · {{amount}} due",
+    "customerDueDetail": "{{invoice}} · {{total}} invoiced · {{paid}} received",
+    "supplierDue": "{{party}} · {{amount}} due",
+    "supplierDueDetail": "{{invoice}} · {{total}} billed · {{paid}} paid",
+    "note": "Invoice value, paid amount and remaining balance stay distinct. Open a payment to inspect allocation and account.",
+    "empty": "No payments recorded yet.",
+    "noResults": "No payments match.",
+    "loading": "Loading payments…",
+    "noAccess": {
+      "title": "Money isn't available for your role",
+      "message": "Ask your business owner if you need to see payments."
+    },
+    "error": {
+      "title": "Payments couldn't load",
+      "message": "Check the connection and try again."
+    }
+  },
+  "invoice": {
+    "title": "Sales invoice {{invoice}}",
+    "after": "{{customer}} · After {{payment}}",
+    "subtitle": "{{customer}} · {{date}}",
+    "status": {
+      "draft": "Invoice: Draft",
+      "confirmed": "Invoice: Confirmed",
+      "cancelled": "Invoice: Cancelled"
+    },
+    "payment": {
+      "paid": "Payment: Paid",
+      "partial": "Payment: Partially paid",
+      "unpaid": "Payment: Unpaid"
+    },
+    "goods": "Goods: Delivered",
+    "payments": {
+      "one": "One linked payment",
+      "other": "{{count}} linked payments"
+    },
+    "paymentLine": "{{payment}} · {{amount}}",
+    "receivedIn": "Received in {{accounts}}.",
+    "history": "View payment history",
+    "backToSales": "Back to sales",
+    "receive": "Receive payment",
+    "notFound": {
+      "title": "Invoice not found",
+      "message": "It may have been deleted, or your role can't open it."
+    },
+    "paymentsTwo": "Two linked payments",
+    "noPayments": "No payments yet",
+    "receivedBoth": "Both received in {{accounts}}.",
+    "receivedAll": "All received in {{accounts}}.",
+    "loading": "Loading invoice…"
   }
 }

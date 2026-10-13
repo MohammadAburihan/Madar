@@ -56,3 +56,9 @@ export const saleRoutes: Route = {
     },
   ],
 };
+
+export const invoiceRoute: Route = {
+  path: 'sales/invoices/:name',
+  loadComponent: () =>
+    import('./containers/invoice-detail.container').then((m) => m.InvoiceDetailContainer),
+};
