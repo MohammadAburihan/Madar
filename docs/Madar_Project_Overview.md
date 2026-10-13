@@ -311,7 +311,7 @@ Design inspection does not establish runtime accessibility. Completion of extern
 - Container registry for release images (for example Amazon ECR or Docker Hub).
 - AWS server type and size, domain names, HTTPS/reverse proxy, and backup policy.
 - One ERPNext setup hosting multiple business sites versus a separate container stack per business.
-- Whether image build and deployment are manual or automated (CI/CD).
+- How deployment to AWS is automated (CD). Continuous integration runs on every pull request (GitHub Actions).
 - Authentication and onboarding method.
 - Detailed role/permission matrix.
 - Business-specific tax, invoice, and numbering configuration.

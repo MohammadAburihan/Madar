@@ -118,11 +118,11 @@ Health check: `GET /healthz`. The deployed version is served at `/version.txt`.
 
 `.github/workflows/ci.yml` runs on every pull request into `development` and every push to it:
 
-- **web**: Prettier check, unit tests, production build
+- **web** (Format, test, build): `npm run format:check`, unit tests, production build
 - **docker**: builds the release image and smoke-tests it (health check, version, `config.json`, security headers, app routes)
 - **android**: Capacitor sync and a debug APK build
 
-The iOS simulator build uses macOS runners, so it only runs when started manually from the Actions tab with **ios** ticked.
+The iOS simulator build uses macOS runners, so it only runs when started manually from the Actions tab with **ios** ticked; that run builds iOS only.
 
 ## Branches and releases
 

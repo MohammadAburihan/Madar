@@ -8,12 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       ios:
-        description: Also build the iOS app (uses macOS runner minutes)
+        description: Build only the iOS app (uses macOS runner minutes)
         type: boolean
         default: false
 
+# Separate groups per event, so a manual iOS run and a push run never cancel each other.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -21,7 +22,8 @@ permissions:
 
 jobs:
   web:
-    name: Lint, test, build
+    name: Format, test, build
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,25 +34,38 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Formatting
-        run: npx prettier --check "src/**/*.{ts,html,scss}" scripts/*.mjs proxy.conf.mjs
+        run: npm run format:check
+      # Run even when formatting fails, so one push reports every problem.
       - name: Unit tests
+        if: ${{ !cancelled() }}
         run: npm test
       - name: Production build
+        if: ${{ !cancelled() }}
         run: npm run build
 
   docker:
     name: Release image
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
     steps:
       - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
       - name: Build image
-        run: >
-          docker buildx build --platform linux/amd64 --load
-          --build-arg VERSION=ci-${{ github.sha }}
-          -t madar-web:ci .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: madar-web:ci
+          build-args: VERSION=ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Smoke test
+        id: smoke
         run: |
           docker run -d --name madar -p 8080:80 \
             -e ERPNEXT_UPSTREAM=http://erpnext.invalid \
@@ -63,11 +78,12 @@ jobs:
           curl -sfI localhost:8080/ | grep -qi '^x-content-type-options: nosniff'
           curl -sf localhost:8080/sales | grep -q '<app-root>'
       - name: Container logs
-        if: failure()
+        if: failure() && steps.smoke.outcome == 'failure'
         run: docker logs madar
 
   android:
     name: Android debug build
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -82,8 +98,8 @@ jobs:
           java-version: 21
           cache: gradle
       - run: npm ci
-      - name: Sync web build into the native project
-        run: npm run cap:sync:dev
+      - name: Sync web build into the Android project
+        run: npx ng build --configuration development && npx cap sync android
       - name: Assemble debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
@@ -91,8 +107,11 @@ jobs:
   ios:
     name: iOS simulator build
     if: github.event_name == 'workflow_dispatch' && inputs.ios
-    runs-on: macos-latest
+    # Pinned image and Xcode: Capacitor 8 needs Xcode 26+, and macos-latest moves between images.
+    runs-on: macos-26
     timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -100,8 +119,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Sync web build into the native project
-        run: npm run cap:sync:dev
+      - name: Sync web build into the iOS project
+        run: npx ng build --configuration development && node scripts/sync-ios-version.mjs && npx cap sync ios
       - name: Build for the simulator
         working-directory: ios/App
         run: >
