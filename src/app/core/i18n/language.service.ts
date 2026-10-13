@@ -14,6 +14,7 @@ export class LanguageService {
   private readonly transloco = inject(TranslocoService);
   private readonly document = inject(DOCUMENT);
   private readonly current = signal<Language>('en');
+  private latestRequest = 0;
 
   readonly language = this.current.asReadonly();
 
@@ -24,6 +25,8 @@ export class LanguageService {
 
   /** Never rejects: a translation file that fails to load must not stop the app from starting. */
   async use(language: Language): Promise<void> {
+    // Only the most recent choice may apply, however the loads finish.
+    const request = ++this.latestRequest;
     try {
       await firstValueFrom(this.transloco.load(language));
     } catch (error) {
@@ -32,6 +35,9 @@ export class LanguageService {
       if (language !== this.current()) {
         return;
       }
+    }
+    if (request !== this.latestRequest) {
+      return;
     }
     this.transloco.setActiveLang(language);
     this.current.set(language);

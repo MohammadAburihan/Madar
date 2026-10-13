@@ -61,4 +61,14 @@ describe('RuntimeConfigService', () => {
     expect(normalizeUrl('http://')).toBe('');
     expect(normalizeUrl('')).toBe('');
   });
+
+  it('ignores a non-string erpnextUrl instead of crashing', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { service, http } = setup('web');
+    const loading = service.load();
+    http.expectOne('config.json').flush({ erpnextUrl: 8080 });
+    await loading;
+
+    expect(service.erpnextUrl()).toBe('');
+  });
 });

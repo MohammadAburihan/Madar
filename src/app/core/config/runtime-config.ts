@@ -30,7 +30,14 @@ export class RuntimeConfigService {
   async load(): Promise<void> {
     try {
       const loaded = await firstValueFrom(this.http.get<Partial<RuntimeConfig>>('config.json'));
-      this.config.set({ ...DEFAULT_CONFIG, ...loaded });
+      const erpnextUrl = loaded?.erpnextUrl ?? '';
+      if (typeof erpnextUrl !== 'string') {
+        console.warn(
+          'config.json erpnextUrl must be a string; using same-origin ERPNext',
+          erpnextUrl,
+        );
+      }
+      this.config.set({ erpnextUrl: typeof erpnextUrl === 'string' ? erpnextUrl : '' });
     } catch (error) {
       console.warn('config.json is missing or invalid; using same-origin ERPNext', error);
       this.config.set(DEFAULT_CONFIG);
