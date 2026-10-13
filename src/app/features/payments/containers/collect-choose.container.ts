@@ -218,7 +218,9 @@ export class CollectChooseContainer implements OnInit {
   ngOnInit(): void {
     const store = this.ctx.store;
     if (store.busy()) {
-      void this.ctx.go('checking', { replaceUrl: true });
+      void this.ctx.go(store.state() === 'confirming' ? 'review' : 'checking', {
+        replaceUrl: true,
+      });
       return;
     }
     // Back from the recorded step: that payment is done, so this is a new collection.

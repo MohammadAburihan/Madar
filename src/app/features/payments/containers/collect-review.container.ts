@@ -124,7 +124,8 @@ export class CollectReviewContainer implements OnInit {
   }
 
   ngOnInit(): void {
-    if (!this.ctx.store.ready() && this.ctx.store.state() !== 'failed') {
+    const state = this.ctx.store.state();
+    if (!this.ctx.store.ready() && state !== 'failed' && state !== 'confirming') {
       void this.ctx.go('', { replaceUrl: true });
     }
   }

@@ -294,6 +294,43 @@ describe('CollectionStore', () => {
     expect(store.state()).toBe('unresolved');
   });
 
+  it('keeps a running confirmation when the task is entered again', async () => {
+    const { store, api } = await ready();
+    let finish!: (result: CollectionResult) => void;
+    api.confirm.mockImplementation(
+      (_r: unknown, _d: unknown, onInserted: (name: string) => void) => {
+        onInserted('PAY-7');
+        return new Promise((resolve) => (finish = resolve));
+      },
+    );
+    const running = store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    const reference = store.reference();
+
+    store.resume();
+    expect(store.reference()).toBe(reference);
+    expect(api.discard).not.toHaveBeenCalled();
+
+    finish(RESULT);
+    await running;
+    expect(store.state()).toBe('confirmed');
+  });
+
+  it('drops the outcome of a confirmation whose collection was replaced', async () => {
+    const { store, api } = await ready();
+    let finish!: (result: CollectionResult) => void;
+    api.confirm.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    const running = store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    store.state.set('idle');
+    store.start();
+
+    finish(RESULT);
+    await running;
+    expect(store.result()).toBeNull();
+    expect(store.state()).toBe('idle');
+  });
+
   it('clears an old failure when the customer or invoices change', async () => {
     const { store, api } = await ready();
     api.confirm.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));

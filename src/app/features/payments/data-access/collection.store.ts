@@ -63,8 +63,11 @@ export class CollectionStore {
     () =>
       !!this.customer() && this.amountValid() && !!this.account() && this.state() !== 'confirming',
   );
-  /** Leaving after a timeout must keep the reference so the result can still be checked. */
-  readonly busy = computed(() => ['unresolved', 'checking'].includes(this.state()));
+  /**
+   * A confirmation is running or its result is still open. Leaving the task must keep the collection, its
+   * reference and draft, so the result can still be shown or checked.
+   */
+  readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
 
   start(): void {
     const draft = this.draft();
@@ -167,7 +170,7 @@ export class CollectionStore {
 
   async confirm(): Promise<void> {
     // Set before the first await: a double tap must not start a second confirmation (and a second payment).
-    if (this.state() === 'confirming' || this.busy()) {
+    if (this.busy()) {
       return;
     }
     this.state.set('confirming');
@@ -177,9 +180,21 @@ export class CollectionStore {
       this.state.set('idle');
       return;
     }
+    // If the collection was replaced meanwhile, this outcome belongs to it, not to the current one.
+    const current = () => this.reference() === request.reference;
     try {
-      this.finish(await this.api.confirm(request, this.draft(), (name) => this.draft.set(name)));
+      const result = await this.api.confirm(request, this.draft(), (name) => {
+        if (current()) {
+          this.draft.set(name);
+        }
+      });
+      if (current()) {
+        this.finish(result);
+      }
     } catch (error) {
+      if (!current()) {
+        return;
+      }
       if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
         return;
