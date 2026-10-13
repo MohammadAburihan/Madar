@@ -18,21 +18,8 @@ import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { BusinessBarComponent } from '../../../shared/ui/business-bar.component';
-import {
-  SignInCredentials,
-  SignInFormComponent,
-  SignInMessage,
-} from '../components/sign-in-form.component';
-
-type NoticeKey =
-  | 'missing'
-  | 'invalid'
-  | 'noSession'
-  | 'offline'
-  | 'error'
-  | 'expired'
-  | 'forgotMissing'
-  | 'forgotSent';
+import { SignInCredentials, SignInFormComponent } from '../components/sign-in-form.component';
+import { buildSignInView, NoticeKey } from './sign-in-view';
 
 @Component({
   selector: 'app-sign-in',
@@ -43,15 +30,15 @@ type NoticeKey =
     <main class="page">
       <div class="body">
         <app-business-bar
-          [businessName]="businessName()"
-          [brand]="text().brand"
-          [switchLabel]="businessName()"
+          [businessName]="view().businessName"
+          [brand]="view().brand"
+          [interactive]="false"
         />
         <app-language-switcher [language]="language()" (languageChange)="changeLanguage($event)" />
         <app-sign-in-form
-          [labels]="text().labels"
+          [labels]="view().labels"
           [submitting]="submitting()"
-          [notice]="notice()"
+          [notice]="view().notice"
           (signIn)="signIn($event)"
           (forgotPassword)="forgotPassword($event)"
         />
@@ -108,67 +95,17 @@ export class SignInContainer {
   private readonly tr = this.i18n.tr;
 
   protected readonly host = computed(() => this.config.erpnextHost() ?? location.host);
-  protected readonly businessName = computed(() => this.business.lastKnownName() ?? this.host());
-
-  protected readonly text = computed(() => {
-    const { t } = this.tr();
-    const known = this.business.lastKnownName();
-    return {
-      brand: t('app.name'),
-      labels: {
-        title: t('signIn.title'),
-        subtitle: known
-          ? t('signIn.subtitle', { business: known })
-          : t('signIn.subtitleNoBusiness'),
-        email: t('signIn.email'),
-        password: t('signIn.password'),
-        submit: t('signIn.submit'),
-        submitting: t('signIn.submitting'),
-        forgot: t('signIn.forgot'),
-        footer: t('signIn.connectedTo', { host: this.host() }),
+  protected readonly view = computed(() =>
+    buildSignInView(
+      {
+        knownBusiness: this.business.lastKnownName(),
+        host: this.host(),
+        notice: this.noticeKey() ?? (this.expired() ? 'expired' : null),
+        forgotEmail: this.forgotEmail(),
       },
-    };
-  });
-
-  protected readonly notice = computed<SignInMessage | null>(() => {
-    const key = this.noticeKey() ?? (this.expired() ? 'expired' : null);
-    if (!key) {
-      return null;
-    }
-    const { t } = this.tr();
-    switch (key) {
-      case 'offline':
-        return {
-          tone: 'warning',
-          title: t('state.offline.title'),
-          message: t('state.offline.message'),
-        };
-      case 'error':
-        return {
-          tone: 'danger',
-          title: t('signIn.error.title'),
-          message: t('signIn.error.message'),
-        };
-      case 'expired':
-        return {
-          tone: 'warning',
-          title: t('state.expired.title'),
-          message: t('state.expired.message', { business: this.businessName() }),
-        };
-      case 'forgotSent':
-        return {
-          tone: 'tint',
-          title: t('signIn.forgotSent.title'),
-          message: t('signIn.forgotSent.message', { email: this.forgotEmail() }),
-        };
-      default:
-        return {
-          tone: key === 'forgotMissing' ? 'warning' : 'danger',
-          title: t(`signIn.${key}.title`),
-          message: t(`signIn.${key}.message`),
-        };
-    }
-  });
+      this.tr(),
+    ),
+  );
 
   constructor() {
     // Ionic keeps this page cached, so clear the previous visit's notice when it is opened again.

@@ -81,11 +81,6 @@ export class HomeContainer {
         message: t('state.offline.message'),
         retry: t('state.offline.retry'),
       },
-      expired: {
-        title: t('state.expired.title'),
-        message: t('state.expired.message', { business }),
-        action: t('state.expired.action'),
-      },
       error: {
         title: t('home.error.title'),
         message: t('home.error.message'),
@@ -97,8 +92,8 @@ export class HomeContainer {
   constructor() {
     // Ionic keeps this page cached across a sign-in round trip, so reload whenever the signed-in user changes.
     effect(() => {
-      this.session.user()?.id;
-      untracked(() => void this.facade.load());
+      const userId = this.session.user()?.id;
+      untracked(() => void this.facade.loadFor(userId));
     });
     effect(() => {
       const status = this.facade.status();

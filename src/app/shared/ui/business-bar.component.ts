@@ -6,15 +6,19 @@ import { LucideChevronDown } from '@lucide/angular';
   imports: [LucideChevronDown],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button
-      type="button"
-      class="switch"
-      [attr.aria-label]="switchLabel()"
-      (click)="switchBusiness.emit()"
-    >
-      <bdi class="name">{{ businessName() }}</bdi>
-      <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
-    </button>
+    @if (interactive()) {
+      <button
+        type="button"
+        class="switch"
+        [attr.aria-label]="switchLabel()"
+        (click)="switchBusiness.emit()"
+      >
+        <bdi class="name">{{ businessName() }}</bdi>
+        <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
+      </button>
+    } @else {
+      <bdi class="name static">{{ businessName() }}</bdi>
+    }
     <span class="brand">{{ brand() }}</span>
   `,
   styles: `
@@ -46,6 +50,10 @@ import { LucideChevronDown } from '@lucide/angular';
       flex: 1;
     }
 
+    .static {
+      font: 600 14px / var(--md-lh) var(--md-font);
+    }
+
     .brand {
       font: 700 16px / var(--md-lh) var(--md-font);
     }
@@ -54,6 +62,8 @@ import { LucideChevronDown } from '@lucide/angular';
 export class BusinessBarComponent {
   readonly businessName = input.required<string>();
   readonly brand = input.required<string>();
-  readonly switchLabel = input.required<string>();
+  readonly switchLabel = input('');
+  /** Off where switching isn't possible (e.g. before sign-in), so it isn't a button that does nothing. */
+  readonly interactive = input(true);
   readonly switchBusiness = output<void>();
 }

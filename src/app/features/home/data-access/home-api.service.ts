@@ -32,8 +32,9 @@ const DRAFT_DOCTYPES: Draft['doctype'][] = ['Sales Invoice', 'Sales Order', 'Quo
 const ATTENTION_LIMIT = 5;
 // Child-table queries return one row per item, so fetch enough rows to cover a few documents.
 const CHILD_ROW_LIMIT = 50;
-// Keeps "item_code in [...]" filters, and so the GET URLs, short.
+// Keep "in [...]" filters, and so the GET URLs, short.
 const ITEM_BATCH = 100;
+const WAREHOUSE_BATCH = 50;
 
 @Injectable({ providedIn: 'root' })
 export class HomeApiService {
@@ -185,6 +186,7 @@ export class HomeApiService {
       schedule_date: string;
       item_name: string;
       qty: number;
+      received_qty: number;
     }>(
       'Purchase Order',
       [
@@ -193,6 +195,7 @@ export class HomeApiService {
         'schedule_date',
         'items.item_name as item_name',
         'items.qty as qty',
+        'items.received_qty as received_qty',
       ],
       [
         ['company', '=', ctx.company],
@@ -203,14 +206,15 @@ export class HomeApiService {
       ],
       { orderBy: 'schedule_date asc', limit: CHILD_ROW_LIMIT },
     );
-    return firstPerName(rows)
+    // Show the first line still to arrive, and only the part of it not yet received.
+    return firstPerName(rows.filter((r) => r.qty > r.received_qty))
       .slice(0, ATTENTION_LIMIT)
       .map((r) => ({
         name: r.name,
         supplier: r.supplier_name,
         scheduleDate: r.schedule_date,
         itemName: r.item_name,
-        qty: r.qty,
+        qty: r.qty - r.received_qty,
       }));
   }
 
@@ -221,7 +225,7 @@ export class HomeApiService {
       project: string | null;
       item_code: string;
       item_name: string;
-      qty: number;
+      stock_qty: number;
       ordered_qty: number;
       material_request_type: string;
       from_warehouse: string | null;
@@ -237,7 +241,7 @@ export class HomeApiService {
         'items.project as project',
         'items.item_code as item_code',
         'items.item_name as item_name',
-        'items.qty as qty',
+        'items.stock_qty as stock_qty',
         'items.from_warehouse as from_warehouse',
       ],
       [
@@ -248,8 +252,8 @@ export class HomeApiService {
       ],
       { orderBy: 'schedule_date asc', limit: CHILD_ROW_LIMIT },
     );
-    // ordered_qty is what has already been transferred or issued against the request.
-    const needs = firstPerName(rows.filter((r) => r.project && r.qty > r.ordered_qty)).slice(
+    // ordered_qty (already transferred or issued) is in stock units, like stock_qty and Bin quantities.
+    const needs = firstPerName(rows.filter((r) => r.project && r.stock_qty > r.ordered_qty)).slice(
       0,
       ATTENTION_LIMIT,
     );
@@ -281,7 +285,7 @@ export class HomeApiService {
         projectName: projects?.find((p) => p.name === n.project)?.project_name ?? n.project ?? '',
         scheduleDate: n.schedule_date,
         itemName: n.item_name,
-        qty: n.qty - n.ordered_qty,
+        qty: n.stock_qty - n.ordered_qty,
         available: (bins ?? [])
           .filter((b) => b.item_code === n.item_code && (!source || b.warehouse === source))
           .reduce((total, b) => total + b.actual_qty, 0),
@@ -294,18 +298,31 @@ export class HomeApiService {
     if (!warehouses.length) {
       return { count: 0, warehouse: null };
     }
-    const levels = await this.erpnext.listAll<{
-      parent: string;
-      warehouse: string;
-      warehouse_reorder_level: number;
-    }>('Item Reorder', {
-      fields: ['parent', 'warehouse', 'warehouse_reorder_level'],
-      filters: [
-        ['warehouse', 'in', warehouses],
-        ['warehouse_reorder_level', '>', 0],
-      ],
-      parent: 'Item',
-    });
+    const [levelBatches, disabled] = await Promise.all([
+      Promise.all(
+        batch(warehouses, WAREHOUSE_BATCH).map((group) =>
+          this.erpnext.listAll<{
+            parent: string;
+            warehouse: string;
+            warehouse_reorder_level: number;
+          }>('Item Reorder', {
+            fields: ['parent', 'warehouse', 'warehouse_reorder_level'],
+            filters: [
+              ['warehouse', 'in', group],
+              ['warehouse_reorder_level', '>', 0],
+            ],
+            parent: 'Item',
+          }),
+        ),
+      ),
+      // ERPNext's own reorder job skips disabled items, so Home does too.
+      this.erpnext.listAll<{ name: string }>('Item', {
+        fields: ['name'],
+        filters: [['disabled', '=', 1]],
+      }),
+    ]);
+    const disabledItems = new Set(disabled.map((d) => d.name));
+    const levels = levelBatches.flat().filter((l) => !disabledItems.has(l.parent));
     const bins = await this.stockFor(
       levels.map((l) => l.parent),
       warehouses,
@@ -330,16 +347,16 @@ export class HomeApiService {
     if (!unique.length || !warehouses.length) {
       return [];
     }
-    const batches = Array.from({ length: Math.ceil(unique.length / ITEM_BATCH) }, (_, i) =>
-      unique.slice(i * ITEM_BATCH, (i + 1) * ITEM_BATCH),
+    const queries = batch(unique, ITEM_BATCH).flatMap((items) =>
+      batch(warehouses, WAREHOUSE_BATCH).map((group) => ({ items, group })),
     );
     const results = await Promise.all(
-      batches.map((batch) =>
+      queries.map(({ items, group }) =>
         this.erpnext.listAll<{ item_code: string; warehouse: string; actual_qty: number }>('Bin', {
           fields: ['item_code', 'warehouse', 'actual_qty'],
           filters: [
-            ['item_code', 'in', batch],
-            ['warehouse', 'in', warehouses],
+            ['item_code', 'in', items],
+            ['warehouse', 'in', group],
           ],
         }),
       ),
@@ -407,4 +424,10 @@ function firstPerName<T extends { name: string }>(rows: T[]): T[] {
 function stripAbbr(warehouse: string, abbr: string): string {
   const suffix = ` - ${abbr}`;
   return warehouse.endsWith(suffix) ? warehouse.slice(0, -suffix.length) : warehouse;
+}
+
+function batch<T>(values: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(values.length / size) }, (_, i) =>
+    values.slice(i * size, (i + 1) * size),
+  );
 }

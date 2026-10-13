@@ -1,46 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import {
-  LucideBoxes,
-  LucideHouse,
-  LucideLayers,
-  LucideMenu,
-  LucideReceipt,
-  LucideSettings,
-  LucideShoppingBag,
-  LucideUsers,
-  LucideWallet,
-} from '@lucide/angular';
-import { Persona } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BottomNavComponent } from '../components/bottom-nav.component';
 import { BusinessBarComponent } from '../../../shared/ui/business-bar.component';
-import { NavItem } from '../components/nav-item';
 import { SidebarNavComponent } from '../components/sidebar-nav.component';
-
-type NavDefinition = Omit<NavItem, 'label'> & { hiddenFor?: Persona[] };
-
-// The warehouse mock drops Sales from the tab bar; money stays hidden from that role too.
-const DESKTOP_NAV: NavDefinition[] = [
-  { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse'] },
-  { id: 'purchases', icon: LucideShoppingBag, route: '/purchases' },
-  { id: 'inventory', icon: LucideBoxes, route: '/inventory' },
-  { id: 'contacts', icon: LucideUsers, route: '/contacts' },
-  { id: 'money', icon: LucideWallet, route: '/money', hiddenFor: ['warehouse'] },
-  { id: 'projects', icon: LucideLayers, route: '/projects' },
-  { id: 'settings', icon: LucideSettings, route: '/settings' },
-];
-
-const MOBILE_NAV: NavDefinition[] = [
-  { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse'] },
-  { id: 'stock', icon: LucideBoxes, route: '/inventory' },
-  { id: 'more', icon: LucideMenu, route: '/more' },
-];
+import { buildShellView } from './shell-view';
 
 @Component({
   selector: 'app-shell',
@@ -52,15 +19,15 @@ const MOBILE_NAV: NavDefinition[] = [
     @if (viewport() !== 'mobile') {
       <app-sidebar-nav
         [variant]="viewport() === 'desktop' ? 'full' : 'rail'"
-        [items]="desktopNav()"
+        [items]="text().desktopNav"
         [navLabel]="text().navLabel"
         [wordmark]="text().wordmark"
         [wordmarkShort]="text().wordmarkShort"
         [businessLabel]="text().activeBusiness"
         [businessName]="businessName()"
-        [userName]="userName()"
+        [userName]="text().userName"
         [userMeta]="text().userMeta"
-        [initials]="initials()"
+        [initials]="text().initials"
         (switchBusiness)="openBusinesses()"
       />
     }
@@ -77,7 +44,7 @@ const MOBILE_NAV: NavDefinition[] = [
       <router-outlet />
     </main>
     @if (viewport() === 'mobile') {
-      <app-bottom-nav [items]="mobileNav()" [navLabel]="text().navLabel" />
+      <app-bottom-nav [items]="text().mobileNav" [navLabel]="text().navLabel" />
     }
   `,
   styles: `
@@ -119,32 +86,16 @@ export class ShellContainer implements OnInit {
   private readonly tr = this.i18n.tr;
 
   protected readonly businessName = computed(() => this.business.active()?.name ?? '');
-  protected readonly userName = computed(() => this.session.user()?.fullName ?? '');
-  protected readonly initials = computed(() =>
-    this.userName()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0].toUpperCase())
-      .join(''),
+  protected readonly text = computed(() =>
+    buildShellView(
+      {
+        persona: this.session.persona(),
+        businessName: this.businessName(),
+        userName: this.session.user()?.fullName ?? '',
+      },
+      this.tr(),
+    ),
   );
-
-  protected readonly desktopNav = computed(() => this.labelled(DESKTOP_NAV));
-  protected readonly mobileNav = computed(() => this.labelled(MOBILE_NAV));
-
-  protected readonly text = computed(() => {
-    const { t } = this.tr();
-    const business = this.businessName();
-    return {
-      brand: t('app.name'),
-      wordmark: t('app.wordmark'),
-      wordmarkShort: t('app.wordmarkShort'),
-      navLabel: t('nav.label'),
-      activeBusiness: t('nav.activeBusiness'),
-      switchBusiness: t('nav.switchBusiness', { business }),
-      userMeta: t('nav.userMeta', { role: t(`home.role.${this.session.persona()}`) }),
-    };
-  });
 
   ngOnInit(): void {
     void this.business.ensure().catch(() => undefined);
@@ -152,13 +103,5 @@ export class ShellContainer implements OnInit {
 
   protected openBusinesses(): void {
     void this.router.navigate(['/businesses']);
-  }
-
-  private labelled(items: NavDefinition[]): NavItem[] {
-    const { t } = this.tr();
-    const persona = this.session.persona();
-    return items
-      .filter((item) => !item.hiddenFor?.includes(persona))
-      .map(({ hiddenFor, ...item }) => ({ ...item, label: t(`nav.${item.id}`) }));
   }
 }

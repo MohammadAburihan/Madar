@@ -13,12 +13,6 @@ const LINA: SessionUser = {
   firstName: 'Lina',
   roles: ['Sales User'],
 };
-const OMAR: SessionUser = {
-  id: 'omar@rehan.example',
-  fullName: 'Omar Khalil',
-  firstName: 'Omar',
-  roles: ['Stock User'],
-};
 
 function setup(options: {
   user?: SessionUser | null;
@@ -121,20 +115,19 @@ describe('HomeFacade', () => {
     expect(facade.status()).toBe('ready');
   });
 
-  it('drops the previous user’s data when someone else signs in', async () => {
+  it('does not start a second load for the user a running load restored', async () => {
     let finish!: (r: HomeLoadResult) => void;
-    const { facade, user, api } = setup({});
-    await facade.load();
+    const { facade, api } = setup({ load: () => new Promise((resolve) => (finish = resolve)) });
 
-    api.load.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
-    user.set(OMAR);
-    const loading = facade.load();
+    const running = facade.load();
+    await vi.waitFor(() => expect(api.load).toHaveBeenCalledTimes(1));
+    await facade.loadFor(LINA.id);
+    finish({ data: { todaySales: 1 }, allForbidden: false });
+    await running;
+
+    expect(api.load).toHaveBeenCalledTimes(1);
+    void facade.loadFor(LINA.id);
     await vi.waitFor(() => expect(api.load).toHaveBeenCalledTimes(2));
-
-    expect(facade.data()).toBeNull();
-    finish({ data: { lowStock: { count: 1, warehouse: 'Main warehouse' } }, allForbidden: false });
-    await loading;
-    expect(facade.data()).toEqual({ lowStock: { count: 1, warehouse: 'Main warehouse' } });
   });
 
   it('sends someone who was never signed in to sign-in without an "expired" notice', async () => {

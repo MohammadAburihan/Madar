@@ -205,7 +205,7 @@ describe('HomeApiService', () => {
     expect(calls.some((c) => c.doctype === 'Bin' || c.doctype === 'Item Reorder')).toBe(false);
   });
 
-  it('keeps the first item of each purchase order for deliveries', async () => {
+  it('shows the first line still to arrive and only what has not been received', async () => {
     const { api } = setup({
       Warehouse: WAREHOUSES,
       'Purchase Order': () => [
@@ -213,15 +213,17 @@ describe('HomeApiService', () => {
           name: 'PO-1',
           supplier_name: 'Green Clay',
           schedule_date: '2026-10-13',
-          item_name: 'Planter',
-          qty: 10,
+          item_name: 'Soil',
+          qty: 4,
+          received_qty: 4,
         },
         {
           name: 'PO-1',
           supplier_name: 'Green Clay',
           schedule_date: '2026-10-13',
-          item_name: 'Soil',
-          qty: 4,
+          item_name: 'Planter',
+          qty: 10,
+          received_qty: 8,
         },
       ],
     });
@@ -234,7 +236,7 @@ describe('HomeApiService', () => {
         supplier: 'Green Clay',
         scheduleDate: '2026-10-13',
         itemName: 'Planter',
-        qty: 10,
+        qty: 2,
       },
     ]);
   });
@@ -258,7 +260,7 @@ describe('HomeApiService', () => {
           project: 'P-1',
           item_code: 'PLANTER',
           item_name: 'Planter',
-          qty: 100,
+          stock_qty: 100,
           ordered_qty: 80,
           from_warehouse: 'Main warehouse - RN',
           warehouse: 'Stores - RN',
@@ -270,7 +272,7 @@ describe('HomeApiService', () => {
           project: 'P-1',
           item_code: 'SOIL',
           item_name: 'Soil',
-          qty: 5,
+          stock_qty: 5,
           ordered_qty: 0,
           from_warehouse: null,
           warehouse: 'Stores - RN',
@@ -282,7 +284,7 @@ describe('HomeApiService', () => {
           project: 'P-1',
           item_code: 'CLAY',
           item_name: 'Clay',
-          qty: 4,
+          stock_qty: 4,
           ordered_qty: 4,
           from_warehouse: null,
           warehouse: null,
@@ -302,5 +304,41 @@ describe('HomeApiService', () => {
       ['MR-1', 20, 8],
       ['MR-2', 5, 2],
     ]);
+  });
+
+  it('leaves disabled items out of the low-stock count', async () => {
+    const { api } = setup({
+      Warehouse: WAREHOUSES,
+      'Item Reorder': () => [
+        { parent: 'PLANTER', warehouse: 'Main warehouse - RN', warehouse_reorder_level: 20 },
+        { parent: 'OLD-POT', warehouse: 'Main warehouse - RN', warehouse_reorder_level: 20 },
+      ],
+      Item: (q) =>
+        q.filters?.some(([f, , v]) => f === 'disabled' && v === 1) ? [{ name: 'OLD-POT' }] : [],
+      Bin: () => [],
+    });
+
+    const { data } = await api.load(scope('warehouse'));
+
+    expect(data.lowStock?.count).toBe(1);
+  });
+
+  it('batches long warehouse lists so filters stay URL-safe', async () => {
+    const many = Array.from({ length: 120 }, (_, i) => ({ name: `W${i} - RN` }));
+    const { api, calls } = setup({
+      Warehouse: () => many,
+      'Item Reorder': () => [
+        { parent: 'PLANTER', warehouse: 'W0 - RN', warehouse_reorder_level: 5 },
+      ],
+      Bin: () => [],
+    });
+
+    await api.load(scope('warehouse'));
+
+    const sizes = calls
+      .filter((c) => c.doctype === 'Item Reorder' || c.doctype === 'Bin')
+      .map((c) => (c.query.filters?.find(([f]) => f === 'warehouse')?.[2] as string[]).length);
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(50);
+    expect(calls.filter((c) => c.doctype === 'Item Reorder').length).toBe(3);
   });
 });

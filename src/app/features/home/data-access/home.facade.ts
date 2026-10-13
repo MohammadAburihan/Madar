@@ -19,12 +19,18 @@ export class HomeFacade {
   private readonly currentData = signal<HomeData | null>(null);
   private readonly loadedAt = signal(new Date());
   private latestLoad = 0;
-  private loadedFor: string | null = null;
+  /** User the running load is for, so a session restored mid-load doesn't start a second one. */
+  private loadingFor: string | null = null;
 
   readonly status = this.currentStatus.asReadonly();
   readonly data = this.currentData.asReadonly();
   /** Site wall-clock time of the last successful load. */
   readonly now = this.loadedAt.asReadonly();
+
+  /** Loads Home for the given user unless a load for them is already running. */
+  loadFor(userId: string | undefined): Promise<void> {
+    return userId && userId === this.loadingFor ? Promise.resolve() : this.load();
+  }
 
   async load(): Promise<void> {
     const loadId = ++this.latestLoad;
@@ -39,10 +45,7 @@ export class HomeFacade {
         return;
       }
       const user = this.session.user()!;
-      if (this.loadedFor !== user.id) {
-        this.currentData.set(null);
-        this.loadedFor = user.id;
-      }
+      this.loadingFor = user.id;
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         if (isCurrent()) {
@@ -77,6 +80,10 @@ export class HomeFacade {
         (kind === 'unauthorized' || kind === 'forbidden') && (await this.session.checkExpired());
       if (isCurrent()) {
         this.currentStatus.set(expired ? 'expired' : kind === 'offline' ? 'offline' : 'error');
+      }
+    } finally {
+      if (isCurrent()) {
+        this.loadingFor = null;
       }
     }
   }

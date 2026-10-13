@@ -77,13 +77,6 @@
         <button type="button" class="md-btn" (click)="facade.load()">{{ txt.error.retry }}</button>
       </app-feedback-card>
     }
-    @case ('expired') {
-      <app-feedback-card tone="warning" [title]="txt.expired.title" [message]="txt.expired.message">
-        <button type="button" class="md-btn md-btn--primary" (click)="signInAgain()">
-          {{ txt.expired.action }}
-        </button>
-      </app-feedback-card>
-    }
     @default {
       <app-feedback-card
         [status]="true"

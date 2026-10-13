@@ -44,4 +44,15 @@ describe('Shared presenters', () => {
     expect(fixture.nativeElement.querySelector('.brand').textContent).toBe('Madar');
     expect(switched).toBe(1);
   });
+
+  it('BusinessBar renders plain text, not a dead button, when switching is off', async () => {
+    const fixture = TestBed.createComponent(BusinessBarComponent);
+    fixture.componentRef.setInput('businessName', 'Rehan Nursery');
+    fixture.componentRef.setInput('brand', 'Madar');
+    fixture.componentRef.setInput('interactive', false);
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.static').textContent).toBe('Rehan Nursery');
+  });
 });

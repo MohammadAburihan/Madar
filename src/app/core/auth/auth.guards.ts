@@ -10,7 +10,11 @@ export const signedInGuard: CanMatchFn = async (_route, segments) => {
   if (signedIn) {
     return true;
   }
-  const returnUrl = '/' + segments.map((s) => s.path).join('/');
+  // The whole requested URL, so query parameters survive the trip through sign-in.
+  const requested = router.currentNavigation()?.extractedUrl;
+  const returnUrl = requested
+    ? router.serializeUrl(requested)
+    : '/' + segments.map((s) => s.path).join('/');
   return router.createUrlTree(['/sign-in'], {
     queryParams: {
       returnUrl: returnUrl === '/' ? null : returnUrl,

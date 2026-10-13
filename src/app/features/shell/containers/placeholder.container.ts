@@ -4,6 +4,7 @@ import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { buildPlaceholderView } from './placeholder-view';
 
 /** Stand-in for areas that are designed but not built yet, so navigation never dead-ends. */
 @Component({
@@ -13,7 +14,7 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
   host: { '[class.desktop]': "viewport() !== 'mobile'" },
   template: `
     <app-language-switcher [language]="language()" (languageChange)="changeLanguage($event)" />
-    <h1>{{ area() }}</h1>
+    <h1>{{ text().area }}</h1>
     <app-feedback-card [title]="text().title" [message]="text().message" />
   `,
   styles: `
@@ -50,13 +51,9 @@ export class PlaceholderContainer {
   protected readonly language = this.i18n.language;
   private readonly tr = this.i18n.tr;
 
-  protected readonly area = computed(() =>
-    this.tr().t(this.action() ? `home.actions.${this.action()}` : this.titleKey()),
+  protected readonly text = computed(() =>
+    buildPlaceholderView(this.titleKey(), this.action(), this.tr()),
   );
-  protected readonly text = computed(() => ({
-    title: this.tr().t('placeholder.title', { area: this.area() }),
-    message: this.tr().t('placeholder.message'),
-  }));
 
   protected changeLanguage(language: Language): void {
     this.i18n.use(language);
