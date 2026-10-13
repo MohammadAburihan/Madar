@@ -24,7 +24,8 @@ All in `docs/`:
 - Runtime English/Arabic switching (Transloco) with full RTL. Use CSS logical properties (`margin-inline-start`,
   not `margin-left`) so layouts flip correctly. Translations live in `public/i18n/{en,ar}.json`; Arabic terms
   must follow `docs/LOCALIZATION-GLOSSARY.md`.
-- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs.
+- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs. If tests behave as
+  if a source change didn't happen, clear the stale cache: `rm -rf node_modules/.vitest-cache .angular/cache`.
 
 ## Commands
 
@@ -99,6 +100,9 @@ src/app/
 
 - Features must not import from other features; share through `shared/` or `core/`.
 - Only `data-access/` talks to ERPNext. Containers go through the area facade, never `HttpClient` directly.
+- Containers get language state and a translator from `injectI18n()` (`core/i18n/i18n.ts`); services that
+  load something once share the in-flight call with `shareInFlight()` (`core/util/share-in-flight.ts`).
+- The shell keeps a single `<router-outlet>` for all layouts; switching layout must not recreate the page.
 - Containers turn data into display strings with a pure `*-view.ts` builder (see `home-view.ts`), so wording,
   plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
 
@@ -116,7 +120,11 @@ src/app/
 
 ## ERPNext API notes
 
-- Aggregates need dict syntax: `fields: [{ SUM: 'grand_total' }]`; SQL strings are rejected.
+- Aggregates need dict syntax: `fields: [{ SUM: 'grand_total' }]`; SQL strings are rejected. `groupBy` works
+  with them (e.g. receivables grouped by currency and rate). Sum `base_*` fields for company-currency totals.
+- `ErpnextClient.list` defaults to 20 rows like Frappe; use `listAll` (pages of 500) when every row matters,
+  and batch long `in` filters (see `stockFor`) to keep GET URLs short.
+- "Today" is the site's wall-clock time (`SiteClockService`), not the device's.
 - Child-table fields: `'items.qty as qty'` returns one row per child row.
 - Non-admin users get an empty `roles` table on their own User doc; read `Has Role` with `parent: 'User'`.
 - Guests get 403 (not `"Guest"`) from `frappe.auth.get_logged_user`. 403 also means "no permission", so

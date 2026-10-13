@@ -30,8 +30,8 @@ const DRAFT_DOCTYPES: Draft['doctype'][] = ['Sales Invoice', 'Sales Order', 'Quo
 const ATTENTION_LIMIT = 5;
 // Child-table queries return one row per item, so fetch enough rows to cover a few documents.
 const CHILD_ROW_LIMIT = 50;
-// Upper bound for the low-stock and foreign-currency scans; Home shows counts, not full listings.
-const SCAN_LIMIT = 5000;
+// Keeps "item_code in [...]" filters, and so the GET URLs, short.
+const ITEM_BATCH = 100;
 
 @Injectable({ providedIn: 'root' })
 export class HomeApiService {
@@ -72,48 +72,50 @@ export class HomeApiService {
     return this.sum('Sales Invoice', 'base_grand_total', filters);
   }
 
-  /** Outstanding amounts are in each party's account currency; convert foreign ones to company currency. */
+  /**
+   * Outstanding amounts are in each party's account currency. Grouping by currency and rate keeps the
+   * conversion to company currency exact while returning only a handful of rows.
+   */
   private async receivables(ctx: LoadContext): Promise<number> {
-    const open: Filter[] = [
-      ['company', '=', ctx.company],
-      ['docstatus', '=', 1],
-      ['outstanding_amount', '>', 0],
-    ];
-    const [local, foreign] = await Promise.all([
-      this.sum('Sales Invoice', 'outstanding_amount', [
-        ...open,
-        ['party_account_currency', '=', ctx.companyCurrency],
-      ]),
-      this.list<{ outstanding_amount: number; conversion_rate: number }>(
-        'Sales Invoice',
-        ['outstanding_amount', 'conversion_rate'],
-        [...open, ['party_account_currency', '!=', ctx.companyCurrency]],
-        { limit: SCAN_LIMIT },
-      ),
-    ]);
-    return (
-      local +
-      foreign.reduce((total, r) => total + r.outstanding_amount * (r.conversion_rate || 1), 0)
+    const groups = await this.list<Record<string, number | string>>(
+      'Sales Invoice',
+      ['party_account_currency', 'conversion_rate', { SUM: 'outstanding_amount' }],
+      [
+        ['company', '=', ctx.company],
+        ['docstatus', '=', 1],
+        ['outstanding_amount', '>', 0],
+      ],
+      { groupBy: 'party_account_currency, conversion_rate', limit: 0 },
     );
+    return groups.reduce((total, group) => {
+      const outstanding = Number(group['SUM(`outstanding_amount`)'] ?? 0);
+      const rate =
+        group['party_account_currency'] === ctx.companyCurrency
+          ? 1
+          : Number(group['conversion_rate']) || 1;
+      return total + outstanding * rate;
+    }, 0);
   }
 
   private async invoicesDue(ctx: LoadContext): Promise<InvoiceDue[]> {
+    const filters: Filter[] = [
+      ['company', '=', ctx.company],
+      ['docstatus', '=', 1],
+      ['outstanding_amount', '>', 0],
+      ['due_date', '<=', toIsoDate(addDays(ctx.today, 1))],
+    ];
+    if (ctx.persona === 'salesperson') {
+      filters.push(['owner', '=', ctx.userId]);
+    }
     const rows = await this.list<{
       name: string;
       customer_name: string;
       due_date: string;
       outstanding_amount: number;
-    }>(
-      'Sales Invoice',
-      ['name', 'customer_name', 'due_date', 'outstanding_amount'],
-      [
-        ['company', '=', ctx.company],
-        ['docstatus', '=', 1],
-        ['outstanding_amount', '>', 0],
-        ['due_date', '<=', toIsoDate(addDays(ctx.today, 1))],
-      ],
-      { orderBy: 'due_date asc', limit: ATTENTION_LIMIT },
-    );
+    }>('Sales Invoice', ['name', 'customer_name', 'due_date', 'outstanding_amount'], filters, {
+      orderBy: 'due_date asc',
+      limit: ATTENTION_LIMIT,
+    });
     return rows.map((r) => ({
       name: r.name,
       customer: r.customer_name,
@@ -253,14 +255,9 @@ export class HomeApiService {
       this.companyWarehouses(ctx),
     ]);
     const bins = await this.optional(ctx, () =>
-      this.list<{ item_code: string; warehouse: string; actual_qty: number }>(
-        'Bin',
-        ['item_code', 'warehouse', 'actual_qty'],
-        [
-          ['item_code', 'in', [...new Set(needs.map((n) => n.item_code))]],
-          ['warehouse', 'in', warehouses],
-        ],
-        { limit: SCAN_LIMIT },
+      this.stockFor(
+        needs.map((n) => n.item_code),
+        warehouses,
       ),
     );
     return needs.map((n) => ({
@@ -283,21 +280,22 @@ export class HomeApiService {
     if (!warehouses.length) {
       return { count: 0, warehouse: null };
     }
-    const inCompany: Filter = ['warehouse', 'in', warehouses];
-    const [levels, bins] = await Promise.all([
-      this.list<{ parent: string; warehouse: string; warehouse_reorder_level: number }>(
-        'Item Reorder',
-        ['parent', 'warehouse', 'warehouse_reorder_level'],
-        [inCompany, ['warehouse_reorder_level', '>', 0]],
-        { parent: 'Item', limit: SCAN_LIMIT },
-      ),
-      this.list<{ item_code: string; warehouse: string; actual_qty: number }>(
-        'Bin',
-        ['item_code', 'warehouse', 'actual_qty'],
-        [inCompany],
-        { limit: SCAN_LIMIT },
-      ),
-    ]);
+    const levels = await this.erpnext.listAll<{
+      parent: string;
+      warehouse: string;
+      warehouse_reorder_level: number;
+    }>('Item Reorder', {
+      fields: ['parent', 'warehouse', 'warehouse_reorder_level'],
+      filters: [
+        ['warehouse', 'in', warehouses],
+        ['warehouse_reorder_level', '>', 0],
+      ],
+      parent: 'Item',
+    });
+    const bins = await this.stockFor(
+      levels.map((l) => l.parent),
+      warehouses,
+    );
     const stock = new Map(bins.map((b) => [`${b.item_code}\u0000${b.warehouse}`, b.actual_qty]));
     const byWarehouse = new Map<string, number>();
     let count = 0;
@@ -313,17 +311,40 @@ export class HomeApiService {
     return { count, warehouse: busiest ? stripAbbr(busiest[0], ctx.companyAbbr) : null };
   }
 
+  /** Stock rows for the given items in the given warehouses, in URL-safe batches. */
+  private async stockFor(itemCodes: string[], warehouses: string[]) {
+    const unique = [...new Set(itemCodes)];
+    if (!unique.length || !warehouses.length) {
+      return [];
+    }
+    const batches = Array.from({ length: Math.ceil(unique.length / ITEM_BATCH) }, (_, i) =>
+      unique.slice(i * ITEM_BATCH, (i + 1) * ITEM_BATCH),
+    );
+    const results = await Promise.all(
+      batches.map((batch) =>
+        this.erpnext.listAll<{ item_code: string; warehouse: string; actual_qty: number }>('Bin', {
+          fields: ['item_code', 'warehouse', 'actual_qty'],
+          filters: [
+            ['item_code', 'in', batch],
+            ['warehouse', 'in', warehouses],
+          ],
+        }),
+      ),
+    );
+    return results.flat();
+  }
+
   /** Shared by the stock queries of one load. */
   private companyWarehouses(ctx: LoadContext): Promise<string[]> {
-    ctx.warehouses ??= this.list<{ name: string }>(
-      'Warehouse',
-      ['name'],
-      [
-        ['company', '=', ctx.company],
-        ['is_group', '=', 0],
-      ],
-      { limit: SCAN_LIMIT },
-    ).then((rows) => rows.map((r) => r.name));
+    ctx.warehouses ??= this.erpnext
+      .listAll<{ name: string }>('Warehouse', {
+        fields: ['name'],
+        filters: [
+          ['company', '=', ctx.company],
+          ['is_group', '=', 0],
+        ],
+      })
+      .then((rows) => rows.map((r) => r.name));
     return ctx.warehouses;
   }
 
@@ -341,7 +362,7 @@ export class HomeApiService {
     doctype: string,
     fields: Field[],
     filters: Filter[],
-    options: { orderBy?: string; limit?: number; parent?: string } = {},
+    options: { orderBy?: string; groupBy?: string; limit?: number; parent?: string } = {},
   ): Promise<T[]> {
     return firstValueFrom(this.erpnext.list<T>(doctype, { fields, filters, ...options }));
   }

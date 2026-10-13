@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
+import { shareInFlight } from '../util/share-in-flight';
 
 /**
  * ERPNext stores dates and timestamps as wall-clock time in the site's time zone, so "today",
@@ -10,21 +11,16 @@ import { ErpnextClient } from '../erpnext/erpnext-client';
 export class SiteClockService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly zone = signal<string | null>(null);
-  private pending?: Promise<void>;
+  private readonly loadZone = shareInFlight(() =>
+    firstValueFrom(this.erpnext.get<{ time_zone: string }>('frappe.client.get_time_zone'))
+      .then(({ time_zone }) => this.zone.set(time_zone || null))
+      .catch(() => undefined),
+  );
 
   readonly timeZone = this.zone.asReadonly();
 
   ensure(): Promise<void> {
-    if (this.zone()) {
-      return Promise.resolve();
-    }
-    this.pending ??= firstValueFrom(
-      this.erpnext.get<{ time_zone: string }>('frappe.client.get_time_zone'),
-    )
-      .then(({ time_zone }) => this.zone.set(time_zone || null))
-      .catch(() => undefined)
-      .finally(() => (this.pending = undefined));
-    return this.pending;
+    return this.zone() ? Promise.resolve() : this.loadZone();
   }
 
   /** The site's current wall-clock time, as a local Date with the same fields. */

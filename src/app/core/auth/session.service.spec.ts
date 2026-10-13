@@ -89,4 +89,47 @@ describe('SessionService', () => {
     expect(await checking).toBe(true);
     expect(session.status()).toBe('expired');
   });
+
+  it('does not sign the user out when ERPNext answers with a server error', async () => {
+    const { session, http } = setup();
+
+    const restoring = session.ensure();
+    await flushNext(http, LOGGED_USER, { exc_type: 'Error' }, 502);
+
+    await expect(restoring).rejects.toMatchObject({ kind: 'server' });
+    expect(session.status()).toBe('unknown');
+  });
+
+  it('asks for the logged-in user only once while restoring', async () => {
+    const { session, http } = setup();
+
+    const restoring = session.ensure();
+    await flushNext(http, LOGGED_USER, { message: 'lina@rehan.example' });
+    await flushNext(http, GET_DOC, {
+      message: { name: 'lina@rehan.example', full_name: 'Lina Saleh', first_name: 'Lina' },
+    });
+    await flushNext(http, GET_LIST, { message: [{ role: 'Sales User' }] });
+
+    expect(await restoring).toBe(true);
+    http.expectNone(LOGGED_USER);
+  });
+
+  it('reports connection failures when requesting a password reset, but not unknown accounts', async () => {
+    const { session, http } = setup();
+    const RESET = '/api/method/frappe.core.doctype.user.user.reset_password';
+
+    const unknownAccount = session.requestPasswordReset('nobody@rehan.example');
+    // ERPNext answers 200 with a neutral message for unknown accounts.
+    await flushNext(http, RESET, { message: null });
+    await expect(unknownAccount).resolves.toBeUndefined();
+
+    const offline = session.requestPasswordReset('lina@rehan.example');
+    let request: TestRequest | undefined;
+    await vi.waitFor(() => {
+      request ??= http.match((r) => r.url === RESET)[0];
+      expect(request).toBeDefined();
+    });
+    request!.error(new ProgressEvent('error'), { status: 0 });
+    await expect(offline).rejects.toMatchObject({ kind: 'offline' });
+  });
 });

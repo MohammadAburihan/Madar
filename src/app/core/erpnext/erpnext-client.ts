@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, firstValueFrom, map, throwError } from 'rxjs';
 import { RuntimeConfigService } from '../config/runtime-config';
 import { ErpnextError } from './erpnext-error';
 
@@ -19,9 +19,13 @@ export interface ListQuery {
   fields: Field[];
   filters?: Filter[];
   orderBy?: string;
+  groupBy?: string;
   limit?: number;
+  limitStart?: number;
   parent?: string;
 }
+
+const PAGE_SIZE = 500;
 
 @Injectable({ providedIn: 'root' })
 export class ErpnextClient {
@@ -62,7 +66,27 @@ export class ErpnextClient {
     if (query.parent) {
       params['parent'] = query.parent;
     }
+    if (query.groupBy) {
+      params['group_by'] = query.groupBy;
+    }
+    if (query.limitStart) {
+      params['limit_start'] = query.limitStart;
+    }
     return this.get<T[]>('frappe.client.get_list', params);
+  }
+
+  /** Every matching row, fetched page by page so no single response or URL grows unbounded. */
+  async listAll<T>(doctype: string, query: Omit<ListQuery, 'limit' | 'limitStart'>): Promise<T[]> {
+    const rows: T[] = [];
+    for (let start = 0; ; start += PAGE_SIZE) {
+      const page = await firstValueFrom(
+        this.list<T>(doctype, { ...query, limit: PAGE_SIZE, limitStart: start }),
+      );
+      rows.push(...page);
+      if (page.length < PAGE_SIZE) {
+        return rows;
+      }
+    }
   }
 
   count(doctype: string, filters: Filter[] = []): Observable<number> {

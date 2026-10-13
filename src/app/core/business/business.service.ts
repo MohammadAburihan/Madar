@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
+import { shareInFlight } from '../util/share-in-flight';
 
 export interface Business {
   name: string;
@@ -20,16 +21,12 @@ export class BusinessService {
   /** Name shown before sign-in, when the server can't be asked yet. */
   readonly lastKnownName = this.lastKnown.asReadonly();
 
-  private pending?: Promise<Business | null>;
+  private readonly loadShared = shareInFlight(() => this.load());
 
   /** Loads the active business once and shares the in-flight request between callers. */
   ensure(): Promise<Business | null> {
     const active = this.current();
-    if (active) {
-      return Promise.resolve(active);
-    }
-    this.pending ??= this.load().finally(() => (this.pending = undefined));
-    return this.pending;
+    return active ? Promise.resolve(active) : this.loadShared();
   }
 
   async load(): Promise<Business | null> {

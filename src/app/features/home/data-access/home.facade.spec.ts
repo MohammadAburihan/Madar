@@ -80,14 +80,27 @@ describe('HomeFacade', () => {
     expect(facade.status()).toBe('offline');
   });
 
-  it('treats a 401 from ERPNext as an expired session', async () => {
-    const { facade } = setup({
+  it('treats a 401 as an expired session when ERPNext no longer knows the session', async () => {
+    const { facade, session } = setup({
       load: () => Promise.reject(new ErpnextError('unauthorized', 'SessionExpired', 401)),
     });
+    session.checkExpired.mockResolvedValue(true);
 
     await facade.load();
 
     expect(facade.status()).toBe('expired');
+    expect(session.checkExpired).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a retryable error for a 401 while the session is still valid', async () => {
+    const { facade, session } = setup({
+      load: () => Promise.reject(new ErpnextError('unauthorized', 'Not allowed', 401)),
+    });
+
+    await facade.load();
+
+    expect(facade.status()).toBe('error');
+    expect(session.checkExpired).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a slower, older load that finishes last', async () => {

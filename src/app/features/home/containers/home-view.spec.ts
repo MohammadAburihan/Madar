@@ -1,6 +1,6 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { HomeData } from '../data-access/home.models';
-import { buildHomeView, HomeViewInput } from './home-view';
+import { buildHomeView as build, HomeViewInput, isolate } from './home-view';
 
 // Mirrors the data in the design mocks (Sunday 11 October, 09:00).
 const NOW = new Date(2026, 9, 11, 9, 0);
@@ -62,6 +62,12 @@ const input = (overrides: Partial<HomeViewInput> = {}): HomeViewInput => ({
   now: NOW,
   ...overrides,
 });
+
+// Values are wrapped in bidi isolates; compare the visible text.
+const buildHomeView = (...args: Parameters<typeof build>) =>
+  JSON.parse(JSON.stringify(build(...args)).replace(/[\u2068\u2069]/g, '')) as ReturnType<
+    typeof build
+  >;
 
 describe('buildHomeView', () => {
   it('builds the owner home like the mobile and desktop mocks', () => {
@@ -185,5 +191,32 @@ describe('buildHomeView', () => {
     expect(empty.rows).toEqual([]);
     expect(empty.emptyAttention.title).toBe('Nothing needs your attention');
     expect(empty.summary).toBeNull();
+  });
+
+  it('greets by time of day at the site', () => {
+    const at = (hour: number) =>
+      buildHomeView(input({ now: new Date(2026, 9, 11, hour) }), realTranslator('en')).title;
+    expect([at(9), at(13), at(19)]).toEqual([
+      'Good morning, Rehan',
+      'Good afternoon, Rehan',
+      'Good evening, Rehan',
+    ]);
+  });
+
+  it('says everything is stocked instead of "0 low-stock items"', () => {
+    const view = buildHomeView(
+      input({ persona: 'warehouse', data: { lowStock: { count: 0, warehouse: null } } }),
+      realTranslator('en'),
+    );
+    expect(view.summary).toBe('All items above reorder level');
+  });
+
+  it('isolates interpolated names and amounts so they keep their direction in Arabic', () => {
+    const view = build(
+      input({ persona: 'warehouse', language: 'ar', data: { lowStock: DATA.lowStock } }),
+      realTranslator('ar'),
+    );
+    expect(view.summary).toContain(isolate('Main warehouse'));
+    expect(view.summary).toContain(isolate(3));
   });
 });

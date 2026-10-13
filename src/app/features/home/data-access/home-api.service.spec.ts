@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { ErpnextClient, Filter, ListQuery } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { HomeApiService, HomeScope } from './home-api.service';
@@ -22,6 +22,7 @@ function setup(
       return reply(doctype, () => (typeof response === 'function' ? response(query) : []));
     },
     count: (doctype: string) => reply(doctype, () => counts[doctype] ?? 0),
+    listAll: (doctype: string, query: ListQuery) => firstValueFrom(client.list(doctype, query)),
   };
   TestBed.configureTestingModule({ providers: [{ provide: ErpnextClient, useValue: client }] });
   return { api: TestBed.inject(HomeApiService), calls };
@@ -113,8 +114,8 @@ describe('HomeApiService', () => {
     expect((await second).forbidden).toBe(false);
   });
 
-  it('sums sales in company currency and converts foreign receivables', async () => {
-    const { api } = setup({
+  it('sums sales in company currency and converts grouped foreign receivables', async () => {
+    const { api, calls } = setup({
       'Sales Invoice': (q) => {
         const fields = q.fields as unknown[];
         if (
@@ -125,11 +126,15 @@ describe('HomeApiService', () => {
         ) {
           return [{ 'SUM(`base_grand_total`)': 2850 }];
         }
-        if (hasFilter(q.filters, 'party_account_currency', '=')) {
-          return [{ 'SUM(`outstanding_amount`)': 400 }];
-        }
-        if (hasFilter(q.filters, 'party_account_currency', '!=')) {
-          return [{ outstanding_amount: 100, conversion_rate: 3.7 }];
+        if (q.groupBy) {
+          return [
+            { party_account_currency: 'ILS', conversion_rate: 1, 'SUM(`outstanding_amount`)': 400 },
+            {
+              party_account_currency: 'USD',
+              conversion_rate: 3.7,
+              'SUM(`outstanding_amount`)': 100,
+            },
+          ];
         }
         return [];
       },
@@ -140,6 +145,18 @@ describe('HomeApiService', () => {
 
     expect(data.todaySales).toBe(2850);
     expect(data.receivables).toBeCloseTo(770);
+    expect(calls.find((c) => c.query.groupBy)?.query.groupBy).toBe(
+      'party_account_currency, conversion_rate',
+    );
+  });
+
+  it('only lists the salesperson’s own invoices to follow up', async () => {
+    const { api, calls } = setup({});
+
+    await api.load(scope('salesperson'));
+
+    const due = calls.find((c) => c.query.orderBy === 'due_date asc');
+    expect(due?.query.filters).toContainEqual(['owner', '=', 'lina@rehan.example']);
   });
 
   it('counts drafts on the server and only fetches the latest of each kind', async () => {

@@ -29,6 +29,7 @@
   "home": {
     "greeting": {
       "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
       "evening": "Good evening, {{name}}"
     },
     "title": {
@@ -173,7 +174,8 @@
     },
     "expired": {
       "title": "Session expired",
-      "message": "Sign in again to continue in {{business}}."
+      "message": "Sign in again to continue in {{business}}.",
+      "action": "Sign in again"
     }
   },
   "signIn": {

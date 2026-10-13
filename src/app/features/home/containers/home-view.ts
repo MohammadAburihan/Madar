@@ -66,7 +66,22 @@ const ACTIONS: Record<Persona, string[]> = {
 const MOBILE_CARD_LIMIT = 2;
 const TABLE_ROW_LIMIT = 5;
 
-export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
+/** Unicode first-strong isolate: keeps a value's own direction inside text of the other direction. */
+export const isolate = (value: unknown) => `\u2068${value}\u2069`;
+
+/** Isolates every interpolated value, as the glossary requires for names, numbers and amounts. */
+function isolating(tr: Translator): Translator {
+  const wrap = (params: Record<string, unknown> = {}) =>
+    Object.fromEntries(Object.entries(params).map(([key, value]) => [key, isolate(value)]));
+  return {
+    t: (key, params) => tr.t(key, wrap(params)),
+    // `count` is interpolated too, so it needs isolating like the other values.
+    plural: (key, count, params) => tr.plural(key, count, wrap({ count, ...params })),
+  };
+}
+
+export function buildHomeView(input: HomeViewInput, raw: Translator): HomeView {
+  const tr = isolating(raw);
   const { data, persona, business, language, now } = input;
   const money = (amount: number, decimals: 0 | 2 = 2) =>
     formatMoney(amount, business.currency, decimals);
@@ -94,11 +109,11 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
 
   const roleLabel = tr.t(`home.role.${persona}`);
   const date = formatLongDate(now, language);
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
   const title =
     persona === 'owner'
-      ? tr.t(`home.greeting.${now.getHours() < 12 ? 'morning' : 'evening'}`, {
-          name: input.firstName,
-        })
+      ? tr.t(`home.greeting.${greeting}`, { name: input.firstName })
       : tr.t(`home.title.${persona}`);
 
   const draftCount = data.drafts?.count ?? 0;
@@ -177,7 +192,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
 
   const rows: (AttentionRow & { sort: string })[] = [
     ...deliveries.map((d) => ({
-      work: `${d.name} · ${d.supplier}`,
+      work: `${isolate(d.name)} · ${isolate(d.supplier)}`,
       due: dueLabel(d.scheduleDate),
       next: tr.t('home.next.receiveDelivery'),
       sort: `1${d.scheduleDate}`,
@@ -189,13 +204,13 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
       sort: `2${d.modified}`,
     })),
     ...supply.map((s) => ({
-      work: s.projectName,
+      work: isolate(s.projectName),
       due: dueLabel(s.scheduleDate),
       next: tr.t('home.next.supply', { qty: s.qty, item: s.itemName }),
       sort: `3${s.scheduleDate}`,
     })),
     ...invoices.map((i) => ({
-      work: `${i.customer} · ${i.name}`,
+      work: `${isolate(i.customer)} · ${isolate(i.name)}`,
       due: dueLabel(i.dueDate),
       next: tr.t('home.next.receivePayment'),
       sort: `4${i.dueDate}`,
@@ -214,11 +229,13 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
         ? data.todaySales !== undefined
           ? tr.t('home.summary.salesperson', { sales: money(data.todaySales, 0) })
           : null
-        : lowStock
-          ? tr.plural('home.summary.warehouse', lowStock.count, {
-              warehouse: lowStock.warehouse ?? '',
-            })
-          : null;
+        : !lowStock
+          ? null
+          : lowStock.count === 0
+            ? tr.t('home.glance.allStocked')
+            : tr.plural('home.summary.warehouse', lowStock.count, {
+                warehouse: lowStock.warehouse ?? '',
+              });
 
   const glance: CardView[] = [];
   if (data.todaySales !== undefined) {
@@ -238,14 +255,14 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
   if (lowStock) {
     glance.push({
       title: tr.plural('home.glance.lowStock', lowStock.count),
-      message: lowStock.warehouse ?? tr.t('home.glance.allStocked'),
+      message: lowStock.warehouse ? isolate(lowStock.warehouse) : tr.t('home.glance.allStocked'),
     });
   }
 
   return {
     title,
     subtitle: `${roleLabel} · ${date}`,
-    desktopSubtitle: `${business.name} · ${roleLabel} · ${date}`,
+    desktopSubtitle: `${isolate(business.name)} · ${roleLabel} · ${date}`,
     roleLabel,
     actions: ACTIONS[persona].map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
     actionColumns: persona === 'owner' ? 3 : 2,

@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
 import { ErpnextError } from '../erpnext/erpnext-error';
+import { shareInFlight } from '../util/share-in-flight';
 import { personaFor } from './persona';
 
 export interface SessionUser {
@@ -24,43 +25,53 @@ export class SessionService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly currentUser = signal<SessionUser | null>(null);
   private readonly currentStatus = signal<SessionStatus>('unknown');
-  private restoring?: Promise<boolean>;
+  private readonly restore = shareInFlight(() => this.restoreSession());
 
   readonly user = this.currentUser.asReadonly();
   readonly status = this.currentStatus.asReadonly();
   readonly persona = computed(() => personaFor(this.currentUser()?.roles ?? []));
 
-  /** Resolves whether a valid ERPNext session exists, checking the server only once. */
+  /**
+   * Resolves whether a valid ERPNext session exists, checking the server only once.
+   * Rejects when ERPNext can't answer (offline or server error), so callers can show that instead.
+   */
   ensure(): Promise<boolean> {
     const status = this.currentStatus();
-    if (status !== 'unknown') {
-      return Promise.resolve(status === 'signed-in');
-    }
-    this.restoring ??= this.restore().finally(() => (this.restoring = undefined));
-    return this.restoring;
+    return status === 'unknown' ? this.restore() : Promise.resolve(status === 'signed-in');
   }
 
   async signIn(email: string, password: string): Promise<void> {
     await firstValueFrom(this.erpnext.post('login', { usr: email, pwd: password }));
-    await this.loadUser();
+    const id = await this.loggedInUser();
+    if (!id) {
+      throw new ErpnextError('unauthorized', 'Signed in, but ERPNext reports no session', 401);
+    }
+    await this.loadUser(id);
   }
 
-  /** ERPNext answers the same way whether or not the account exists. */
+  /**
+   * ERPNext answers the same way whether or not the account exists, so only connection and
+   * server failures are reported.
+   */
   async requestPasswordReset(email: string): Promise<void> {
-    await firstValueFrom(
-      this.erpnext.post('frappe.core.doctype.user.user.reset_password', { user: email }),
-    ).catch(() => undefined);
+    try {
+      await firstValueFrom(
+        this.erpnext.post('frappe.core.doctype.user.user.reset_password', { user: email }),
+      );
+    } catch (error) {
+      const kind = ErpnextError.from(error).kind;
+      if (kind === 'offline' || kind === 'server') {
+        throw error;
+      }
+    }
   }
 
-  async signOut(): Promise<void> {
-    await firstValueFrom(this.erpnext.post('logout', {})).catch(() => undefined);
-    this.currentUser.set(null);
-    this.currentStatus.set('signed-out');
-  }
-
-  /** Call after a 403: tells an expired session apart from a missing permission. */
+  /** Call after a 401/403: tells an expired session apart from a missing permission. */
   async checkExpired(): Promise<boolean> {
-    const stillValid = await this.isLoggedIn().catch(() => true);
+    const stillValid = await this.loggedInUser().then(
+      (id) => !!id,
+      () => true,
+    );
     if (!stillValid) {
       this.currentUser.set(null);
       this.currentStatus.set('expired');
@@ -68,39 +79,31 @@ export class SessionService {
     return !stillValid;
   }
 
-  private async restore(): Promise<boolean> {
-    try {
-      if (!(await this.isLoggedIn())) {
-        this.currentStatus.set(this.currentStatus() === 'expired' ? 'expired' : 'signed-out');
-        return false;
-      }
-      await this.loadUser();
-      return true;
-    } catch (error) {
-      if (ErpnextError.from(error).kind === 'offline') {
-        throw error;
-      }
-      this.currentStatus.set('signed-out');
+  private async restoreSession(): Promise<boolean> {
+    const id = await this.loggedInUser();
+    if (!id) {
+      this.currentStatus.set(this.currentStatus() === 'expired' ? 'expired' : 'signed-out');
       return false;
     }
+    await this.loadUser(id);
+    return true;
   }
 
-  /** Frappe answers 403 (not "Guest") when there is no session; only connection errors are rethrown. */
-  private async isLoggedIn(): Promise<boolean> {
+  /** The signed-in user's id, or null. Frappe answers 403 (not "Guest") when there is no session. */
+  private async loggedInUser(): Promise<string | null> {
     try {
       const user = await firstValueFrom(this.erpnext.get<string>('frappe.auth.get_logged_user'));
-      return !!user && user !== 'Guest';
+      return user && user !== 'Guest' ? user : null;
     } catch (error) {
       const kind = ErpnextError.from(error).kind;
       if (kind === 'forbidden' || kind === 'unauthorized') {
-        return false;
+        return null;
       }
       throw error;
     }
   }
 
-  private async loadUser(): Promise<void> {
-    const id = await firstValueFrom(this.erpnext.get<string>('frappe.auth.get_logged_user'));
+  private async loadUser(id: string): Promise<void> {
     // Non-admin users get an empty `roles` table on their own User doc, so roles are listed separately.
     const [doc, roles] = await Promise.all([
       firstValueFrom(this.erpnext.doc<UserDoc>('User', id)),

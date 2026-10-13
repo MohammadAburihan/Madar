@@ -20,6 +20,11 @@ describe('Shared presenters', () => {
     await fixture.whenStable();
     expect(host.getAttribute('role')).toBeNull();
     expect(host.querySelector('.message')).toBeNull();
+
+    fixture.componentRef.setInput('status', true);
+    await fixture.whenStable();
+    expect(host.getAttribute('role')).toBe('status');
+    expect(host.getAttribute('aria-live')).toBe('polite');
   });
 
   it('BusinessBar shows the business and emits switchBusiness', async () => {

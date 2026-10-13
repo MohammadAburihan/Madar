@@ -72,11 +72,9 @@ export class HomeFacade {
       this.currentStatus.set('ready');
     } catch (error) {
       const kind = ErpnextError.from(error).kind;
+      // One check decides: a 401/403 only means "expired" if ERPNext no longer knows the session.
       const expired =
-        kind === 'unauthorized' || (kind === 'forbidden' && (await this.session.checkExpired()));
-      if (expired) {
-        await this.session.checkExpired();
-      }
+        (kind === 'unauthorized' || kind === 'forbidden') && (await this.session.checkExpired());
       if (isCurrent()) {
         this.currentStatus.set(expired ? 'expired' : kind === 'offline' ? 'offline' : 'error');
       }

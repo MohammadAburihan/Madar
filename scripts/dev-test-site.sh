@@ -12,14 +12,29 @@ docker compose -f pwd.yml exec -T backend bench drop-site "$SITE" --db-root-user
 docker compose -f pwd.yml exec -T backend bench new-site "$SITE" --mariadb-user-host-login-scope='%' \
   --admin-password=admin --db-root-username=root --db-root-password=admin --install-app erpnext
 
+# Reuse the stack's own network, sites volume, and image rather than assuming compose project names.
+backend=$(docker compose -f pwd.yml ps -q backend)
+network=$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}' "$backend")
+volume=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/home/frappe/frappe-bench/sites"}}{{.Name}}{{end}}{{end}}' "$backend")
+image=$(docker inspect -f '{{.Config.Image}}' "$backend")
+
 # pwd.yml pins every request to the "frontend" site, so this site gets its own web container.
 docker rm -f madar-test-frontend >/dev/null 2>&1 || true
-docker run -d --name madar-test-frontend --network frappe_docker_frappe_network -p "$PORT:8080" \
+docker run -d --name madar-test-frontend --network "$network" -p "$PORT:8080" \
   -e BACKEND=backend:8000 -e FRAPPE_SITE_NAME_HEADER="$SITE" -e SOCKETIO=websocket:9000 \
   -e UPSTREAM_REAL_IP_ADDRESS=127.0.0.1 -e UPSTREAM_REAL_IP_HEADER=X-Forwarded-For -e UPSTREAM_REAL_IP_RECURSIVE=off \
   -e PROXY_READ_TIMEOUT=120 -e CLIENT_MAX_BODY_SIZE=50m \
-  -v frappe_docker_sites:/home/frappe/frappe-bench/sites frappe/erpnext:v16.50.0 nginx-entrypoint.sh >/dev/null
-sleep 5
+  -v "$volume:/home/frappe/frappe-bench/sites" "$image" nginx-entrypoint.sh >/dev/null
+
+tries=0
+until curl -sf "http://localhost:$PORT/api/method/frappe.ping" >/dev/null; do
+  tries=$((tries + 1))
+  if [ "$tries" -ge 60 ]; then
+    echo "madar-test-frontend did not answer on port $PORT after 60s; see: docker logs madar-test-frontend" >&2
+    exit 1
+  fi
+  sleep 1
+done
 
 jar=$(mktemp)
 curl -sf -c "$jar" -X POST "http://localhost:$PORT/api/method/login" -H 'Content-Type: application/json' \

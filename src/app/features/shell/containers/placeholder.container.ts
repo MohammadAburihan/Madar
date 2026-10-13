@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { TranslocoService } from '@jsverse/transloco';
-import { Language, LanguageService } from '../../../core/i18n/language.service';
-import { createTranslator } from '../../../core/i18n/translator';
+import { Language } from '../../../core/i18n/language.service';
+import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -46,11 +45,10 @@ export class PlaceholderContainer {
   /** Quick-action id, from the `task/:action` route. */
   readonly action = input<string>('');
 
-  private readonly languages = inject(LanguageService);
-  private readonly transloco = inject(TranslocoService);
   protected readonly viewport = inject(ViewportService).viewport;
-  protected readonly language = this.languages.language;
-  private readonly tr = computed(() => createTranslator(this.transloco, this.language()));
+  private readonly i18n = injectI18n();
+  protected readonly language = this.i18n.language;
+  private readonly tr = this.i18n.tr;
 
   protected readonly area = computed(() =>
     this.tr().t(this.action() ? `home.actions.${this.action()}` : this.titleKey()),
@@ -61,6 +59,6 @@ export class PlaceholderContainer {
   }));
 
   protected changeLanguage(language: Language): void {
-    void this.languages.use(language);
+    this.i18n.use(language);
   }
 }

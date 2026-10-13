@@ -8,11 +8,10 @@ import {
   inject,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslocoService } from '@jsverse/transloco';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
-import { Language, LanguageService } from '../../../core/i18n/language.service';
-import { createTranslator } from '../../../core/i18n/translator';
+import { Language } from '../../../core/i18n/language.service';
+import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -45,14 +44,13 @@ export class HomeContainer {
   protected readonly facade = inject(HomeFacade);
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
-  private readonly languages = inject(LanguageService);
-  private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
 
   protected readonly viewport = inject(ViewportService).viewport;
-  protected readonly language = this.languages.language;
+  private readonly i18n = injectI18n();
+  protected readonly language = this.i18n.language;
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
-  private readonly tr = computed(() => createTranslator(this.transloco, this.language()));
+  private readonly tr = this.i18n.tr;
 
   protected readonly view = computed(() =>
     buildHomeView(
@@ -83,6 +81,11 @@ export class HomeContainer {
         message: t('state.offline.message'),
         retry: t('state.offline.retry'),
       },
+      expired: {
+        title: t('state.expired.title'),
+        message: t('state.expired.message', { business }),
+        action: t('state.expired.action'),
+      },
       error: {
         title: t('home.error.title'),
         message: t('home.error.message'),
@@ -99,17 +102,19 @@ export class HomeContainer {
     });
     effect(() => {
       if (this.facade.status() === 'expired') {
-        untracked(() =>
-          this.router.navigate(['/sign-in'], {
-            queryParams: { expired: 1, returnUrl: this.router.url },
-          }),
-        );
+        untracked(() => this.signInAgain());
       }
     });
   }
 
   protected changeLanguage(language: Language): void {
-    void this.languages.use(language);
+    this.i18n.use(language);
+  }
+
+  protected signInAgain(): void {
+    void this.router.navigate(['/sign-in'], {
+      queryParams: { expired: 1, returnUrl: this.router.url },
+    });
   }
 
   protected openNew(): void {

@@ -7,7 +7,8 @@ export type FeedbackTone = 'tint' | 'warning' | 'danger';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'tone-' + tone()",
-    '[attr.role]': "tone() === 'tint' ? null : 'status'",
+    '[attr.role]': "status() || tone() !== 'tint' ? 'status' : null",
+    '[attr.aria-live]': "status() || tone() !== 'tint' ? 'polite' : null",
   },
   template: `
     <p class="title" [attr.dir]="numeric() ? 'ltr' : null">{{ title() }}</p>
@@ -62,4 +63,6 @@ export class FeedbackCardComponent {
   readonly message = input<string | null>(null);
   readonly tone = input<FeedbackTone>('tint');
   readonly numeric = input(false);
+  /** Announce changes to screen readers even in the neutral tone (e.g. loading). */
+  readonly status = input(false);
 }

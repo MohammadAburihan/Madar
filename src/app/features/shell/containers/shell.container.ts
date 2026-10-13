@@ -11,12 +11,10 @@ import {
   LucideUsers,
   LucideWallet,
 } from '@lucide/angular';
-import { TranslocoService } from '@jsverse/transloco';
 import { Persona } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
-import { LanguageService } from '../../../core/i18n/language.service';
-import { createTranslator } from '../../../core/i18n/translator';
+import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BottomNavComponent } from '../components/bottom-nav.component';
 import { BusinessBarComponent } from '../../../shared/ui/business-bar.component';
@@ -49,20 +47,9 @@ const MOBILE_NAV: NavDefinition[] = [
   imports: [BottomNavComponent, BusinessBarComponent, RouterOutlet, SidebarNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'ion-page', '[class]': "'layout-' + viewport()" },
+  // One outlet for every layout: crossing a breakpoint must not destroy and reload the page.
   template: `
-    @if (viewport() === 'mobile') {
-      <main class="scroll">
-        <app-business-bar
-          class="bar"
-          [businessName]="businessName()"
-          [brand]="text().brand"
-          [switchLabel]="text().switchBusiness"
-          (switchBusiness)="openBusinesses()"
-        />
-        <router-outlet />
-      </main>
-      <app-bottom-nav [items]="mobileNav()" [navLabel]="text().navLabel" />
-    } @else {
+    @if (viewport() !== 'mobile') {
       <app-sidebar-nav
         [variant]="viewport() === 'desktop' ? 'full' : 'rail'"
         [items]="desktopNav()"
@@ -76,9 +63,21 @@ const MOBILE_NAV: NavDefinition[] = [
         [initials]="initials()"
         (switchBusiness)="openBusinesses()"
       />
-      <main class="scroll">
-        <router-outlet />
-      </main>
+    }
+    <main class="scroll">
+      @if (viewport() === 'mobile') {
+        <app-business-bar
+          class="bar"
+          [businessName]="businessName()"
+          [brand]="text().brand"
+          [switchLabel]="text().switchBusiness"
+          (switchBusiness)="openBusinesses()"
+        />
+      }
+      <router-outlet />
+    </main>
+    @if (viewport() === 'mobile') {
+      <app-bottom-nav [items]="mobileNav()" [navLabel]="text().navLabel" />
     }
   `,
   styles: `
@@ -113,12 +112,11 @@ const MOBILE_NAV: NavDefinition[] = [
 export class ShellContainer implements OnInit {
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
-  private readonly transloco = inject(TranslocoService);
-  private readonly language = inject(LanguageService).language;
+  private readonly i18n = injectI18n();
   private readonly router = inject(Router);
 
   protected readonly viewport = inject(ViewportService).viewport;
-  private readonly tr = computed(() => createTranslator(this.transloco, this.language()));
+  private readonly tr = this.i18n.tr;
 
   protected readonly businessName = computed(() => this.business.active()?.name ?? '');
   protected readonly userName = computed(() => this.session.user()?.fullName ?? '');
