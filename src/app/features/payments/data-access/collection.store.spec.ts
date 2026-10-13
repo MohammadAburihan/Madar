@@ -279,7 +279,7 @@ describe('CollectionStore', () => {
     expect(store.state()).toBe('idle');
   });
 
-  it('starts a half-done collection over on a fresh visit, but keeps an unresolved one', async () => {
+  it('starts a half-done collection over when the task is entered again, but keeps an unresolved one', async () => {
     const { store, api } = await ready();
     store.resume();
     expect(store.customer()).toBeNull();

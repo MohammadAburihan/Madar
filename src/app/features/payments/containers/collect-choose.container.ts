@@ -221,13 +221,9 @@ export class CollectChooseContainer implements OnInit {
       void this.ctx.go('checking', { replaceUrl: true });
       return;
     }
-    // Coming back from review (Edit, Back, or the browser/Android back button) keeps the collection and any
-    // draft to edit; any other visit starts fresh.
-    const navigation = this.ctx.router.getCurrentNavigation();
-    const editing =
-      navigation?.extras.state?.['edit'] === true || navigation?.trigger === 'popstate';
-    if (!editing || store.state() === 'confirmed') {
-      store.resume();
+    // Back from the recorded step: that payment is done, so this is a new collection.
+    if (store.state() === 'confirmed') {
+      store.start();
     }
     void this.ctx.clock.ensure();
     void store

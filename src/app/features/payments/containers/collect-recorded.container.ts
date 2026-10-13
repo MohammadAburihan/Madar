@@ -85,7 +85,7 @@ export class CollectRecordedContainer implements OnInit {
 
   ngOnInit(): void {
     if (!this.ctx.store.result()) {
-      void this.ctx.go('', { replaceUrl: true, state: { edit: true } });
+      void this.ctx.go('', { replaceUrl: true });
     }
   }
 

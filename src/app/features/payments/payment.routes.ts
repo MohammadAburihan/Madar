@@ -8,6 +8,8 @@ export const paymentRoutes: Route[] = [
   },
   {
     path: 'money/receive',
+    loadComponent: () =>
+      import('./containers/collect-flow.container').then((m) => m.CollectFlowContainer),
     children: [
       {
         path: '',
