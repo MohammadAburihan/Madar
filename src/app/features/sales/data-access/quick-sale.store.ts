@@ -109,8 +109,9 @@ export class QuickSaleStore {
     }
   }
 
-  searchCustomers(term: string): Promise<CustomerOption[]> {
-    return this.api.searchCustomers(term);
+  async searchCustomers(term: string): Promise<CustomerOption[]> {
+    const business = await this.business.ensure();
+    return this.api.searchCustomers(term, business?.name);
   }
 
   async searchItems(term: string, filter: CatalogFilter = 'all'): Promise<CatalogItem[]> {

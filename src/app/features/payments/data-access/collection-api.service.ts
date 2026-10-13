@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { round2 } from '../../../core/format/number';
 import {
   CollectedInvoice,
   CollectionRequest,
@@ -23,7 +24,12 @@ interface PaymentDoc {
 export class CollectionApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async unpaidInvoices(customer: string, company: string): Promise<UnpaidInvoice[]> {
+  /** Unpaid invoices in the company currency; foreign-currency invoices need ERPNext's exchange handling. */
+  async unpaidInvoices(
+    customer: string,
+    company: string,
+    currency: string,
+  ): Promise<UnpaidInvoice[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -31,11 +37,20 @@ export class CollectionApiService {
         due_date: string | null;
         grand_total: number;
         outstanding_amount: number;
+        debit_to: string;
       }>('Sales Invoice', {
-        fields: ['name', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount'],
+        fields: [
+          'name',
+          'posting_date',
+          'due_date',
+          'grand_total',
+          'outstanding_amount',
+          'debit_to',
+        ],
         filters: [
           ['customer', '=', customer],
           ['company', '=', company],
+          ['currency', '=', currency],
           ['docstatus', '=', 1],
           ['outstanding_amount', '>', 0],
         ],
@@ -49,6 +64,7 @@ export class CollectionApiService {
       dueDate: r.due_date,
       total: r.grand_total,
       outstanding: r.outstanding_amount,
+      receivable: r.debit_to,
     }));
   }
 
@@ -141,15 +157,22 @@ export class CollectionApiService {
       reference_no: request.reference,
       reference_date: first.posting_date,
       remarks: `Madar collection ${request.reference}`,
-      references: entries.map((entry, i) => ({
-        ...entry.references[0],
-        allocated_amount: request.allocations[i].amount,
-      })),
+      references: entries.flatMap((entry, i) =>
+        spread(entry.references, request.allocations[i].amount),
+      ),
     };
   }
 
+  /** Deletes a draft a failed confirmation left behind, so abandoned payments don't linger in ERPNext. */
+  async discard(draft: string): Promise<void> {
+    await firstValueFrom(
+      this.erpnext.post('frappe.client.delete', { doctype: 'Payment Entry', name: draft }),
+    );
+  }
+
   private async result(payment: PaymentDoc): Promise<CollectionResult> {
-    const names = payment.references.map((r) => r.reference_name);
+    // Invoices with payment terms have one reference row per term; report each invoice once.
+    const names = [...new Set(payment.references.map((r) => r.reference_name))];
     const invoices = await firstValueFrom(
       this.erpnext.list<{ name: string; grand_total: number; outstanding_amount: number }>(
         'Sales Invoice',
@@ -164,18 +187,38 @@ export class CollectionApiService {
       payment: payment.name,
       postingDate: payment.posting_date,
       amount: payment.paid_amount,
-      invoices: payment.references.map((r): CollectedInvoice => {
-        const invoice = invoices.find((i) => i.name === r.reference_name);
+      invoices: names.map((name): CollectedInvoice => {
+        const invoice = invoices.find((i) => i.name === name);
         return {
-          invoice: r.reference_name,
-          allocated: r.allocated_amount,
+          invoice: name,
+          allocated: round2(
+            payment.references
+              .filter((r) => r.reference_name === name)
+              .reduce((sum, r) => sum + r.allocated_amount, 0),
+          ),
           total: invoice?.grand_total ?? 0,
-          paid: invoice ? invoice.grand_total - invoice.outstanding_amount : 0,
+          paid: invoice ? round2(invoice.grand_total - invoice.outstanding_amount) : 0,
           outstanding: invoice?.outstanding_amount ?? 0,
         };
       }),
     };
   }
+}
+
+/**
+ * An invoice with payment terms comes back as one reference row per term, each with its own outstanding.
+ * Fill them in order so no row is allocated more than it owes.
+ */
+function spread(rows: Record<string, unknown>[], amount: number): Record<string, unknown>[] {
+  let left = amount;
+  return rows
+    .map((row, i) => {
+      const owed = Number(row['outstanding_amount'] ?? 0);
+      const share = i === rows.length - 1 ? left : round2(Math.min(left, owed));
+      left = round2(left - share);
+      return { ...row, allocated_amount: share };
+    })
+    .filter((row) => row.allocated_amount > 0);
 }
 
 function withoutLocalFlags(doc: Record<string, unknown>): Record<string, unknown> {

@@ -7,6 +7,8 @@ export interface UnpaidInvoice {
   dueDate: string | null;
   total: number;
   outstanding: number;
+  /** One Payment Entry can only pay invoices on the same receivable account. */
+  receivable: string;
 }
 
 export interface Allocation {

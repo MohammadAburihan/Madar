@@ -21,6 +21,7 @@ const SI_1042: UnpaidInvoice = {
   dueDate: '2026-11-10',
   total: 320,
   outstanding: 200,
+  receivable: 'Debtors - RN',
 };
 const TODAY = new Date(2026, 9, 14);
 

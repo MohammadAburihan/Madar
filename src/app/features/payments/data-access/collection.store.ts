@@ -32,6 +32,7 @@ export class CollectionStore {
   readonly customer = signal<CustomerOption | null>(null);
   readonly invoices = signal<UnpaidInvoice[]>([]);
   readonly loadingInvoices = signal(false);
+  readonly invoicesFailed = signal(false);
   readonly selected = signal<ReadonlySet<string>>(new Set());
   readonly amountInput = signal('');
   readonly accounts = signal<PaymentAccount[]>([]);
@@ -40,6 +41,7 @@ export class CollectionStore {
   readonly state = signal<CollectionState>('idle');
   readonly failure = signal<CollectionFailure | null>(null);
   readonly result = signal<CollectionResult | null>(null);
+  private invoiceLoad = 0;
 
   readonly selectedInvoices = computed(() =>
     this.invoices().filter((invoice) => this.selected().has(invoice.name)),
@@ -65,9 +67,14 @@ export class CollectionStore {
   readonly busy = computed(() => ['unresolved', 'checking'].includes(this.state()));
 
   start(): void {
+    const draft = this.draft();
+    if (draft && this.state() !== 'confirmed' && !this.busy()) {
+      void this.api.discard(draft).catch(() => undefined);
+    }
     this.reference.set(newReference('COLL'));
     this.customer.set(null);
     this.invoices.set([]);
+    this.invoicesFailed.set(false);
     this.selected.set(new Set());
     this.amountInput.set('');
     this.draft.set(null);
@@ -91,11 +98,15 @@ export class CollectionStore {
     }
   }
 
-  searchCustomers(term: string): Promise<CustomerOption[]> {
-    return this.customers.search(term);
+  async searchCustomers(term: string): Promise<CustomerOption[]> {
+    const business = await this.business.ensure();
+    return this.customers.search(term, business?.name);
   }
 
-  /** Picks the customer and loads their unpaid invoices; `only` preselects one invoice instead of all. */
+  /**
+   * Picks the customer and loads their unpaid invoices. All invoices on the oldest one's receivable account
+   * are preselected, or only `only` when a deep link names one.
+   */
   async selectCustomer(customer: CustomerOption, only?: string): Promise<void> {
     if (this.customer()?.id !== customer.id) {
       this.invoices.set([]);
@@ -103,28 +114,48 @@ export class CollectionStore {
       this.amountInput.set('');
     }
     this.customer.set(customer);
-    const business = await this.business.ensure();
-    if (!business) {
-      return;
-    }
+    const load = ++this.invoiceLoad;
+    const current = () => load === this.invoiceLoad;
+    this.invoicesFailed.set(false);
     this.loadingInvoices.set(true);
     try {
-      const invoices = await this.api.unpaidInvoices(customer.id, business.name);
-      if (this.customer()?.id !== customer.id) {
+      const business = await this.business.ensure();
+      if (!business) {
+        throw new Error('No active business');
+      }
+      const invoices = await this.api.unpaidInvoices(customer.id, business.name, business.currency);
+      if (!current()) {
         return;
       }
       this.invoices.set(invoices);
-      const preselect = invoices.some((i) => i.name === only)
-        ? [only!]
-        : invoices.map((i) => i.name);
-      this.setSelection(new Set(preselect));
+      const named = invoices.find((i) => i.name === only);
+      const account = invoices[0]?.receivable;
+      this.setSelection(
+        new Set(
+          named
+            ? [named.name]
+            : invoices.filter((i) => i.receivable === account).map((i) => i.name),
+        ),
+      );
+    } catch {
+      if (current()) {
+        this.invoicesFailed.set(true);
+      }
     } finally {
-      this.loadingInvoices.set(false);
+      if (current()) {
+        this.loadingInvoices.set(false);
+      }
     }
   }
 
+  /** Adds or removes an invoice; one on another receivable account starts a new selection. */
   toggle(invoice: string): void {
-    const next = new Set(this.selected());
+    const target = this.invoices().find((i) => i.name === invoice);
+    if (!target) {
+      return;
+    }
+    const sameAccount = this.selectedInvoices().every((i) => i.receivable === target.receivable);
+    const next = new Set(sameAccount ? this.selected() : []);
     if (next.has(invoice)) {
       next.delete(invoice);
     } else {

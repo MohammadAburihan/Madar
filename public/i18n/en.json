@@ -538,7 +538,12 @@
       "message": "Your request timed out. The payment may already exist. Do not record it again."
     },
     "plannedReceipt": "Planned receipt",
-    "plannedDue": "Due if confirmed"
+    "plannedDue": "Due if confirmed",
+    "loadFailed": {
+      "title": "Invoices couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "retry": "Try again"
   },
   "money": {
     "title": "Payments & expenses",

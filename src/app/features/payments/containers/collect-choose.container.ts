@@ -81,6 +81,13 @@ const SEARCH_DELAY_MS = 250;
       @if (ctx.store.customer() && !term().trim()) {
         @if (ctx.store.loadingInvoices()) {
           <p class="muted" role="status">{{ txt.loadingInvoices }}</p>
+        } @else if (ctx.store.invoicesFailed()) {
+          <app-feedback-card
+            tone="danger"
+            [title]="txt.loadFailed.title"
+            [message]="txt.loadFailed.message"
+          />
+          <button type="button" class="md-btn" (click)="retry()">{{ txt.retry }}</button>
         } @else if (!ctx.store.invoices().length) {
           <app-feedback-card [title]="txt.noInvoices.title" [message]="txt.noInvoices.message" />
         } @else {
@@ -156,6 +163,11 @@ export class CollectChooseContainer implements OnInit {
         title: t('collect.noInvoices.title'),
         message: t('collect.noInvoices.message'),
       },
+      loadFailed: {
+        title: t('collect.loadFailed.title'),
+        message: t('collect.loadFailed.message'),
+      },
+      retry: t('collect.retry'),
       amount: t('collect.amount'),
       account: t('collect.account'),
       noAccount: { title: t('collect.noAccount.title'), message: t('collect.noAccount.message') },
@@ -239,7 +251,14 @@ export class CollectChooseContainer implements OnInit {
   protected pick(customer: CustomerOption): void {
     this.term.set('');
     this.results.set([]);
-    void this.ctx.store.selectCustomer(customer).catch(() => undefined);
+    void this.ctx.store.selectCustomer(customer);
+  }
+
+  protected retry(): void {
+    const customer = this.ctx.store.customer();
+    if (customer) {
+      void this.ctx.store.selectCustomer(customer);
+    }
   }
 
   protected setAccount(mode: string | null): void {
@@ -251,7 +270,7 @@ export class CollectChooseContainer implements OnInit {
       (c) => c.id === customerId,
     );
     if (match) {
-      await this.ctx.store.selectCustomer(match, invoice).catch(() => undefined);
+      await this.ctx.store.selectCustomer(match, invoice);
     }
   }
 

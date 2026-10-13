@@ -42,8 +42,8 @@ export class SalesApiService {
   private readonly priceList = shareInFlight(() => this.loadSellingPriceList());
   private sellingPriceList: string | null = null;
 
-  searchCustomers(term: string): Promise<CustomerOption[]> {
-    return this.customers.search(term);
+  searchCustomers(term: string, company?: string): Promise<CustomerOption[]> {
+    return this.customers.search(term, company);
   }
 
   createCustomer(customer: NewCustomer, country: string): Promise<CustomerOption> {

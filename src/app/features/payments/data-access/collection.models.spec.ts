@@ -6,6 +6,7 @@ const invoice = (name: string, postingDate: string, outstanding: number): Unpaid
   dueDate: null,
   total: outstanding,
   outstanding,
+  receivable: 'Debtors - RN',
 });
 
 describe('allocate', () => {

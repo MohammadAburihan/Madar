@@ -23,9 +23,28 @@ const LINA: CustomerOption = {
   unpaidInvoices: 2,
 };
 const INVOICES: UnpaidInvoice[] = [
-  { name: 'SI-1', postingDate: '2026-10-01', dueDate: null, total: 100, outstanding: 50 },
-  { name: 'SI-2', postingDate: '2026-10-05', dueDate: null, total: 320, outstanding: 200 },
+  {
+    name: 'SI-1',
+    postingDate: '2026-10-01',
+    dueDate: null,
+    total: 100,
+    outstanding: 50,
+    receivable: 'Debtors - RN',
+  },
+  {
+    name: 'SI-2',
+    postingDate: '2026-10-05',
+    dueDate: null,
+    total: 320,
+    outstanding: 200,
+    receivable: 'Debtors - RN',
+  },
 ];
+const OTHER_ACCOUNT: UnpaidInvoice = {
+  ...INVOICES[1],
+  name: 'SI-3',
+  receivable: 'Retail debtors - RN',
+};
 const CASH = { mode: 'Cash', account: 'Cash - RN', label: 'Cash', isBank: false };
 const RESULT: CollectionResult = {
   payment: 'PAY-1',
@@ -39,6 +58,7 @@ function setup() {
     unpaidInvoices: vi.fn().mockResolvedValue(INVOICES),
     confirm: vi.fn(),
     find: vi.fn(),
+    discard: vi.fn().mockResolvedValue(undefined),
   };
   const accounts = { list: vi.fn().mockResolvedValue([CASH]) };
   TestBed.configureTestingModule({
@@ -52,7 +72,7 @@ function setup() {
       { provide: SessionService, useValue: { capabilities: () => capabilitiesFor('salesperson') } },
       {
         provide: BusinessService,
-        useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery' }) },
+        useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery', currency: 'ILS' }) },
       },
     ],
   });
@@ -76,7 +96,7 @@ describe('CollectionStore', () => {
 
   it('loads unpaid invoices, selects them all and asks for everything they owe', async () => {
     const { store, api } = await ready();
-    expect(api.unpaidInvoices).toHaveBeenCalledWith('Lina Haddad', 'Rehan Nursery');
+    expect(api.unpaidInvoices).toHaveBeenCalledWith('Lina Haddad', 'Rehan Nursery', 'ILS');
     expect([...store.selected()]).toEqual(['SI-1', 'SI-2']);
     expect(store.due()).toBe(250);
     expect(store.amountInput()).toBe('250.00');
@@ -188,6 +208,60 @@ describe('CollectionStore', () => {
     api.find.mockResolvedValueOnce(RESULT);
     expect(await store.checkResult()).toBe('found');
     expect(store.state()).toBe('confirmed');
+  });
+
+  it('only pays invoices on one receivable account together', async () => {
+    const { store, api } = setup();
+    api.unpaidInvoices.mockResolvedValue([...INVOICES, OTHER_ACCOUNT]);
+    await store.selectCustomer(LINA);
+    expect([...store.selected()]).toEqual(['SI-1', 'SI-2']);
+    expect(api.unpaidInvoices).toHaveBeenCalledWith('Lina Haddad', 'Rehan Nursery', 'ILS');
+
+    store.toggle('SI-3');
+    expect([...store.selected()]).toEqual(['SI-3']);
+    store.toggle('SI-1');
+    expect([...store.selected()]).toEqual(['SI-1']);
+  });
+
+  it('reports a failed invoice load instead of "nothing owed", and can retry', async () => {
+    const { store, api } = setup();
+    api.unpaidInvoices.mockRejectedValueOnce(new HttpErrorResponse({ status: 0 }));
+    await store.selectCustomer(LINA);
+    expect(store.invoicesFailed()).toBe(true);
+    expect(store.loadingInvoices()).toBe(false);
+
+    await store.selectCustomer(LINA);
+    expect(store.invoicesFailed()).toBe(false);
+    expect(store.invoices()).toEqual(INVOICES);
+  });
+
+  it('keeps loading for the latest customer when an earlier load finishes last', async () => {
+    const { store, api } = setup();
+    let finishFirst!: (rows: UnpaidInvoice[]) => void;
+    api.unpaidInvoices
+      .mockReturnValueOnce(new Promise((resolve) => (finishFirst = resolve)))
+      .mockReturnValueOnce(new Promise(() => undefined));
+    void store.selectCustomer(LINA);
+    await Promise.resolve();
+    void store.selectCustomer({ ...LINA, id: 'Samir Nasser', name: 'Samir Nasser' });
+    await new Promise((resolve) => setTimeout(resolve));
+    finishFirst(INVOICES);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(store.loadingInvoices()).toBe(true);
+    expect(store.invoices()).toEqual([]);
+  });
+
+  it('deletes the draft a failed confirmation left when starting over', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementationOnce(async (_r, _d, onInserted: (name: string) => void) => {
+      onInserted('PAY-5');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+    store.start();
+    expect(api.discard).toHaveBeenCalledWith('PAY-5');
+    expect(store.draft()).toBeNull();
   });
 
   it('starts a fresh collection with a new reference', async () => {

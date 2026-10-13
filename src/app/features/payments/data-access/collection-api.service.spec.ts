@@ -67,23 +67,26 @@ describe('CollectionApiService', () => {
           due_date: '2026-10-31',
           grand_total: 320,
           outstanding_amount: 200,
+          debit_to: 'Debtors - RN',
         },
       ],
     });
     const api = TestBed.inject(CollectionApiService);
 
-    expect(await api.unpaidInvoices('Lina Haddad', 'Rehan Nursery')).toEqual([
+    expect(await api.unpaidInvoices('Lina Haddad', 'Rehan Nursery', 'ILS')).toEqual([
       {
         name: 'SI-1',
         postingDate: '2026-10-01',
         dueDate: '2026-10-31',
         total: 320,
         outstanding: 200,
+        receivable: 'Debtors - RN',
       },
     ]);
     expect(listCalls[0].query.filters).toEqual([
       ['customer', '=', 'Lina Haddad'],
       ['company', '=', 'Rehan Nursery'],
+      ['currency', '=', 'ILS'],
       ['docstatus', '=', 1],
       ['outstanding_amount', '>', 0],
     ]);
@@ -134,6 +137,55 @@ describe('CollectionApiService', () => {
         { invoice: 'SI-2', allocated: 70, total: 320, paid: 190, outstanding: 130 },
       ],
     });
+  });
+
+  it('spreads an invoice over its payment-term rows without exceeding any of them', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Sales Invoice': () => [{ name: 'SI-1', grand_total: 200, outstanding_amount: 50 }] },
+      {
+        [GET_PAYMENT_ENTRY]: (body) => ({
+          ...template(body),
+          references: [
+            { reference_name: 'SI-1', payment_term: '50% now', outstanding_amount: 100 },
+            { reference_name: 'SI-1', payment_term: '50% later', outstanding_amount: 100 },
+          ],
+        }),
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'PAY-1' }),
+        'frappe.client.submit': () => ({
+          ...submitted,
+          paid_amount: 150,
+          references: [
+            { reference_name: 'SI-1', allocated_amount: 100 },
+            { reference_name: 'SI-1', allocated_amount: 50 },
+          ],
+        }),
+      },
+    );
+    const api = TestBed.inject(CollectionApiService);
+
+    const result = await api.confirm(
+      request({ amount: 150, allocations: [{ invoice: 'SI-1', amount: 150 }] }),
+      null,
+    );
+
+    const doc = postCalls.find((c) => c.method === 'frappe.client.insert')!.body['doc'] as {
+      references: Record<string, unknown>[];
+    };
+    expect(doc.references.map((r) => [r['payment_term'], r['allocated_amount']])).toEqual([
+      ['50% now', 100],
+      ['50% later', 50],
+    ]);
+    expect(result.invoices).toEqual([
+      { invoice: 'SI-1', allocated: 150, total: 200, paid: 150, outstanding: 50 },
+    ]);
+  });
+
+  it('deletes an abandoned draft', async () => {
+    const { postCalls } = fakeErpnext({}, { 'frappe.client.delete': () => null });
+    await TestBed.inject(CollectionApiService).discard('PAY-9');
+    expect(postCalls).toEqual([
+      { method: 'frappe.client.delete', body: { doctype: 'Payment Entry', name: 'PAY-9' } },
+    ]);
   });
 
   it('submits a leftover draft as itself, never inserting a copy', async () => {
