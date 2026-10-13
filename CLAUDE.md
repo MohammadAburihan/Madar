@@ -139,6 +139,12 @@ src/app/
 - Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.
 - Ionic caches pages: reset per-visit state (notices, password) instead of relying on a fresh component.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` must stay green before merging: formatting, unit tests, production build, release image
+smoke test, and an Android debug build. iOS is manual (`workflow_dispatch` with `ios`) to save macOS minutes.
+Run `npx prettier --check "src/**/*.{ts,html,scss}"` and `npm test` locally before pushing.
+
 ## Development and deployment model
 
 - The frontend is developed locally on this machine in this repo.
