@@ -146,8 +146,18 @@ describe('CollectionApiService', () => {
         [GET_PAYMENT_ENTRY]: (body) => ({
           ...template(body),
           references: [
-            { reference_name: 'SI-1', payment_term: '50% now', outstanding_amount: 100 },
-            { reference_name: 'SI-1', payment_term: '50% later', outstanding_amount: 100 },
+            {
+              reference_name: 'SI-1',
+              payment_term: '50% now',
+              outstanding_amount: 200,
+              payment_term_outstanding: 100,
+            },
+            {
+              reference_name: 'SI-1',
+              payment_term: '50% later',
+              outstanding_amount: 200,
+              payment_term_outstanding: 100,
+            },
           ],
         }),
         'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'PAY-1' }),

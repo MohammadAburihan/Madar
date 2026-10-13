@@ -212,14 +212,15 @@ export class CollectionApiService {
 }
 
 /**
- * An invoice with payment terms comes back as one reference row per term, each with its own outstanding.
- * Fill them in order so no row is allocated more than it owes.
+ * An invoice with payment terms comes back as one reference row per term. Each row's
+ * `outstanding_amount` is the whole invoice's; what the term still owes is `payment_term_outstanding`.
+ * Fill the rows in order so no term is allocated more than it owes.
  */
 function spread(rows: Record<string, unknown>[], amount: number): Record<string, unknown>[] {
   let left = amount;
   return rows
     .map((row, i) => {
-      const owed = Number(row['outstanding_amount'] ?? 0);
+      const owed = Number(row['payment_term_outstanding'] ?? row['outstanding_amount'] ?? 0);
       const share = i === rows.length - 1 ? left : round2(Math.min(left, owed));
       left = round2(left - share);
       return { ...row, allocated_amount: share };
