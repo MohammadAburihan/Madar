@@ -9,7 +9,8 @@ interface MethodResponse<T> {
   message: T;
 }
 
-export type Filter = [string, string, unknown];
+/** `[field, op, value]`, or `[childDoctype, field, op, value]` to filter on a child table. */
+export type Filter = [string, string, unknown] | [string, string, string, unknown];
 
 /** Frappe's own default page size; pass a larger limit explicitly when a query needs more rows. */
 const DEFAULT_LIMIT = 20;
@@ -20,6 +21,8 @@ export interface ListQuery {
   filters?: Filter[];
   orderBy?: string;
   groupBy?: string;
+  /** Rows match when any of these hold (in addition to all `filters`). */
+  orFilters?: Filter[];
   limit?: number;
   limitStart?: number;
   parent?: string;
@@ -65,6 +68,9 @@ export class ErpnextClient {
     }
     if (query.parent) {
       params['parent'] = query.parent;
+    }
+    if (query.orFilters?.length) {
+      params['or_filters'] = JSON.stringify(query.orFilters);
     }
     if (query.groupBy) {
       params['group_by'] = query.groupBy;

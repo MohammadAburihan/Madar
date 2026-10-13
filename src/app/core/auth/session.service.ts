@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
 import { ErpnextError } from '../erpnext/erpnext-error';
 import { shareInFlight } from '../util/share-in-flight';
+import { capabilitiesFor } from './capabilities';
 import { personaFor } from './persona';
 
 export interface SessionUser {
@@ -37,6 +38,7 @@ export class SessionService {
   readonly user = this.currentUser.asReadonly();
   readonly status = this.currentStatus.asReadonly();
   readonly persona = computed(() => personaFor(this.currentUser()?.roles ?? []));
+  readonly capabilities = computed(() => capabilitiesFor(this.persona()));
 
   /**
    * Resolves whether a valid ERPNext session exists, checking the server only once.

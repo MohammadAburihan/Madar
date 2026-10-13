@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { Persona } from '../../../core/auth/persona';
+import { OWN_SALES_ONLY, Persona } from '../../../core/auth/persona';
 import { ErpnextClient, Field, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
@@ -68,7 +68,7 @@ export class HomeApiService {
       ['is_return', '=', 0],
       ['posting_date', '=', toIsoDate(ctx.today)],
     ];
-    if (ctx.persona === 'salesperson') {
+    if (OWN_SALES_ONLY.includes(ctx.persona)) {
       filters.push(['owner', '=', ctx.userId]);
     }
     // base_grand_total is in company currency, so mixed-currency invoices add up correctly.
@@ -107,7 +107,7 @@ export class HomeApiService {
       ['outstanding_amount', '>', 0],
       ['due_date', '<=', toIsoDate(addDays(ctx.today, 1))],
     ];
-    if (ctx.persona === 'salesperson') {
+    if (OWN_SALES_ONLY.includes(ctx.persona)) {
       filters.push(['owner', '=', ctx.userId]);
     }
     const rows = await this.list<{
@@ -135,7 +135,7 @@ export class HomeApiService {
             ['company', '=', ctx.company],
             ['docstatus', '=', 0],
           ];
-          if (ctx.persona === 'salesperson') {
+          if (OWN_SALES_ONLY.includes(ctx.persona)) {
             filters.push(['owner', '=', ctx.userId]);
           }
           const [count, [latest]] = await Promise.all([
