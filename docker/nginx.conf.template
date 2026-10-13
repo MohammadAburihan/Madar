@@ -1,6 +1,6 @@
-# Keep the scheme from a TLS-terminating proxy in front (e.g. an AWS load balancer).
+# With TRUST_FORWARDED_PROTO=1 (a TLS-terminating proxy in front), keep its scheme; otherwise use our own.
 map $http_x_forwarded_proto $forwarded_proto {
-    default $http_x_forwarded_proto;
+    default ${FORWARDED_PROTO};
     ''      $scheme;
 }
 
@@ -27,6 +27,8 @@ server {
 
     location ~ ^/(api|files|private/files)/ {
         proxy_pass $erpnext_upstream;
+        # Send SNI so an https upstream behind a shared load balancer serves the right certificate.
+        proxy_ssl_server_name on;
         proxy_set_header Host ${ERPNEXT_SITE_HOST};
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $forwarded_proto;

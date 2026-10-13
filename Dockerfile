@@ -13,6 +13,7 @@ LABEL org.opencontainers.image.title="madar-web" \
 # Defaults to the incoming Host so Frappe resolves the site from the request; set it to pin one site.
 ENV ERPNEXT_UPSTREAM=http://frontend:8080 \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    TRUST_FORWARDED_PROTO=0 \
     ERPNEXT_SITE_HOST='$host' \
     MADAR_ERPNEXT_URL=''
 

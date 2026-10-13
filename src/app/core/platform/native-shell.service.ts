@@ -1,14 +1,16 @@
 import { Injectable, inject } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { SplashScreen } from '@capacitor/splash-screen';
-import { StatusBar, Style } from '@capacitor/status-bar';
 import { IonRouterOutlet, Platform } from '@ionic/angular';
+import { filter, firstValueFrom } from 'rxjs';
 import { NATIVE_PLATFORM } from './native-platform';
 
 @Injectable({ providedIn: 'root' })
 export class NativeShellService {
   private readonly platform = inject(NATIVE_PLATFORM);
   private readonly ionic = inject(Platform);
+  private readonly router = inject(Router);
 
   get isNative(): boolean {
     return this.platform !== 'web';
@@ -26,7 +28,10 @@ export class NativeShellService {
       }
     });
 
-    await StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
-    await SplashScreen.hide();
+    // Keep the splash until the first (lazy-loaded) page has rendered, not just the empty shell.
+    await firstValueFrom(
+      this.router.events.pipe(filter((event) => event instanceof NavigationEnd)),
+    );
+    requestAnimationFrame(() => void SplashScreen.hide().catch(() => undefined));
   }
 }
