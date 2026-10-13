@@ -7,7 +7,9 @@ const root = new URL('..', import.meta.url);
 const { version } = JSON.parse(readFileSync(new URL('package.json', root), 'utf8'));
 const match = /^(\d+)\.(\d{1,3})\.(\d{1,3})$/.exec(version);
 if (!match) {
-  console.error(`package.json version must be X.Y.Z with minor and patch below 1000, got: ${version}`);
+  console.error(
+    `package.json version must be X.Y.Z with minor and patch below 1000, got: ${version}`,
+  );
   process.exit(1);
 }
 const [major, minor, patch] = match.slice(1).map(Number);

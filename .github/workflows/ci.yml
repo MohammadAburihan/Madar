@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [development]
+  push:
+    branches: [development]
+  workflow_dispatch:
+    inputs:
+      ios:
+        description: Build only the iOS app (uses macOS runner minutes)
+        type: boolean
+        default: false
+
+# Separate groups per event, so a manual iOS run and a push run never cancel each other.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Format, test, build
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Formatting
+        run: npm run format:check
+      # Run even when formatting fails, so one push reports every problem.
+      - name: Unit tests
+        if: ${{ !cancelled() }}
+        run: npm test
+      - name: Production build
+        if: ${{ !cancelled() }}
+        run: npm run build
+
+  docker:
+    name: Release image
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: madar-web:ci
+          build-args: VERSION=ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test
+        id: smoke
+        run: |
+          docker run -d --name madar -p 8080:80 \
+            -e ERPNEXT_UPSTREAM=http://erpnext.invalid \
+            -e MADAR_ERPNEXT_URL=https://erp.example.com \
+            madar-web:ci
+          for i in $(seq 1 30); do curl -sf localhost:8080/healthz && break; sleep 1; done
+          curl -sf localhost:8080/healthz | grep -q ok
+          curl -sf localhost:8080/version.txt | grep -q "ci-${{ github.sha }}"
+          curl -sf localhost:8080/config.json | python3 -c 'import json,sys; assert json.load(sys.stdin)["erpnextUrl"] == "https://erp.example.com"'
+          curl -sfI localhost:8080/ | grep -qi '^x-content-type-options: nosniff'
+          curl -sf localhost:8080/sales | grep -q '<app-root>'
+      - name: Container logs
+        if: failure() && steps.smoke.outcome == 'failure'
+        run: docker logs madar
+
+  android:
+    name: Android debug build
+    if: github.event_name != 'workflow_dispatch' || !inputs.ios
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - name: Sync web build into the Android project
+        run: npx ng build --configuration development && npx cap sync android
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+  ios:
+    name: iOS simulator build
+    if: github.event_name == 'workflow_dispatch' && inputs.ios
+    # Pinned image and Xcode: Capacitor 8 needs Xcode 26+, and macos-latest moves between images.
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Sync web build into the iOS project
+        run: npx ng build --configuration development && node scripts/sync-ios-version.mjs && npx cap sync ios
+      - name: Build for the simulator
+        working-directory: ios/App
+        run: >
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build/DerivedData build CODE_SIGNING_ALLOWED=NO

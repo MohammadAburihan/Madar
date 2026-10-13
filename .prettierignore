@@ -1,0 +1,12 @@
+# Generated, vendored, or owned by other tools.
+dist
+coverage
+.angular
+node_modules
+package-lock.json
+android
+ios
+assets
+# Design hand-off and prose: keep their authored formatting.
+docs
+*.md

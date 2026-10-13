@@ -139,6 +139,14 @@ src/app/
 - Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.
 - Ionic caches pages: reset per-visit state (notices, password) instead of relying on a fresh component.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` must stay green before merging: formatting, unit tests, production build, release image
+smoke test, and an Android debug build. iOS is manual (`workflow_dispatch` with `ios`, which runs only the iOS job)
+on a pinned `macos-26` image with Xcode 26.6, to save macOS minutes and avoid image drift.
+Run the same checks locally before pushing: `npm run format:check` (or `npm run format` to fix) and `npm test`.
+`.prettierignore` leaves out generated, native, docs, and Markdown files.
+
 ## Development and deployment model
 
 - The frontend is developed locally on this machine in this repo.
@@ -185,4 +193,4 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 ## Not decided yet
 
 ERPNext version for production, authentication, container registry, AWS server and domain setup, and
-CI/CD. Ask before choosing any of these; don't assume. See section 12 of the overview.
+deployment automation (CD; CI is in place). Ask before choosing any of these; don't assume. See section 12 of the overview.

@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "test:watch": "ng test",
