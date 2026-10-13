@@ -223,8 +223,13 @@ export class CollectChooseContainer implements OnInit {
       });
       return;
     }
-    // Back from the recorded step: that payment is done, so this is a new collection.
+    // A payment that finished while the user was away is shown first; once its receipt has been seen,
+    // coming back here starts a new collection.
     if (store.state() === 'confirmed') {
+      if (!store.resultShown()) {
+        void this.ctx.go('recorded', { replaceUrl: true });
+        return;
+      }
       store.start();
     }
     void this.ctx.clock.ensure();

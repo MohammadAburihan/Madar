@@ -340,6 +340,16 @@ describe('CollectionStore', () => {
     expect(store.state()).toBe('confirmed');
   });
 
+  it('remembers whether the recorded result has been shown, until starting over', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockResolvedValue(RESULT);
+    await store.confirm();
+    expect(store.resultShown()).toBe(false);
+    store.resultShown.set(true);
+    store.start();
+    expect(store.resultShown()).toBe(false);
+  });
+
   it('clears an old failure when the customer or invoices change', async () => {
     const { store, api } = await ready();
     api.confirm.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));

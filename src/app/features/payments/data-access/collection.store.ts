@@ -41,6 +41,8 @@ export class CollectionStore {
   readonly state = signal<CollectionState>('idle');
   readonly failure = signal<CollectionFailure | null>(null);
   readonly result = signal<CollectionResult | null>(null);
+  /** The recorded step has shown the result; until then, returning to the task must show it. */
+  readonly resultShown = signal(false);
   private invoiceLoad = 0;
 
   readonly selectedInvoices = computed(() =>
@@ -84,6 +86,7 @@ export class CollectionStore {
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
+    this.resultShown.set(false);
   }
 
   async loadAccounts(): Promise<void> {

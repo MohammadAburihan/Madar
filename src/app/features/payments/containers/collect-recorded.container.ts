@@ -86,7 +86,9 @@ export class CollectRecordedContainer implements OnInit {
   ngOnInit(): void {
     if (!this.ctx.store.result()) {
       void this.ctx.go('', { replaceUrl: true });
+      return;
     }
+    this.ctx.store.resultShown.set(true);
   }
 
   protected openInvoice(invoice: string, payment: string): void {
