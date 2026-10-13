@@ -6,7 +6,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
@@ -17,7 +17,7 @@ import { TranslocoHttpLoader } from './core/i18n/transloco-http-loader';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(),
     provideIonicAngular(),
     provideTransloco({

@@ -1,110 +1,127 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { IonContent, IonHeader, IonTitle, IonToolbar, ToastController } from '@ionic/angular';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { addIcons } from 'ionicons';
+import { NgTemplateOutlet } from '@angular/common';
 import {
-  cartOutline,
-  bagHandleOutline,
-  cashOutline,
-  walletOutline,
-  receiptOutline,
-  swapHorizontalOutline,
-  constructOutline,
-} from 'ionicons/icons';
-import { Language, LanguageService } from '../../../core/i18n/language.service';
-import { ConnectionStatusComponent } from '../../../shared/ui/connection-status.component';
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  untracked,
+  inject,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
+import { Language } from '../../../core/i18n/language.service';
+import { injectI18n } from '../../../core/i18n/i18n';
+import { ViewportService } from '../../../core/layout/viewport.service';
+import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
-import { QuickAction, QuickActionsComponent } from '../components/quick-actions.component';
+import { ActionGridComponent } from '../components/action-grid.component';
+import { AttentionCardsComponent } from '../components/attention-cards.component';
+import { AttentionTableComponent } from '../components/attention-table.component';
+import { GlancePanelComponent } from '../components/glance-panel.component';
+import { HomeHeaderComponent } from '../components/home-header.component';
 import { HomeFacade } from '../data-access/home.facade';
-
-const QUICK_ACTIONS: readonly QuickAction[] = [
-  { id: 'sell', icon: 'cart-outline' },
-  { id: 'buy', icon: 'bag-handle-outline' },
-  { id: 'receivePayment', icon: 'cash-outline' },
-  { id: 'paySupplier', icon: 'wallet-outline' },
-  { id: 'recordExpense', icon: 'receipt-outline' },
-  { id: 'transferStock', icon: 'swap-horizontal-outline' },
-  { id: 'supplyProject', icon: 'construct-outline' },
-];
+import { buildHomeView } from './home-view';
 
 @Component({
   selector: 'app-home-container',
   imports: [
-    IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    TranslocoPipe,
-    ConnectionStatusComponent,
+    ActionGridComponent,
+    AttentionCardsComponent,
+    AttentionTableComponent,
+    FeedbackCardComponent,
+    GlancePanelComponent,
+    HomeHeaderComponent,
     LanguageSwitcherComponent,
-    QuickActionsComponent,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>{{ 'app.name' | transloco }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <div class="top">
-        <app-connection-status [status]="facade.backendStatus()" (retry)="facade.checkBackend()" />
-        <app-language-switcher
-          [language]="languageService.language()"
-          (languageChange)="changeLanguage($event)"
-        />
-      </div>
-
-      <h2>{{ 'home.quickActions' | transloco }}</h2>
-      <app-quick-actions [actions]="quickActions" (actionSelected)="openAction()" />
-    </ion-content>
-  `,
-  styles: `
-    .top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-  `,
+  host: { '[class.desktop]': 'desktop()', '[class.tablet]': "viewport() === 'tablet'" },
+  templateUrl: './home.container.html',
+  styleUrl: './home.container.scss',
 })
-export class HomeContainer implements OnInit {
+export class HomeContainer {
   protected readonly facade = inject(HomeFacade);
-  protected readonly languageService = inject(LanguageService);
-  private readonly toasts = inject(ToastController);
-  private readonly transloco = inject(TranslocoService);
+  private readonly session = inject(SessionService);
+  private readonly business = inject(BusinessService);
+  private readonly router = inject(Router);
 
-  protected readonly quickActions = QUICK_ACTIONS;
+  protected readonly viewport = inject(ViewportService).viewport;
+  private readonly i18n = injectI18n();
+  protected readonly language = this.i18n.language;
+  protected readonly desktop = computed(() => this.viewport() !== 'mobile');
+  private readonly tr = this.i18n.tr;
+
+  protected readonly view = computed(() =>
+    buildHomeView(
+      {
+        data: this.facade.data() ?? {},
+        persona: this.session.persona(),
+        firstName: this.session.user()?.firstName ?? '',
+        business: this.business.active() ?? { name: '', currency: '' },
+        language: this.language(),
+        now: this.facade.now(),
+      },
+      this.tr(),
+    ),
+  );
+
+  protected readonly text = computed(() => {
+    const { t } = this.tr();
+    const business = this.business.active()?.name ?? '';
+    return {
+      newLabel: t('home.new'),
+      actionsHeading: t('home.actionsHeading'),
+      attentionHeading: t('home.attentionHeading'),
+      glanceHeading: t('home.glance.heading'),
+      headers: { work: t('home.table.work'), due: t('home.table.due'), next: t('home.table.next') },
+      loading: { title: t('home.loading.title'), message: t('home.loading.message', { business }) },
+      offline: {
+        title: t('state.offline.title'),
+        message: t('state.offline.message'),
+        retry: t('state.offline.retry'),
+      },
+      error: {
+        title: t('home.error.title'),
+        message: t('home.error.message'),
+        retry: t('home.error.retry'),
+      },
+    };
+  });
 
   constructor() {
-    addIcons({
-      cartOutline,
-      bagHandleOutline,
-      cashOutline,
-      walletOutline,
-      receiptOutline,
-      swapHorizontalOutline,
-      constructOutline,
+    // Ionic keeps this page cached across a sign-in round trip, so reload whenever the signed-in user changes.
+    effect(() => {
+      const userId = this.session.user()?.id;
+      untracked(() => void this.facade.loadFor(userId));
     });
-  }
-
-  ngOnInit(): void {
-    this.facade.checkBackend();
+    effect(() => {
+      const status = this.facade.status();
+      if (status === 'expired' || status === 'signed-out') {
+        untracked(() => this.signInAgain(status === 'expired'));
+      }
+    });
   }
 
   protected changeLanguage(language: Language): void {
-    void this.languageService.use(language);
+    this.i18n.use(language);
   }
 
-  // Placeholder until the workflow screens exist.
-  protected async openAction(): Promise<void> {
-    const toast = await this.toasts.create({
-      message: this.transloco.translate('home.comingSoon'),
-      duration: 2000,
-      position: 'bottom',
+  protected signInAgain(expired = true): void {
+    void this.router.navigate(['/sign-in'], {
+      queryParams: { expired: expired ? 1 : null, returnUrl: this.router.url },
     });
-    await toast.present();
+  }
+
+  protected openNew(): void {
+    void this.router.navigate(['/new']);
+  }
+
+  protected openAction(id: string): void {
+    void this.router.navigate(['/task', id]);
+  }
+
+  protected openDrafts(): void {
+    void this.router.navigate(['/drafts']);
   }
 }

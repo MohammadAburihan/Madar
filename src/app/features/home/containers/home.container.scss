@@ -1,0 +1,66 @@
+:host {
+  --row-gap: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 20px 24px;
+}
+
+h2 {
+  color: var(--md-ink);
+  font: 600 20px / var(--md-lh) var(--md-font);
+}
+
+.muted {
+  color: var(--md-muted);
+  font: 400 14px / var(--md-lh) var(--md-font);
+}
+
+:host(.desktop) {
+  --row-gap: 24px;
+
+  gap: 28px;
+  padding: 40px;
+
+  h2 {
+    font-size: 24px;
+  }
+}
+
+.work-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.primary {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+  min-inline-size: 0;
+}
+
+.glance {
+  flex: none;
+  inline-size: 280px;
+}
+
+:host(.tablet) .glance {
+  inline-size: 220px;
+}
+
+.drafts-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--md-primary);
+  font: 600 16px / var(--md-lh) var(--md-font);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -24,12 +24,14 @@ All in `docs/`:
 - Runtime English/Arabic switching (Transloco) with full RTL. Use CSS logical properties (`margin-inline-start`,
   not `margin-left`) so layouts flip correctly. Translations live in `public/i18n/{en,ar}.json`; Arabic terms
   must follow `docs/LOCALIZATION-GLOSSARY.md`.
-- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs.
+- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs. If tests behave as
+  if a source change didn't happen, clear the stale cache: `rm -rf node_modules/.vitest-cache .angular/cache`.
 
 ## Commands
 
 ```sh
 npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :8080
+                      # ERPNEXT_DEV_URL=http://localhost:8081 targets the seeded test site instead
 npm test              # unit tests, single run
 npm run build         # production build to dist/madar/browser
 npm run cap:sync      # production build copied into the android/ and ios/ projects
@@ -104,6 +106,38 @@ src/app/
 
 - Features must not import from other features; share through `shared/` or `core/`.
 - Only `data-access/` talks to ERPNext. Containers go through the area facade, never `HttpClient` directly.
+- Containers get language state and a translator from `injectI18n()` (`core/i18n/i18n.ts`); services that
+  load something once share the in-flight call with `shareInFlight()` (`core/util/share-in-flight.ts`).
+- The shell keeps a single `<router-outlet>` for all layouts; switching layout must not recreate the page.
+- Containers turn data into display strings with a pure `*-view.ts` builder (see `home-view.ts`), so wording,
+  plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
+
+## Design fidelity
+
+- `docs/Madar.pen` is the source of truth. Read frames and tokens through the Pencil MCP tools
+  (`Get`, `GetVariables`, `Export` for PNGs) and match labels, spacing, and tokens exactly.
+- Tokens live as CSS variables in `src/styles.scss` (`--md-primary`, `--md-ink`, …), mirroring the `.pen`
+  variables. Icons are Lucide (`@lucide/angular`), as in the design.
+- Pencil strokes sit inside the box: a 48px button with a 1px border uses 11px vertical padding.
+- Arabic mocks start-align button labels and use line-height 1.5 (`--md-lh`); amounts stay a left-aligned
+  LTR run. Pencil can't do bidi, so mocks show some Arabic strings in LTR order — trust the browser's bidi.
+- Breakpoints: mobile < 768px (bottom nav), tablet 768–1279px (80px rail), desktop ≥ 1280px (232px sidebar).
+- Verify against exported mock PNGs at 390/1024/1440px in both languages before calling UI work done.
+
+## ERPNext API notes
+
+- Aggregates need dict syntax: `fields: [{ SUM: 'grand_total' }]`; SQL strings are rejected. `groupBy` works
+  with them (e.g. receivables grouped by currency and rate). Sum `base_*` fields for company-currency totals.
+- `ErpnextClient.list` defaults to 20 rows like Frappe; use `listAll` (pages of 500) when every row matters,
+  and batch long `in` filters (see `stockFor`) to keep GET URLs short.
+- "Today" is the site's wall-clock time (`SiteClockService`), not the device's.
+- Child-table fields: `'items.qty as qty'` returns one row per child row.
+- Non-admin users get an empty `roles` table on their own User doc; read `Has Role` with `parent: 'User'`.
+- Guests get 403 (not `"Guest"`) from `frappe.auth.get_logged_user`. 403 also means "no permission", so
+  after a 403 call `SessionService.checkExpired()` to tell the two apart.
+- Default `Sales User` can't read Sales Invoices in v16; Home hides whatever a role can't read.
+- Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.
+- Ionic caches pages: reset per-visit state (notices, password) instead of relying on a fresh component.
 
 ## Development and deployment model
 
@@ -124,6 +158,9 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 - `frappe/erpnext:v16.50.0`, served at http://localhost:8080.
 - Site `frontend`, login `Administrator` / `admin` (local only; never reuse on AWS).
 - Stop with `docker compose -f pwd.yml down`. Don't add `-v` unless you mean to wipe the local data.
+- `pwd.yml` pins every request to the `frontend` site (`FRAPPE_SITE_NAME_HEADER`), whatever the Host header.
+  Never write to `frontend` for testing: use `scripts/dev-test-site.sh`, which creates `madar-test.localhost`
+  behind its own web container on port 8081 and seeds it (users in the README).
 
 ### Release rules
 

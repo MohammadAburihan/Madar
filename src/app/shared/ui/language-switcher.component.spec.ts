@@ -22,7 +22,7 @@ describe('LanguageSwitcherComponent', () => {
     fixture.componentRef.setInput('language', 'en');
     await fixture.whenStable();
 
-    const button: HTMLElement = fixture.nativeElement.querySelector('ion-button');
+    const button: HTMLElement = fixture.nativeElement.querySelector('button');
     expect(button.textContent?.trim()).toBe('العربية');
     expect(button.getAttribute('lang')).toBe('ar');
     expect(button.getAttribute('aria-label')).toBe('Switch language to العربية');
@@ -34,7 +34,7 @@ describe('LanguageSwitcherComponent', () => {
     const emitted: string[] = [];
     fixture.componentInstance.languageChange.subscribe((language) => emitted.push(language));
 
-    fixture.nativeElement.querySelector('ion-button').click();
+    fixture.nativeElement.querySelector('button').click();
 
     expect(emitted).toEqual(['en']);
   });

@@ -1,16 +1,48 @@
 {
   "app": {
-    "name": "Madar"
+    "name": "Madar",
+    "wordmark": "Madar / مدار",
+    "wordmarkShort": "M"
   },
-  "connection": {
-    "checking": "Checking connection…",
-    "online": "Connected to ERPNext",
-    "offline": "Can't reach ERPNext",
-    "retry": "Try again"
+  "language": {
+    "switchTo": "Change language to {{language}}"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "sales": "Sales",
+    "purchases": "Purchases",
+    "inventory": "Inventory",
+    "stock": "Stock",
+    "contacts": "Contacts",
+    "money": "Money",
+    "projects": "Projects",
+    "settings": "Settings",
+    "more": "More",
+    "itemsServices": "Items & Services",
+    "activeBusiness": "Active business",
+    "switchBusiness": "Switch business, current: {{business}}",
+    "userMeta": "{{role}} · English / العربية",
+    "drafts": "Drafts",
+    "new": "New"
   },
   "home": {
-    "quickActions": "Quick actions",
-    "comingSoon": "This screen isn't available yet.",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "title": {
+      "salesperson": "Ready for your next sale?",
+      "warehouse": "Today in the warehouse"
+    },
+    "role": {
+      "owner": "Owner",
+      "salesperson": "Salesperson",
+      "warehouse": "Warehouse worker"
+    },
+    "new": "+ New",
+    "actionsHeading": "What needs doing?",
     "actions": {
       "sell": "Sell",
       "buy": "Buy",
@@ -18,10 +50,171 @@
       "paySupplier": "Pay supplier",
       "recordExpense": "Record expense",
       "transferStock": "Transfer stock",
-      "supplyProject": "Supply a project"
+      "supplyProject": "Supply a project",
+      "customers": "Customers",
+      "catalog": "Catalog",
+      "receiveGoods": "Receive goods",
+      "countStock": "Count stock",
+      "supplyProjectShort": "Supply project"
+    },
+    "attentionHeading": "Needs your attention",
+    "table": {
+      "work": "Work",
+      "due": "Due",
+      "next": "Next action"
+    },
+    "due": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "overdue": "Overdue"
+    },
+    "relative": {
+      "justNow": "Just now",
+      "minutes": {
+        "one": "1 min ago",
+        "other": "{{count}} min ago"
+      },
+      "hours": {
+        "one": "1 hour ago",
+        "other": "{{count}} hours ago"
+      },
+      "days": {
+        "one": "1 day ago",
+        "other": "{{count}} days ago"
+      }
+    },
+    "work": {
+      "draft": "{{party}} · Draft"
+    },
+    "next": {
+      "receiveDelivery": "Receive delivery",
+      "continueSale": "Continue sale",
+      "supply": "Supply {{qty}} × {{item}}",
+      "receivePayment": "Receive payment"
+    },
+    "cards": {
+      "drafts": {
+        "one": "1 unfinished draft",
+        "other": "{{count}} unfinished drafts"
+      },
+      "draftsMessage": "Sale for {{party}} · Updated {{when}}",
+      "delivery": {
+        "today": "Delivery arriving today",
+        "tomorrow": "Delivery arriving tomorrow",
+        "overdue": "Delivery overdue"
+      },
+      "deliveryMessage": "{{po}} · {{qty}} × {{item}}",
+      "payment": {
+        "today": "Payment due today",
+        "tomorrow": "Payment due tomorrow",
+        "overdue": "Payment overdue"
+      },
+      "paymentMessage": "{{customer}} · {{invoice}}",
+      "continueSale": "Continue your sale",
+      "continueSaleMessage": "{{party}} · {{amount}} · Draft",
+      "followUp": "Customer to follow up",
+      "followUpMessage": {
+        "today": "{{customer}} · Invoice due today",
+        "tomorrow": "{{customer}} · Invoice due tomorrow",
+        "overdue": "{{customer}} · Invoice overdue"
+      },
+      "lowStock": {
+        "one": "1 item running low",
+        "other": "{{count}} items running low"
+      },
+      "lowStockMessage": "{{warehouse}} · View stock",
+      "supplyNeed": "{{project}} needs materials",
+      "supplyNeedMessage": "{{qty}} × {{item}} needed · {{available}} available"
+    },
+    "allClear": {
+      "title": "Nothing needs your attention",
+      "message": "New work will appear here as it comes in."
+    },
+    "summary": {
+      "owner": "Today: {{sales}} sales · {{collect}} to collect",
+      "salesperson": "Your sales today: {{sales}}",
+      "warehouse": {
+        "one": "{{warehouse}} · 1 low-stock item",
+        "other": "{{warehouse}} · {{count}} low-stock items"
+      }
+    },
+    "glance": {
+      "heading": "Today at a glance",
+      "sales": "Confirmed sales today",
+      "salesOwn": "Your confirmed sales today",
+      "receivables": "Customer invoices due",
+      "lowStock": {
+        "one": "1 low-stock item",
+        "other": "{{count}} low-stock items"
+      },
+      "allStocked": "All items above reorder level",
+      "note": "All summaries belong to {{business}}. Choose another business from the sidebar.",
+      "noLowStock": "No low-stock items"
+    },
+    "warehouseNote": "Only permitted stock actions are shown. Money and sales amounts stay hidden.",
+    "draftCount": {
+      "one": "1 draft",
+      "other": "{{count}} drafts"
+    },
+    "draftsLink": "Unfinished work · {{drafts}} · View all drafts",
+    "loading": {
+      "title": "Loading your work…",
+      "message": "Getting the latest from {{business}}."
+    },
+    "error": {
+      "title": "Home couldn't load",
+      "message": "Something went wrong on the server. Try again in a moment.",
+      "retry": "Try again"
     }
   },
-  "language": {
-    "switchTo": "Switch language to {{language}}"
+  "state": {
+    "offline": {
+      "title": "Connection unavailable",
+      "message": "We could not reach this workspace. Check your connection and try again.",
+      "retry": "Try connection again"
+    },
+    "expired": {
+      "title": "Session expired",
+      "message": "Sign in again to continue in {{business}}."
+    }
+  },
+  "signIn": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to {{business}}.",
+    "subtitleNoBusiness": "Sign in to your business.",
+    "email": "Email *",
+    "password": "Password *",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgot": "Forgot password?",
+    "connectedTo": "Connected to {{host}}",
+    "missing": {
+      "title": "Enter your email and password",
+      "message": "Both fields are required to sign in."
+    },
+    "invalid": {
+      "title": "Email or password is incorrect",
+      "message": "Check your details and try again."
+    },
+    "forgotMissing": {
+      "title": "Enter your email first",
+      "message": "We'll send reset instructions to that address."
+    },
+    "forgotSent": {
+      "title": "Check your email",
+      "message": "If {{email}} has an account, reset instructions are on their way."
+    },
+    "error": {
+      "title": "Couldn't sign in",
+      "message": "Something went wrong on the server. Try again in a moment."
+    },
+    "noSession": {
+      "title": "Signed in, but the session wasn't kept",
+      "message": "This browser didn't keep the sign-in. Allow cookies for this site, then try again."
+    }
+  },
+  "placeholder": {
+    "title": "{{area}} isn't available yet",
+    "message": "This part of Madar is planned for a later step. Use Home for now."
   }
 }

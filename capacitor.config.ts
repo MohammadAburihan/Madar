@@ -8,12 +8,12 @@ const config: CapacitorConfig = {
     CapacitorHttp: { enabled: true },
     SplashScreen: {
       launchAutoHide: false,
-      backgroundColor: '#0f5c5c',
+      backgroundColor: '#0b5c56',
       showSpinner: false,
     },
     StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#0f5c5c',
+      style: 'LIGHT',
+      backgroundColor: '#f7f6f2',
     },
   },
 };

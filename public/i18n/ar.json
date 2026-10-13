@@ -1,27 +1,244 @@
 {
   "app": {
-    "name": "مدار"
+    "name": "مدار",
+    "wordmark": "مدار",
+    "wordmarkShort": "م"
   },
-  "connection": {
-    "checking": "جارٍ التحقق من الاتصال…",
-    "online": "متصل بـ ERPNext",
-    "offline": "تعذّر الوصول إلى ERPNext",
-    "retry": "المحاولة مجدداً"
+  "language": {
+    "switchTo": "تغيير اللغة إلى {{language}}"
+  },
+  "nav": {
+    "label": "التنقل الرئيسي",
+    "home": "الرئيسية",
+    "sales": "المبيعات",
+    "purchases": "المشتريات",
+    "inventory": "المخزون",
+    "stock": "المخزون",
+    "contacts": "جهات الاتصال",
+    "money": "الأموال",
+    "projects": "المشاريع",
+    "settings": "الإعدادات",
+    "more": "المزيد",
+    "itemsServices": "الأصناف والخدمات",
+    "activeBusiness": "المنشأة الحالية",
+    "switchBusiness": "تبديل المنشأة، الحالية: {{business}}",
+    "userMeta": "{{role}} · العربية",
+    "drafts": "المسودات",
+    "new": "جديد"
   },
   "home": {
-    "quickActions": "إجراءات سريعة",
-    "comingSoon": "هذه الشاشة غير متاحة بعد.",
+    "greeting": {
+      "morning": "صباح الخير، {{name}}",
+      "afternoon": "مساء الخير، {{name}}",
+      "evening": "مساء الخير، {{name}}"
+    },
+    "title": {
+      "salesperson": "هل أنت جاهز للبيع؟",
+      "warehouse": "اليوم في المستودع"
+    },
+    "role": {
+      "owner": "المالك",
+      "salesperson": "مندوب مبيعات",
+      "warehouse": "عامل المستودع"
+    },
+    "new": "+ جديد",
+    "actionsHeading": "ما المهمة التي تريد إنجازها؟",
     "actions": {
       "sell": "بيع",
       "buy": "شراء",
       "receivePayment": "استلام دفعة",
-      "paySupplier": "الدفع لمورد",
+      "paySupplier": "دفع للمورّد",
       "recordExpense": "تسجيل مصروف",
-      "transferStock": "تحويل مخزون",
-      "supplyProject": "توريد لمشروع"
+      "transferStock": "نقل المخزون",
+      "supplyProject": "تجهيز مشروع",
+      "customers": "العملاء",
+      "catalog": "دليل الأصناف",
+      "receiveGoods": "استلام البضائع",
+      "countStock": "جرد المخزون",
+      "supplyProjectShort": "تجهيز مشروع"
+    },
+    "attentionHeading": "مهام تحتاج إلى متابعتك",
+    "table": {
+      "work": "المهام",
+      "due": "المستحق",
+      "next": "الإجراء التالي"
+    },
+    "due": {
+      "today": "اليوم",
+      "tomorrow": "غداً",
+      "overdue": "متأخر"
+    },
+    "relative": {
+      "justNow": "الآن",
+      "minutes": {
+        "one": "قبل دقيقة",
+        "two": "قبل دقيقتين",
+        "few": "قبل {{count}} دقائق",
+        "other": "قبل {{count}} دقيقة",
+        "many": "قبل {{count}} دقيقة"
+      },
+      "hours": {
+        "one": "قبل ساعة",
+        "two": "قبل ساعتين",
+        "few": "قبل {{count}} ساعات",
+        "other": "قبل {{count}} ساعة",
+        "many": "قبل {{count}} ساعة"
+      },
+      "days": {
+        "one": "قبل يوم",
+        "two": "قبل يومين",
+        "few": "قبل {{count}} أيام",
+        "other": "قبل {{count}} يوم",
+        "many": "قبل {{count}} يوماً"
+      }
+    },
+    "work": {
+      "draft": "{{party}} · مسودة"
+    },
+    "next": {
+      "receiveDelivery": "استلام التوريد",
+      "continueSale": "متابعة البيع",
+      "supply": "تجهيز {{qty}} × {{item}}",
+      "receivePayment": "استلام دفعة"
+    },
+    "cards": {
+      "drafts": {
+        "one": "مسودة واحدة غير مكتملة",
+        "two": "مسودتان غير مكتملتين",
+        "few": "{{count}} مسودات غير مكتملة",
+        "other": "{{count}} مسودة غير مكتملة",
+        "many": "{{count}} مسودة غير مكتملة"
+      },
+      "draftsMessage": "بيع إلى {{party}} · حُدّث {{when}}",
+      "delivery": {
+        "today": "توريد يصل اليوم",
+        "tomorrow": "توريد يصل غداً",
+        "overdue": "توريد متأخر"
+      },
+      "deliveryMessage": "{{po}} · {{qty}} × {{item}}",
+      "payment": {
+        "today": "دفعة مستحقة اليوم",
+        "tomorrow": "دفعة مستحقة غداً",
+        "overdue": "دفعة متأخرة"
+      },
+      "paymentMessage": "{{customer}} · {{invoice}}",
+      "continueSale": "تابع عملية البيع",
+      "continueSaleMessage": "{{party}} · {{amount}} · مسودة",
+      "followUp": "عميل يحتاج إلى متابعة",
+      "followUpMessage": {
+        "today": "{{customer}} · تستحق الفاتورة اليوم",
+        "tomorrow": "{{customer}} · تستحق الفاتورة غداً",
+        "overdue": "{{customer}} · الفاتورة متأخرة"
+      },
+      "lowStock": {
+        "one": "صنف واحد قارب على النفاد",
+        "two": "صنفان قاربا على النفاد",
+        "few": "{{count}} أصناف قاربت على النفاد",
+        "other": "{{count}} صنف قارب على النفاد",
+        "many": "{{count}} صنفاً قارب على النفاد"
+      },
+      "lowStockMessage": "{{warehouse}} · عرض المخزون",
+      "supplyNeed": "{{project}} يحتاج إلى مواد",
+      "supplyNeedMessage": "مطلوب {{qty}} × {{item}} · المتاح {{available}}"
+    },
+    "allClear": {
+      "title": "لا توجد مهام تحتاج إلى متابعتك",
+      "message": "ستظهر المهام الجديدة هنا عند وصولها."
+    },
+    "summary": {
+      "owner": "اليوم: مبيعات {{sales}} · مستحق التحصيل {{collect}}",
+      "salesperson": "مبيعاتك اليوم: {{sales}}",
+      "warehouse": {
+        "one": "{{warehouse}} · صنف واحد منخفض المخزون",
+        "two": "{{warehouse}} · صنفان منخفضا المخزون",
+        "few": "{{warehouse}} · {{count}} أصناف منخفضة المخزون",
+        "other": "{{warehouse}} · {{count}} صنف منخفض المخزون",
+        "many": "{{warehouse}} · {{count}} صنفاً منخفض المخزون"
+      }
+    },
+    "glance": {
+      "heading": "ملخص اليوم",
+      "sales": "مبيعات اليوم المؤكدة",
+      "salesOwn": "مبيعاتك المؤكدة اليوم",
+      "receivables": "فواتير العملاء المستحقة",
+      "lowStock": {
+        "one": "صنف واحد منخفض المخزون",
+        "two": "صنفان منخفضا المخزون",
+        "few": "{{count}} أصناف منخفضة المخزون",
+        "other": "{{count}} صنف منخفض المخزون",
+        "many": "{{count}} صنفاً منخفض المخزون"
+      },
+      "allStocked": "كل الأصناف فوق حد إعادة الطلب",
+      "note": "كل الملخصات تخص {{business}}. اختر منشأة أخرى من الشريط الجانبي.",
+      "noLowStock": "لا توجد أصناف منخفضة المخزون"
+    },
+    "warehouseNote": "تظهر إجراءات المخزون المسموح بها فقط. تبقى بيانات الأموال والمبيعات مخفية.",
+    "draftCount": {
+      "one": "مسودة واحدة",
+      "two": "مسودتان",
+      "few": "{{count}} مسودات",
+      "other": "{{count}} مسودة",
+      "many": "{{count}} مسودة"
+    },
+    "draftsLink": "أعمال غير مكتملة · {{drafts}} · عرض كل المسودات",
+    "loading": {
+      "title": "جارٍ تحميل أعمالك…",
+      "message": "جارٍ جلب آخر البيانات من {{business}}."
+    },
+    "error": {
+      "title": "تعذّر تحميل الرئيسية",
+      "message": "حدث خطأ في الخادم. حاول مجدداً بعد قليل.",
+      "retry": "المحاولة مجدداً"
     }
   },
-  "language": {
-    "switchTo": "تغيير اللغة إلى {{language}}"
+  "state": {
+    "offline": {
+      "title": "الاتصال غير متاح",
+      "message": "تعذّر الوصول إلى مساحة العمل هذه. تحقّق من الاتصال وحاول مجدداً.",
+      "retry": "إعادة محاولة الاتصال"
+    },
+    "expired": {
+      "title": "انتهت الجلسة",
+      "message": "سجّل الدخول مجدداً للمتابعة في {{business}}."
+    }
+  },
+  "signIn": {
+    "title": "أهلاً بعودتك",
+    "subtitle": "سجّل الدخول إلى {{business}}.",
+    "subtitleNoBusiness": "سجّل الدخول إلى منشأتك.",
+    "email": "البريد الإلكتروني *",
+    "password": "كلمة المرور *",
+    "submit": "تسجيل الدخول",
+    "submitting": "جارٍ تسجيل الدخول…",
+    "forgot": "هل نسيت كلمة المرور؟",
+    "connectedTo": "متصل بـ {{host}}",
+    "missing": {
+      "title": "أدخل البريد الإلكتروني وكلمة المرور",
+      "message": "الحقلان مطلوبان لتسجيل الدخول."
+    },
+    "invalid": {
+      "title": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+      "message": "تحقّق من بياناتك وحاول مجدداً."
+    },
+    "forgotMissing": {
+      "title": "أدخل بريدك الإلكتروني أولاً",
+      "message": "سنرسل تعليمات إعادة التعيين إلى هذا العنوان."
+    },
+    "forgotSent": {
+      "title": "تحقّق من بريدك الإلكتروني",
+      "message": "إذا كان للعنوان {{email}} حساب، فستصلك تعليمات إعادة التعيين."
+    },
+    "error": {
+      "title": "تعذّر تسجيل الدخول",
+      "message": "حدث خطأ في الخادم. حاول مجدداً بعد قليل."
+    },
+    "noSession": {
+      "title": "تم تسجيل الدخول لكن الجلسة لم تُحفظ",
+      "message": "لم يحتفظ هذا المتصفح بتسجيل الدخول. اسمح بملفات تعريف الارتباط لهذا الموقع ثم حاول مجدداً."
+    }
+  },
+  "placeholder": {
+    "title": "{{area}} غير متاح بعد",
+    "message": "هذا الجزء من مدار مخطط لمرحلة لاحقة. استخدم الرئيسية حالياً."
   }
 }

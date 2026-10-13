@@ -44,6 +44,25 @@ Open http://localhost:8080 and sign in as `Administrator` / `admin` (local devel
 
 Stop it with `docker compose -f pwd.yml down`. Adding `-v` deletes the local data.
 
+#### Seeded test site
+
+`pwd.yml` sends every request to its `frontend` site, so Madar's demo data lives in a separate, disposable
+site with its own web container on port 8081:
+
+```sh
+sh scripts/dev-test-site.sh   # (re)creates madar-test.localhost and seeds it like the design mocks
+```
+
+It never touches the `frontend` site. Users (password `Madar-Dev-2026`):
+
+| User | Role | Home variant |
+|---|---|---|
+| `rehan@rehan.example` | System Manager and managers | Owner |
+| `lina@rehan.example` | Sales User, Accounts User | Salesperson |
+| `omar@rehan.example` | Stock User | Warehouse worker |
+
+"Today" data is created for the day the script runs; rerun it to refresh.
+
 ### Frontend
 
 Requires Node.js 24 or newer.
@@ -51,6 +70,7 @@ Requires Node.js 24 or newer.
 ```sh
 npm install
 npm start          # http://localhost:4200, proxies API calls to ERPNext on :8080
+ERPNEXT_DEV_URL=http://localhost:8081 npm start   # same, against the seeded test site
 npm test
 ```
 

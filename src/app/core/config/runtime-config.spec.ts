@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { NATIVE_ERPNEXT_URLS, NATIVE_PLATFORM, NativePlatform } from '../platform/native-platform';
-import { RuntimeConfigService } from './runtime-config';
+import { RuntimeConfigService, normalizeUrl } from './runtime-config';
 
 function setup(
   platform: NativePlatform,
@@ -48,6 +48,15 @@ describe('RuntimeConfigService', () => {
     await loading;
 
     expect(service.erpnextUrl()).toBe('http://10.0.2.2:8080');
+  });
+
+  it('normalizes configured URLs and rejects garbage', () => {
+    expect(normalizeUrl('erp.example.com')).toBe('https://erp.example.com');
+    expect(normalizeUrl(' http://10.0.2.2:8081/ ')).toBe('http://10.0.2.2:8081');
+    expect(normalizeUrl('https://erp.example.com/base/')).toBe('https://erp.example.com/base');
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(normalizeUrl('http://')).toBe('');
+    expect(normalizeUrl('')).toBe('');
   });
 
   it('ignores a non-string erpnextUrl instead of crashing', async () => {
