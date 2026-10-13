@@ -143,7 +143,8 @@ src/app/
 
 `.github/workflows/ci.yml` must stay green before merging: formatting, unit tests, production build, release image
 smoke test, and an Android debug build. iOS is manual (`workflow_dispatch` with `ios`) to save macOS minutes.
-Run `npx prettier --check "src/**/*.{ts,html,scss}"` and `npm test` locally before pushing.
+Run the same checks locally before pushing:
+`npx prettier --check "src/**/*.{ts,html,scss}" scripts/*.mjs proxy.conf.mjs` and `npm test`.
 
 ## Development and deployment model
 
