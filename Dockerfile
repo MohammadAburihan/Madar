@@ -12,10 +12,12 @@ LABEL org.opencontainers.image.title="madar-web" \
 
 # Defaults to the incoming Host so Frappe resolves the site from the request; set it to pin one site.
 ENV ERPNEXT_UPSTREAM=http://frontend:8080 \
+    NGINX_RESOLVER=127.0.0.11 \
     ERPNEXT_SITE_HOST='$host' \
     MADAR_ERPNEXT_URL=''
 
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY docker/40-madar-config.sh /docker-entrypoint.d/40-madar-config.sh
 COPY --from=build /app/dist/madar/browser /usr/share/nginx/html
 RUN chmod +x /docker-entrypoint.d/40-madar-config.sh && echo "$VERSION" > /usr/share/nginx/html/version.txt

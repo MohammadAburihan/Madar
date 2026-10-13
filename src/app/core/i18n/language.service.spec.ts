@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { TranslocoTestingModule } from '@jsverse/transloco';
+import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import { throwError } from 'rxjs';
 import { LanguageService } from './language.service';
 
 describe('LanguageService', () => {
@@ -45,5 +46,28 @@ describe('LanguageService', () => {
 
     expect(service.language()).toBe('en');
     expect(TestBed.inject(DOCUMENT).documentElement.dir).toBe('ltr');
+  });
+
+  it('keeps the current language when another one fails to load', async () => {
+    const service = TestBed.inject(LanguageService);
+    const transloco = TestBed.inject(TranslocoService);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(transloco, 'load').mockReturnValue(throwError(() => new Error('404')));
+
+    await expect(service.use('ar')).resolves.toBeUndefined();
+
+    expect(service.language()).toBe('en');
+    expect(TestBed.inject(DOCUMENT).documentElement.dir).toBe('ltr');
+  });
+
+  it('still starts when the initial translations fail to load', async () => {
+    const service = TestBed.inject(LanguageService);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(TestBed.inject(TranslocoService), 'load').mockReturnValue(
+      throwError(() => new Error('offline')),
+    );
+
+    await expect(service.init()).resolves.toBeUndefined();
+    expect(service.language()).toBe('en');
   });
 });

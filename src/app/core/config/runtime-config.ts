@@ -31,7 +31,8 @@ export class RuntimeConfigService {
     try {
       const loaded = await firstValueFrom(this.http.get<Partial<RuntimeConfig>>('config.json'));
       this.config.set({ ...DEFAULT_CONFIG, ...loaded });
-    } catch {
+    } catch (error) {
+      console.warn('config.json is missing or invalid; using same-origin ERPNext', error);
       this.config.set(DEFAULT_CONFIG);
     }
   }

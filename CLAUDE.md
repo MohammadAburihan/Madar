@@ -48,8 +48,12 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
 - Native apps have no proxy: when `erpnextUrl` is empty they use `environment.nativeErpnextUrl[platform]`.
   Dev builds point the Android emulator at `http://10.0.2.2:8080` and the iOS simulator at
   `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
-- `cap:sync:dev` sets `MADAR_NATIVE_DEV=1`, which allows cleartext HTTP. Always run plain `cap:sync` before a
-  store build so the native projects don't ship with cleartext enabled.
+- Plain HTTP to a local ERPNext is allowed only in debug builds, never in release:
+  Android via `android/app/src/debug/` (network security config for `10.0.2.2`/`localhost`), iOS via
+  `App/Info-Debug.plist` (`NSAllowsLocalNetworking`, used by the Debug configuration only). Keep
+  `Info-Debug.plist` identical to `Info.plist` apart from that key.
+- `android:dev` runs `cap run android --no-sync` after its own dev sync; a second sync would replace the
+  dev web build.
 - Toolchain: Gradle needs Java 21 (`JAVA_HOME=$(/usr/libexec/java_home -v 21)`); Android Studio's bundled
   Java 25 fails with "Unsupported class file major version 69". `xcode-select` intentionally stays on
   CommandLineTools (used for other C++ work); don't change it. `npm run ios:dev` runs
@@ -57,6 +61,9 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
   same for any direct `xcodebuild`/`xcrun simctl` command.
 - Don't use `cap run ios`: its native-run dependency opens `Simulator.app`, which Xcode 27 replaced with
   DeviceHub, so deployment fails. `scripts/ios-dev.sh` builds with `xcodebuild` and launches via `simctl`.
+- Nginx in the release image re-resolves `ERPNEXT_UPSTREAM` through `NGINX_RESOLVER` (Docker's DNS by
+  default), so it starts before ERPNext and survives its restarts. Every location that sets `add_header`
+  must `include` `docker/security-headers.conf`, or nginx drops the security headers there.
 - `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
 - `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.
 - Icons and splash screens are generated from `assets/` with `npx capacitor-assets generate`. The current
