@@ -172,7 +172,9 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 
 ### Release rules
 
-- `development` is the default branch. Work happens on feature branches merged through PRs.
+- `development` is the default branch and is protected: no direct or force pushes, even for admins. Every change
+  goes through a PR from a feature branch, and merges need the "Format, test, build", "Release image", and
+  "Android debug build" checks to pass on a branch that is up to date with `development`.
 - Releases are git tags `vX.Y.Z`, matching `version` in `package.json`.
 - The image tag matches the release version (`madar-web:X.Y.Z`). Deploy by explicit version, never only
   `latest`.
