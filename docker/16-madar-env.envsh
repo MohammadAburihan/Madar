@@ -1,0 +1,21 @@
+#!/bin/sh
+# Sourced by the nginx entrypoint before templates are rendered.
+set -eu
+
+# Default to the container's own DNS servers (from 15-local-resolvers.envsh), so any network works.
+export NGINX_RESOLVER="${NGINX_RESOLVER:-$NGINX_LOCAL_RESOLVERS}"
+
+# proxy_pass uses a variable, so a path in the upstream would replace every request URI.
+upstream="${ERPNEXT_UPSTREAM%/}"
+case "$upstream" in
+  http://*/* | https://*/*)
+    echo "ERPNEXT_UPSTREAM must be scheme://host[:port] without a path, got: $ERPNEXT_UPSTREAM" >&2
+    exit 1
+    ;;
+  http://* | https://*) ;;
+  *)
+    echo "ERPNEXT_UPSTREAM must start with http:// or https://, got: $ERPNEXT_UPSTREAM" >&2
+    exit 1
+    ;;
+esac
+export ERPNEXT_UPSTREAM="$upstream"

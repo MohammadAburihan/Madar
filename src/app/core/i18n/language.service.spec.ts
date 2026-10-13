@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
-import { throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { LanguageService } from './language.service';
 
 describe('LanguageService', () => {
@@ -69,5 +69,23 @@ describe('LanguageService', () => {
 
     await expect(service.init()).resolves.toBeUndefined();
     expect(service.language()).toBe('en');
+  });
+
+  it('applies the language picked last when loads finish out of order', async () => {
+    const service = TestBed.inject(LanguageService);
+    const transloco = TestBed.inject(TranslocoService);
+    const slowArabic = new Subject<Record<string, string>>();
+    vi.spyOn(transloco, 'load').mockImplementation((lang: string) =>
+      lang === 'ar' ? slowArabic.asObservable() : of({}),
+    );
+
+    const arabic = service.use('ar');
+    await service.use('en');
+    slowArabic.next({});
+    slowArabic.complete();
+    await arabic;
+
+    expect(service.language()).toBe('en');
+    expect(localStorage.getItem('madar.language')).toBe('en');
   });
 });

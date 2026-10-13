@@ -48,9 +48,11 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
   Dev builds point the Android emulator at `http://10.0.2.2:8080` and the iOS simulator at
   `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
 - Plain HTTP to a local ERPNext is allowed only in debug builds, never in release:
-  Android via `android/app/src/debug/` (network security config for `10.0.2.2`/`localhost`), iOS via
-  `App/Info-Debug.plist` (`NSAllowsLocalNetworking`, used by the Debug configuration only). Keep
-  `Info-Debug.plist` identical to `Info.plist` apart from that key.
+  Android via `android/app/src/debug/` (network security config for `10.0.2.2`/`localhost`), iOS via the
+  "Allow local networking in Debug" build phase, which adds `NSAllowsLocalNetworking` to the built
+  `Info.plist` for Debug only. There is a single `Info.plist`.
+- Native versions follow `package.json`: Gradle reads it, and `cap:sync` runs `scripts/sync-ios-version.mjs`
+  (versionCode / build number = major·10000 + minor·100 + patch).
 - `android:dev` runs `cap run android --no-sync` after its own dev sync; a second sync would replace the
   dev web build.
 - Toolchain: Gradle needs Java 21 (`JAVA_HOME=$(/usr/libexec/java_home -v 21)`); Android Studio's bundled
@@ -60,8 +62,10 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
   same for any direct `xcodebuild`/`xcrun simctl` command.
 - Don't use `cap run ios`: its native-run dependency opens `Simulator.app`, which Xcode 27 replaced with
   DeviceHub, so deployment fails. `scripts/ios-dev.sh` builds with `xcodebuild` and launches via `simctl`.
-- Nginx in the release image re-resolves `ERPNEXT_UPSTREAM` through `NGINX_RESOLVER` (Docker's DNS by
-  default), so it starts before ERPNext and survives its restarts. Every location that sets `add_header`
+- Nginx in the release image re-resolves `ERPNEXT_UPSTREAM` through `NGINX_RESOLVER` (the container's own
+  DNS servers by default), so it starts before ERPNext and survives its restarts. The upstream must be
+  `scheme://host[:port]` without a path (checked at start-up); nginx's resolver ignores search domains, so
+  use fully qualified names outside Docker networks. `X-Forwarded-Proto` from a proxy in front is kept. Every location that sets `add_header`
   must `include` `docker/security-headers.conf`, or nginx drops the security headers there.
 - `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
 - `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.
