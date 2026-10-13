@@ -1,6 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { timeout } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ConnectionStatus } from '../../../shared/ui/connection-status.component';
+
+const PING_TIMEOUT_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class HomeFacade {
@@ -11,9 +14,13 @@ export class HomeFacade {
 
   checkBackend(): void {
     this.status.set('checking');
-    this.erpnext.ping().subscribe({
-      next: (ok) => this.status.set(ok ? 'online' : 'offline'),
-      error: () => this.status.set('offline'),
-    });
+    // Without a timeout a hung backend would leave the chip on "checking" with no retry button.
+    this.erpnext
+      .ping()
+      .pipe(timeout(PING_TIMEOUT_MS))
+      .subscribe({
+        next: (ok) => this.status.set(ok ? 'online' : 'offline'),
+        error: () => this.status.set('offline'),
+      });
   }
 }

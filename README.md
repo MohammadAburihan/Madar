@@ -87,6 +87,7 @@ docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<versi
 | Variable | Default | Purpose |
 |---|---|---|
 | `ERPNEXT_UPSTREAM` | `http://frontend:8080` | ERPNext address nginx proxies `/api` and `/files` to |
+| `NGINX_RESOLVER` | `127.0.0.11` (Docker DNS) | DNS server nginx uses to re-resolve `ERPNEXT_UPSTREAM` |
 | `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
 | `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
 

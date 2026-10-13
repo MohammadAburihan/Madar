@@ -22,8 +22,17 @@ export class LanguageService {
     await this.use(isLanguage(stored) ? stored : 'en');
   }
 
+  /** Never rejects: a translation file that fails to load must not stop the app from starting. */
   async use(language: Language): Promise<void> {
-    await firstValueFrom(this.transloco.load(language));
+    try {
+      await firstValueFrom(this.transloco.load(language));
+    } catch (error) {
+      console.error(`Could not load ${language} translations`, error);
+      // Keep the language that is already on screen rather than switching to untranslated keys.
+      if (language !== this.current()) {
+        return;
+      }
+    }
     this.transloco.setActiveLang(language);
     this.current.set(language);
     localStorage.setItem(STORAGE_KEY, language);
