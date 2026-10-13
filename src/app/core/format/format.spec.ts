@@ -1,4 +1,4 @@
-import { daysUntil, formatLongDate, formatMoney, minutesSince } from './format';
+import { formatShortDate, daysUntil, formatLongDate, formatMoney, minutesSince } from './format';
 
 describe('format', () => {
   it('formats money with Western digits and the currency code first', () => {
@@ -22,5 +22,10 @@ describe('format', () => {
   it('measures minutes since an ERPNext timestamp', () => {
     const now = new Date(2026, 9, 13, 10, 30);
     expect(minutesSince('2026-10-13 10:20:00.123456', now)).toBe(10);
+  });
+
+  it('formats a short date with the month name for each language', () => {
+    expect(formatShortDate('2026-10-11', 'en')).toBe('11 Oct 2026');
+    expect(formatShortDate('2026-10-11', 'ar')).toBe('11 أكتوبر 2026');
   });
 });

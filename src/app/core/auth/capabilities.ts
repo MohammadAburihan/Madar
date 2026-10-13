@@ -9,6 +9,10 @@ export interface Capabilities {
   maxDiscount: number;
   /** Modes of Payment the role may take money into; 'all' for any enabled mode. */
   paymentModes: 'all' | readonly string[];
+  /** Receive customer payments against their invoices. */
+  collect: boolean;
+  /** Payment history on the Money page: every payment, only the user's own, or none. */
+  money: 'all' | 'own' | 'none';
 }
 
 const SALES_ROLE: Capabilities = {
@@ -17,10 +21,20 @@ const SALES_ROLE: Capabilities = {
   editPrice: false,
   maxDiscount: 10,
   paymentModes: ['Cash', 'Credit Card'],
+  collect: true,
+  money: 'own',
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
-  owner: { sell: true, sellToWalkIn: true, editPrice: true, maxDiscount: 100, paymentModes: 'all' },
+  owner: {
+    sell: true,
+    sellToWalkIn: true,
+    editPrice: true,
+    maxDiscount: 100,
+    paymentModes: 'all',
+    collect: true,
+    money: 'all',
+  },
   salesperson: SALES_ROLE,
   storeAssociate: SALES_ROLE,
   warehouse: {
@@ -29,6 +43,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editPrice: false,
     maxDiscount: 0,
     paymentModes: [],
+    collect: false,
+    money: 'none',
   },
 };
 

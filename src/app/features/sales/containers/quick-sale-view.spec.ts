@@ -42,6 +42,7 @@ describe('quick sale view', () => {
       phone: '059-000-0142',
       city: 'Ramallah',
       outstanding: 0,
+      unpaidInvoices: 0,
     };
     expect(visible(view.customerView(lina, 'ILS', en))).toEqual({
       title: 'Lina Haddad',

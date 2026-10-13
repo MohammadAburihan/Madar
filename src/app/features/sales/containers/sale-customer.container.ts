@@ -31,7 +31,7 @@ const SEARCH_DELAY_MS = 250;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'task', '[class.desktop]': 'ctx.desktop()' },
-  styleUrl: './sale-page.scss',
+  styleUrl: '../../../shared/ui/task-page.scss',
   template: `
     <app-language-switcher
       [language]="ctx.i18n.language()"

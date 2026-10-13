@@ -104,7 +104,8 @@ src/app/
     data-access/   facade + API services and models for the area's ERPNext doctypes
 ```
 
-- Features must not import from other features; share through `shared/` or `core/`.
+- Features must not import from other features; share through `shared/` or `core/` (customer lookup is
+  `core/customers`, payment accounts `core/money`, task-page layout `shared/ui/task-page.scss`).
 - Only `data-access/` talks to ERPNext. Containers go through the area facade, never `HttpClient` directly.
 - Containers get language state and a translator from `injectI18n()` (`core/i18n/i18n.ts`); services that
   load something once share the in-flight call with `shareInFlight()` (`core/util/share-in-flight.ts`).
@@ -140,8 +141,12 @@ src/app/
   `conversion_factor`, or ERPNext silently returns no price. Sales roles can't read Item Price directly.
 - Frappe checks CSRF only when the session holds a `csrf_token`, which `/api/method/login` never sets (Desk
   does). Madar's writes therefore send no token; if Desk is ever served on Madar's origin, add the header.
-- Writes are idempotent through a Madar reference (`SALE-…`) in the invoice `remarks` and the payment
-  `reference_no`. After a timeout, look the reference up (`SalesApiService.find`) instead of resubmitting.
+- Writes are idempotent through a Madar reference (`SALE-…`, `COLL-…`; `newReference` in
+  `core/erpnext/confirmation.ts`) in the document's `remarks` or the payment's `reference_no`. Run confirming
+  requests through `confirmRequest`, which turns timeouts and 504s into `UnresolvedError`; then look the
+  reference up instead of resubmitting, and submit the leftover draft if one exists.
+- Templates from `get_payment_entry` are new documents (`__islocal`, no name). Never spread one over an existing
+  draft as-is: `frappe.client.submit` would insert a second document.
 - Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.
 - Ionic caches pages: reset per-visit state (notices, password) instead of relying on a fresh component.
 

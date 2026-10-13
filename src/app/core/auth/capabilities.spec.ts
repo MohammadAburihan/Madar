@@ -8,6 +8,8 @@ describe('capabilitiesFor', () => {
       editPrice: true,
       maxDiscount: 100,
       paymentModes: 'all',
+      collect: true,
+      money: 'all',
     });
   });
 
@@ -19,6 +21,8 @@ describe('capabilitiesFor', () => {
         editPrice: false,
         maxDiscount: 10,
         paymentModes: ['Cash', 'Credit Card'],
+        collect: true,
+        money: 'own',
       });
     }
   });
@@ -29,5 +33,7 @@ describe('capabilitiesFor', () => {
     expect(caps.sellToWalkIn).toBe(false);
     expect(caps.maxDiscount).toBe(0);
     expect(caps.paymentModes).toEqual([]);
+    expect(caps.collect).toBe(false);
+    expect(caps.money).toBe('none');
   });
 });

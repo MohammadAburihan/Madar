@@ -6,7 +6,8 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { QuickSaleStore } from './quick-sale.store';
 import { CatalogItem, SaleResult } from './sale.models';
-import { SalesApiService, SaleUnresolvedError, WALK_IN_CUSTOMER } from './sales-api.service';
+import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
 const OLIVE: CatalogItem = {
   code: 'OLV-20',
@@ -66,6 +67,7 @@ function withBasket(store: QuickSaleStore) {
     phone: null,
     city: null,
     outstanding: 0,
+    unpaidInvoices: 0,
   });
   store.setWarehouse('Main - RN');
   store.add(OLIVE);
@@ -186,7 +188,7 @@ describe('QuickSaleStore', () => {
   it('marks a timed-out confirmation unresolved', async () => {
     const { store, api } = setup();
     withBasket(store);
-    api.confirm.mockRejectedValue(new SaleUnresolvedError());
+    api.confirm.mockRejectedValue(new UnresolvedError());
     await store.confirm();
     expect(store.state()).toBe('unresolved');
     expect(store.failure()).toBeNull();
@@ -212,7 +214,7 @@ describe('QuickSaleStore', () => {
     const { store, api } = setup();
     withBasket(store);
     expect(store.dirty()).toBe(true);
-    api.confirm.mockRejectedValue(new SaleUnresolvedError());
+    api.confirm.mockRejectedValue(new UnresolvedError());
     await store.confirm();
     expect(store.dirty()).toBe(false);
   });

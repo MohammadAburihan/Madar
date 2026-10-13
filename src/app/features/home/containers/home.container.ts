@@ -118,7 +118,11 @@ export class HomeContainer {
   }
 
   protected openAction(id: string): void {
-    void this.router.navigate(id === 'sell' ? ['/sales/new'] : ['/task', id]);
+    const routes: Record<string, string[]> = {
+      sell: ['/sales/new'],
+      receivePayment: ['/money/receive'],
+    };
+    void this.router.navigate(routes[id] ?? ['/task', id]);
   }
 
   protected openDrafts(): void {

@@ -5,4 +5,6 @@ export interface NavItem {
   label: string;
   icon: LucideIconInput;
   route: string;
+  /** Other sections this item stands for, e.g. More on mobile covers Money and Purchases. */
+  also?: readonly string[];
 }

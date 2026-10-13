@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { NavItem } from './nav-item';
 
 @Component({
   selector: 'app-bottom-nav',
-  imports: [LucideDynamicIcon, RouterLink, RouterLinkActive],
+  imports: [LucideDynamicIcon, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav [attr.aria-label]="navLabel()">
@@ -13,9 +13,8 @@ import { NavItem } from './nav-item';
         <a
           class="item"
           [routerLink]="item.route"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-          ariaCurrentWhenActive="page"
+          [class.active]="isActive(item)"
+          [attr.aria-current]="isActive(item) ? 'page' : null"
         >
           <svg [lucideIcon]="item.icon" [size]="20" aria-hidden="true"></svg>
           <span>{{ item.label }}</span>
@@ -62,4 +61,12 @@ import { NavItem } from './nav-item';
 export class BottomNavComponent {
   readonly items = input.required<readonly NavItem[]>();
   readonly navLabel = input.required<string>();
+  /** Current URL path, so an item can stay highlighted for the sections it covers. */
+  readonly url = input('/');
+
+  protected isActive(item: NavItem): boolean {
+    const path = this.url().split(/[?#]/)[0];
+    const within = (route: string) => path === route || path.startsWith(`${route}/`);
+    return item.route === '/' ? path === '/' : within(item.route) || !!item.also?.some(within);
+  }
 }
