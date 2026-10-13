@@ -19,9 +19,60 @@ All in `docs/`:
 - Angular 22 (TypeScript, strict mode): standalone components, signals, `input()`/`output()`, new control
   flow (`@if`, `@for`). No NgModules.
 - Capacitor 8 wraps the same app for Android and iOS; Ionic 9 for Angular for mobile-style UI.
+  In Ionic 9 standalone components come from `@ionic/angular` (there is no `@ionic/angular/standalone`).
 - Typed reactive forms; `HttpClient` with interceptors for auth and the active business.
 - Runtime English/Arabic switching (Transloco) with full RTL. Use CSS logical properties (`margin-inline-start`,
-  not `margin-left`) so layouts flip correctly.
+  not `margin-left`) so layouts flip correctly. Translations live in `public/i18n/{en,ar}.json`; Arabic terms
+  must follow `docs/LOCALIZATION-GLOSSARY.md`.
+- Tests: Vitest via `ng test`. Every presenter gets a spec for its rendering and outputs.
+
+## Commands
+
+```sh
+npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :8080
+npm test              # unit tests, single run
+npm run build         # production build to dist/madar/browser
+npm run cap:sync      # production build copied into the android/ and ios/ projects
+npm run android:dev   # dev build on the Android emulator, talking to local ERPNext
+npm run ios:dev       # dev build on the iOS simulator, talking to local ERPNext
+npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
+```
+
+Runtime config: `public/config.json` (`erpnextUrl`, empty = same origin). In the Docker image it is written at
+container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/private/files` to
+`ERPNEXT_UPSTREAM` (default `http://frontend:8080`, the frappe_docker service).
+
+### Mobile
+
+- Native apps have no proxy: when `erpnextUrl` is empty they use `environment.nativeErpnextUrl[platform]`.
+  Dev builds point the Android emulator at `http://10.0.2.2:8080` and the iOS simulator at
+  `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
+- Plain HTTP to a local ERPNext is allowed only in debug builds, never in release:
+  Android via `android/app/src/debug/` (network security config for `10.0.2.2`/`localhost`), iOS via the
+  "Allow local networking in Debug" build phase, which adds `NSAllowsLocalNetworking` to the built
+  `Info.plist` for Debug only. There is a single `Info.plist`.
+- Native versions follow `package.json`: Gradle reads it, and `cap:sync` runs `scripts/sync-ios-version.mjs`
+  (versionCode / build number = major·1,000,000 + minor·1,000 + patch). Only plain `X.Y.Z` versions with
+  minor and patch below 1000 are accepted, so build numbers never collide.
+- `android:dev` runs `cap run android --no-sync` after its own dev sync; a second sync would replace the
+  dev web build.
+- Toolchain: Gradle needs Java 21 (`JAVA_HOME=$(/usr/libexec/java_home -v 21)`); Android Studio's bundled
+  Java 25 fails with "Unsupported class file major version 69". `xcode-select` intentionally stays on
+  CommandLineTools (used for other C++ work); don't change it. `npm run ios:dev` runs
+  `scripts/ios-dev.sh`, which sets `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` itself; do the
+  same for any direct `xcodebuild`/`xcrun simctl` command.
+- Don't use `cap run ios`: its native-run dependency opens `Simulator.app`, which Xcode 27 replaced with
+  DeviceHub, so deployment fails. `scripts/ios-dev.sh` builds with `xcodebuild` and launches via `simctl`.
+- Nginx in the release image re-resolves `ERPNEXT_UPSTREAM` through `NGINX_RESOLVER` (the container's own
+  DNS servers by default), so it starts before ERPNext and survives its restarts. The upstream must be
+  `scheme://host[:port]` without a path (checked at start-up); nginx's resolver ignores search domains, so
+  use fully qualified names outside Docker networks. `X-Forwarded-Proto` from a proxy in front is forwarded only with
+  `TRUST_FORWARDED_PROTO=1` (set it behind the AWS load balancer). HTTPS upstreams get SNI. Every location that sets `add_header`
+  must `include` `docker/security-headers.conf`, or nginx drops the security headers there.
+- `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
+- `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.
+- Icons and splash screens are generated from `assets/` with `npx capacitor-assets generate`. The current
+  artwork is a placeholder.
 
 ## Architecture: container/presenter
 
@@ -76,7 +127,8 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 
 ### Release rules
 
-- `development` is the default branch. Releases are git tags `vX.Y.Z`.
+- `development` is the default branch. Work happens on feature branches merged through PRs.
+- Releases are git tags `vX.Y.Z`, matching `version` in `package.json`.
 - The image tag matches the release version (`madar-web:X.Y.Z`). Deploy by explicit version, never only
   `latest`.
 - Never rebuild or overwrite an existing version tag; a fix is a new version.

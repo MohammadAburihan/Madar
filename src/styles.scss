@@ -1,0 +1,30 @@
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/flex-utils.css';
+@import '@ionic/angular/css/display.css';
+@import '@fontsource-variable/inter/index.css';
+@import '@fontsource-variable/noto-sans-arabic/index.css';
+
+:root {
+  --ion-color-primary: #0f5c5c;
+  --ion-color-primary-rgb: 15, 92, 92;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0d5151;
+  --ion-color-primary-tint: #276c6c;
+
+  --ion-background-color: #faf8f5;
+  --ion-background-color-rgb: 250, 248, 245;
+  --ion-text-color: #1f2a2a;
+  --ion-text-color-rgb: 31, 42, 42;
+  --ion-item-background: #ffffff;
+
+  --ion-font-family: 'Inter Variable', system-ui, sans-serif;
+}
+
+:root[lang='ar'] {
+  --ion-font-family: 'Noto Sans Arabic Variable', system-ui, sans-serif;
+}

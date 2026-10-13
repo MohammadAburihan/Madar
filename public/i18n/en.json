@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "Madar"
+  },
+  "connection": {
+    "checking": "Checking connection…",
+    "online": "Connected to ERPNext",
+    "offline": "Can't reach ERPNext",
+    "retry": "Try again"
+  },
+  "home": {
+    "quickActions": "Quick actions",
+    "comingSoon": "This screen isn't available yet.",
+    "actions": {
+      "sell": "Sell",
+      "buy": "Buy",
+      "receivePayment": "Receive payment",
+      "paySupplier": "Pay supplier",
+      "recordExpense": "Record expense",
+      "transferStock": "Transfer stock",
+      "supplyProject": "Supply a project"
+    }
+  },
+  "language": {
+    "switchTo": "Switch language to {{language}}"
+  }
+}

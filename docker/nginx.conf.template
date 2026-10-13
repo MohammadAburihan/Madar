@@ -1,0 +1,51 @@
+# With TRUST_FORWARDED_PROTO=1 (a TLS-terminating proxy in front), keep its scheme; otherwise use our own.
+map $http_x_forwarded_proto $forwarded_proto {
+    default ${FORWARDED_PROTO};
+    ''      $scheme;
+}
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    client_max_body_size 50m;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    # Resolve the upstream per request so the container starts before ERPNext and survives its restarts.
+    resolver ${NGINX_RESOLVER} valid=30s ipv6=off;
+    set $erpnext_upstream ${ERPNEXT_UPSTREAM};
+
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+    }
+
+    location ~ ^/(api|files|private/files)/ {
+        proxy_pass $erpnext_upstream;
+        # Send SNI so an https upstream behind a shared load balancer serves the right certificate.
+        proxy_ssl_server_name on;
+        proxy_set_header Host ${ERPNEXT_SITE_HOST};
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_read_timeout 120s;
+    }
+
+    # Only content-hashed build output is immutable; fixed names like favicon.ico must revalidate.
+    location ~ "^/(?:[a-z]+-[A-Za-z0-9_-]{8}\.(?:js|css)|media/.+)$" {
+        include /etc/nginx/snippets/security-headers.conf;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    location / {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache";
+        try_files $uri $uri/ /index.html;
+    }
+}
