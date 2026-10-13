@@ -127,5 +127,5 @@ The iOS simulator build uses macOS runners, so it only runs when started manuall
 ## Branches and releases
 
 - `development` is the default branch.
-- Work happens on feature branches merged into `development` through pull requests.
+- `development` is protected: changes arrive only through pull requests, which merge once CI passes and the branch is up to date.
 - Releases are tagged `vX.Y.Z` (matching `package.json`), and each one produces a Docker image tagged with the same version.
