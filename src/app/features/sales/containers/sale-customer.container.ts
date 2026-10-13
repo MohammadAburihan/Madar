@@ -128,8 +128,12 @@ export class SaleCustomerContainer implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.ctx.store.state() === 'confirmed') {
+    const state = this.ctx.store.state();
+    if (state === 'confirmed') {
       this.ctx.store.start();
+    } else if (state === 'unresolved' || state === 'checking') {
+      void this.ctx.go('checking', { replaceUrl: true });
+      return;
     }
     void this.ctx.store.loadOptions().catch(() => undefined);
   }

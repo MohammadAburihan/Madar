@@ -4,6 +4,7 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
+import { parseNumber } from '../data-access/sale.models';
 import { injectSaleContext } from './sale-context';
 
 /** Requested quantity exceeds the warehouse's stock: use what's there, or move the sale to another warehouse. */
@@ -96,7 +97,7 @@ export class SaleStockCheckContainer implements OnInit {
       error:
         count === 0
           ? t('sale.stock.errorNone', { warehouse })
-          : Number(this.requested()) > count
+          : parseNumber(this.requested()) > count
             ? t('sale.stock.error', { count, warehouse })
             : null,
       other: t('sale.stock.other'),
@@ -128,7 +129,7 @@ export class SaleStockCheckContainer implements OnInit {
       return;
     }
     this.ctx.store.setWarehouse(target);
-    const wanted = Number(this.requested()) || 1;
+    const wanted = Math.max(1, Math.floor(parseNumber(this.requested())) || 1);
     this.ctx.store.setQty(Number(this.index()), Math.min(wanted, this.available()));
     this.close();
   }

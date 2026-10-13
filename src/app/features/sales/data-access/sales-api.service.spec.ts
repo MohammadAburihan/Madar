@@ -212,6 +212,7 @@ describe('SalesApiService', () => {
       update_stock: 1,
       set_warehouse: 'Main warehouse - RN',
       ignore_pricing_rule: 1,
+      disable_rounded_total: 1,
       remarks: 'Madar quick sale SALE-ABC1234',
       taxes: [],
       taxes_and_charges: '',
@@ -255,6 +256,45 @@ describe('SalesApiService', () => {
       modified: 'x',
       update_stock: 1,
     });
+  });
+
+  it('hands back the inserted draft when the submit is rejected, so a retry reuses it', async () => {
+    const { api } = setup(
+      {},
+      {
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'SI-5' }),
+        'frappe.client.submit': () =>
+          throwError(() => new HttpErrorResponse({ status: 417, error: 'Insufficient stock' })),
+      },
+    );
+    const inserted: string[] = [];
+    await expect(api.confirm(sale(), null, (name) => inserted.push(name))).rejects.toBeTruthy();
+    expect(inserted).toEqual(['SI-5']);
+  });
+
+  it('pays at most what the invoice still owes', async () => {
+    const { api, postCalls } = setup(
+      {},
+      {
+        ...paymentPosts(85),
+        'frappe.client.insert': (body) =>
+          (body['doc'] as { doctype: string }).doctype === 'Sales Invoice'
+            ? { name: 'SI-1', docstatus: 0 }
+            : body['doc'],
+        'frappe.client.submit': (body) =>
+          (body['doc'] as { doctype?: string }).doctype === 'Payment Entry'
+            ? { name: 'PAY-1', paid_amount: 85 }
+            : { ...INVOICE, grand_total: 85.4, outstanding_amount: 85 },
+      },
+    );
+    const result = await api.confirm(sale({ amountPaid: 85.4, account: CASH }), null);
+    const payment = postCalls.find(
+      (c) =>
+        c.method === 'frappe.client.insert' &&
+        (c.body['doc'] as { doctype: string }).doctype === 'Payment Entry',
+    )!.body['doc'] as Record<string, unknown>;
+    expect(payment['paid_amount']).toBe(85);
+    expect(result.outstanding).toBe(0);
   });
 
   it('records the payment with the mode, account and Madar reference', async () => {
@@ -348,6 +388,26 @@ describe('SalesApiService', () => {
       const { api, listCalls } = setup();
       expect(await api.find(sale())).toBe('not-found');
       expect(listCalls[0].query.filters).toContainEqual(['remarks', 'like', '%SALE-ABC1234%']);
+    });
+
+    it('prefers a confirmed invoice over a leftover draft', async () => {
+      const { api, listCalls } = setup();
+      await api.find(sale());
+      expect(listCalls[0].query.orderBy).toBe('docstatus desc');
+    });
+
+    it("doesn't record a payment when it can't tell whether one exists", async () => {
+      const { api, postCalls } = setup(
+        {
+          'Sales Invoice': () => [INVOICE],
+          'Payment Entry': () => {
+            throw new HttpErrorResponse({ status: 0 });
+          },
+        },
+        paymentPosts(100),
+      );
+      await expect(api.find(sale({ amountPaid: 100, account: CASH }))).rejects.toBeTruthy();
+      expect(postCalls).toEqual([]);
     });
 
     it('returns the draft a timed-out confirmation left behind', async () => {

@@ -71,8 +71,24 @@ export interface SaleResult {
   paymentFailed: boolean;
 }
 
+/** ERPNext rounds the discounted unit rate first, then multiplies by quantity; match it so totals agree. */
 export function lineTotal(line: Pick<SaleLine, 'qty' | 'rate' | 'discount'>): number {
-  return round2(line.qty * line.rate * (1 - line.discount / 100));
+  return round2(line.qty * unitRate(line));
+}
+
+export function unitRate(line: Pick<SaleLine, 'rate' | 'discount'>): number {
+  return round2(line.rate * (1 - line.discount / 100));
+}
+
+/** Parses typed numbers, accepting Arabic-Indic digits and separators from Arabic keyboards. */
+export function parseNumber(text: string): number {
+  const western = text
+    .trim()
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/\u066b/g, '.')
+    .replace(/[,\u066c]/g, '');
+  return western === '' ? NaN : Number(western);
 }
 
 export function round2(value: number): number {

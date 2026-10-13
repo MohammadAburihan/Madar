@@ -192,6 +192,40 @@ describe('QuickSaleStore', () => {
     expect(store.failure()).toBeNull();
   });
 
+  it('keeps the draft a rejected confirmation inserted, so retrying submits it', async () => {
+    const { store, api } = setup();
+    withBasket(store);
+    api.confirm.mockImplementationOnce(
+      async (_sale, _draft, onInserted: (name: string) => void) => {
+        onInserted('SI-5');
+        throw new HttpErrorResponse({ status: 417, error: { message: 'Insufficient stock' } });
+      },
+    );
+    await store.confirm();
+    expect(store.draft()).toBe('SI-5');
+    api.confirm.mockResolvedValue(RESULT);
+    await store.confirm();
+    expect(api.confirm.mock.calls[1][1]).toBe('SI-5');
+  });
+
+  it("doesn't prompt to save or discard once a confirmation is unresolved", async () => {
+    const { store, api } = setup();
+    withBasket(store);
+    expect(store.dirty()).toBe(true);
+    api.confirm.mockRejectedValue(new SaleUnresolvedError());
+    await store.confirm();
+    expect(store.dirty()).toBe(false);
+  });
+
+  it('reads amounts typed with Arabic digits', () => {
+    const { store } = setup();
+    withBasket(store);
+    store.paymentStatus.set('partial');
+    store.amountInput.set('٥٠٫٥');
+    expect(store.amountPaid()).toBe(50.5);
+    expect(store.amountValid()).toBe(true);
+  });
+
   it('classifies failures', async () => {
     const { store, api } = setup();
     withBasket(store);

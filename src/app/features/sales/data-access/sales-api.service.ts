@@ -12,8 +12,8 @@ import {
   SaleRequest,
   SaleResult,
   WarehouseOption,
-  lineTotal,
   round2,
+  unitRate,
 } from './sale.models';
 
 export type CatalogFilter = 'all' | 'products' | 'services';
@@ -260,17 +260,26 @@ export class SalesApiService {
    * Submits the invoice (delivering stock from the sale's warehouse), then records the payment.
    * A timeout or lost connection throws SaleUnresolvedError: the sale may exist, so callers must check, not retry.
    */
-  async confirm(sale: SaleRequest, draft: string | null): Promise<SaleResult> {
+  async confirm(
+    sale: SaleRequest,
+    draft: string | null,
+    onInserted: (draft: string) => void = () => undefined,
+  ): Promise<SaleResult> {
     let invoice: InvoiceDoc;
     try {
-      const doc = draft
-        ? {
-            ...(await this.withTimeout(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))),
-            ...this.invoiceDoc(sale),
-          }
-        : await this.withTimeout(
-            this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc: this.invoiceDoc(sale) }),
-          );
+      let doc: InvoiceDoc;
+      if (draft) {
+        doc = {
+          ...(await this.withTimeout(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))),
+          ...this.invoiceDoc(sale),
+        };
+      } else {
+        doc = await this.withTimeout(
+          this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc: this.invoiceDoc(sale) }),
+        );
+        // A retry after a rejected submit must reuse this draft, not insert another.
+        onInserted(doc.name);
+      }
       invoice = await this.withTimeout(
         this.erpnext.post<InvoiceDoc>('frappe.client.submit', { doc }),
       );
@@ -289,6 +298,7 @@ export class SalesApiService {
           ['remarks', 'like', `%${sale.reference}%`],
           ['docstatus', '!=', 2],
         ],
+        orderBy: 'docstatus desc',
         limit: 1,
       }),
     );
@@ -307,7 +317,7 @@ export class SalesApiService {
         ],
         limit: 1,
       }),
-    ).catch(() => []);
+    );
     if (!payment && sale.amountPaid > 0) {
       return this.recordPayment(sale, invoice);
     }
@@ -328,7 +338,7 @@ export class SalesApiService {
       postingDate: invoice.posting_date,
       total: invoice.grand_total,
       paid: 0,
-      outstanding: invoice.grand_total,
+      outstanding: invoice.outstanding_amount,
       payment: null,
       paymentFailed: false,
     };
@@ -342,7 +352,7 @@ export class SalesApiService {
           { dt: 'Sales Invoice', dn: invoice.name },
         ),
       );
-      const amount = round2(Math.min(sale.amountPaid, invoice.grand_total));
+      const amount = round2(Math.min(sale.amountPaid, invoice.outstanding_amount));
       Object.assign(payment, {
         mode_of_payment: sale.account.mode,
         paid_to: sale.account.account,
@@ -365,7 +375,7 @@ export class SalesApiService {
       return {
         ...base,
         paid: submitted.paid_amount,
-        outstanding: round2(invoice.grand_total - submitted.paid_amount),
+        outstanding: round2(invoice.outstanding_amount - submitted.paid_amount),
         payment: submitted.name,
       };
     } catch {
@@ -383,6 +393,8 @@ export class SalesApiService {
       set_warehouse: sale.warehouse,
       // The rate Madar shows is what gets invoiced; no pricing rules re-apply behind the user's back.
       ignore_pricing_rule: 1,
+      // Madar shows exact totals; a rounded total would make "Paid" leave a few agorot owing.
+      disable_rounded_total: 1,
       remarks: `Madar quick sale ${sale.reference}`,
       taxes_and_charges: '',
       taxes: [],
@@ -392,7 +404,7 @@ export class SalesApiService {
         uom: line.item.uom,
         price_list_rate: line.rate,
         discount_percentage: line.discount,
-        rate: round2(lineTotal(line) / line.qty),
+        rate: unitRate(line),
         ...(line.item.isStock ? { warehouse: sale.warehouse } : {}),
       })),
     };

@@ -19,6 +19,7 @@ import {
   SaleResult,
   WarehouseOption,
   lineTotal,
+  parseNumber,
   round2,
 } from './sale.models';
 
@@ -67,11 +68,14 @@ export class QuickSaleStore {
     if (status === 'paid') {
       return this.total();
     }
-    const value = Number(this.amountInput().replace(/,/g, ''));
+    const value = parseNumber(this.amountInput());
     return Number.isFinite(value) ? round2(value) : NaN;
   });
   readonly outstanding = computed(() => round2(this.total() - (this.amountPaid() || 0)));
-  readonly dirty = computed(() => this.lines().length > 0 && this.state() !== 'confirmed');
+  /** Unsaved work worth a leave prompt. Not after a timeout: saving or discarding then could duplicate the sale. */
+  readonly dirty = computed(
+    () => this.lines().length > 0 && ['idle', 'confirming', 'failed'].includes(this.state()),
+  );
   /** Partial payments must be more than zero and less than the total. */
   readonly amountValid = computed(() => {
     const amount = this.amountPaid();
@@ -182,7 +186,9 @@ export class QuickSaleStore {
     this.failure.set(null);
     try {
       const lines = this.lines();
-      const result = await this.api.confirm(await this.request(), this.draft());
+      const result = await this.api.confirm(await this.request(), this.draft(), (name) =>
+        this.draft.set(name),
+      );
       this.finish(result, lines);
     } catch (error) {
       if (error instanceof SaleUnresolvedError) {

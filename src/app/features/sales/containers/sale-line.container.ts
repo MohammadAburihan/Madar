@@ -5,7 +5,7 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
-import { lineTotal } from '../data-access/sale.models';
+import { lineTotal, parseNumber } from '../data-access/sale.models';
 import { injectSaleContext } from './sale-context';
 
 /** Price & discount for one line, limited by the role (docs/PERMISSIONS.md). */
@@ -84,9 +84,9 @@ export class SaleLineContainer implements OnInit {
   private readonly maxDiscount = computed(() => this.ctx.session.capabilities().maxDiscount);
 
   private readonly parsed = computed(() => ({
-    qty: Number(this.qty()),
-    price: Number(this.price().replace(/,/g, '')),
-    discount: Number(this.discount() || 0),
+    qty: parseNumber(this.qty()),
+    price: parseNumber(this.price()),
+    discount: this.discount().trim() ? parseNumber(this.discount()) : 0,
   }));
 
   protected readonly errors = computed(() => {
