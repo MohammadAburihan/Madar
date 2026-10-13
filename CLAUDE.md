@@ -54,7 +54,8 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
   "Allow local networking in Debug" build phase, which adds `NSAllowsLocalNetworking` to the built
   `Info.plist` for Debug only. There is a single `Info.plist`.
 - Native versions follow `package.json`: Gradle reads it, and `cap:sync` runs `scripts/sync-ios-version.mjs`
-  (versionCode / build number = major·10000 + minor·100 + patch).
+  (versionCode / build number = major·1,000,000 + minor·1,000 + patch). Only plain `X.Y.Z` versions with
+  minor and patch below 1000 are accepted, so build numbers never collide.
 - `android:dev` runs `cap run android --no-sync` after its own dev sync; a second sync would replace the
   dev web build.
 - Toolchain: Gradle needs Java 21 (`JAVA_HOME=$(/usr/libexec/java_home -v 21)`); Android Studio's bundled
@@ -67,7 +68,8 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
 - Nginx in the release image re-resolves `ERPNEXT_UPSTREAM` through `NGINX_RESOLVER` (the container's own
   DNS servers by default), so it starts before ERPNext and survives its restarts. The upstream must be
   `scheme://host[:port]` without a path (checked at start-up); nginx's resolver ignores search domains, so
-  use fully qualified names outside Docker networks. `X-Forwarded-Proto` from a proxy in front is kept. Every location that sets `add_header`
+  use fully qualified names outside Docker networks. `X-Forwarded-Proto` from a proxy in front is forwarded only with
+  `TRUST_FORWARDED_PROTO=1` (set it behind the AWS load balancer). HTTPS upstreams get SNI. Every location that sets `add_header`
   must `include` `docker/security-headers.conf`, or nginx drops the security headers there.
 - `CapacitorHttp` is enabled, so `HttpClient` requests go through native networking (no CORS in the apps).
 - `core/platform/native-shell.service.ts` owns status bar, splash hide, and the Android back button.

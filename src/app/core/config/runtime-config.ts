@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { NATIVE_PLATFORM } from '../platform/native-platform';
+import { NATIVE_ERPNEXT_URLS, NATIVE_PLATFORM } from '../platform/native-platform';
 
 export interface RuntimeConfig {
   /** Empty means same origin: the web build reaches ERPNext through the nginx/dev-server proxy. */
@@ -15,11 +14,12 @@ const DEFAULT_CONFIG: RuntimeConfig = { erpnextUrl: '' };
 export class RuntimeConfigService {
   private readonly http = inject(HttpClient);
   private readonly platform = inject(NATIVE_PLATFORM);
+  private readonly nativeUrls = inject(NATIVE_ERPNEXT_URLS);
   private readonly config = signal<RuntimeConfig>(DEFAULT_CONFIG);
 
   // Native apps have no same-origin proxy, so they fall back to the build's per-platform default.
   readonly erpnextUrl = computed(() =>
-    normalizeUrl(this.config().erpnextUrl || environment.nativeErpnextUrl[this.platform] || ''),
+    normalizeUrl(this.config().erpnextUrl || this.nativeUrls[this.platform] || ''),
   );
   /** Host of the configured ERPNext, or null when requests go to the same origin. */
   readonly erpnextHost = computed(() => {
@@ -30,14 +30,16 @@ export class RuntimeConfigService {
   async load(): Promise<void> {
     try {
       const loaded = await firstValueFrom(this.http.get<Partial<RuntimeConfig>>('config.json'));
-      const erpnextUrl = loaded?.erpnextUrl ?? '';
-      if (typeof erpnextUrl !== 'string') {
+      const erpnextUrl: unknown = loaded?.erpnextUrl ?? '';
+      if (typeof erpnextUrl === 'string') {
+        this.config.set({ erpnextUrl });
+      } else {
         console.warn(
           'config.json erpnextUrl must be a string; using same-origin ERPNext',
           erpnextUrl,
         );
+        this.config.set(DEFAULT_CONFIG);
       }
-      this.config.set({ erpnextUrl: typeof erpnextUrl === 'string' ? erpnextUrl : '' });
     } catch (error) {
       console.warn('config.json is missing or invalid; using same-origin ERPNext', error);
       this.config.set(DEFAULT_CONFIG);

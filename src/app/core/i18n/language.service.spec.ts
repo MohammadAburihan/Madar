@@ -7,6 +7,9 @@ import { LanguageService } from './language.service';
 describe('LanguageService', () => {
   beforeEach(() => {
     localStorage.clear();
+    // The document is shared between tests; start each one from a clean state.
+    document.documentElement.removeAttribute('dir');
+    document.documentElement.removeAttribute('lang');
     TestBed.configureTestingModule({
       imports: [
         TranslocoTestingModule.forRoot({
@@ -51,6 +54,7 @@ describe('LanguageService', () => {
   it('keeps the current language when another one fails to load', async () => {
     const service = TestBed.inject(LanguageService);
     const transloco = TestBed.inject(TranslocoService);
+    await service.use('en');
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     vi.spyOn(transloco, 'load').mockReturnValue(throwError(() => new Error('404')));
 

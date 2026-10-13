@@ -1,16 +1,19 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { environment } from '../../../environments/environment';
-import { NATIVE_PLATFORM, NativePlatform } from '../platform/native-platform';
+import { NATIVE_ERPNEXT_URLS, NATIVE_PLATFORM, NativePlatform } from '../platform/native-platform';
 import { RuntimeConfigService, normalizeUrl } from './runtime-config';
 
-function setup(platform: NativePlatform) {
+function setup(
+  platform: NativePlatform,
+  nativeUrls: Record<string, string> = { android: '', ios: '' },
+) {
   TestBed.configureTestingModule({
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: NATIVE_PLATFORM, useValue: platform },
+      { provide: NATIVE_ERPNEXT_URLS, useValue: nativeUrls },
     ],
   });
   return {
@@ -20,10 +23,6 @@ function setup(platform: NativePlatform) {
 }
 
 describe('RuntimeConfigService', () => {
-  afterEach(() => {
-    environment.nativeErpnextUrl = { android: '', ios: '' };
-  });
-
   it('uses the loaded URL without a trailing slash', async () => {
     const { service, http } = setup('web');
     const loading = service.load();
@@ -34,8 +33,7 @@ describe('RuntimeConfigService', () => {
   });
 
   it('stays same-origin on the web when config.json is empty', async () => {
-    environment.nativeErpnextUrl = { android: 'http://10.0.2.2:8080', ios: '' };
-    const { service, http } = setup('web');
+    const { service, http } = setup('web', { android: 'http://10.0.2.2:8080', ios: '' });
     const loading = service.load();
     http.expectOne('config.json').flush({ erpnextUrl: '' });
     await loading;
@@ -44,8 +42,7 @@ describe('RuntimeConfigService', () => {
   });
 
   it('falls back to the platform default in native apps', async () => {
-    environment.nativeErpnextUrl = { android: 'http://10.0.2.2:8080', ios: '' };
-    const { service, http } = setup('android');
+    const { service, http } = setup('android', { android: 'http://10.0.2.2:8080', ios: '' });
     const loading = service.load();
     http.expectOne('config.json').flush({ erpnextUrl: '' });
     await loading;

@@ -3,7 +3,11 @@
 set -eu
 
 # Default to the container's own DNS servers (from 15-local-resolvers.envsh), so any network works.
-export NGINX_RESOLVER="${NGINX_RESOLVER:-$NGINX_LOCAL_RESOLVERS}"
+export NGINX_RESOLVER="${NGINX_RESOLVER:-${NGINX_LOCAL_RESOLVERS:-}}"
+if [ -z "$NGINX_RESOLVER" ]; then
+  echo "No DNS resolver: set NGINX_RESOLVER, or keep NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 with nameservers in /etc/resolv.conf" >&2
+  exit 1
+fi
 
 # proxy_pass uses a variable, so a path in the upstream would replace every request URI.
 upstream="${ERPNEXT_UPSTREAM%/}"
@@ -19,3 +23,10 @@ case "$upstream" in
     ;;
 esac
 export ERPNEXT_UPSTREAM="$upstream"
+
+# Only trust a client-supplied X-Forwarded-Proto when a TLS-terminating proxy sits in front.
+if [ "${TRUST_FORWARDED_PROTO:-0}" = "1" ]; then
+  export FORWARDED_PROTO='$http_x_forwarded_proto'
+else
+  export FORWARDED_PROTO='$scheme'
+fi
