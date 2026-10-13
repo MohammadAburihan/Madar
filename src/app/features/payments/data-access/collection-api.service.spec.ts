@@ -230,6 +230,39 @@ describe('CollectionApiService', () => {
     }
   });
 
+  it('reports a failure before anything is sent as definite, not unresolved', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { [GET_PAYMENT_ENTRY]: () => throwError(() => new HttpErrorResponse({ status: 0 })) },
+    );
+    const api = TestBed.inject(CollectionApiService);
+    const error = await api.confirm(request(), null).catch((e: unknown) => e);
+    expect(error).not.toBeInstanceOf(UnresolvedError);
+    expect(postCalls.some((c) => c.method === 'frappe.client.insert')).toBe(false);
+  });
+
+  it('uses the rounded total that ERPNext computes the balance from', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => [
+        {
+          name: 'SI-1',
+          posting_date: '2026-10-01',
+          due_date: null,
+          grand_total: 99.5,
+          rounded_total: 100,
+          outstanding_amount: 100,
+          debit_to: 'Debtors - RN',
+        },
+      ],
+    });
+    const [invoice] = await TestBed.inject(CollectionApiService).unpaidInvoices(
+      'Lina Haddad',
+      'Rehan Nursery',
+      'ILS',
+    );
+    expect(invoice.total).toBe(100);
+  });
+
   it('passes definite rejections through', async () => {
     fakeErpnext(
       {},

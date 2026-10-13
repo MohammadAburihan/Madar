@@ -100,7 +100,7 @@ export class CollectionStore {
 
   async searchCustomers(term: string): Promise<CustomerOption[]> {
     const business = await this.business.ensure();
-    return this.customers.search(term, business?.name);
+    return this.customers.search(term, business ?? undefined);
   }
 
   /**
@@ -112,6 +112,7 @@ export class CollectionStore {
       this.invoices.set([]);
       this.selected.set(new Set());
       this.amountInput.set('');
+      this.clearFailure();
     }
     this.customer.set(customer);
     const load = ++this.invoiceLoad;
@@ -165,12 +166,17 @@ export class CollectionStore {
   }
 
   async confirm(): Promise<void> {
-    const request = await this.request();
-    if (!request) {
+    // Set before the first await: a double tap must not start a second confirmation (and a second payment).
+    if (this.state() === 'confirming' || this.busy()) {
       return;
     }
     this.state.set('confirming');
     this.failure.set(null);
+    const request = await this.request();
+    if (!request) {
+      this.state.set('idle');
+      return;
+    }
     try {
       this.finish(await this.api.confirm(request, this.draft(), (name) => this.draft.set(name)));
     } catch (error) {
@@ -206,6 +212,20 @@ export class CollectionStore {
     }
   }
 
+  /** A fresh visit to the task: anything but an unresolved confirmation starts over. */
+  resume(): void {
+    if (this.state() !== 'idle' || this.draft()) {
+      this.start();
+    }
+  }
+
+  private clearFailure(): void {
+    if (this.state() === 'failed') {
+      this.state.set('idle');
+      this.failure.set(null);
+    }
+  }
+
   private finish(result: CollectionResult): void {
     this.result.set(result);
     this.state.set('confirmed');
@@ -213,6 +233,7 @@ export class CollectionStore {
 
   /** Changing which invoices are paid resets the amount to everything they still owe. */
   private setSelection(selected: Set<string>): void {
+    this.clearFailure();
     this.selected.set(selected);
     this.amountInput.set(this.due() > 0 ? this.due().toFixed(2) : '');
   }

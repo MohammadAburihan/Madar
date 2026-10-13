@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 
 export interface PaymentRecord {
   name: string;
@@ -117,7 +118,7 @@ export class MoneyApiService {
   ): Promise<OpenBalance | null> {
     const [row] = await firstValueFrom(
       this.erpnext.list<Record<string, string | number>>(doctype, {
-        fields: ['name', partyField, 'grand_total', 'outstanding_amount'],
+        fields: ['name', partyField, 'grand_total', 'rounded_total', 'outstanding_amount'],
         filters: [
           ['company', '=', company],
           ['docstatus', '=', 1],
@@ -131,7 +132,10 @@ export class MoneyApiService {
       ? {
           party: String(row[partyField] ?? ''),
           invoice: String(row['name']),
-          total: Number(row['grand_total']),
+          total: invoiceTotal({
+            grand_total: Number(row['grand_total']),
+            rounded_total: Number(row['rounded_total'] ?? 0),
+          }),
           outstanding: Number(row['outstanding_amount']),
         }
       : null;

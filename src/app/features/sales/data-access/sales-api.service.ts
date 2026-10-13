@@ -42,7 +42,10 @@ export class SalesApiService {
   private readonly priceList = shareInFlight(() => this.loadSellingPriceList());
   private sellingPriceList: string | null = null;
 
-  searchCustomers(term: string, company?: string): Promise<CustomerOption[]> {
+  searchCustomers(
+    term: string,
+    company?: { name: string; currency: string },
+  ): Promise<CustomerOption[]> {
     return this.customers.search(term, company);
   }
 

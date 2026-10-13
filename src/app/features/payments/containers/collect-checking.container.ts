@@ -77,7 +77,10 @@ export class CollectCheckingContainer implements OnInit {
 
   ngOnInit(): void {
     if (!this.ctx.store.busy()) {
-      void this.ctx.go(this.ctx.store.result() ? 'recorded' : '', { replaceUrl: true });
+      void this.ctx.go(this.ctx.store.result() ? 'recorded' : '', {
+        replaceUrl: true,
+        state: { edit: true },
+      });
     }
   }
 

@@ -27,8 +27,15 @@ export const WALK_IN_CUSTOMER = 'Walk-in Customer';
 export class CustomerDirectoryService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Balances count only `company`'s invoices when given, so they match what the task can collect. */
-  async search(term: string, company?: string, limit = 5): Promise<CustomerOption[]> {
+  /**
+   * Balances count only `company`'s invoices in its `currency` when given, so they match what a task can
+   * collect and the currency they are shown in.
+   */
+  async search(
+    term: string,
+    company?: { name: string; currency: string },
+    limit = 5,
+  ): Promise<CustomerOption[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -98,7 +105,7 @@ export class CustomerDirectoryService {
 
   private async balancesFor(
     customers: string[],
-    company?: string,
+    company?: { name: string; currency: string },
   ): Promise<Map<string, { outstanding: number; count: number }>> {
     if (!customers.length) {
       return new Map();
@@ -110,7 +117,12 @@ export class CustomerDirectoryService {
           ['customer', 'in', customers],
           ['docstatus', '=', 1],
           ['outstanding_amount', '>', 0],
-          ...(company ? [['company', '=', company] as Filter] : []),
+          ...(company
+            ? ([
+                ['company', '=', company.name],
+                ['currency', '=', company.currency],
+              ] as Filter[])
+            : []),
         ],
         groupBy: 'customer',
         limit: 0,

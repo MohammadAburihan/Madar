@@ -36,6 +36,24 @@ describe('CustomerDirectoryService', () => {
     expect(listCalls[1].query.groupBy).toBe('customer');
   });
 
+  it("counts only the business's invoices in its currency", async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [
+        { name: 'Lina', customer_name: 'Lina', mobile_no: null, primary_address: null },
+      ],
+    });
+    await TestBed.inject(CustomerDirectoryService).search('lin', {
+      name: 'Rehan Nursery',
+      currency: 'ILS',
+    });
+    expect(listCalls[1].query.filters).toEqual(
+      expect.arrayContaining([
+        ['company', '=', 'Rehan Nursery'],
+        ['currency', '=', 'ILS'],
+      ]),
+    );
+  });
+
   it('lists recent customers without a search term', async () => {
     const { listCalls } = fakeErpnext();
     const directory = TestBed.inject(CustomerDirectoryService);

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 
 export interface InvoiceDetail {
   name: string;
@@ -29,6 +30,7 @@ export class InvoiceApiService {
           posting_date: string;
           docstatus: number;
           grand_total: number;
+          rounded_total: number;
           outstanding_amount: number;
           update_stock: number;
         }>('Sales Invoice', name),
@@ -75,7 +77,7 @@ export class InvoiceApiService {
       postingDate: invoice.posting_date,
       status:
         invoice.docstatus === 1 ? 'confirmed' : invoice.docstatus === 2 ? 'cancelled' : 'draft',
-      total: invoice.grand_total,
+      total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
       delivered: invoice.docstatus === 1 && !!invoice.update_stock,
       payments: payments.map((p) => ({

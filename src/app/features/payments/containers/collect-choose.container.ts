@@ -217,11 +217,14 @@ export class CollectChooseContainer implements OnInit {
 
   ngOnInit(): void {
     const store = this.ctx.store;
-    if (store.state() === 'confirmed') {
-      store.start();
-    } else if (store.busy()) {
+    if (store.busy()) {
       void this.ctx.go('checking', { replaceUrl: true });
       return;
+    }
+    // Coming back from review keeps the collection (and any draft) to edit; any other visit starts fresh.
+    const editing = this.ctx.router.getCurrentNavigation()?.extras.state?.['edit'] === true;
+    if (!editing) {
+      store.resume();
     }
     void this.ctx.clock.ensure();
     void store

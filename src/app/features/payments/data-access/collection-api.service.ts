@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { round2 } from '../../../core/format/number';
 import {
   CollectedInvoice,
@@ -36,6 +37,7 @@ export class CollectionApiService {
         posting_date: string;
         due_date: string | null;
         grand_total: number;
+        rounded_total: number;
         outstanding_amount: number;
         debit_to: string;
       }>('Sales Invoice', {
@@ -44,6 +46,7 @@ export class CollectionApiService {
           'posting_date',
           'due_date',
           'grand_total',
+          'rounded_total',
           'outstanding_amount',
           'debit_to',
         ],
@@ -62,7 +65,7 @@ export class CollectionApiService {
       name: r.name,
       postingDate: r.posting_date,
       dueDate: r.due_date,
-      total: r.grand_total,
+      total: invoiceTotal(r),
       outstanding: r.outstanding_amount,
       receivable: r.debit_to,
     }));
@@ -77,26 +80,27 @@ export class CollectionApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<CollectionResult> {
+    // Reading the draft and ERPNext's template writes nothing, so their errors are definite failures.
+    const fresh = await this.paymentDoc(request);
+    const current = draft
+      ? await firstValueFrom(this.erpnext.doc<PaymentDoc>('Payment Entry', draft))
+      : null;
     let payment: PaymentDoc;
     try {
       let doc: PaymentDoc;
-      if (draft) {
-        const current = await confirmRequest(this.erpnext.doc<PaymentDoc>('Payment Entry', draft));
+      if (current) {
         // The fresh template is a new document (`__islocal`, no name); submitting it as-is would insert a
         // second payment. Keep the draft's identity and drop the template's new-document flags.
-        const fresh = withoutLocalFlags(await this.paymentDoc(request));
         doc = {
           ...current,
-          ...fresh,
+          ...withoutLocalFlags(fresh),
           name: current.name,
           modified: current['modified'],
           docstatus: 0,
         };
       } else {
         doc = await confirmRequest(
-          this.erpnext.post<PaymentDoc>('frappe.client.insert', {
-            doc: await this.paymentDoc(request),
-          }),
+          this.erpnext.post<PaymentDoc>('frappe.client.insert', { doc: fresh }),
         );
         onInserted(doc.name);
       }
@@ -174,14 +178,16 @@ export class CollectionApiService {
     // Invoices with payment terms have one reference row per term; report each invoice once.
     const names = [...new Set(payment.references.map((r) => r.reference_name))];
     const invoices = await firstValueFrom(
-      this.erpnext.list<{ name: string; grand_total: number; outstanding_amount: number }>(
-        'Sales Invoice',
-        {
-          fields: ['name', 'grand_total', 'outstanding_amount'],
-          filters: [['name', 'in', names]],
-          limit: 0,
-        },
-      ),
+      this.erpnext.list<{
+        name: string;
+        grand_total: number;
+        rounded_total: number;
+        outstanding_amount: number;
+      }>('Sales Invoice', {
+        fields: ['name', 'grand_total', 'rounded_total', 'outstanding_amount'],
+        filters: [['name', 'in', names]],
+        limit: 0,
+      }),
     ).catch(() => []);
     return {
       payment: payment.name,
@@ -196,8 +202,8 @@ export class CollectionApiService {
               .filter((r) => r.reference_name === name)
               .reduce((sum, r) => sum + r.allocated_amount, 0),
           ),
-          total: invoice?.grand_total ?? 0,
-          paid: invoice ? round2(invoice.grand_total - invoice.outstanding_amount) : 0,
+          total: invoice ? invoiceTotal(invoice) : 0,
+          paid: invoice ? round2(invoiceTotal(invoice) - invoice.outstanding_amount) : 0,
           outstanding: invoice?.outstanding_amount ?? 0,
         };
       }),

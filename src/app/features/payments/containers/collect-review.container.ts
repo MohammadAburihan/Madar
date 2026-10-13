@@ -35,7 +35,7 @@ import { allocationText, balanceCard } from './collection-view';
         [language]="ctx.i18n.language()"
         (languageChange)="ctx.i18n.use($event)"
       />
-      <app-back-link [label]="v.back" (back)="ctx.go('')" />
+      <app-back-link [label]="v.back" (back)="edit()" />
       <app-page-heading [title]="v.title" [subtitle]="v.subtitle" />
       @if (notice(); as n) {
         <app-feedback-card [tone]="n.tone" [title]="n.title" [message]="n.message" />
@@ -52,7 +52,7 @@ import { allocationText, balanceCard } from './collection-view';
       >
         {{ ctx.store.state() === 'confirming' ? v.confirming : v.confirm }}
       </button>
-      <button type="button" class="md-btn" (click)="ctx.go('')">{{ v.edit }}</button>
+      <button type="button" class="md-btn" (click)="edit()">{{ v.edit }}</button>
     }
   `,
 })
@@ -125,7 +125,11 @@ export class CollectReviewContainer implements OnInit {
 
   ngOnInit(): void {
     if (!this.ctx.store.ready() && this.ctx.store.state() !== 'failed') {
-      void this.ctx.go('', { replaceUrl: true });
+      void this.ctx.go('', { replaceUrl: true, state: { edit: true } });
     }
+  }
+
+  protected edit(): void {
+    void this.ctx.go('', { state: { edit: true } });
   }
 }

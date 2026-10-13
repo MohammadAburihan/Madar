@@ -252,6 +252,43 @@ describe('CollectionStore', () => {
     expect(store.invoices()).toEqual([]);
   });
 
+  it('ignores a second confirm while the first is running', async () => {
+    const { store, api } = await ready();
+    let finish!: (result: CollectionResult) => void;
+    api.confirm.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    const first = store.confirm();
+    const second = store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    finish(RESULT);
+    await Promise.all([first, second]);
+    expect(api.confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts over on a fresh visit after a failure, deleting its draft; editing keeps it', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementationOnce(async (_r, _d, onInserted: (name: string) => void) => {
+      onInserted('PAY-5');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+    expect(store.state()).toBe('failed');
+
+    store.resume();
+    expect(api.discard).toHaveBeenCalledWith('PAY-5');
+    expect(store.customer()).toBeNull();
+    expect(store.state()).toBe('idle');
+  });
+
+  it('clears an old failure when the customer or invoices change', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));
+    await store.confirm();
+    expect(store.failure()).toBe('error');
+    store.toggle('SI-1');
+    expect(store.state()).toBe('idle');
+    expect(store.failure()).toBeNull();
+  });
+
   it('deletes the draft a failed confirmation left when starting over', async () => {
     const { store, api } = await ready();
     api.confirm.mockImplementationOnce(async (_r, _d, onInserted: (name: string) => void) => {
