@@ -228,11 +228,12 @@ export class CollectionStore {
   }
 
   /**
-   * A fresh visit to the task: anything but an unresolved confirmation starts over, so invoices paid
-   * elsewhere since the last visit are never offered again from a stale list.
+   * Entering the task from elsewhere: a half-done collection starts over, so invoices paid elsewhere since
+   * are never offered from a stale list. A running or unresolved confirmation is kept, and so is a recorded
+   * payment, so going back to its receipt still shows it (the choose step starts a new one from there).
    */
   resume(): void {
-    if (!this.busy()) {
+    if (!this.busy() && this.state() !== 'confirmed') {
       this.start();
     }
   }

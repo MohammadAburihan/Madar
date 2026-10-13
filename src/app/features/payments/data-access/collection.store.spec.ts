@@ -331,6 +331,15 @@ describe('CollectionStore', () => {
     expect(store.state()).toBe('idle');
   });
 
+  it('keeps a recorded payment when the task is entered again, so its receipt still shows', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockResolvedValue(RESULT);
+    await store.confirm();
+    store.resume();
+    expect(store.result()).toEqual(RESULT);
+    expect(store.state()).toBe('confirmed');
+  });
+
   it('clears an old failure when the customer or invoices change', async () => {
     const { store, api } = await ready();
     api.confirm.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));
