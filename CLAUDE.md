@@ -162,6 +162,13 @@ on a pinned `macos-26` image with Xcode 26.6, to save macOS minutes and avoid im
 Run the same checks locally before pushing: `npm run format:check` (or `npm run format` to fix) and `npm test`.
 `.prettierignore` leaves out generated, native, docs, and Markdown files.
 
+## Feature delivery
+
+Each feature goes build → PR → `/code-review` → fix → merge; the `delivering-features` skill
+(`.claude/skills/`) has the full loop. Reviews aim for confidence, not zero findings: stop reviewing and merge
+(CI green) once a pass finds nothing above low severity, or two passes in a row find only low-severity items.
+Defer the rest to the PR description or `docs/STATUS.md`.
+
 ## Development and deployment model
 
 - The frontend is developed locally on this machine in this repo.

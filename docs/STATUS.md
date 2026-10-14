@@ -12,24 +12,14 @@ _Last updated: 14 Oct 2026_
 | #4 | Branch protection on `development` |
 | #5 | **Quick sale** (customer or walk-in, items, basket, price/discount, stock check, payment, receipt) and the **Store associate** role |
 | #6 | **Receive payment** (customer collections), the **Money** page (payment history) and the **sales invoice** page |
+| #7 | **Move stock** between warehouses and the **Inventory** page (balances, low/out of stock, movement history) |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## In progress — step 2 of 5: Move stock
+## Next — step 3 of 5: Purchase
 
-**PR #7, "Add Move stock and the Inventory page"** (branch `feature/stock-transfer`) — open, CI green.
-
-- **Working on the test site:**
-  - Moving stock between warehouses, one ERPNext Stock Entry per move.
-  - The Inventory page: balances per item and warehouse, low and out of stock, movement history.
-  - Both on mobile and desktop, in English and Arabic.
-  - The "Checking your transfer" screen after a timeout.
-- **Reviews:** 11 passes. Every finding through pass 11 is fixed and pushed.
-  - Pass 10: a move made in Desk with one row per batch now shows its full quantity, and history no longer
-    shows the previous item's movements while the newly selected item's history loads.
-  - Pass 11: a sale already posted by a slow earlier attempt is never resubmitted, even if its remarks were
-    edited since.
-- **Left for step 2:** merge PR #7 once a review comes back clean and CI is green.
+Not started. Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
+when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
 
 ## Not started yet
 
