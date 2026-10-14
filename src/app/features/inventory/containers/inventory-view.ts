@@ -83,6 +83,22 @@ function eventKind(movement: Movement): EventKind {
   }
 }
 
+/**
+ * What a stock count left in its warehouses. Batch and serial items get several ledger lines per warehouse,
+ * each with the running balance, so take each warehouse's newest line (rows arrive newest first).
+ */
+function countedBalance(movement: Movement): number {
+  const seen = new Set<string>();
+  let total = 0;
+  for (const line of movement.lines) {
+    if (!seen.has(line.warehouse)) {
+      seen.add(line.warehouse);
+      total += line.after;
+    }
+  }
+  return total;
+}
+
 function whenText(isoDate: string, today: Date, language: Language, tr: Translator): string {
   const days = daysUntil(isoDate, today);
   return days === 0
@@ -129,7 +145,7 @@ export function movementEntry(
   }
   const net = movement.lines.reduce((sum, line) => sum + line.qty, 0);
   const places = [...new Set(movement.lines.map((l) => warehouseName(l.warehouse, warehouses)))];
-  const counted = movement.lines.reduce((sum, line) => sum + line.after, 0);
+  const counted = countedBalance(movement);
   const qty =
     kind === 'adjusted'
       ? qtyText(counted, item.uom, tr)
@@ -168,11 +184,7 @@ export function movementRow(
           })
         : kind === 'adjusted'
           ? tr.t('inventory.countedQty', {
-              qty: qtyText(
-                movement.lines.reduce((sum, line) => sum + line.after, 0),
-                item.uom,
-                tr,
-              ),
+              qty: qtyText(countedBalance(movement), item.uom, tr),
             })
           : tr.t('inventory.signedQty', {
               qty: qtyText(Math.abs(net), item.uom, tr),
