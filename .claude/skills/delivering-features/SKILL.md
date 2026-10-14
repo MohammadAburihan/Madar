@@ -13,8 +13,9 @@ clean" never ends the loop on its own. Stop when further passes stop finding thi
 
 ## The loop
 
-1. **Build** on a feature branch from `development`, following CLAUDE.md (container/presenter, specs for
-   every presenter, en + ar, checked against the mocks). Check it end to end on the test site
+1. **Build** on a feature branch from `development`. First read the `review-lesson` memories in `MEMORY.md`
+   that touch the area you're changing, and build so those findings can't recur. Follow CLAUDE.md
+   (container/presenter, specs for every presenter, en + ar, checked against the mocks). Check it end to end on the test site
    (`scripts/dev-test-site.sh`), never on `frontend`.
 2. **Open the PR** against `development`. Run `npm run format:check` and `npm test` before every push.
 3. **Review** with `/code-review <PR> high` (it runs in the background; wait for its notification).
@@ -29,9 +30,30 @@ clean" never ends the loop on its own. Stop when further passes stop finding thi
      - **Nit:** style or wording.
 5. **Fix** high, medium, and cheap low findings, each with a test that fails without the fix. Commit, push,
    update `docs/STATUS.md`.
-6. **Decide** whether to run another pass (below). If yes, go to step 3. If not, merge.
-7. **Merge** once CI is green and the branch is up to date with `development`, with a merge commit
+6. **Save the lessons.** For every real finding that could recur in other code, save it to memory (below)
+   before the next pass.
+7. **Decide** whether to run another pass (below). If yes, go to step 3. If not, merge.
+8. **Merge** once CI is green and the branch is up to date with `development`, with a merge commit
    (`gh pr merge <PR> --merge --delete-branch`), as earlier PRs were.
+
+## Saving review lessons
+
+A finding is worth saving when it teaches something beyond this diff:
+- an ERPNext/Frappe behaviour;
+- a project rule that was broken, such as en/ar parity, RTL or design fidelity;
+- a bug pattern that could recur, such as stale state, retry or idempotency, or copied content keeping its source's
+  references.
+
+Don't save one-off typos, sample-data slips, or anything the code or CLAUDE.md already states.
+
+For each one, check `MEMORY.md` for an existing lesson on the same pattern and update it rather than adding a
+duplicate. Otherwise write one `feedback` memory per pattern:
+- the name starts with `review-lesson-`;
+- the body states the rule, then **Why:** (the PR and the failure it caused) and **How to apply:** (what to do
+  or check while building);
+- it links to [[feature-delivery-loop]].
+
+Add its line to `MEMORY.md`. If a lesson is project-wide and stable, propose adding it to CLAUDE.md instead.
 
 ## When reviewing is enough
 
@@ -59,3 +81,4 @@ Once a group of steps is merged, run one review of the whole `development` branc
 - Fixing a finding without first confirming it's real.
 - Merging with a high finding fixed but not re-reviewed.
 - Leaving `docs/STATUS.md` describing work that's already committed.
+- Fixing a recurring kind of finding without saving the lesson, so the next feature repeats it.
