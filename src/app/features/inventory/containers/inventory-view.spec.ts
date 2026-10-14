@@ -114,6 +114,15 @@ describe('inventory view', () => {
       expect(visible(view.movementRow(count, OLIVE, WAREHOUSES, en)).cells[1]).toBe(
         '20 Unit counted',
       );
+
+      // A batch item's count: lines newest first, each with the warehouse's running balance.
+      const batches = movement('Stock Reconciliation', [
+        { warehouse: MAIN.id, qty: 7, after: 12 },
+        { warehouse: MAIN.id, qty: -6, after: 5 },
+        { warehouse: MAIN.id, qty: 5, after: 11 },
+        { warehouse: MAIN.id, qty: -4, after: 6 },
+      ]);
+      expect(entry(batches).title).toBe('Stock count: 12 Unit');
     });
 
     it('shows unknown vouchers with a signed quantity', () => {
