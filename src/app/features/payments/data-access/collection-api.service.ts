@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { round2 } from '../../../core/format/number';
@@ -83,8 +83,12 @@ export class CollectionApiService {
     // Reading the draft and ERPNext's template writes nothing, so their errors are definite failures.
     const fresh = await this.paymentDoc(request);
     const current = draft
-      ? await firstValueFrom(this.erpnext.doc<PaymentDoc>('Payment Entry', draft))
+      ? await reusableDraft(this.erpnext.doc<PaymentDoc>('Payment Entry', draft))
       : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt recorded it after all.
+      return this.result(current);
+    }
     let payment: PaymentDoc;
     try {
       let doc: PaymentDoc;

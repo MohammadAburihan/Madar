@@ -253,6 +253,17 @@ describe('SalesApiService', () => {
     });
   });
 
+  it('shows a remembered draft that a slow earlier attempt already confirmed, without resubmitting', async () => {
+    const { api, postCalls } = setup(
+      { 'Sales Invoice': () => [INVOICE], 'Payment Entry': () => [] },
+      {},
+      { 'Sales Invoice/SI-1': INVOICE },
+    );
+    const result = await api.confirm(sale(), 'SI-1');
+    expect(postCalls).toEqual([]);
+    expect(result).toMatchObject({ invoice: 'SI-1', payment: null });
+  });
+
   it('submits an existing draft instead of inserting a new invoice', async () => {
     const { api, postCalls } = setup(
       {},

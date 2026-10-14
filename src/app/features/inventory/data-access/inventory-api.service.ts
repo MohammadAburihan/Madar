@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import {
   InventoryOverview,
@@ -165,10 +165,13 @@ export class InventoryApiService {
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<TransferResult> {
     const fresh = this.entryDoc(request);
-    // Reading the draft writes nothing, so its errors are definite failures.
     const current = draft
-      ? await firstValueFrom(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
+      ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
       : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt posted it after all.
+      return this.result(current, request);
+    }
     let entry: EntryDoc;
     try {
       let doc: EntryDoc;

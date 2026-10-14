@@ -202,6 +202,18 @@ describe('CollectionApiService', () => {
     ]);
   });
 
+  it('shows a remembered draft that a slow earlier attempt already submitted, without resubmitting', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Sales Invoice': invoiceRows },
+      { [GET_PAYMENT_ENTRY]: template },
+      { 'Payment Entry/PAY-1': submitted },
+    );
+    const result = await TestBed.inject(CollectionApiService).confirm(request(), 'PAY-1');
+    expect(postCalls.some((c) => c.method === 'frappe.client.submit')).toBe(false);
+    expect(postCalls.some((c) => c.method === 'frappe.client.insert')).toBe(false);
+    expect(result.payment).toBe('PAY-1');
+  });
+
   it('submits a leftover draft as itself, never inserting a copy', async () => {
     const { postCalls, docCalls } = fakeErpnext(
       { 'Sales Invoice': invoiceRows },

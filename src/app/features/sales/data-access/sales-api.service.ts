@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
@@ -168,14 +168,21 @@ export class SalesApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<SaleResult> {
+    const current = draft
+      ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
+      : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt confirmed it after all. find() records the payment only if it's missing.
+      const found = await this.find(sale);
+      if (found !== 'not-found' && !('draft' in found)) {
+        return found;
+      }
+    }
     let invoice: InvoiceDoc;
     try {
       let doc: InvoiceDoc;
-      if (draft) {
-        doc = {
-          ...(await confirmRequest(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))),
-          ...this.invoiceDoc(sale),
-        };
+      if (current) {
+        doc = { ...current, ...this.invoiceDoc(sale) };
       } else {
         doc = await confirmRequest(
           this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc: this.invoiceDoc(sale) }),

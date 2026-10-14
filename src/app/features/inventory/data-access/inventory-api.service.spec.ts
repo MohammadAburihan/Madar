@@ -354,6 +354,34 @@ describe('InventoryApiService', () => {
       });
     });
 
+    it('shows a remembered draft that a slow earlier attempt already posted, without resubmitting', async () => {
+      const { postCalls } = fakeErpnext(
+        { Bin: balances, Item: ITEMS, Warehouse: WAREHOUSES },
+        {},
+        { 'Stock Entry/MAT-STE-1': ENTRY },
+      );
+      const result = await TestBed.inject(InventoryApiService).transfer(request(), 'MAT-STE-1');
+      expect(postCalls).toEqual([]);
+      expect(result.entry).toBe('MAT-STE-1');
+    });
+
+    it('inserts a new transfer when the remembered draft was deleted', async () => {
+      const { postCalls } = fakeErpnext(
+        { Bin: balances, Item: ITEMS, Warehouse: WAREHOUSES },
+        {
+          'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'MAT-STE-2' }),
+          'frappe.client.submit': () => ({ ...ENTRY, name: 'MAT-STE-2' }),
+        },
+        { 'Stock Entry/GONE': () => throwError(() => new HttpErrorResponse({ status: 404 })) },
+      );
+      const result = await TestBed.inject(InventoryApiService).transfer(request(), 'GONE');
+      expect(postCalls.map((c) => c.method)).toEqual([
+        'frappe.client.insert',
+        'frappe.client.submit',
+      ]);
+      expect(result.entry).toBe('MAT-STE-2');
+    });
+
     it('reports a gateway timeout or lost connection on submit as unresolved', async () => {
       for (const status of [504, 0]) {
         TestBed.resetTestingModule();
