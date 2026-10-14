@@ -972,7 +972,8 @@
       "allReceived": "All received",
       "orderValue": "Order value",
       "receive": "Receive items",
-      "receiveRemaining": "Receive remaining {{qty}}"
+      "receiveRemaining": "Receive remaining {{qty}}",
+      "lineDetailNoPrice": "Ordered {{qty}}"
     },
     "receive": {
       "title": "Receive items",
@@ -1048,7 +1049,9 @@
       "notReceivable": {
         "title": "This order can't be received",
         "message": "It is on hold, closed or cancelled in ERPNext. Reopen it there first."
-      }
+      },
+      "lineDetailNoPrice": "Ordered {{ordered}}",
+      "lineDetailReceivedNoPrice": "Ordered {{ordered}} · {{received}} received"
     },
     "receipt": {
       "partialTitle": "Receipt recorded",

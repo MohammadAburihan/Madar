@@ -23,6 +23,7 @@ const ORDER: OrderDetail = {
   supplier: 'Green Clay',
   supplierName: 'Green Clay',
   date: '2026-10-11',
+  currency: 'ILS',
   total: 450,
   progress: 'awaitingReceipt',
   orderedQty: 10,
@@ -73,6 +74,13 @@ describe('receipt view', () => {
       'المستلم الآن',
       'ما زال متبقياً',
     ]);
+  });
+
+  it('shows no rate on a line for roles that don’t see costs', () => {
+    expect(visible(view.receiveLineCard(LINE, null, en).detail)).toBe('Ordered 10');
+    expect(visible(view.receiveLineCard({ ...LINE, receivedQty: 6 }, null, ar).detail)).toBe(
+      'طُلب 10 · استُلم 6',
+    );
   });
 
   it('names each quantity field by its item code when the order has several lines', () => {

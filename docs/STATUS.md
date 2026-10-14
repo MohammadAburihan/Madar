@@ -28,6 +28,8 @@ Split into three PRs, each through the delivery loop:
   Review pass 1 (1 high, 1 medium, 2 low) fixed. The high one: "Check result" could run while a slow confirmation
   was still going and invite a second post; it is now guarded in every task flow (sale, collection, transfer, purchase
   order, receipt).
+  Review pass 2 (1 medium, 1 low) fixed: buying prices, order values and the supplier balance are hidden from roles
+  that don't see costs, and order amounts use the order's own currency.
 - **3c — Supplier invoice and paying the supplier.**
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry

@@ -1028,7 +1028,8 @@
       "allReceived": "تم استلام الكل",
       "orderValue": "قيمة الطلب",
       "receive": "استلام الأصناف",
-      "receiveRemaining": "استلام {{qty}} المتبقية"
+      "receiveRemaining": "استلام {{qty}} المتبقية",
+      "lineDetailNoPrice": "المطلوب {{qty}}"
     },
     "receive": {
       "title": "استلام الأصناف",
@@ -1108,7 +1109,9 @@
       "notReceivable": {
         "title": "لا يمكن استلام هذا الأمر",
         "message": "الأمر معلّق أو مغلق أو ملغى في ERPNext. أعد فتحه هناك أولاً."
-      }
+      },
+      "lineDetailNoPrice": "طُلب {{ordered}}",
+      "lineDetailReceivedNoPrice": "طُلب {{ordered}} · استُلم {{received}}"
     },
     "receipt": {
       "partialTitle": "تم تسجيل الاستلام",

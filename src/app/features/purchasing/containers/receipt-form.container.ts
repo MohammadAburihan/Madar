@@ -125,7 +125,9 @@ import {
         <app-feedback-card [title]="txt.reviewTitle" [message]="f.review" />
       } @else {
         <app-stat-card [stats]="f.stats" />
-        <app-totals-card density="compact" [rows]="f.rows" />
+        @if (f.rows.length) {
+          <app-totals-card density="compact" [rows]="f.rows" />
+        }
         <p class="muted">{{ f.note }}</p>
       }
       @if (notice(); as n) {
@@ -209,6 +211,8 @@ export class ReceiptFormContainer implements OnInit {
     const lines = store.openLines();
     const quantities = store.quantities();
     const remainder = receivingRemainder(order);
+    // Rates and values only for roles that see buying prices (docs/PERMISSIONS.md).
+    const currency = this.ctx.session.capabilities().seeCosts ? order.currency : null;
     return {
       remainder,
       partial: partialDelivery(lines, quantities),
@@ -218,13 +222,13 @@ export class ReceiptFormContainer implements OnInit {
         return {
           row: l.row,
           uom: l.uom,
-          card: receiveLineCard(l, this.ctx.currency(), tr),
+          card: receiveLineCard(l, currency, tr),
           label: qtyLabel(l, remainder, lines.length, tr),
           error: valid ? null : tr.t('purchase.receive.qtyError', { max: remainingQty(l) }),
         };
       }),
       stats: receiveStats(lines, quantities, tr),
-      rows: receiveRows(lines, quantities, this.ctx.currency()),
+      rows: currency === null ? [] : receiveRows(lines, quantities, currency),
       note: stockNote(lines, quantities, tr),
       review: reviewMessage(order, lines, quantities, tr),
       action: remainder ? confirmLabel(lines, quantities, tr) : recordLabel(lines, quantities, tr),

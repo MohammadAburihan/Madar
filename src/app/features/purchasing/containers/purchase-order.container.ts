@@ -69,7 +69,9 @@ import { receiveAction, receivedLineCard } from './receipt-view';
       @if (!v.received) {
         <app-stat-card [stats]="v.stats" />
       }
-      <app-totals-card density="compact" [rows]="v.total" />
+      @if (v.total.length) {
+        <app-totals-card density="compact" [rows]="v.total" />
+      }
       @if (!v.received) {
         <p class="muted">{{ txt.note }}</p>
       }
@@ -133,7 +135,8 @@ export class PurchaseOrderContainer {
       return null;
     }
     const tr = this.i18n.tr();
-    const currency = this.business.active()?.currency ?? '';
+    // Rates and values only for roles that see buying prices (docs/PERMISSIONS.md).
+    const currency = this.caps().seeCosts ? order.currency : null;
     const receive = this.caps().receiveGoods ? receiveAction(order, tr) : null;
     if (order.receivedQty > 0) {
       // After the first receipt the page reads like the received-order mock: order and delivery status.
@@ -157,9 +160,15 @@ export class PurchaseOrderContainer {
         supplier: order.supplierName,
         cards: order.lines.map((l) => receivedLineCard(l, tr)),
         stats: [],
-        total: [
-          { label: tr.t('purchase.detail.orderValue'), value: formatMoney(order.total, currency) },
-        ],
+        total:
+          currency === null
+            ? []
+            : [
+                {
+                  label: tr.t('purchase.detail.orderValue'),
+                  value: formatMoney(order.total, currency),
+                },
+              ],
         receive,
       };
     }
@@ -174,13 +183,16 @@ export class PurchaseOrderContainer {
       supplier: order.supplierName,
       cards: order.lines.map((l) => detailLineCard(l, currency, tr)),
       stats: detailStats(order, tr),
-      total: [
-        {
-          label: tr.t('purchase.detail.total'),
-          value: formatMoney(order.total, currency),
-          accent: true,
-        },
-      ],
+      total:
+        currency === null
+          ? []
+          : [
+              {
+                label: tr.t('purchase.detail.total'),
+                value: formatMoney(order.total, currency),
+                accent: true,
+              },
+            ],
       receive,
     };
   });

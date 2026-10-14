@@ -45,16 +45,17 @@ export function progressChip(
   };
 }
 
+/** The key figures; the supplier balance only for roles that see costs (currency given). */
 export function workspaceStats(
   overview: PurchasingOverview,
-  currency: string,
+  currency: string | null,
   tr: Translator,
 ): Stat[] {
   const stats: Stat[] = [
     { label: tr.t('purchase.stats.open'), value: String(overview.openOrders) },
     { label: tr.t('purchase.stats.awaitingReceipt'), value: String(overview.awaitingReceipt) },
   ];
-  if (overview.supplierBalance !== null) {
+  if (overview.supplierBalance !== null && currency !== null) {
     stats.push({
       label: tr.t('purchase.stats.supplierBalance'),
       value: formatMoney(overview.supplierBalance, currency),
@@ -63,54 +64,60 @@ export function workspaceStats(
   return stats;
 }
 
+/** A workspace table row; the total column only for roles that see costs. */
 export function orderRow(
   order: OrderSummary,
-  currency: string,
+  showCosts: boolean,
   language: Language,
   tr: Translator,
 ): TableRow {
+  const cells = [
+    tr.t('purchase.orderLabel', { order: order.name, supplier: order.supplierName }),
+    formatShortDate(order.date, language),
+    progressText(order, tr),
+  ];
   return {
     id: order.name,
-    cells: [
-      tr.t('purchase.orderLabel', { order: order.name, supplier: order.supplierName }),
-      formatShortDate(order.date, language),
-      progressText(order, tr),
-      formatMoney(order.total, currency),
-    ],
+    cells: showCosts ? [...cells, formatMoney(order.total, order.currency)] : cells,
   };
 }
 
 /** One order in the mobile list. */
 export function orderCard(
   order: OrderSummary,
-  currency: string,
+  showCosts: boolean,
   language: Language,
   tr: Translator,
 ): CardView {
   return {
     title: tr.t('purchase.orderLabel', { order: order.name, supplier: order.supplierName }),
     meta: formatShortDate(order.date, language),
-    detail: tr.t('purchase.orderDetail', {
-      status: progressText(order, tr),
-      total: formatMoney(order.total, currency),
-    }),
+    detail: showCosts
+      ? tr.t('purchase.orderDetail', {
+          status: progressText(order, tr),
+          total: formatMoney(order.total, order.currency),
+        })
+      : progressText(order, tr),
     kind: 'product',
   };
 }
 
 /** The workspace's side panel for the selected order. */
-export function orderPanel(order: OrderSummary, currency: string, tr: Translator): TotalRow[] {
-  return [
-    { label: tr.t('purchase.panel.total'), value: formatMoney(order.total, currency) },
-    {
-      label: tr.t('purchase.panel.received'),
-      value: tr.t('purchase.panel.receivedValue', {
-        received: qty(order.receivedQty),
-        ordered: qty(order.orderedQty),
-        open: qty(Math.max(order.orderedQty - order.receivedQty, 0)),
-      }),
-    },
-  ];
+export function orderPanel(order: OrderSummary, showCosts: boolean, tr: Translator): TotalRow[] {
+  const received: TotalRow = {
+    label: tr.t('purchase.panel.received'),
+    value: tr.t('purchase.panel.receivedValue', {
+      received: qty(order.receivedQty),
+      ordered: qty(order.orderedQty),
+      open: qty(Math.max(order.orderedQty - order.receivedQty, 0)),
+    }),
+  };
+  return showCosts
+    ? [
+        { label: tr.t('purchase.panel.total'), value: formatMoney(order.total, order.currency) },
+        received,
+      ]
+    : [received];
 }
 
 export function itemResult(item: PurchaseItem, currency: string, tr: Translator): CardView {
@@ -176,18 +183,22 @@ export function beforeMessage(
   });
 }
 
+/** An order line; its rate only when a currency is given (roles that see costs). */
 export function detailLineCard(
   line: OrderDetail['lines'][number],
-  currency: string,
+  currency: string | null,
   tr: Translator,
 ): CardView {
   return {
     title: line.name,
     meta: line.code,
-    detail: tr.t('purchase.detail.lineDetail', {
-      qty: qty(line.qty),
-      rate: formatMoney(line.rate, currency),
-    }),
+    detail:
+      currency === null
+        ? tr.t('purchase.detail.lineDetailNoPrice', { qty: qty(line.qty) })
+        : tr.t('purchase.detail.lineDetail', {
+            qty: qty(line.qty),
+            rate: formatMoney(line.rate, currency),
+          }),
     kind: 'product',
   };
 }

@@ -25,6 +25,7 @@ const ORDER: OrderDetail = {
   supplier: 'Green Clay',
   supplierName: 'Green Clay',
   date: '2026-10-11',
+  currency: 'ILS',
   total: 450,
   progress: 'awaitingReceipt',
   orderedQty: 10,

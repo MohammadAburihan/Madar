@@ -42,6 +42,8 @@ export interface OrderSummary {
   supplier: string;
   supplierName: string;
   date: string;
+  /** The order's own currency, which its rates and total are in. */
+  currency: string;
   total: number;
   progress: OrderProgress;
   orderedQty: number;

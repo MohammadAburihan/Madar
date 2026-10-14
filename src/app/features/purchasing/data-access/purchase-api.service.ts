@@ -25,6 +25,7 @@ interface OrderDoc {
   supplier: string;
   supplier_name: string;
   transaction_date: string;
+  currency: string;
   grand_total: number;
   per_received: number;
   per_billed: number;
@@ -57,6 +58,7 @@ const ORDER_FIELDS = [
   'supplier',
   'supplier_name',
   'transaction_date',
+  'currency',
   'grand_total',
   'per_received',
   'per_billed',
@@ -467,6 +469,7 @@ function summary(
     supplier: doc.supplier,
     supplierName: doc.supplier_name,
     date: doc.transaction_date,
+    currency: doc.currency,
     total: doc.grand_total,
     progress: orderProgress(doc),
     orderedQty: quantities?.ordered ?? 0,

@@ -38,18 +38,21 @@ export function receiveHeading(
   };
 }
 
-export function receiveLineCard(line: OrderLineDetail, currency: string, tr: Translator): CardView {
+/** A line on the receive form; its rate only when a currency is given (roles that see costs). */
+export function receiveLineCard(
+  line: OrderLineDetail,
+  currency: string | null,
+  tr: Translator,
+): CardView {
+  const key = line.receivedQty > 0 ? 'lineDetailReceived' : 'lineDetail';
   return {
     title: line.name,
     meta: tr.t('purchase.receive.lineMeta', { code: line.code, uom: line.uom }),
-    detail: tr.t(
-      line.receivedQty > 0 ? 'purchase.receive.lineDetailReceived' : 'purchase.receive.lineDetail',
-      {
-        ordered: qty(line.qty),
-        received: qty(line.receivedQty),
-        rate: formatMoney(line.rate, currency),
-      },
-    ),
+    detail: tr.t(`purchase.receive.${key}${currency === null ? 'NoPrice' : ''}`, {
+      ordered: qty(line.qty),
+      received: qty(line.receivedQty),
+      rate: currency === null ? '' : formatMoney(line.rate, currency),
+    }),
     kind: 'product',
   };
 }

@@ -13,6 +13,7 @@ describe('capabilitiesFor', () => {
       transferStock: true,
       orderPurchases: true,
       receiveGoods: true,
+      seeCosts: true,
     });
   });
 
@@ -29,6 +30,7 @@ describe('capabilitiesFor', () => {
         transferStock: persona === 'storeAssociate',
         orderPurchases: false,
         receiveGoods: persona === 'storeAssociate',
+        seeCosts: false,
       });
     }
   });
@@ -91,6 +93,14 @@ describe('capabilitiesFor', () => {
     expect(
       capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager', 'Item Manager']).receiveGoods,
     ).toBe(true);
+  });
+
+  it('shows buying prices to the owner and the purchasing officer only (PERMISSIONS.md)', () => {
+    expect(capabilitiesFor('owner').seeCosts).toBe(true);
+    expect(capabilitiesFor('purchasing').seeCosts).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse'] as const) {
+      expect(capabilitiesFor(persona).seeCosts).toBe(false);
+    }
   });
 
   it("doesn't let warehouse workers sell", () => {

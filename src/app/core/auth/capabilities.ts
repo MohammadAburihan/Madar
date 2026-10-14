@@ -19,6 +19,8 @@ export interface Capabilities {
   orderPurchases: boolean;
   /** Record goods arriving against a purchase order. */
   receiveGoods: boolean;
+  /** See buying prices, order values and supplier balances. */
+  seeCosts: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -32,6 +34,7 @@ const SALES_ROLE: Capabilities = {
   transferStock: false,
   orderPurchases: false,
   receiveGoods: false,
+  seeCosts: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -46,6 +49,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     transferStock: true,
     orderPurchases: true,
     receiveGoods: true,
+    seeCosts: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
@@ -60,6 +64,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     transferStock: true,
     orderPurchases: false,
     receiveGoods: true,
+    seeCosts: false,
   },
   purchasing: {
     sell: false,
@@ -72,6 +77,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     transferStock: false,
     orderPurchases: true,
     receiveGoods: true,
+    seeCosts: true,
   },
 };
 
