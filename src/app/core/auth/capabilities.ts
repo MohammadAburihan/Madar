@@ -56,11 +56,6 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
 // Moving stock needs to create a Stock Entry and read Bin balances; in ERPNext v16 only these roles can do
 // both (Manufacturing roles can create entries but not read Bin).
 const STOCK_ENTRY_ROLES = ['Stock User', 'Stock Manager'];
-  'Stock User',
-  'Stock Manager',
-  'Manufacturing User',
-  'Manufacturing Manager',
-];
 
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
