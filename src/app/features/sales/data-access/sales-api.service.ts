@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
@@ -168,14 +173,21 @@ export class SalesApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<SaleResult> {
+    const current = draft
+      ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
+      : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt confirmed it after all; it's this sale's result only if nothing changed since.
+      if (!sameSale(current, sale)) {
+        throw new PostedEarlierError(current.name);
+      }
+      return this.postedResult(sale, current);
+    }
     let invoice: InvoiceDoc;
     try {
       let doc: InvoiceDoc;
-      if (draft) {
-        doc = {
-          ...(await confirmRequest(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))),
-          ...this.invoiceDoc(sale),
-        };
+      if (current) {
+        doc = { ...current, ...this.invoiceDoc(sale) };
       } else {
         doc = await confirmRequest(
           this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc: this.invoiceDoc(sale) }),
@@ -211,6 +223,11 @@ export class SalesApiService {
     if (invoice.docstatus === 0) {
       return { draft: invoice.name };
     }
+    return this.postedResult(sale, invoice);
+  }
+
+  /** The result for this sale's posted invoice, recording the payment only if it's missing. */
+  private async postedResult(sale: SaleRequest, invoice: InvoiceDoc): Promise<SaleResult> {
     const [payment] = await firstValueFrom(
       this.erpnext.list<{ name: string; paid_amount: number }>('Payment Entry', {
         fields: ['name', 'paid_amount'],
@@ -370,4 +387,22 @@ export class SalesApiService {
       lists.find((l) => l.name === 'Standard Selling')?.name ?? lists[0]?.name ?? null;
     return this.sellingPriceList;
   }
+}
+
+function sameSale(invoice: InvoiceDoc, sale: SaleRequest): boolean {
+  const rows = (invoice['items'] as Record<string, unknown>[] | undefined) ?? [];
+  return (
+    invoice['customer'] === sale.customer &&
+    invoice['set_warehouse'] === sale.warehouse &&
+    rows.length === sale.lines.length &&
+    sale.lines.every((line, i) => {
+      const row = rows[i];
+      return (
+        row['item_code'] === line.item.code &&
+        Number(row['qty']) === line.qty &&
+        round2(Number(row['rate'])) === unitRate(line) &&
+        (!line.item.isStock || row['warehouse'] === sale.warehouse)
+      );
+    })
+  );
 }

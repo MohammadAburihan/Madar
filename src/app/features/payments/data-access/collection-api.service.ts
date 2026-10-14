@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { round2 } from '../../../core/format/number';
@@ -83,8 +88,15 @@ export class CollectionApiService {
     // Reading the draft and ERPNext's template writes nothing, so their errors are definite failures.
     const fresh = await this.paymentDoc(request);
     const current = draft
-      ? await firstValueFrom(this.erpnext.doc<PaymentDoc>('Payment Entry', draft))
+      ? await reusableDraft(this.erpnext.doc<PaymentDoc>('Payment Entry', draft))
       : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt recorded it after all; it's this request's result only if nothing changed.
+      if (!samePayment(current, request)) {
+        throw new PostedEarlierError(current.name);
+      }
+      return this.result(current);
+    }
     let payment: PaymentDoc;
     try {
       let doc: PaymentDoc;
@@ -233,4 +245,19 @@ function spread(rows: Record<string, unknown>[], amount: number): Record<string,
 
 function withoutLocalFlags(doc: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(Object.entries(doc).filter(([key]) => !key.startsWith('__')));
+}
+
+function samePayment(payment: PaymentDoc, request: CollectionRequest): boolean {
+  const allocated = (invoice: string) =>
+    round2(
+      payment.references
+        .filter((r) => r.reference_name === invoice)
+        .reduce((sum, r) => sum + r.allocated_amount, 0),
+    );
+  return (
+    round2(payment.paid_amount) === round2(request.amount) &&
+    payment['paid_to'] === request.account.account &&
+    new Set(payment.references.map((r) => r.reference_name)).size === request.allocations.length &&
+    request.allocations.every((a) => allocated(a.invoice) === round2(a.amount))
+  );
 }

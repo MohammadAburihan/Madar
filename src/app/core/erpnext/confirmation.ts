@@ -40,3 +40,32 @@ export function newReference(prefix: string): string {
     .padStart(7, '0');
   return `${prefix}-${random}`;
 }
+
+/**
+ * Reads a remembered draft before reusing it. Gone (deleted in Desk) or cancelled means start a new document;
+ * submitted means an earlier, slow attempt went through. Reading writes nothing, so other errors are definite.
+ */
+export async function reusableDraft<T extends { docstatus: number }>(
+  read: Observable<T>,
+): Promise<T | null> {
+  try {
+    const doc = await firstValueFrom(read);
+    return doc.docstatus === 2 ? null : doc;
+  } catch (error) {
+    const missing = ErpnextError.from(error);
+    if (missing.status === 404 || missing.excType === 'DoesNotExistError') {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * A remembered draft turned out to be posted by a slow earlier attempt, but with details the user has since
+ * changed. It must not be reported as this request's result.
+ */
+export class PostedEarlierError extends Error {
+  constructor(readonly document: string) {
+    super(`An earlier version was already posted as ${document}`);
+  }
+}

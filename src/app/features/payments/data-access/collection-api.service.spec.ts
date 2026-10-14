@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { CollectionApiService } from './collection-api.service';
 import { CollectionRequest } from './collection.models';
 
@@ -200,6 +200,29 @@ describe('CollectionApiService', () => {
     expect(postCalls).toEqual([
       { method: 'frappe.client.delete', body: { doctype: 'Payment Entry', name: 'PAY-9' } },
     ]);
+  });
+
+  it('shows a remembered draft that a slow earlier attempt already submitted, without resubmitting', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Sales Invoice': invoiceRows },
+      { [GET_PAYMENT_ENTRY]: template },
+      { 'Payment Entry/PAY-1': { ...submitted, paid_to: 'Cash - RN' } },
+    );
+    const result = await TestBed.inject(CollectionApiService).confirm(request(), 'PAY-1');
+    expect(postCalls.some((c) => c.method === 'frappe.client.submit')).toBe(false);
+    expect(postCalls.some((c) => c.method === 'frappe.client.insert')).toBe(false);
+    expect(result.payment).toBe('PAY-1');
+  });
+
+  it("won't report an earlier, different payment as this one's result", async () => {
+    fakeErpnext(
+      { 'Sales Invoice': invoiceRows },
+      { [GET_PAYMENT_ENTRY]: template },
+      { 'Payment Entry/PAY-1': { ...submitted, paid_to: 'Cash - RN', paid_amount: 90 } },
+    );
+    await expect(
+      TestBed.inject(CollectionApiService).confirm(request(), 'PAY-1'),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
   it('submits a leftover draft as itself, never inserting a copy', async () => {

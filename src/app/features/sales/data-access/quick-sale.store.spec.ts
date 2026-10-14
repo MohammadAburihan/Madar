@@ -234,8 +234,18 @@ describe('QuickSaleStore', () => {
     const cases: [unknown, string][] = [
       [new HttpErrorResponse({ status: 403 }), 'permission'],
       [
-        new HttpErrorResponse({ status: 417, error: { message: 'Insufficient stock for OLV-20' } }),
+        new HttpErrorResponse({
+          status: 417,
+          error: { exc_type: 'NegativeStockError', message: '2 units of OLV-20 needed' },
+        }),
         'stock',
+      ],
+      [
+        new HttpErrorResponse({
+          status: 417,
+          error: { message: 'Set the Stock Received account' },
+        }),
+        'error',
       ],
       [new HttpErrorResponse({ status: 500 }), 'error'],
     ];

@@ -38,7 +38,9 @@ export class SessionService {
   readonly user = this.currentUser.asReadonly();
   readonly status = this.currentStatus.asReadonly();
   readonly persona = computed(() => personaFor(this.currentUser()?.roles ?? []));
-  readonly capabilities = computed(() => capabilitiesFor(this.persona()));
+  readonly capabilities = computed(() =>
+    capabilitiesFor(this.persona(), this.currentUser()?.roles ?? []),
+  );
 
   /**
    * Resolves whether a valid ERPNext session exists, checking the server only once.

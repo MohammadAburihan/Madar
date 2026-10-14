@@ -13,6 +13,8 @@ export interface Capabilities {
   collect: boolean;
   /** Payment history on the Money page: every payment, only the user's own, or none. */
   money: 'all' | 'own' | 'none';
+  /** Move stock between the business's warehouses. */
+  transferStock: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -23,6 +25,7 @@ const SALES_ROLE: Capabilities = {
   paymentModes: ['Cash', 'Credit Card'],
   collect: true,
   money: 'own',
+  transferStock: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -34,9 +37,10 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paymentModes: 'all',
     collect: true,
     money: 'all',
+    transferStock: true,
   },
   salesperson: SALES_ROLE,
-  storeAssociate: SALES_ROLE,
+  storeAssociate: { ...SALES_ROLE, transferStock: true },
   warehouse: {
     sell: false,
     sellToWalkIn: false,
@@ -45,9 +49,44 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paymentModes: [],
     collect: false,
     money: 'none',
+    transferStock: true,
   },
 };
 
-export function capabilitiesFor(persona: Persona): Capabilities {
-  return CAPABILITIES[persona];
+// Moving stock needs three ERPNext v16 permissions; a role list for each (from the doctypes' permissions).
+const MOVE_STOCK_NEEDS = [
+  ['Stock User', 'Stock Manager', 'Manufacturing User', 'Manufacturing Manager'], // create Stock Entry
+  [
+    'Stock User',
+    'Stock Manager',
+    'Sales User',
+    'Sales Manager',
+    'Purchase User',
+    'Purchase Manager',
+  ], // read Bin
+  [
+    'Stock User',
+    'Item Manager',
+    'Sales User',
+    'Purchase User',
+    'Accounts User',
+    'Manufacturing User',
+  ], // read Warehouse
+];
+
+/**
+ * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
+ * do the task (an owner who is only an Accounts Manager can't move stock).
+ */
+export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Capabilities {
+  const caps = CAPABILITIES[persona];
+  if (!roles || !caps.transferStock) {
+    return caps;
+  }
+  return {
+    ...caps,
+    transferStock: MOVE_STOCK_NEEDS.every((allowed) =>
+      allowed.some((role) => roles.includes(role)),
+    ),
+  };
 }

@@ -1,3 +1,4 @@
+import { Capabilities } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { daysUntil, formatLongDate, formatMoney, minutesSince } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
@@ -7,6 +8,8 @@ import { HomeData } from '../data-access/home.models';
 export interface HomeViewInput {
   data: HomeData;
   persona: Persona;
+  /** Hides quick actions the user's ERPNext roles can't perform. */
+  capabilities?: Pick<Capabilities, 'transferStock'>;
   firstName: string;
   business: { name: string; currency: string };
   language: Language;
@@ -278,7 +281,9 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     subtitle: `${roleLabel} · ${date}`,
     desktopSubtitle: `${isolate(business.name)} · ${roleLabel} · ${date}`,
     roleLabel,
-    actions: ACTIONS[persona].map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
+    actions: ACTIONS[persona]
+      .filter((id) => id !== 'transferStock' || (input.capabilities?.transferStock ?? true))
+      .map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
     actionColumns: persona === 'owner' ? 3 : 2,
     cards: cards.slice(0, MOBILE_CARD_LIMIT),
     rows: rows

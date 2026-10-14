@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
+import { inventoryRoutes } from './features/inventory/inventory.routes';
 import { paymentRoutes } from './features/payments/payment.routes';
 import { invoiceRoute, saleRoutes } from './features/sales/sale.routes';
 
@@ -32,9 +33,9 @@ export const routes: Routes = [
       saleRoutes,
       invoiceRoute,
       ...paymentRoutes,
+      ...inventoryRoutes,
       placeholder('sales', 'nav.sales'),
       placeholder('purchases', 'nav.purchases'),
-      placeholder('inventory', 'nav.inventory'),
       placeholder('contacts', 'nav.contacts'),
       placeholder('projects', 'nav.projects'),
       placeholder('settings', 'nav.settings'),
