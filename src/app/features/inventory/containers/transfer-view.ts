@@ -61,27 +61,23 @@ export function doneRows(
   language: Language,
   tr: Translator,
 ): TotalRow[] {
-  const time = result.postingTime.slice(0, 5);
+  const qty = (value: number | null) => (value === null ? '—' : qtyText(value, item.uom, tr));
   return [
-    {
-      label: tr.t('transfer.fromRow', { warehouse: from }),
-      value: qtyText(result.fromQty, item.uom, tr),
-    },
-    {
-      label: tr.t('transfer.toRow', { warehouse: to }),
-      value: qtyText(result.toQty, item.uom, tr),
-    },
-    {
-      label: tr.t('transfer.companyTotal'),
-      value: qtyText(result.totalQty, item.uom, tr),
-      accent: true,
-    },
+    { label: tr.t('transfer.fromRow', { warehouse: from }), value: qty(result.fromQty) },
+    { label: tr.t('transfer.toRow', { warehouse: to }), value: qty(result.toQty) },
+    { label: tr.t('transfer.companyTotal'), value: qty(result.totalQty), accent: true },
     {
       label: tr.t('transfer.posted'),
       value: tr.t('transfer.postedValue', {
         date: formatShortDate(result.postingDate, language),
-        time,
+        time: clockTime(result.postingTime),
       }),
     },
   ];
+}
+
+/** "HH:MM" from Frappe's time, which list reads return unpadded ("3:17:2.52915"). */
+export function clockTime(time: string): string {
+  const [hours = '0', minutes = '0'] = time.split(':');
+  return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
 }

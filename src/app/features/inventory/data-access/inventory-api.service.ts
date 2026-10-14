@@ -148,6 +148,10 @@ export class InventoryApiService {
         });
       }
     }
+    // At the limit, the oldest voucher may be cut off (a transfer is two rows); leave it out.
+    if (rows.length === HISTORY_LIMIT && movements.length > 1) {
+      movements.pop();
+    }
     return movements;
   }
 
@@ -237,24 +241,29 @@ export class InventoryApiService {
   }
 
   private async result(entry: EntryDoc, request: TransferRequest): Promise<TransferResult> {
-    // The same locations the move screen totals, so "Company total" reads the same before and after.
-    const warehouses = await this.warehouses(request.company).catch(() => [
-      { id: request.from, name: request.from },
-      { id: request.to, name: request.to },
-    ]);
-    const item = await this.item(
-      request.item,
-      warehouses.map((w) => w.id),
-    ).catch(() => null);
-    const stock = item?.stock ?? {};
-    return {
+    const base = {
       entry: entry.name,
       postingDate: entry.posting_date,
       postingTime: entry.posting_time,
-      fromQty: stock[request.from] ?? 0,
-      toQty: stock[request.to] ?? 0,
-      totalQty: Object.values(stock).reduce((sum, qty) => sum + qty, 0),
     };
+    try {
+      // The same locations the move screen totals, so "Company total" reads the same before and after.
+      const warehouses = await this.warehouses(request.company);
+      const item = await this.item(
+        request.item,
+        warehouses.map((w) => w.id),
+      );
+      const stock = item?.stock ?? {};
+      return {
+        ...base,
+        fromQty: stock[request.from] ?? 0,
+        toQty: stock[request.to] ?? 0,
+        totalQty: Object.values(stock).reduce((sum, qty) => sum + qty, 0),
+      };
+    } catch {
+      // The move is posted; only reading the new balances failed, so don't state wrong figures.
+      return { ...base, fromQty: null, toQty: null, totalQty: null };
+    }
   }
 
   /**

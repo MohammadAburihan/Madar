@@ -780,6 +780,11 @@
       "title": "Check before trying again",
       "message": "Your request timed out. The move may already be posted. Do not post it again."
     },
-    "plannedMove": "Planned move"
+    "plannedMove": "Planned move",
+    "loadFailed": {
+      "title": "Locations couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "retry": "Try again"
   }
 }

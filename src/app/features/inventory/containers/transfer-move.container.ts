@@ -55,6 +55,13 @@ const SEARCH_DELAY_MS = 250;
         [title]="txt.noAccess.title"
         [message]="txt.noAccess.message"
       />
+    } @else if (loadFailed()) {
+      <app-feedback-card
+        tone="danger"
+        [title]="txt.loadFailed.title"
+        [message]="txt.loadFailed.message"
+      />
+      <button type="button" class="md-btn" (click)="retry()">{{ txt.retry }}</button>
     } @else if (loaded() && ctx.store.warehouses().length < 2) {
       <app-feedback-card
         tone="warning"
@@ -145,6 +152,7 @@ export class TransferMoveContainer implements OnInit {
   protected readonly results = signal<StockItem[]>([]);
   protected readonly searching = signal(true);
   protected readonly loaded = signal(false);
+  protected readonly loadFailed = signal(false);
   private searchRun = 0;
 
   protected readonly text = computed(() => {
@@ -172,6 +180,11 @@ export class TransferMoveContainer implements OnInit {
       review: t('transfer.review'),
       footnote: t('transfer.footnote'),
       noAccess: { title: t('transfer.noAccess.title'), message: t('transfer.noAccess.message') },
+      loadFailed: {
+        title: t('transfer.loadFailed.title'),
+        message: t('transfer.loadFailed.message'),
+      },
+      retry: t('transfer.retry'),
       oneWarehouse: {
         title: t('transfer.oneWarehouse.title'),
         message: t('transfer.oneWarehouse.message'),
@@ -271,15 +284,25 @@ export class TransferMoveContainer implements OnInit {
     this.term.set('');
   }
 
+  protected retry(): void {
+    void this.load();
+  }
+
   private async load(): Promise<void> {
+    this.loadFailed.set(false);
     try {
       await this.ctx.store.loadWarehouses();
+    } catch {
+      this.loadFailed.set(true);
+      return;
+    }
+    try {
       const deepLink = this.item();
       if (deepLink && this.ctx.store.item()?.code !== deepLink) {
         await this.ctx.store.openItem(deepLink);
       }
     } catch {
-      // The search below shows nothing; the user can retry by typing.
+      // The item search is shown instead; the user picks the item there.
     } finally {
       this.loaded.set(true);
     }

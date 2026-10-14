@@ -210,4 +210,19 @@ describe('transfer view', () => {
       visible(transfer.doneRows(result, OLIVE, 'Main warehouse', 'Garden shop', 'ar', ar))[3],
     ).toEqual({ label: 'مرحّل', value: '11 أكتوبر 2026 · 09:41' });
   });
+
+  it("shows a dash for balances that couldn't be read, and pads unpadded times", () => {
+    const result: TransferResult = {
+      entry: 'MAT-STE-1',
+      postingDate: '2026-10-11',
+      postingTime: '3:7:2.52915',
+      fromQty: null,
+      toQty: null,
+      totalQty: null,
+    };
+    const rows = visible(transfer.doneRows(result, OLIVE, 'Main', 'Shop', 'en', en));
+    expect(rows.slice(0, 3).map((r) => r.value)).toEqual(['—', '—', '—']);
+    expect(rows[3].value).toBe('11 Oct 2026 · 03:07');
+    expect(transfer.clockTime('14:05:59')).toBe('14:05');
+  });
 });

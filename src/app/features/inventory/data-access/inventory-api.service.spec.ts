@@ -176,6 +176,46 @@ describe('InventoryApiService', () => {
     ]);
   });
 
+  it('leaves out the oldest voucher when the history hits its limit, since it may be cut off', async () => {
+    fakeErpnext({
+      'Stock Ledger Entry': () =>
+        Array.from({ length: 30 }, (_, i) => ({
+          voucher_type: 'Stock Entry',
+          voucher_no: `STE-${Math.floor(i / 2)}`,
+          warehouse: i % 2 ? SHOP : MAIN,
+          actual_qty: i % 2 ? 1 : -1,
+          posting_date: '2026-10-14',
+          posting_time: '09:00:00',
+        })),
+    });
+    const movements = await TestBed.inject(InventoryApiService).history('OLV-20', [MAIN, SHOP]);
+    expect(movements).toHaveLength(14);
+    expect(movements.every((m) => m.lines.length === 2)).toBe(true);
+  });
+
+  it("returns unknown balances when they can't be read back after posting", async () => {
+    fakeErpnext(
+      {
+        Warehouse: () => {
+          throw new Error('offline');
+        },
+      },
+      {
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'MAT-STE-1' }),
+        'frappe.client.submit': () => ENTRY,
+      },
+    );
+    const result = await TestBed.inject(InventoryApiService).transfer(request(), null);
+    expect(result).toEqual({
+      entry: 'MAT-STE-1',
+      postingDate: '2026-10-14',
+      postingTime: '09:41:00',
+      fromQty: null,
+      toQty: null,
+      totalQty: null,
+    });
+  });
+
   it('groups the stock ledger into one movement per voucher, newest first', async () => {
     const { listCalls } = fakeErpnext({
       'Stock Ledger Entry': () => [

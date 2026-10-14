@@ -43,10 +43,10 @@ export interface TransferResult {
   entry: string;
   postingDate: string;
   postingTime: string;
-  /** Balances after the move, read back from ERPNext. */
-  fromQty: number;
-  toQty: number;
-  totalQty: number;
+  /** Balances after the move, read back from ERPNext; null when they couldn't be read. */
+  fromQty: number | null;
+  toQty: number | null;
+  totalQty: number | null;
 }
 
 export function totalStock(item: Pick<StockItem, 'stock'>): number {
