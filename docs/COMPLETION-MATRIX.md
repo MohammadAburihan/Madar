@@ -1,6 +1,6 @@
 # Madar completion matrix
 
-Updated 11 October 2026. The Pencil document contains **254 editable screen frames: 127 English + 127 Arabic**, with **80 reusable components/shared task bodies**. Every English screen has an Arabic counterpart. The two earlier Arabic samples were replaced, avoiding duplicate Home/review screens.
+Updated 14 October 2026. The Pencil document contains **264 editable screen frames: 132 English + 132 Arabic**, with **80 reusable components/shared task bodies**. Every English screen has an Arabic counterpart. The two earlier Arabic samples were replaced, avoiding duplicate Home/review screens.
 
 **Native clickable wiring: blocked for every screen.** Pencil's exposed schema and execute API provide no node-to-node transition, click event, overlay or interaction API. Layer contexts and the route manifest are specifications, not clickable wiring. No click-through test was claimed.
 
@@ -18,6 +18,7 @@ Updated 11 October 2026. The Pencil document contains **254 editable screen fram
 | Customer collections | Invoice allocation120, review, PAY-0156, cumulative240/due80 detail | Money workspace + shared collection task | Annotated; native blocked / not run |
 | Expenses | Category/date/account, optional project/receipt, review and result | Money workspace + shared expense task | Annotated; native blocked / not run |
 | Inventory | Transfer, count, damage, separate reviews/results and current balance snapshots | Inventory workspace + shared transfer task | Annotated; native blocked / not run |
+| Reports | Overview (period, profit, money in and out by month, statements), profit by month, customer statement with PDF share; Reports entry in More | Reports workspace (period, key figures, by-month table) + customer statement; Reports added to the desktop navigation | Annotated; native blocked / not run |
 | Projects | List/create/edit; requirements, issue8, consume5, return2; PO-2049 receive4 then separate issue4; internal project | Project workspace + shared project form | Annotated; native blocked / not run |
 | Contacts | Customer/supplier list/detail/history; explicit supplier edit | Contacts workspace + shared contact task | Annotated; native blocked / not run |
 | Quotes/orders/delivery/linked returns | QT-0084 → SO-0187; delivery independent from SI-1043; sale/supplier credit outcomes | Canonical task/detail bodies render in desktop host | Annotated; native blocked / not run |
@@ -159,4 +160,8 @@ Desktop avoids duplicating every task state: eight representative desktop task f
 | 11 Desktop task / Contact form | uFIvf | VRmVz | — | Annotated; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
 | 11 Desktop task / Item form | Uu6kK | hedMi | — | Annotated; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
 | 11 Desktop task / Sign in | J1Q4r7 | r4qNsV | — | Annotated; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
-
+| 04 Mobile / Reports 01 Overview | LmHj5 | uuUcY | Annotated; blocked | Shared host contract; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
+| 04 Mobile / Reports 02 Profit by month | NziRK | tBvvI | Annotated; blocked | Shared host contract; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
+| 04 Mobile / Reports 03 Customer statement | N2LZ8 | f0uNfU | Annotated; blocked | Shared host contract; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
+| 05 Desktop / Reports workspace | Thmid | sIyxx | — | Annotated; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |
+| 05 Desktop / Customer statement | cjvib | Km7r7 | — | Annotated; blocked | Structure/palette checked | not run—requires runnable application | No transitions/semantics runtime |

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "date": "2026-10-11",
+  "date": "2026-10-14",
   "nativeClickable": false,
   "runtime": "not run—requires runnable application",
   "counterparts": {
@@ -130,7 +130,12 @@
     "NyqFG": "VAV12",
     "uFIvf": "VRmVz",
     "Uu6kK": "hedMi",
-    "J1Q4r7": "r4qNsV"
+    "J1Q4r7": "r4qNsV",
+    "LmHj5": "uuUcY",
+    "NziRK": "tBvvI",
+    "N2LZ8": "f0uNfU",
+    "Thmid": "sIyxx",
+    "cjvib": "Km7r7"
   },
   "screens": [
     {
@@ -4691,6 +4696,11 @@
           "id": "HYYiR/W5nhJn",
           "name": "Nav More",
           "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+        },
+        {
+          "id": "lEp2K",
+          "name": "Reports",
+          "context": "Role: button. Route specification: LmHj5. Owner only."
         }
       ]
     },
@@ -9952,6 +9962,11 @@
           "id": "FMnLR/p74FW3",
           "name": "Nav Home",
           "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+        },
+        {
+          "id": "sx9Cc",
+          "name": "Reports",
+          "context": "Role: button. Accessible name: التقارير. Route specification: uuUcY. Owner only."
         }
       ]
     },
@@ -14368,6 +14383,306 @@
           "id": "fclPY/P0QEuX",
           "name": "Nav Settings",
           "context": "Role: navigation link. Accessible name: الإعدادات. Route specification: oLb4F. Keep desktop viewport and business scope. Annotation only."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "LmHj5",
+        "name": "04 Mobile / Reports 01 Overview",
+        "w": 390,
+        "h": 1705,
+        "x": 3840,
+        "y": 23484
+      },
+      "controls": [
+        {
+          "id": "iIlgM",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: uuUcY. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "CvINx",
+          "name": "Period",
+          "context": "Role: button (opens period sheet). Options: This month, Last month, This year, Custom range (dd/MM/yyyy). Changing period reloads every figure; the choice is kept across Reports screens."
+        },
+        {
+          "id": "UZp9v",
+          "name": "Profit",
+          "context": "Role: link. Route specification: NziRK, opened on the last 3 months."
+        },
+        {
+          "id": "SKaCR",
+          "name": "Payments link",
+          "context": "Role: link. Route specification: Leztk filtered to this period; each account row opens it filtered to that account."
+        },
+        {
+          "id": "X65Nof",
+          "name": "Customer statement",
+          "context": "Role: link. Route specification: customer selector (MJa3o), then N2LZ8. Keeps the selected period."
+        },
+        {
+          "id": "u7dvxb",
+          "name": "Supplier statement",
+          "context": "Role: link. Route specification: supplier selector, then the supplier counterpart of N2LZ8."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "NziRK",
+        "name": "04 Mobile / Reports 02 Profit by month",
+        "w": 390,
+        "h": 1209,
+        "x": 4390,
+        "y": 23484
+      },
+      "controls": [
+        {
+          "id": "pX5KX",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: tBvvI. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "MP1Js",
+          "name": "Back navigation",
+          "context": "Role: button. Route specification: LmHj5. Keeps the selected period."
+        },
+        {
+          "id": "NIPY5",
+          "name": "October 2026",
+          "context": "Role: link. Opens that month's posted sales invoices, expenses and stock cost entries."
+        },
+        {
+          "id": "N1DQD",
+          "name": "September 2026",
+          "context": "Role: link. Same as October."
+        },
+        {
+          "id": "EoDPN",
+          "name": "August 2026",
+          "context": "Role: link. Same as October."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "N2LZ8",
+        "name": "04 Mobile / Reports 03 Customer statement",
+        "w": 390,
+        "h": 1291,
+        "x": 4940,
+        "y": 23484
+      },
+      "controls": [
+        {
+          "id": "NApo8",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: f0uNfU. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "mqEVS",
+          "name": "Back navigation",
+          "context": "Role: button. Route specification: LmHj5."
+        },
+        {
+          "id": "fxKIN",
+          "name": "Customer",
+          "context": "Role: button. Opens customer selector MJa3o; Cancel keeps the current customer."
+        },
+        {
+          "id": "LQcbM",
+          "name": "Entry Invoice SI-1038",
+          "context": "Role: link. Opens the sales invoice."
+        },
+        {
+          "id": "gumr9",
+          "name": "Entry Payment PAY-0154",
+          "context": "Role: link. Opens the payment."
+        },
+        {
+          "id": "f3BEZ",
+          "name": "Share statement",
+          "context": "Role: button. Shares the ERPNext statement PDF for this customer and period."
+        },
+        {
+          "id": "zjncx",
+          "name": "Download statement",
+          "context": "Role: button. Downloads the statement PDF."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "Thmid",
+        "name": "05 Desktop / Reports workspace",
+        "w": 1440,
+        "h": 1000,
+        "x": 10920,
+        "y": 14484
+      },
+      "controls": [
+        {
+          "id": "Y2Vch",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: sIyxx. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "Kfvdl",
+          "name": "Segmented control",
+          "context": "Role: radiogroup. This month / Last month / This year / Custom; Custom shows the From–to field NU4ek."
+        },
+        {
+          "id": "WiiSe",
+          "name": "Money in",
+          "context": "Role: link. Route specification: UtoWK filtered to this period."
+        },
+        {
+          "id": "QxVIn",
+          "name": "Money out",
+          "context": "Role: link. Route specification: UtoWK filtered to this period."
+        },
+        {
+          "id": "E3VYAX",
+          "name": "By month table",
+          "context": "Role: table. Month names link to that month's records."
+        },
+        {
+          "id": "NFpO5",
+          "name": "Customer statement",
+          "context": "Role: link. Route specification: cjvib."
+        },
+        {
+          "id": "ZyDeV",
+          "name": "Supplier statement",
+          "context": "Role: link. Supplier counterpart of cjvib."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "cjvib",
+        "name": "05 Desktop / Customer statement",
+        "w": 1440,
+        "h": 1060,
+        "x": 12520,
+        "y": 14484
+      },
+      "controls": [
+        {
+          "id": "Y6v4u",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: Km7r7. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "aZEJh",
+          "name": "Back navigation",
+          "context": "Role: link. Route specification: Thmid."
+        },
+        {
+          "id": "c7wl0s",
+          "name": "Customer",
+          "context": "Role: combobox. Opens customer selector MJa3o."
+        },
+        {
+          "id": "aCikH",
+          "name": "Download statement",
+          "context": "Role: button (primary). Downloads the ERPNext statement PDF."
+        },
+        {
+          "id": "gONic",
+          "name": "Share statement",
+          "context": "Role: button. Shown only where the browser can share files."
+        },
+        {
+          "id": "q6PII",
+          "name": "Entries table",
+          "context": "Role: table. Document numbers link to the invoice or payment."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "uuUcY",
+        "name": "Arabic / 04 Mobile / Reports 01 Overview",
+        "w": 390,
+        "h": 1742,
+        "x": 22250,
+        "y": 24034
+      },
+      "controls": [
+        {
+          "id": "—",
+          "name": "Mirrors LmHj5",
+          "context": "Arabic RTL counterpart of LmHj5; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to LmHj5."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "tBvvI",
+        "name": "Arabic / 04 Mobile / Reports 02 Profit by month",
+        "w": 390,
+        "h": 1267,
+        "x": 21700,
+        "y": 24034
+      },
+      "controls": [
+        {
+          "id": "—",
+          "name": "Mirrors NziRK",
+          "context": "Arabic RTL counterpart of NziRK; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to NziRK."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "f0uNfU",
+        "name": "Arabic / 04 Mobile / Reports 03 Customer statement",
+        "w": 390,
+        "h": 1367,
+        "x": 21150,
+        "y": 24034
+      },
+      "controls": [
+        {
+          "id": "—",
+          "name": "Mirrors N2LZ8",
+          "context": "Arabic RTL counterpart of N2LZ8; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to N2LZ8."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "sIyxx",
+        "name": "Arabic / 05 Desktop / Reports workspace",
+        "w": 1440,
+        "h": 1000,
+        "x": 26480,
+        "y": 14584
+      },
+      "controls": [
+        {
+          "id": "—",
+          "name": "Mirrors Thmid",
+          "context": "Arabic RTL counterpart of Thmid; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to Thmid."
+        }
+      ]
+    },
+    {
+      "screen": {
+        "id": "Km7r7",
+        "name": "Arabic / 05 Desktop / Customer statement",
+        "w": 1440,
+        "h": 1060,
+        "x": 24880,
+        "y": 14584
+      },
+      "controls": [
+        {
+          "id": "—",
+          "name": "Mirrors cjvib",
+          "context": "Arabic RTL counterpart of cjvib; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to cjvib."
         }
       ]
     }

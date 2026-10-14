@@ -33,6 +33,7 @@ ERPNext lets them read.
 | See cost prices and profit | ✅ | — | — | — | ✅ | — |
 | See today's money summaries | ✅ | own sales | own sales | — | — | — |
 | See payment history (Money) | ✅ all | own payments | own payments | — | — | — |
+| See reports (profit, money in and out, statements) | ✅ | — | — | — | — | — |
 | Add customers | ✅ | ✅ | ✅ | — | — | ✅ |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |

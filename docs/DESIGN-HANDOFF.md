@@ -2,7 +2,7 @@
 
 ## Status
 
-Pencil is connected. The document now contains 254 editable screen frames: 127 English and 127 Arabic, plus foundations, product structure, implementation notes, and 80 reusable components/state patterns/shared task bodies. Screens retain the approved visual system and linked component instances.
+Pencil is connected. The document now contains 264 editable screen frames: 132 English and 132 Arabic (the 10 Reports frames were added on 14 Oct 2026), plus foundations, product structure, implementation notes, and 80 reusable components/state patterns/shared task bodies. Screens retain the approved visual system and linked component instances.
 
 Native clickable wiring is blocked by the exposed Pencil API. Route annotations are not clickable interactions. Runtime checks: **not run—requires runnable application**.
 
@@ -54,7 +54,7 @@ Hide unavailable modules and actions. For limited roles, retain useful destinati
 | Home | 390 px mobile and 1440 px desktop; owner, salesperson, and warehouse-worker views; pending tasks; drafts; restrained summaries; Sell, Buy, Receive payment, Pay supplier, Record expense, Transfer stock, and Supply a project as permitted. |
 | Catalog | Search/filter list; stock item details with warehouse balances; service details without stock fields; add/edit item or service; simple variants; More options. |
 | Quick sale | Customer or permitted walk-in; item/service selector; quick customer creation preserving basket; quantities and permitted price/discount edits; stock and fulfillment warehouse; review; paid/partially paid/unpaid; payment account; confirmation; receipt/invoice and sharing. |
-| RTL | All127 English screens have Arabic counterparts, including desktop, dialogs, selectors, notifications and state patterns. Layout/order/alignment are mirrored; identifiers remain literal. Runtime bidi isolation is specified for implementation. |
+| RTL | All 132 English screens have Arabic counterparts, including desktop, dialogs, selectors, notifications and state patterns. Layout/order/alignment are mirrored; identifiers remain literal. Runtime bidi isolation is specified for implementation. |
 | States | Loading; empty list; no results; inline validation; permission restriction; connection loss; session expired; saved draft; unsaved changes; insufficient stock; success; unresolved confirmation. |
 
 Mobile sale steps use full-screen task flows and persistent totals where useful. Desktop uses a searchable catalog and basket split view with keyboard-friendly forms. Confirmation explains the records and stock/payment effects before finalizing.
@@ -105,7 +105,7 @@ Rendered and inspected the initial coherent set before expansion. Expanded scree
 
 Structural bounds reporting produces floating-point and disabled-descendant false positives; visual renders and actual parent extents were used alongside it. Keyboard, screen-reader, and runtime behavior are specified but cannot be tested in this design document.
 
-Current audit covers all254 screen frames: no material enabled-node overflow, no annotated target below48×48px, no unresolved static destination IDs, and no currency variable tokens remain. Audited screen text contrast is at least5.16:1. Functional input boundaries were strengthened to at least3:1. Visual inspection was sampled; see the accessibility audit for exact scope.
+The audit below covered the original 254 screen frames; the 10 Reports frames were reviewed separately (structure, figures, RTL) on 14 Oct 2026. Original audit: no material enabled-node overflow, no annotated target below48×48px, no unresolved static destination IDs, and no currency variable tokens remain. Audited screen text contrast is at least5.16:1. Functional input boundaries were strengthened to at least3:1. Visual inspection was sampled; see the accessibility audit for exact scope.
 
 Current entry points: mobile English Lqpaw / Arabic cB7Nm; desktop English Pd5Js / Arabic C9G6N. Search these layer IDs in Pencil. The previous Arabic sample roots were replaced.
 
