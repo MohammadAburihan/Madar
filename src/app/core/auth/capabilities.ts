@@ -53,9 +53,26 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
   },
 };
 
-// Moving stock needs to create a Stock Entry and read Bin balances; in ERPNext v16 only these roles can do
-// both (Manufacturing roles can create entries but not read Bin).
-const STOCK_ENTRY_ROLES = ['Stock User', 'Stock Manager'];
+// Moving stock needs three ERPNext v16 permissions; a role list for each (from the doctypes' permissions).
+const MOVE_STOCK_NEEDS = [
+  ['Stock User', 'Stock Manager', 'Manufacturing User', 'Manufacturing Manager'], // create Stock Entry
+  [
+    'Stock User',
+    'Stock Manager',
+    'Sales User',
+    'Sales Manager',
+    'Purchase User',
+    'Purchase Manager',
+  ], // read Bin
+  [
+    'Stock User',
+    'Item Manager',
+    'Sales User',
+    'Purchase User',
+    'Accounts User',
+    'Manufacturing User',
+  ], // read Warehouse
+];
 
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
@@ -66,5 +83,10 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
   if (!roles || !caps.transferStock) {
     return caps;
   }
-  return { ...caps, transferStock: STOCK_ENTRY_ROLES.some((role) => roles.includes(role)) };
+  return {
+    ...caps,
+    transferStock: MOVE_STOCK_NEEDS.every((allowed) =>
+      allowed.some((role) => roles.includes(role)),
+    ),
+  };
 }
