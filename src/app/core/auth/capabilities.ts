@@ -53,8 +53,9 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
   },
 };
 
-// ERPNext v16 lets only these roles create a Stock Entry.
-const STOCK_ENTRY_ROLES = [
+// Moving stock needs to create a Stock Entry and read Bin balances; in ERPNext v16 only these roles can do
+// both (Manufacturing roles can create entries but not read Bin).
+const STOCK_ENTRY_ROLES = ['Stock User', 'Stock Manager'];
   'Stock User',
   'Stock Manager',
   'Manufacturing User',

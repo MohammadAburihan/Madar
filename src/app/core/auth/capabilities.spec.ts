@@ -41,6 +41,9 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('owner', ['System Manager', 'Stock Manager']).transferStock).toBe(true);
     expect(capabilitiesFor('warehouse', ['Stock User']).transferStock).toBe(true);
     expect(capabilitiesFor('salesperson', ['Sales User', 'Stock User']).transferStock).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager', 'Manufacturing User']).transferStock).toBe(
+      false,
+    );
   });
 
   it("doesn't let warehouse workers sell", () => {
