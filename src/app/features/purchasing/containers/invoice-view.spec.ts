@@ -131,6 +131,9 @@ describe('invoice view', () => {
     expect(view.hasUnbilled(ORDER)).toBe(true);
     expect(view.hasUnbilled({ ...ORDER, lines: [{ ...LINE, billedAmount: 270 }] })).toBe(false);
     expect(view.hasUnbilled({ ...ORDER, lines: [{ ...LINE, receivedQty: 0 }] })).toBe(false);
+    // A line billed above its value doesn't hide another line's unbilled goods.
+    const overBilled = { ...LINE, row: 'row-2', billedAmount: 400 };
+    expect(view.hasUnbilled({ ...ORDER, lines: [LINE, overBilled] })).toBe(true);
   });
 
   it("shows the order's billing like the received-order mock", () => {

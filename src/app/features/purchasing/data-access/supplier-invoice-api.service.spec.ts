@@ -96,6 +96,61 @@ describe('SupplierInvoiceApiService', () => {
     ]);
   });
 
+  it('skips a receipt ERPNext finds fully billed and bills the next one', async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-0' }, { name: 'MAT-PRE-1' }] },
+      {
+        [MAKE]: (body) =>
+          body['source_name'] === 'MAT-PRE-0'
+            ? throwError(() => new HttpErrorResponse({ status: 417 }))
+            : mapper(body),
+      },
+    );
+    const preview = await api().preview('PO-2048');
+    expect(preview.receipts).toEqual(['MAT-PRE-1']);
+    expect(preview.lines.map((l) => l.qty)).toEqual([6]);
+  });
+
+  it('has nothing to preview when ERPNext finds every receipt billed', async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-0' }] },
+      { [MAKE]: () => throwError(() => new HttpErrorResponse({ status: 417 })) },
+    );
+    expect(await api().preview('PO-2048')).toEqual({
+      receipts: [],
+      lines: [],
+      currency: '',
+      total: 0,
+    });
+  });
+
+  it("leaves out another order's rows on a shared receipt", async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
+      {
+        [MAKE]: (body) => {
+          const doc = mapper(body);
+          return {
+            ...doc,
+            items: [...doc.items, { ...doc.items[0], qty: 3, purchase_order: 'PO-9999' }],
+            grand_total: 405,
+          };
+        },
+      },
+    );
+    const preview = await api().preview('PO-2048');
+    expect(preview.lines.map((l) => l.qty)).toEqual([6]);
+    expect(preview.total).toBe(270);
+  });
+
+  it("doesn't hide a real failure while building the invoice", async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
+      { [MAKE]: () => throwError(() => new HttpErrorResponse({ status: 0 })) },
+    );
+    await expect(api().preview('PO-2048')).rejects.toBeTruthy();
+  });
+
   it('has nothing to preview when every receipt is billed', async () => {
     const { postCalls } = fakeErpnext({ 'Purchase Receipt': () => [] });
     expect((await api().preview('PO-2048')).lines).toEqual([]);
@@ -211,9 +266,10 @@ describe('SupplierInvoiceApiService', () => {
       grand_total: 270,
       outstanding_amount: 170,
     };
-    fakeErpnext({ 'Purchase Invoice': () => [row, row] });
+    const { listCalls } = fakeErpnext({ 'Purchase Invoice': () => [row, row] });
     expect(await api().forOrder('PO-2048')).toEqual([
       { name: 'PINV-0068', billNo: 'GC-8831', currency: 'ILS', total: 270, outstanding: 170 },
     ]);
+    expect(listCalls[0].query.filters).toContainEqual(['is_return', '=', 0]);
   });
 });

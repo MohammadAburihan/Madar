@@ -7,6 +7,7 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
   InvoicePreview,
   InvoiceRequest,
@@ -45,22 +46,21 @@ export class SupplierInvoiceApiService {
 
   /** The received goods of an order that no invoice has billed yet, as ERPNext would bill them. */
   async preview(order: string): Promise<InvoicePreview> {
-    const receipts = await this.unbilledReceipts(order);
-    if (!receipts.length) {
-      return { receipts, lines: [], currency: '', total: 0 };
+    const template = await this.template(order, await this.unbilledReceipts(order));
+    if (!template) {
+      return { receipts: [], lines: [], currency: '', total: 0 };
     }
-    const template = await this.template(receipts);
     return {
-      receipts,
-      lines: template.items.map((i) => ({
+      receipts: template.receipts,
+      lines: template.doc.items.map((i) => ({
         code: i.item_code,
         name: i.item_name,
         uom: i.uom,
         qty: i.qty,
         rate: i.rate,
       })),
-      currency: template.currency,
-      total: template.grand_total,
+      currency: template.doc.currency,
+      total: template.doc.grand_total,
     };
   }
 
@@ -87,9 +87,12 @@ export class SupplierInvoiceApiService {
       // Rebuilt from the receipts rather than edited, so it bills exactly what is still unbilled.
       await this.discard(current.name);
     }
-    const template = await this.template(request.receipts);
+    const template = await this.template(request.order, request.receipts);
+    if (!template) {
+      throw new Error('Nothing left to bill on these receipts');
+    }
     const doc = {
-      ...template,
+      ...template.doc,
       bill_no: request.billNo,
       remarks: `Madar bill ${request.reference}`,
     };
@@ -165,6 +168,8 @@ export class SupplierInvoiceApiService {
         filters: [
           ['Purchase Invoice Item', 'purchase_order', '=', order],
           ['docstatus', '=', 1],
+          // Debit notes (supplier returns) aren't invoices to show or add up here.
+          ['is_return', '=', 0],
         ],
         orderBy: 'creation desc',
         limit: 0,
@@ -200,22 +205,48 @@ export class SupplierInvoiceApiService {
     return [...new Set(rows.map((r) => r.name))];
   }
 
-  /** ERPNext's invoice for several receipts: each mapping call adds one receipt's unbilled rows. */
-  private async template(receipts: readonly string[]): Promise<InvoiceDoc> {
+  /**
+   * ERPNext's invoice for several receipts: each mapping call adds one receipt's unbilled rows. A receipt that
+   * ERPNext finds fully billed by quantity (billed at a lower rate, or partly returned) is skipped, and rows of
+   * other orders on a shared receipt are left out. Null when nothing is left to bill.
+   */
+  private async template(
+    order: string,
+    receipts: readonly string[],
+  ): Promise<{ doc: InvoiceDoc; receipts: string[] } | null> {
     let doc: InvoiceDoc | null = null;
+    const used: string[] = [];
     for (const receipt of receipts) {
-      doc = await firstValueFrom(
-        this.erpnext.post<InvoiceDoc>(MAKE_INVOICE, {
-          source_name: receipt,
-          // The mapper only accepts the document to extend as a JSON string.
-          ...(doc ? { target_doc: JSON.stringify(doc) } : {}),
-        }),
-      );
+      try {
+        doc = await firstValueFrom(
+          this.erpnext.post<InvoiceDoc>(MAKE_INVOICE, {
+            source_name: receipt,
+            // The mapper only accepts the document to extend as a JSON string.
+            ...(doc ? { target_doc: JSON.stringify(doc) } : {}),
+          }),
+        );
+        used.push(receipt);
+      } catch (error) {
+        // "All items have already been Invoiced/Returned" is a validation error; anything else is real.
+        if (ErpnextError.from(error).status !== 417) {
+          throw error;
+        }
+      }
     }
     if (!doc) {
-      throw new Error('No receipt to bill');
+      return null;
     }
-    return doc;
+    const items = doc.items.filter((i) => !i.purchase_order || i.purchase_order === order);
+    if (!items.length) {
+      return null;
+    }
+    const kept = used.filter((r) => items.some((i) => i.purchase_receipt === r));
+    // ERPNext recalculates totals on insert; the preview needs them without the dropped rows.
+    const total =
+      items.length === doc.items.length
+        ? doc.grand_total
+        : items.reduce((sum, i) => sum + i.qty * i.rate, 0);
+    return { doc: { ...doc, items, grand_total: total }, receipts: kept };
   }
 
   private async payments(invoice: string): Promise<LinkedPayment[]> {

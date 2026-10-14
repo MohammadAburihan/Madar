@@ -131,8 +131,8 @@ export function invoiceView(
 
 /** Received goods not yet billed: what "Record supplier invoice" would bill. */
 export function hasUnbilled(order: OrderDetail): boolean {
-  const unbilled = order.lines.reduce((sum, l) => sum + l.receivedQty * l.rate - l.billedAmount, 0);
-  return unbilled > 0.005;
+  // Per line, so a line billed above its value can't hide another line's unbilled goods.
+  return order.lines.some((l) => l.receivedQty * l.rate - l.billedAmount > 0.005);
 }
 
 /** "Order value · Billed · Invoice paid · Invoice outstanding" on the order page. */

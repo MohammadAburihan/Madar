@@ -27,6 +27,9 @@ Split into PRs, each through the delivery loop:
 - **3c-1 — Supplier invoice** (this PR): record the supplier's invoice for the goods received and not yet billed,
   the invoice page with its payments, billing on the order page and in the workspace panel. Owner and purchasing
   officer (Accounts User or Manager in ERPNext).
+  Review pass 1 (2 medium, 3 low) fixed, except one deferred (low): when one invoice bills several receipts, ERPNext's
+  mapper keeps only the last receipt's fixed ("Actual") charges, such as freight. Madar orders carry no taxes or
+  charges yet (VAT setup is still open), so this only affects receipts with charges added in Desk.
 - **3c-2 — Pay supplier**: the payment form, the recorded payment and its page, and "Pay supplier" on the invoice.
   Owner only.
 
