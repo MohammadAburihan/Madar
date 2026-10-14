@@ -11,6 +11,7 @@ describe('capabilitiesFor', () => {
       collect: true,
       money: 'all',
       transferStock: true,
+      orderPurchases: true,
     });
   });
 
@@ -25,6 +26,7 @@ describe('capabilitiesFor', () => {
         collect: true,
         money: 'own',
         transferStock: persona === 'storeAssociate',
+        orderPurchases: false,
       });
     }
   });
@@ -48,6 +50,23 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('salesperson', ['Sales User', 'Stock User']).transferStock).toBe(false);
     expect(capabilitiesFor('owner', ['Accounts Manager', 'Manufacturing User']).transferStock).toBe(
       false,
+    );
+  });
+
+  it('lets the owner and the purchasing officer order from suppliers, as their ERPNext roles allow', () => {
+    expect(capabilitiesFor('purchasing')).toMatchObject({
+      orderPurchases: true,
+      sell: false,
+      money: 'none',
+      transferStock: false,
+    });
+    expect(capabilitiesFor('warehouse').orderPurchases).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager']).orderPurchases).toBe(false);
+    expect(capabilitiesFor('owner', ['System Manager', 'Purchase Manager']).orderPurchases).toBe(
+      true,
+    );
+    expect(capabilitiesFor('purchasing', ['Purchase User', 'Stock User']).orderPurchases).toBe(
+      true,
     );
   });
 

@@ -34,9 +34,21 @@ describe('buildShellView', () => {
       label: 'التقارير',
       route: '/reports',
     });
-    for (const persona of ['salesperson', 'storeAssociate', 'warehouse'] as const) {
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
       expect(build(persona).desktopNav.map((i) => i.id)).not.toContain('reports');
     }
+  });
+
+  it('hides Sales and Money from the purchasing officer', () => {
+    expect(build('purchasing').desktopNav.map((i) => i.id)).toEqual([
+      'home',
+      'purchases',
+      'inventory',
+      'contacts',
+      'projects',
+      'settings',
+    ]);
+    expect(build('purchasing').mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
   });
 
   it('marks More as current on the Reports page', () => {

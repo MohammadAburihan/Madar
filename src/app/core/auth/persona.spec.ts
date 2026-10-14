@@ -14,6 +14,12 @@ describe('personaFor', () => {
     expect(personaFor(['System Manager', 'Sales User', 'Stock User'])).toBe('owner');
   });
 
+  it('makes a user with a purchasing role a purchasing officer, even with stock and accounts roles', () => {
+    expect(personaFor(['Purchase User', 'Stock User', 'Accounts User'])).toBe('purchasing');
+    expect(personaFor(['Purchase Manager'])).toBe('purchasing');
+    expect(personaFor(['System Manager', 'Purchase User'])).toBe('owner');
+  });
+
   it('limits both sales roles to their own sales', () => {
     expect(OWN_SALES_ONLY).toEqual(['salesperson', 'storeAssociate']);
   });

@@ -36,13 +36,15 @@
     "title": {
       "salesperson": "هل أنت جاهز للبيع؟",
       "warehouse": "اليوم في المستودع",
-      "storeAssociate": "اليوم في المتجر"
+      "storeAssociate": "اليوم في المتجر",
+      "purchasing": "اليوم في المشتريات"
     },
     "role": {
       "owner": "المالك",
       "salesperson": "مندوب مبيعات",
       "warehouse": "عامل المستودع",
-      "storeAssociate": "موظف المتجر"
+      "storeAssociate": "موظف المتجر",
+      "purchasing": "مسؤول المشتريات"
     },
     "new": "+ جديد",
     "actionsHeading": "ما المهمة التي تريد إنجازها؟",
@@ -852,5 +854,166 @@
       "message": "تحقّق من الاتصال وحاول مجدداً."
     },
     "retry": "المحاولة مجدداً"
+  },
+  "purchase": {
+    "workspaceTitle": "مساحة المشتريات",
+    "workspaceSubtitle": "أوامر الشراء والاستلام والفواتير وأرصدة الموردين",
+    "title": "المشتريات",
+    "subtitle": "الطلبات من الموردين",
+    "newOrder": "أمر شراء جديد",
+    "stats": {
+      "open": "الأوامر المفتوحة",
+      "awaitingReceipt": "بانتظار الاستلام",
+      "supplierBalance": "رصيد الموردين"
+    },
+    "ordersHeading": "أوامر الشراء",
+    "search": "بحث",
+    "searchOrders": "ابحث عن أمر أو مورد",
+    "headers": {
+      "order": "أمر الشراء / المورد",
+      "created": "تاريخ الإنشاء",
+      "status": "الحالة",
+      "total": "الإجمالي"
+    },
+    "orderLabel": "{{order}} · {{supplier}}",
+    "orderDetail": "{{status}} · {{total}}",
+    "progress": {
+      "draft": "مسودة",
+      "awaitingReceipt": "بانتظار الاستلام",
+      "partlyReceived": "تم استلام {{received}} · متبقٍّ {{open}}",
+      "awaitingInvoice": "بانتظار الفاتورة",
+      "complete": "مستلم بالكامل",
+      "closed": "مغلق"
+    },
+    "chip": {
+      "draft": "مسودة",
+      "awaitingReceipt": "مؤكد",
+      "partlyReceived": "مستلم جزئياً",
+      "awaitingInvoice": "مستلم بالكامل",
+      "complete": "مكتمل",
+      "closed": "مغلق"
+    },
+    "panel": {
+      "total": "إجمالي أمر الشراء",
+      "received": "المستلم",
+      "receivedValue": "{{received}} من {{ordered}} وحدات · متبقٍّ {{open}}",
+      "open": "فتح أمر الشراء",
+      "choose": "اختر أمراً لعرض تفاصيله."
+    },
+    "empty": "لا توجد أوامر شراء بعد.",
+    "noResults": "لا توجد أوامر مطابقة.",
+    "loading": "جارٍ تحميل أوامر الشراء…",
+    "error": {
+      "title": "تعذّر تحميل أوامر الشراء",
+      "message": "تحقّق من الاتصال وحاول مجدداً."
+    },
+    "retry": "المحاولة مجدداً",
+    "noAccess": {
+      "title": "لا يمكنك إنشاء أوامر شراء",
+      "message": "دورك في ERPNext لا يسمح بذلك. اطلب من المالك إن كنت تحتاج إلى الطلب من الموردين."
+    },
+    "form": {
+      "title": "أمر شراء جديد",
+      "step": "1 من 5 · اختر المورد والأصناف",
+      "supplier": "المورد *",
+      "chooseSupplier": "اختر المورد",
+      "kind": "نوع الصنف",
+      "search": "بحث",
+      "placeholder": "ابحث بالاسم أو الرمز أو الباركود",
+      "supplierFirst": "اختر المورد أولاً.",
+      "noResults": "لا توجد أصناف شراء مطابقة.",
+      "noSuppliers": {
+        "title": "لا يوجد موردون بعد",
+        "message": "أضف المورد في ERPNext أولاً، ثم عد لإنشاء الطلب."
+      },
+      "qty": "كمية {{item}}",
+      "decrease": "إنقاص {{item}} واحداً",
+      "increase": "زيادة {{item}} واحداً",
+      "rate": "سعر الوحدة",
+      "review": "مراجعة أمر الشراء",
+      "loadFailed": {
+        "title": "تعذّر تحميل الموردين",
+        "message": "تحقّق من الاتصال وحاول مجدداً."
+      },
+      "products": "المنتجات",
+      "services": "الخدمات"
+    },
+    "kind": {
+      "product": "منتج",
+      "service": "خدمة"
+    },
+    "itemMeta": "{{code}} · {{kind}} · {{uom}}",
+    "each": "{{amount}} للوحدة",
+    "review": {
+      "title": "مراجعة أمر الشراء",
+      "subtitle": "{{supplier}} · {{business}}",
+      "lineMeta": "{{code}} · {{qty}} × {{rate}}",
+      "lineValue": "قيمة الطلب {{amount}}",
+      "beforeTitle": "قبل التأكيد",
+      "beforeMessage": "سيُنشأ أمر شراء لـ {{what}} بقيمة {{total}}. لا يُسجَّل استلام مخزون ولا فاتورة مورد ولا دفعة.",
+      "oneItem": "{{qty}} × {{item}}",
+      "items": {
+        "zero": "لا أصناف",
+        "one": "صنف واحد",
+        "two": "صنفين",
+        "few": "{{count}} أصناف",
+        "many": "{{count}} صنفاً",
+        "other": "{{count}} صنف"
+      },
+      "confirm": "تأكيد أمر الشراء",
+      "confirming": "جارٍ التأكيد…",
+      "saveDraft": "حفظ المسودة",
+      "savingDraft": "جارٍ الحفظ…",
+      "draftSaved": {
+        "title": "تم حفظ المسودة",
+        "message": "حُفظ {{order}} في ERPNext كمسودة. أكّده هنا عندما تكون جاهزاً."
+      },
+      "edit": "تعديل الطلب",
+      "reference": "مرجع مدار {{reference}}"
+    },
+    "notCreated": {
+      "title": "لم يُنشأ الأمر",
+      "message": "لا يوجد في ERPNext أمر مؤكد لهذا الطلب. راجع التفاصيل وأكّد مجدداً."
+    },
+    "failed": {
+      "permission": {
+        "title": "لا يمكنك تأكيد هذا الأمر",
+        "message": "لم يسمح ERPNext بذلك لدورك. لم يُطلب شيء."
+      },
+      "offline": {
+        "title": "لا يوجد اتصال",
+        "message": "لم يُرسل الأمر. تحقّق من الاتصال وأكّد مجدداً."
+      },
+      "error": {
+        "title": "لم يُؤكَّد الأمر",
+        "message": "رفض ERPNext الأمر. راجع التفاصيل وحاول مجدداً."
+      },
+      "changed": {
+        "title": "سبق تأكيد نسخة أقدم",
+        "message": "أُكّد الأمر قبل تعديلاتك الأخيرة. راجع مساحة المشتريات قبل التأكيد مجدداً؛ التأكيد الآن يُنشئ أمراً جديداً."
+      }
+    },
+    "checking": {
+      "title": "التحقّق من أمر الشراء",
+      "cardTitle": "لم نحصل على إجابة نهائية",
+      "cardMessage": "ربما أُنشئ الأمر. تحقّق من النتيجة بدلاً من التأكيد مجدداً حتى لا يُنشأ مرتين.",
+      "planned": "الأمر المخطط"
+    },
+    "detail": {
+      "title": "أمر الشراء",
+      "subtitle": "{{order}} · {{supplier}}",
+      "supplier": "المورد",
+      "lineDetail": "المطلوب {{qty}} · {{rate}} للوحدة",
+      "ordered": "المطلوب",
+      "received": "المستلم",
+      "remaining": "المتبقي",
+      "total": "إجمالي الطلب",
+      "note": "لا يتغيّر المخزون إلا بعد تسجيل الاستلام.",
+      "workspace": "فتح مساحة المشتريات",
+      "loadFailed": {
+        "title": "تعذّر تحميل هذا الأمر",
+        "message": "تحقّق من الاتصال وحاول مجدداً."
+      }
+    }
   }
 }

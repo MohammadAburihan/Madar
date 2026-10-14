@@ -16,9 +16,15 @@ _Last updated: 14 Oct 2026_
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## Next — step 3 of 6: Purchase
+## In progress — step 3 of 6: Purchase
 
-Not started. Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
+Split into three PRs, each through the delivery loop:
+- **3a — Purchase orders** (this PR): the Purchasing officer role (Purchase User, Stock User, Accounts User), the
+  Purchasing workspace, creating and confirming a purchase order, and the order page.
+- **3b — Receive goods**, partly or in full.
+- **3c — Supplier invoice and paying the supplier.**
+
+Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
 
 ## Not started yet
