@@ -14456,17 +14456,17 @@
         {
           "id": "NIPY5",
           "name": "October 2026",
-          "context": "Role: link. Opens that month's posted sales invoices, expenses and stock cost entries."
+          "context": "Role: link. Route specification: qk3We (sales records) and Leztk (expenses), filtered to that month; desktop opens the same lists in the desktop host."
         },
         {
           "id": "N1DQD",
           "name": "September 2026",
-          "context": "Role: link. As October."
+          "context": "Role: link. Route specification: qk3We (sales records) and Leztk (expenses), filtered to that month; desktop opens the same lists in the desktop host."
         },
         {
           "id": "EoDPN",
           "name": "August 2026",
-          "context": "Role: link. As October."
+          "context": "Role: link. Route specification: qk3We (sales records) and Leztk (expenses), filtered to that month; desktop opens the same lists in the desktop host."
         }
       ]
     },
@@ -14575,12 +14575,12 @@
         {
           "id": "E3VYAX",
           "name": "By month table",
-          "context": "Role: table. Month names link to that month's records."
+          "context": "Role: table. Month names link to that month's sales records (sEKfr) and expenses (UtoWK) in the desktop host."
         },
         {
           "id": "NFpO5",
           "name": "Customer statement",
-          "context": "Role: link. Route specification: cjvib."
+          "context": "Role: link. Route specification: cjvib. Keeps the selected period."
         },
         {
           "id": "ZyDeV",
@@ -14674,12 +14674,12 @@
         {
           "id": "M6Rp2u",
           "name": "Payments link",
-          "context": "Role: link. Route specification: Iy72g filtered to the selected period."
+          "context": "Role: link. Route specification: Iy72g filtered to the selected period; each account row opens it filtered to that account."
         },
         {
           "id": "Q3Jof",
           "name": "Customer statement",
-          "context": "Role: link. Route specification: customer selector Zukeg, then f0uNfU."
+          "context": "Role: link. Route specification: customer selector Zukeg, then f0uNfU. Keeps the selected period."
         },
         {
           "id": "PFFTq",
@@ -14716,17 +14716,17 @@
         {
           "id": "L0s6LX",
           "name": "October 2026",
-          "context": "Role: link. As NIPY5."
+          "context": "Role: link. Route specification: Wnz61 and Iy72g filtered to that month."
         },
         {
           "id": "Tahnb",
           "name": "September 2026",
-          "context": "Role: link. As N1DQD."
+          "context": "Role: link. Route specification: Wnz61 and Iy72g filtered to that month."
         },
         {
           "id": "fCTWd",
           "name": "August 2026",
-          "context": "Role: link. As EoDPN."
+          "context": "Role: link. Route specification: Wnz61 and Iy72g filtered to that month."
         }
       ]
     },
@@ -14823,14 +14823,24 @@
           "context": "Role: group of two date fields (dd/MM/yyyy). As NU4ek."
         },
         {
+          "id": "N7TaH",
+          "name": "Money in",
+          "context": "Role: link. Route specification: ZuF0D filtered to the selected period."
+        },
+        {
+          "id": "jyrTM",
+          "name": "Money out",
+          "context": "Role: link. Route specification: ZuF0D filtered to the selected period."
+        },
+        {
           "id": "lrVNB",
           "name": "By month table",
-          "context": "Role: table. As E3VYAX."
+          "context": "Role: table. Month names link to that month's records (Arabic desktop hosts of sEKfr and ZuF0D)."
         },
         {
           "id": "r4sQ7",
           "name": "Customer statement",
-          "context": "Role: link. Route specification: Km7r7."
+          "context": "Role: link. Route specification: Km7r7. Keeps the selected period."
         },
         {
           "id": "HTZ8k",
