@@ -1,0 +1,61 @@
+---
+name: delivering-features
+description: Use when building a Madar feature or roadmap step from docs/STATUS.md, when a feature PR is open and waiting for review, fixes or merge, or when deciding whether another review pass is worth running.
+---
+
+# Delivering a feature
+
+## Overview
+
+Every feature goes build → PR → review → fix → merge. The aim of reviewing is **confidence, not zero
+findings**: a large diff reviewed at high effort always turns up something new, so "a pass comes back
+clean" never ends the loop on its own. Stop when further passes stop finding things that matter.
+
+## The loop
+
+1. **Build** on a feature branch from `development`, following CLAUDE.md (container/presenter, specs for
+   every presenter, en + ar, checked against the mocks). Check it end to end on the test site
+   (`scripts/dev-test-site.sh`), never on `frontend`.
+2. **Open the PR** against `development`. Run `npm run format:check` and `npm test` before every push.
+3. **Review** with `/code-review <PR> high` (it runs in the background; wait for its notification).
+4. **Triage every finding** before fixing:
+   - Check it against the code and, for ERPNext behaviour, against the local v16 container. Drop the
+     ones that don't hold up.
+   - Rate each real one:
+     - **High:** wrong money, stock or document data, a duplicate or lost write, a security or permission gap,
+       or a crash on a normal path.
+     - **Medium:** a visible bug on a plausible path.
+     - **Low:** an unlikely edge case or a brief cosmetic glitch.
+     - **Nit:** style or wording.
+5. **Fix** high, medium, and cheap low findings, each with a test that fails without the fix. Commit, push,
+   update `docs/STATUS.md`.
+6. **Decide** whether to run another pass (below). If yes, go to step 3. If not, merge.
+7. **Merge** once CI is green and the branch is up to date with `development`, with a merge commit
+   (`gh pr merge <PR> --merge --delete-branch`), as earlier PRs were.
+
+## When reviewing is enough
+
+Review again only while a pass is still finding high or medium issues. Stop and merge when **any** of these holds:
+
+| Signal | Why it's enough |
+|---|---|
+| The latest pass found nothing above **low** | Remaining risk is edge cases; more passes trade time for trivia |
+| Two passes in a row found only low/nit items | Returns have flattened |
+| Findings are about code outside the PR's purpose, or repeat earlier deferred ones | The review has run out of real targets |
+
+Always run one more pass after fixing a **high** finding, since such fixes often have their own bugs.
+Leave deferred low/nit items in the PR description or `docs/STATUS.md`, not as TODO comments.
+
+If a review agent stalls or fails, run it once more. If it fails again, review the latest fix commits
+yourself instead of the whole diff.
+
+## After a batch of features
+
+Once a group of steps is merged, run one review of the whole `development` branch with the same triage and stopping rule.
+
+## Common mistakes
+
+- Treating "no findings" as the only exit and looping on ever-smaller edge cases.
+- Fixing a finding without first confirming it's real.
+- Merging with a high finding fixed but not re-reviewed.
+- Leaving `docs/STATUS.md` describing work that's already committed.
