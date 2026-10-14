@@ -28,13 +28,22 @@ export interface OrderRequest {
 
 /** Where an order stands, from ERPNext's received and billed percentages. */
 export type OrderProgress =
-  'draft' | 'awaitingReceipt' | 'partlyReceived' | 'awaitingInvoice' | 'complete' | 'closed';
+  | 'draft'
+  | 'awaitingReceipt'
+  | 'partlyReceived'
+  | 'awaitingInvoice'
+  | 'complete'
+  | 'onHold'
+  | 'closed'
+  | 'cancelled';
 
 export interface OrderSummary {
   name: string;
   supplier: string;
   supplierName: string;
   date: string;
+  /** The order's own currency, which its rates and total are in. */
+  currency: string;
   total: number;
   progress: OrderProgress;
   orderedQty: number;
@@ -42,6 +51,8 @@ export interface OrderSummary {
 }
 
 export interface OrderLineDetail {
+  /** The order row's name, which a receipt line points back to. */
+  row: string;
   code: string;
   name: string;
   uom: string;
@@ -49,10 +60,20 @@ export interface OrderLineDetail {
   receivedQty: number;
   rate: number;
   amount: number;
+  /** Where the order expects the goods. */
+  warehouse: string | null;
 }
 
 export interface OrderDetail extends OrderSummary {
   lines: OrderLineDetail[];
+}
+
+export interface ReceiptRequest {
+  reference: string;
+  order: string;
+  warehouse: string;
+  /** Only rows receiving something; qty is in the row's unit. */
+  lines: { row: string; qty: number }[];
 }
 
 export interface PurchasingOverview {
@@ -74,8 +95,14 @@ export function orderProgress(order: {
   if (order.docstatus === 0) {
     return 'draft';
   }
+  if (order.docstatus === 2) {
+    return 'cancelled';
+  }
   if (order.status === 'Closed') {
     return 'closed';
+  }
+  if (order.status === 'On Hold') {
+    return 'onHold';
   }
   if (order.per_received <= 0) {
     return 'awaitingReceipt';
@@ -85,6 +112,14 @@ export function orderProgress(order: {
   }
   return order.per_billed < 100 ? 'awaitingInvoice' : 'complete';
 }
+
+/** ERPNext accepts receipts only for submitted orders that aren't on hold, closed or complete. */
+export const receivable = (progress: OrderProgress) =>
+  progress === 'awaitingReceipt' || progress === 'partlyReceived';
+
+/** On hold, closed or cancelled: ERPNext refuses receipts whatever is still open. */
+export const stopped = (progress: OrderProgress) =>
+  progress === 'onHold' || progress === 'closed' || progress === 'cancelled';
 
 export function linesTotal(lines: readonly { qty: number; rate: number }[]): number {
   return round2(lines.reduce((sum, l) => sum + l.qty * l.rate, 0));

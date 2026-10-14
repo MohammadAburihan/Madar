@@ -12,6 +12,8 @@ describe('capabilitiesFor', () => {
       money: 'all',
       transferStock: true,
       orderPurchases: true,
+      receiveGoods: true,
+      seeCosts: true,
     });
   });
 
@@ -27,6 +29,8 @@ describe('capabilitiesFor', () => {
         money: 'own',
         transferStock: persona === 'storeAssociate',
         orderPurchases: false,
+        receiveGoods: persona === 'storeAssociate',
+        seeCosts: false,
       });
     }
   });
@@ -68,6 +72,35 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('purchasing', ['Purchase User', 'Stock User']).orderPurchases).toBe(
       true,
     );
+  });
+
+  it('lets every role but the salesperson receive goods, as their ERPNext roles allow (PERMISSIONS.md)', () => {
+    for (const persona of ['owner', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(capabilitiesFor(persona).receiveGoods).toBe(true);
+    }
+    expect(capabilitiesFor('salesperson').receiveGoods).toBe(false);
+    expect(capabilitiesFor('warehouse', ['Stock User']).receiveGoods).toBe(true);
+    expect(capabilitiesFor('purchasing', ['Purchase User']).receiveGoods).toBe(true);
+    // Purchase Manager can't create receipts in v16, and Stock Manager can't read purchase orders.
+    expect(capabilitiesFor('owner', ['System Manager', 'Purchase Manager']).receiveGoods).toBe(
+      false,
+    );
+    expect(capabilitiesFor('owner', ['Stock Manager']).receiveGoods).toBe(false);
+    // Managers alone can't read Warehouse, so they couldn't choose where the goods go.
+    expect(capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager']).receiveGoods).toBe(
+      false,
+    );
+    expect(
+      capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager', 'Item Manager']).receiveGoods,
+    ).toBe(true);
+  });
+
+  it('shows buying prices to the owner and the purchasing officer only (PERMISSIONS.md)', () => {
+    expect(capabilitiesFor('owner').seeCosts).toBe(true);
+    expect(capabilitiesFor('purchasing').seeCosts).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse'] as const) {
+      expect(capabilitiesFor(persona).seeCosts).toBe(false);
+    }
   });
 
   it("doesn't let warehouse workers sell", () => {

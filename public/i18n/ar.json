@@ -883,7 +883,9 @@
       "partlyReceived": "تم استلام {{received}} · متبقٍّ {{open}}",
       "awaitingInvoice": "بانتظار الفاتورة",
       "complete": "مستلم بالكامل",
-      "closed": "مغلق"
+      "closed": "مغلق",
+      "onHold": "معلّق",
+      "cancelled": "ملغى"
     },
     "chip": {
       "draft": "مسودة",
@@ -891,7 +893,9 @@
       "partlyReceived": "مستلم جزئياً",
       "awaitingInvoice": "مستلم بالكامل",
       "complete": "مكتمل",
-      "closed": "مغلق"
+      "closed": "مغلق",
+      "onHold": "معلّق",
+      "cancelled": "ملغى"
     },
     "panel": {
       "total": "إجمالي أمر الشراء",
@@ -1013,7 +1017,113 @@
       "loadFailed": {
         "title": "تعذّر تحميل هذا الأمر",
         "message": "تحقّق من الاتصال وحاول مجدداً."
-      }
+      },
+      "titleWith": "أمر الشراء {{order}}",
+      "receivedSubtitle": "{{supplier}} · {{business}}",
+      "orderConfirmed": "الطلب: مؤكد",
+      "deliveryPartial": "التسليم: مستلم جزئياً",
+      "deliveryFull": "التسليم: مستلم بالكامل",
+      "receivedMeta": "{{code}} · طُلب {{ordered}} · استُلم {{received}}",
+      "remainToReceive": "بقي استلام {{qty}}",
+      "allReceived": "تم استلام الكل",
+      "orderValue": "قيمة الطلب",
+      "receive": "استلام الأصناف",
+      "receiveRemaining": "استلام {{qty}} المتبقية",
+      "lineDetailNoPrice": "المطلوب {{qty}}"
+    },
+    "receive": {
+      "title": "استلام الأصناف",
+      "remainingTitle": "استلام الأصناف المتبقية",
+      "warehouse": "الاستلام في المستودع",
+      "warehouseRemaining": "المستودع *",
+      "chooseWarehouse": "اختر المستودع",
+      "partial": "استلام جزئي",
+      "lineMeta": "{{code}} · {{uom}}",
+      "lineDetail": "طُلب {{ordered}} · {{rate}} لكل قطعة",
+      "lineDetailReceived": "طُلب {{ordered}} · استُلم {{received}} · {{rate}} لكل قطعة",
+      "receivedNowField": "المستلم الآن *",
+      "receivedNowFor": "{{code}} · المستلم الآن *",
+      "remainingQty": "{{code}} · الكمية المتبقية *",
+      "receivedNow": "المستلم الآن",
+      "stillRemaining": "ما زال متبقياً",
+      "units": {
+        "zero": "لا وحدات",
+        "one": "وحدة واحدة",
+        "two": "وحدتان",
+        "few": "{{count}} وحدات",
+        "many": "{{count}} وحدة",
+        "other": "{{count}} وحدة"
+      },
+      "notePartial": "تُضاف {{now}} فقط إلى المخزون، وتبقى {{left}} مفتوحة في الطلب.",
+      "noteComplete": "تُضاف {{now}} إلى المخزون، ولا يبقى شيء مفتوحاً في الطلب.",
+      "record": "تسجيل استلام {{units}}",
+      "recording": "جارٍ التسجيل…",
+      "reviewTitle": "مراجعة الاستلام",
+      "reviewComplete": "سبق استلام {{before}}. استلام {{now}} يكمل {{total}} من {{ordered}}. لا تتغير الفاتورة أو الدفعة.",
+      "reviewPartial": "سبق استلام {{before}}. استلام {{now}} يرفع المستلم إلى {{total}} من {{ordered}}. لا تتغير الفاتورة أو الدفعة.",
+      "confirm": "تأكيد استلام {{qty}}",
+      "cancel": "إلغاء",
+      "qtyError": "أدخل كمية من 0 إلى {{max}}",
+      "nothingOpen": {
+        "title": "لا شيء متبقٍ للاستلام",
+        "message": "تم استلام كل أصناف هذا الأمر."
+      },
+      "noAccess": {
+        "title": "لا يمكنك استلام البضائع",
+        "message": "دورك في ERPNext لا يسمح بذلك. اطلب من المالك إن كنت تحتاج إلى استلام التوريدات."
+      },
+      "noWarehouses": {
+        "title": "لا يوجد مستودع للاستلام فيه",
+        "message": "أضف مستودعاً في ERPNext أولاً، ثم عُد."
+      },
+      "failed": {
+        "permission": {
+          "title": "لا يمكنك استلام هذا الأمر",
+          "message": "لم يسمح ERPNext بذلك لدورك. لم يُستلم أي مخزون."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "لم يُرسل الاستلام. تحقّق من الاتصال وحاول مجدداً."
+        },
+        "error": {
+          "title": "لم يُسجَّل الاستلام",
+          "message": "رفضه ERPNext. تحقّق من الكميات وحاول مجدداً."
+        },
+        "changed": {
+          "title": "استُلمت البضائع مسبقاً",
+          "message": "سُجّل استلام سابق قبل تعديلاتك الأخيرة. أعد تحميل الأمر لترى ما بقي مفتوحاً."
+        }
+      },
+      "reload": "إعادة تحميل الأمر",
+      "notCreated": {
+        "title": "لم يُسجَّل الاستلام",
+        "message": "لا يوجد في ERPNext استلام لهذا الطلب. تحقّق من الكميات وأكّد مجدداً."
+      },
+      "checking": {
+        "title": "جارٍ التحقق من الاستلام",
+        "cardTitle": "لم نحصل على إجابة نهائية",
+        "cardMessage": "ربما سُجّل الاستلام. تحقّق من النتيجة بدلاً من تسجيله مجدداً، حتى لا تُستلم البضائع مرتين.",
+        "planned": "الاستلام المخطط",
+        "plannedValue": "{{units}} في {{warehouse}}"
+      },
+      "notReceivable": {
+        "title": "لا يمكن استلام هذا الأمر",
+        "message": "الأمر معلّق أو مغلق أو ملغى في ERPNext. أعد فتحه هناك أولاً."
+      },
+      "lineDetailNoPrice": "طُلب {{ordered}}",
+      "lineDetailReceivedNoPrice": "طُلب {{ordered}} · استُلم {{received}}"
+    },
+    "receipt": {
+      "partialTitle": "تم تسجيل الاستلام",
+      "partialSubtitle": "{{order}} · {{warehouse}}",
+      "partialCard": "مستلم جزئياً · {{received}} من {{ordered}}",
+      "partialMessage": "تم استلام {{now}}. يتبقى {{left}}. لم تُنشأ فاتورة أو دفعة.",
+      "fullTitle": "مستلم بالكامل",
+      "fullSubtitle": "{{order}} · تم ترحيل الاستلام",
+      "fullCard": "تم استلام {{received}} من {{ordered}}",
+      "fullMessage": "تم استلام {{now}} في {{warehouse}}. لم تُنشأ فاتورة أو دفعة.",
+      "openOrder": "فتح أمر الشراء",
+      "backToPurchases": "العودة للمشتريات"
     }
   }
 }

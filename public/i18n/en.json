@@ -831,7 +831,9 @@
       "partlyReceived": "{{received}} received · {{open}} open",
       "awaitingInvoice": "Awaiting invoice",
       "complete": "Fully received",
-      "closed": "Closed"
+      "closed": "Closed",
+      "onHold": "On hold",
+      "cancelled": "Cancelled"
     },
     "chip": {
       "draft": "Draft",
@@ -839,7 +841,9 @@
       "partlyReceived": "Partially received",
       "awaitingInvoice": "Fully received",
       "complete": "Completed",
-      "closed": "Closed"
+      "closed": "Closed",
+      "onHold": "On hold",
+      "cancelled": "Cancelled"
     },
     "panel": {
       "total": "Purchase order total",
@@ -957,7 +961,109 @@
       "loadFailed": {
         "title": "This order couldn't load",
         "message": "Check the connection and try again."
-      }
+      },
+      "titleWith": "Purchase order {{order}}",
+      "receivedSubtitle": "{{supplier}} · {{business}}",
+      "orderConfirmed": "Order: Confirmed",
+      "deliveryPartial": "Delivery: Partially received",
+      "deliveryFull": "Delivery: Fully received",
+      "receivedMeta": "{{code}} · {{ordered}} ordered · {{received}} received",
+      "remainToReceive": "{{qty}} remain to receive",
+      "allReceived": "All received",
+      "orderValue": "Order value",
+      "receive": "Receive items",
+      "receiveRemaining": "Receive remaining {{qty}}",
+      "lineDetailNoPrice": "Ordered {{qty}}"
+    },
+    "receive": {
+      "title": "Receive items",
+      "remainingTitle": "Receive remaining items",
+      "warehouse": "Receive into warehouse",
+      "warehouseRemaining": "Warehouse *",
+      "chooseWarehouse": "Choose warehouse",
+      "partial": "Partial delivery",
+      "lineMeta": "{{code}} · {{uom}}",
+      "lineDetail": "Ordered {{ordered}} · {{rate}} each",
+      "lineDetailReceived": "Ordered {{ordered}} · {{received}} received · {{rate}} each",
+      "receivedNowField": "Received now *",
+      "receivedNowFor": "{{code}} · received now *",
+      "remainingQty": "{{code}} · remaining quantity *",
+      "receivedNow": "Received now",
+      "stillRemaining": "Still remaining",
+      "units": {
+        "one": "{{count}} unit",
+        "other": "{{count}} units"
+      },
+      "notePartial": "Only {{now}} enter stock. {{left}} stay open on the order.",
+      "noteComplete": "{{now}} enter stock. Nothing stays open on the order.",
+      "record": "Record {{units}} received",
+      "recording": "Recording…",
+      "reviewTitle": "Review receipt",
+      "reviewComplete": "Previously received {{before}}. Receiving {{now}} completes {{total}} of {{ordered}}. Invoice and payment remain unchanged.",
+      "reviewPartial": "Previously received {{before}}. Receiving {{now}} brings it to {{total}} of {{ordered}}. Invoice and payment remain unchanged.",
+      "confirm": "Confirm receipt of {{qty}}",
+      "cancel": "Cancel",
+      "qtyError": "Enter a quantity from 0 to {{max}}",
+      "nothingOpen": {
+        "title": "Nothing left to receive",
+        "message": "Every item on this order has been received."
+      },
+      "noAccess": {
+        "title": "You can't receive goods",
+        "message": "Your ERPNext role doesn't allow it. Ask the owner if you need to receive deliveries."
+      },
+      "noWarehouses": {
+        "title": "No warehouse to receive into",
+        "message": "Add a warehouse in ERPNext first, then come back."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't receive this order",
+          "message": "ERPNext didn't allow it for your role. No stock was received."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The receipt wasn't sent. Check the connection and try again."
+        },
+        "error": {
+          "title": "The receipt wasn't recorded",
+          "message": "ERPNext rejected it. Check the quantities and try again."
+        },
+        "changed": {
+          "title": "Goods were already received",
+          "message": "An earlier receipt went through before your latest changes. Reload the order to see what is still open."
+        }
+      },
+      "reload": "Reload order",
+      "notCreated": {
+        "title": "The receipt wasn't recorded",
+        "message": "ERPNext has no receipt for this request. Check the quantities and confirm again."
+      },
+      "checking": {
+        "title": "Checking your receipt",
+        "cardTitle": "We didn't get a final answer",
+        "cardMessage": "The receipt may have been recorded. Check the result instead of recording it again, so the goods aren't received twice.",
+        "planned": "Planned receipt",
+        "plannedValue": "{{units}} into {{warehouse}}"
+      },
+      "notReceivable": {
+        "title": "This order can't be received",
+        "message": "It is on hold, closed or cancelled in ERPNext. Reopen it there first."
+      },
+      "lineDetailNoPrice": "Ordered {{ordered}}",
+      "lineDetailReceivedNoPrice": "Ordered {{ordered}} · {{received}} received"
+    },
+    "receipt": {
+      "partialTitle": "Receipt recorded",
+      "partialSubtitle": "{{order}} · {{warehouse}}",
+      "partialCard": "Partially received · {{received}} of {{ordered}}",
+      "partialMessage": "{{now}} received. {{left}} remain. No invoice or payment created.",
+      "fullTitle": "Fully received",
+      "fullSubtitle": "{{order}} · Receipt posted",
+      "fullCard": "{{received}} of {{ordered}} received",
+      "fullMessage": "{{now}} received into {{warehouse}}. No invoice or payment created.",
+      "openOrder": "Open purchase order",
+      "backToPurchases": "Back to purchases"
     }
   }
 }

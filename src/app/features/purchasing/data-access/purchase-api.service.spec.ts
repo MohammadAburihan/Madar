@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { PurchaseApiService } from './purchase-api.service';
-import { OrderRequest, orderProgress } from './purchase.models';
+import { OrderRequest, ReceiptRequest, orderProgress } from './purchase.models';
 
 const request = (overrides: Partial<OrderRequest> = {}): OrderRequest => ({
   reference: 'PUR-ABC1234',
@@ -23,11 +23,13 @@ const ORDER = {
   supplier: 'Green Clay',
   supplier_name: 'Green Clay',
   transaction_date: '2026-10-11',
+  currency: 'ILS',
   grand_total: 450,
   per_received: 0,
   per_billed: 0,
   items: [
     {
+      name: 'row-1',
       item_code: 'POT-30',
       item_name: 'Ceramic planter',
       uom: 'Unit',
@@ -35,8 +37,35 @@ const ORDER = {
       received_qty: 0,
       rate: 45,
       amount: 450,
+      warehouse: 'Stores - RN',
     },
   ],
+};
+
+const receipt = (overrides: Partial<ReceiptRequest> = {}): ReceiptRequest => ({
+  reference: 'REC-ABC1234',
+  order: 'PO-2048',
+  warehouse: 'Main warehouse - RN',
+  lines: [{ row: 'row-1', qty: 6 }],
+  ...overrides,
+});
+
+/** What make_purchase_receipt returns for PO-2048 with a second, untouched row. */
+const RECEIPT_TEMPLATE = {
+  doctype: 'Purchase Receipt',
+  __islocal: 1,
+  supplier: 'Green Clay',
+  items: [
+    { purchase_order_item: 'row-1', item_code: 'POT-30', qty: 10, warehouse: 'Stores - RN' },
+    { purchase_order_item: 'row-2', item_code: 'SOIL', qty: 5, warehouse: 'Stores - RN' },
+  ],
+};
+
+const POSTED_RECEIPT = {
+  name: 'MAT-PRE-0001',
+  docstatus: 1,
+  set_warehouse: 'Main warehouse - RN',
+  items: [{ purchase_order_item: 'row-1', qty: 6, warehouse: 'Main warehouse - RN' }],
 };
 
 const api = () => TestBed.inject(PurchaseApiService);
@@ -56,6 +85,8 @@ describe('orderProgress', () => {
     expect(at(100, 60)).toBe('awaitingInvoice');
     expect(at(100, 100, 'Completed')).toBe('complete');
     expect(at(40, 0, 'Closed')).toBe('closed');
+    expect(at(0, 0, 'On Hold')).toBe('onHold');
+    expect(at(0, 0, 'Cancelled', 2)).toBe('cancelled');
   });
 });
 
@@ -85,13 +116,13 @@ describe('PurchaseApiService', () => {
       [
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
-        ['status', '!=', 'Closed'],
+        ['status', 'not in', ['Closed', 'On Hold']],
         ['per_received', '<', 100],
       ],
       [
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
-        ['status', '!=', 'Closed'],
+        ['status', 'not in', ['Closed', 'On Hold']],
         ['per_received', '>=', 100],
         ['per_billed', '<', 100],
       ],
@@ -102,6 +133,7 @@ describe('PurchaseApiService', () => {
         supplier: 'Green Clay',
         supplierName: 'Green Clay',
         date: '2026-10-11',
+        currency: 'ILS',
         total: 450,
         progress: 'partlyReceived',
         orderedQty: 10,
@@ -249,6 +281,7 @@ describe('PurchaseApiService', () => {
     const order = await api().order('PO-2048');
     expect(order).toMatchObject({ progress: 'partlyReceived', orderedQty: 10, receivedQty: 0 });
     expect(order.lines[0]).toEqual({
+      row: 'row-1',
       code: 'POT-30',
       name: 'Ceramic planter',
       uom: 'Unit',
@@ -256,6 +289,98 @@ describe('PurchaseApiService', () => {
       receivedQty: 0,
       rate: 45,
       amount: 450,
+      warehouse: 'Stores - RN',
+    });
+  });
+
+  describe('receiving', () => {
+    const MAKE = 'erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_receipt';
+
+    it('posts a receipt from the order with only the rows and quantities received now', async () => {
+      const { postCalls } = fakeErpnext(
+        {},
+        {
+          [MAKE]: () => RECEIPT_TEMPLATE,
+          'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'MAT-PRE-0001' }),
+          'frappe.client.submit': () => POSTED_RECEIPT,
+        },
+      );
+      const inserted: string[] = [];
+      expect(await api().receive(receipt(), null, (name) => inserted.push(name))).toBe(
+        'MAT-PRE-0001',
+      );
+      expect(inserted).toEqual(['MAT-PRE-0001']);
+      expect(postCalls[0].body).toEqual({ source_name: 'PO-2048' });
+      expect(postCalls[1].body['doc']).toMatchObject({
+        supplier: 'Green Clay',
+        set_warehouse: 'Main warehouse - RN',
+        remarks: 'Madar receipt REC-ABC1234',
+        items: [
+          {
+            purchase_order_item: 'row-1',
+            item_code: 'POT-30',
+            qty: 6,
+            warehouse: 'Main warehouse - RN',
+          },
+        ],
+      });
+    });
+
+    it('rebuilds a remembered draft instead of submitting stale rows', async () => {
+      const { postCalls } = fakeErpnext(
+        {},
+        {
+          [MAKE]: () => RECEIPT_TEMPLATE,
+          'frappe.client.insert': () => ({ name: 'MAT-PRE-0002', docstatus: 0, items: [] }),
+          'frappe.client.submit': () => ({ name: 'MAT-PRE-0002' }),
+        },
+        { 'Purchase Receipt/MAT-PRE-0001': { ...POSTED_RECEIPT, docstatus: 0 } },
+      );
+      expect(await api().receive(receipt(), 'MAT-PRE-0001')).toBe('MAT-PRE-0002');
+      expect(postCalls[0]).toEqual({
+        method: 'frappe.client.delete',
+        body: { doctype: 'Purchase Receipt', name: 'MAT-PRE-0001' },
+      });
+    });
+
+    it('reports a remembered draft a slow attempt already posted, without posting again', async () => {
+      const { postCalls } = fakeErpnext(
+        {},
+        {},
+        { 'Purchase Receipt/MAT-PRE-0001': POSTED_RECEIPT },
+      );
+      expect(await api().receive(receipt(), 'MAT-PRE-0001')).toBe('MAT-PRE-0001');
+      expect(postCalls).toEqual([]);
+    });
+
+    it("won't report an earlier receipt with other quantities as this one's result", async () => {
+      fakeErpnext({}, {}, { 'Purchase Receipt/MAT-PRE-0001': POSTED_RECEIPT });
+      await expect(
+        api().receive(receipt({ lines: [{ row: 'row-1', qty: 4 }] }), 'MAT-PRE-0001'),
+      ).rejects.toBeInstanceOf(PostedEarlierError);
+    });
+
+    it('turns a timeout while submitting into an unresolved result', async () => {
+      fakeErpnext(
+        {},
+        {
+          [MAKE]: () => RECEIPT_TEMPLATE,
+          'frappe.client.insert': () => ({ name: 'MAT-PRE-0001' }),
+          'frappe.client.submit': () => throwError(() => new HttpErrorResponse({ status: 504 })),
+        },
+      );
+      await expect(api().receive(receipt(), null)).rejects.toBeInstanceOf(UnresolvedError);
+    });
+
+    it('finds a receipt or its draft by the Madar reference', async () => {
+      let rows: unknown[] = [];
+      const { listCalls } = fakeErpnext({ 'Purchase Receipt': () => rows });
+      expect(await api().findReceipt('REC-ABC1234')).toBe('not-found');
+      expect(listCalls[0].query.filters).toContainEqual(['remarks', 'like', '%REC-ABC1234%']);
+      rows = [{ name: 'MAT-PRE-0001', docstatus: 0 }];
+      expect(await api().findReceipt('REC-ABC1234')).toEqual({ draft: 'MAT-PRE-0001' });
+      rows = [{ name: 'MAT-PRE-0001', docstatus: 1 }];
+      expect(await api().findReceipt('REC-ABC1234')).toEqual({ receipt: 'MAT-PRE-0001' });
     });
   });
 });

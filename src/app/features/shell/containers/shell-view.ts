@@ -17,7 +17,7 @@ import { NavItem } from '../components/nav-item';
 type NavDefinition = Omit<NavItem, 'label'> & { hiddenFor?: Persona[] };
 
 // The warehouse mock drops Sales from the tab bar; money stays hidden from that role too. Purchasing
-// officers neither sell nor see payments, and sales roles don't buy (docs/PERMISSIONS.md).
+// officers neither sell nor see payments; salespeople neither buy nor receive goods (docs/PERMISSIONS.md).
 const DESKTOP_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
   { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse', 'purchasing'] },
@@ -25,7 +25,7 @@ const DESKTOP_NAV: NavDefinition[] = [
     id: 'purchases',
     icon: LucideShoppingBag,
     route: '/purchases',
-    hiddenFor: ['salesperson', 'storeAssociate'],
+    hiddenFor: ['salesperson'],
   },
   { id: 'inventory', icon: LucideBoxes, route: '/inventory' },
   { id: 'contacts', icon: LucideUsers, route: '/contacts' },

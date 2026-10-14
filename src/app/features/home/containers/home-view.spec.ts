@@ -252,6 +252,14 @@ describe('buildHomeView', () => {
     expect(view.actions.map((a) => a.id)).not.toContain('buy');
   });
 
+  it("hides Receive goods from a user whose roles can't post receipts", () => {
+    const view = buildHomeView(
+      { ...input({ persona: 'warehouse' }), capabilities: { receiveGoods: false } },
+      realTranslator('en'),
+    );
+    expect(view.actions.map((a) => a.id)).not.toContain('receiveGoods');
+  });
+
   it('marks overdue work and says when nothing needs attention', () => {
     const overdue = buildHomeView(
       input({ data: { invoicesDue: [{ ...DATA.invoicesDue![0], dueDate: '2026-10-01' }] } }),

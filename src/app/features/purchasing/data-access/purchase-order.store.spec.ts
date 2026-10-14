@@ -214,4 +214,14 @@ describe('PurchaseOrderStore', () => {
     store.start();
     expect(store.result()).toBeNull();
   });
+
+  it("won't look the result up while the confirmation is still running", async () => {
+    const { store, api } = await ready();
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(await store.checkResult()).toBe('pending');
+    expect(api.find).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
+  });
 });

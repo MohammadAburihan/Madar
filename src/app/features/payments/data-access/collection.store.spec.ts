@@ -196,11 +196,14 @@ describe('CollectionStore', () => {
 
   it('checks an unresolved result: draft, not found, pending or found', async () => {
     const { store, api } = await ready();
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
     api.find.mockResolvedValueOnce({ draft: 'PAY-7' });
     expect(await store.checkResult()).toBe('not-found');
     expect(store.draft()).toBe('PAY-7');
     expect(store.state()).toBe('idle');
 
+    store.state.set('unresolved');
     api.find.mockRejectedValueOnce(new HttpErrorResponse({ status: 0 }));
     expect(await store.checkResult()).toBe('pending');
     expect(store.state()).toBe('unresolved');
@@ -385,5 +388,15 @@ describe('CollectionStore', () => {
     expect(store.selected().size).toBe(0);
     expect(store.result()).toBeNull();
     expect(store.state()).toBe('idle');
+  });
+
+  it("won't look the result up while the confirmation is still running", async () => {
+    const { store, api } = await ready();
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(await store.checkResult()).toBe('pending');
+    expect(api.find).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
   });
 });

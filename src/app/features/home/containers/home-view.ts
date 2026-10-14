@@ -9,7 +9,7 @@ export interface HomeViewInput {
   data: HomeData;
   persona: Persona;
   /** Hides quick actions the user's ERPNext roles can't perform. */
-  capabilities?: Partial<Pick<Capabilities, 'transferStock' | 'orderPurchases'>>;
+  capabilities?: Partial<Pick<Capabilities, 'transferStock' | 'orderPurchases' | 'receiveGoods'>>;
   firstName: string;
   business: { name: string; currency: string };
   language: Language;
@@ -287,6 +287,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     actions: ACTIONS[persona]
       .filter((id) => id !== 'transferStock' || (input.capabilities?.transferStock ?? true))
       .filter((id) => id !== 'buy' || (input.capabilities?.orderPurchases ?? true))
+      .filter((id) => id !== 'receiveGoods' || (input.capabilities?.receiveGoods ?? true))
       .map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
     actionColumns: persona === 'owner' ? 3 : 2,
     cards: cards.slice(0, MOBILE_CARD_LIMIT),

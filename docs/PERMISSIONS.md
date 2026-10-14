@@ -51,7 +51,9 @@ to the Owner.
 - **ERPNext** enforces which documents each role can read, create, and submit. Madar never relies on hiding a
   button for security.
 - **Madar** adds the finer rules ERPNext has no per-role setting for: the 10% discount cap, price edits, and the
-  allowed payment accounts. These are enforced in the app; enforcing them on the server as well needs a small ERPNext
+  allowed payment accounts, and who sees buying prices. Store associates and warehouse workers receive goods by
+  quantity only: purchase rates, order values and supplier balances are hidden from them (ERPNext's Stock User can
+  still read order rates through the API). These are enforced in the app; enforcing them on the server as well needs a small ERPNext
   customization, planned for when more than one front end writes sales.
 - Quick sales charge **no VAT**, the salesperson **picks the warehouse** on each sale, and anonymous sales use the
   shared **Walk-in Customer**.

@@ -167,7 +167,10 @@ export class PurchasingContainer implements OnInit {
       ordersHeading: t('purchase.ordersHeading'),
       search: t('purchase.search'),
       searchOrders: t('purchase.searchOrders'),
-      headers: ['order', 'created', 'status', 'total'].map((k) => t(`purchase.headers.${k}`)),
+      // Order values only for roles that see buying prices (docs/PERMISSIONS.md).
+      headers: ['order', 'created', 'status', ...(this.caps().seeCosts ? ['total'] : [])].map((k) =>
+        t(`purchase.headers.${k}`),
+      ),
       openOrder: t('purchase.panel.open'),
       choose: t('purchase.panel.choose'),
       loading: t('purchase.loading'),
@@ -188,17 +191,20 @@ export class PurchasingContainer implements OnInit {
 
   protected readonly stats = computed(() => {
     const overview = this.overview();
-    return overview ? workspaceStats(overview, this.currency(), this.i18n.tr()) : [];
+    const currency = this.caps().seeCosts ? this.currency() : null;
+    return overview ? workspaceStats(overview, currency, this.i18n.tr()) : [];
   });
 
   protected readonly rows = computed(() =>
-    this.matching().map((o) => orderRow(o, this.currency(), this.i18n.language(), this.i18n.tr())),
+    this.matching().map((o) =>
+      orderRow(o, this.caps().seeCosts, this.i18n.language(), this.i18n.tr()),
+    ),
   );
 
   protected readonly cards = computed(() =>
     this.matching().map((o) => ({
       id: o.name,
-      view: orderCard(o, this.currency(), this.i18n.language(), this.i18n.tr()),
+      view: orderCard(o, this.caps().seeCosts, this.i18n.language(), this.i18n.tr()),
     })),
   );
 
@@ -214,7 +220,7 @@ export class PurchasingContainer implements OnInit {
 
   protected readonly panelRows = computed(() => {
     const order = this.selectedOrder();
-    return order ? orderPanel(order, this.currency(), this.i18n.tr()) : [];
+    return order ? orderPanel(order, this.caps().seeCosts, this.i18n.tr()) : [];
   });
 
   protected readonly emptyText = computed(() =>

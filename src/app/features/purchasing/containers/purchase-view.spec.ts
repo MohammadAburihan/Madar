@@ -11,6 +11,7 @@ const ORDER: OrderSummary = {
   supplier: 'Green Clay',
   supplierName: 'Green Clay',
   date: '2026-10-11',
+  currency: 'ILS',
   total: 450,
   progress: 'partlyReceived',
   orderedQty: 10,
@@ -50,10 +51,13 @@ describe('purchase view', () => {
   });
 
   it('builds a workspace row and its key figures', () => {
-    expect(visible(view.orderRow(ORDER, 'ILS', 'en', en))).toEqual({
+    expect(visible(view.orderRow(ORDER, true, 'en', en))).toEqual({
       id: 'PO-2048',
       cells: ['PO-2048 · Green Clay', '11 Oct 2026', '6 received · 4 open', 'ILS 450.00'],
     });
+    expect(visible(view.orderRow({ ...ORDER, currency: 'USD' }, true, 'en', en)).cells[3]).toBe(
+      'USD 450.00',
+    );
     const orders = [
       ORDER,
       { ...ORDER, name: 'PO-1', progress: 'awaitingReceipt' as const },
@@ -84,10 +88,29 @@ describe('purchase view', () => {
   });
 
   it('summarises the selected order in the side panel', () => {
-    expect(visible(view.orderPanel(ORDER, 'ILS', en))).toEqual([
+    expect(visible(view.orderPanel(ORDER, true, en))).toEqual([
       { label: 'Purchase order total', value: 'ILS 450.00' },
       { label: 'Received', value: '6 of 10 units · 4 open' },
     ]);
+  });
+
+  it('leaves order values, rates and the supplier balance out for roles that don’t see costs', () => {
+    expect(visible(view.orderRow(ORDER, false, 'en', en)).cells).toEqual([
+      'PO-2048 · Green Clay',
+      '11 Oct 2026',
+      '6 received · 4 open',
+    ]);
+    expect(visible(view.orderCard(ORDER, false, 'en', en)).detail).toBe('6 received · 4 open');
+    expect(visible(view.orderPanel(ORDER, false, en))).toEqual([
+      { label: 'Received', value: '6 of 10 units · 4 open' },
+    ]);
+    expect(
+      view.workspaceStats(
+        { orders: [], openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 },
+        null,
+        en,
+      ),
+    ).toHaveLength(2);
   });
 
   it('shows an item result and the order lines like the create-order mock', () => {
@@ -120,6 +143,7 @@ describe('purchase view', () => {
       receivedQty: 0,
       lines: [
         {
+          row: 'row-1',
           code: 'POT-30',
           name: 'Ceramic planter',
           uom: 'Unit',
@@ -127,6 +151,7 @@ describe('purchase view', () => {
           receivedQty: 0,
           rate: 45,
           amount: 450,
+          warehouse: 'Stores - RN',
         },
       ],
     };
@@ -135,6 +160,7 @@ describe('purchase view', () => {
       { label: 'Received', value: '0' },
       { label: 'Remaining', value: '10' },
     ]);
+    expect(visible(view.detailLineCard(detail.lines[0], null, en)).detail).toBe('Ordered 10');
     expect(visible(view.detailLineCard(detail.lines[0], 'ILS', en)).detail).toBe(
       'Ordered 10 · ILS 45.00 each',
     );
