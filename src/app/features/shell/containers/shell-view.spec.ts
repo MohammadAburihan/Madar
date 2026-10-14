@@ -51,11 +51,11 @@ describe('buildShellView', () => {
     expect(build('purchasing').mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
   });
 
-  it('hides Purchases from roles that only sell', () => {
-    for (const persona of ['salesperson', 'storeAssociate'] as const) {
-      expect(build(persona).desktopNav.map((i) => i.id)).not.toContain('purchases');
+  it('hides Purchases from the salesperson only; store associates receive goods there', () => {
+    expect(build('salesperson').desktopNav.map((i) => i.id)).not.toContain('purchases');
+    for (const persona of ['storeAssociate', 'warehouse', 'purchasing', 'owner'] as const) {
+      expect(build(persona).desktopNav.map((i) => i.id)).toContain('purchases');
     }
-    expect(build('warehouse').desktopNav.map((i) => i.id)).toContain('purchases');
   });
 
   it('marks More as current on the Reports page', () => {

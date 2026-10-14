@@ -12,6 +12,7 @@ describe('capabilitiesFor', () => {
       money: 'all',
       transferStock: true,
       orderPurchases: true,
+      receiveGoods: true,
     });
   });
 
@@ -27,6 +28,7 @@ describe('capabilitiesFor', () => {
         money: 'own',
         transferStock: persona === 'storeAssociate',
         orderPurchases: false,
+        receiveGoods: persona === 'storeAssociate',
       });
     }
   });
@@ -68,6 +70,21 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('purchasing', ['Purchase User', 'Stock User']).orderPurchases).toBe(
       true,
     );
+  });
+
+  it('lets every role but the salesperson receive goods, as their ERPNext roles allow (PERMISSIONS.md)', () => {
+    for (const persona of ['owner', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(capabilitiesFor(persona).receiveGoods).toBe(true);
+    }
+    expect(capabilitiesFor('salesperson').receiveGoods).toBe(false);
+    expect(capabilitiesFor('warehouse', ['Stock User']).receiveGoods).toBe(true);
+    expect(capabilitiesFor('purchasing', ['Purchase User']).receiveGoods).toBe(true);
+    // Purchase Manager can't create receipts in v16, and Stock Manager can't read purchase orders.
+    expect(capabilitiesFor('owner', ['System Manager', 'Purchase Manager']).receiveGoods).toBe(
+      false,
+    );
+    expect(capabilitiesFor('owner', ['Stock Manager']).receiveGoods).toBe(false);
+    expect(capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager']).receiveGoods).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

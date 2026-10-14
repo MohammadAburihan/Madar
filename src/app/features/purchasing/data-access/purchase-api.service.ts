@@ -14,6 +14,7 @@ import {
   OrderSummary,
   PurchaseItem,
   PurchasingOverview,
+  ReceiptRequest,
   orderProgress,
 } from './purchase.models';
 
@@ -28,6 +29,7 @@ interface OrderDoc {
   per_received: number;
   per_billed: number;
   items?: {
+    name: string;
     item_code: string;
     item_name: string;
     uom: string;
@@ -35,7 +37,16 @@ interface OrderDoc {
     received_qty: number;
     rate: number;
     amount: number;
+    warehouse: string | null;
   }[];
+  [key: string]: unknown;
+}
+
+interface ReceiptDoc {
+  name: string;
+  docstatus: number;
+  set_warehouse?: string | null;
+  items: { purchase_order_item: string; qty: number; warehouse: string | null }[];
   [key: string]: unknown;
 }
 
@@ -111,6 +122,7 @@ export class PurchaseApiService {
   async order(name: string): Promise<OrderDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<OrderDoc>('Purchase Order', name));
     const lines = (doc.items ?? []).map((i) => ({
+      row: i.name,
       code: i.item_code,
       name: i.item_name,
       uom: i.uom,
@@ -118,6 +130,7 @@ export class PurchaseApiService {
       receivedQty: i.received_qty,
       rate: i.rate,
       amount: i.amount,
+      warehouse: i.warehouse ?? null,
     }));
     return {
       ...summary(doc, {
@@ -258,6 +271,86 @@ export class PurchaseApiService {
     );
   }
 
+  /**
+   * Posts a purchase receipt for part or all of an order. A timeout or lost connection throws UnresolvedError:
+   * the receipt may exist, so callers must look it up with findReceipt(), not resubmit. Resolves to its name.
+   */
+  async receive(
+    request: ReceiptRequest,
+    draft: string | null,
+    onInserted: (draft: string) => void = () => undefined,
+  ): Promise<string> {
+    const current = draft
+      ? await reusableDraft(this.erpnext.doc<ReceiptDoc>('Purchase Receipt', draft))
+      : null;
+    if (current?.docstatus === 1) {
+      // A slow earlier attempt posted it; that is this request's result only if nothing changed.
+      if (!sameReceipt(current, request)) {
+        throw new PostedEarlierError(current.name);
+      }
+      return current.name;
+    }
+    if (current) {
+      // Rebuilt from the order rather than edited, so the rows always match what is received now.
+      await this.discardReceipt(current.name);
+    }
+    const template = await firstValueFrom(
+      this.erpnext.post<ReceiptDoc>(
+        'erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_receipt',
+        { source_name: request.order },
+      ),
+    );
+    const qty = new Map(request.lines.map((l) => [l.row, l.qty]));
+    const doc = {
+      ...template,
+      set_warehouse: request.warehouse,
+      remarks: `Madar receipt ${request.reference}`,
+      items: template.items
+        .filter((i) => qty.has(i.purchase_order_item))
+        .map((i) => ({ ...i, qty: qty.get(i.purchase_order_item), warehouse: request.warehouse })),
+    };
+    try {
+      const inserted = await confirmRequest(
+        this.erpnext.post<ReceiptDoc>('frappe.client.insert', { doc }),
+      );
+      onInserted(inserted.name);
+      const submitted = await confirmRequest(
+        this.erpnext.post<ReceiptDoc>('frappe.client.submit', { doc: inserted }),
+      );
+      return submitted.name;
+    } catch (error) {
+      throw unresolvedOr(error);
+    }
+  }
+
+  /** Looks a receipt up by its Madar reference after an unresolved confirmation. */
+  async findReceipt(
+    reference: string,
+  ): Promise<{ receipt: string } | 'not-found' | { draft: string }> {
+    const [receipt] = await firstValueFrom(
+      this.erpnext.list<{ name: string; docstatus: number }>('Purchase Receipt', {
+        fields: ['name', 'docstatus'],
+        filters: [
+          ['remarks', 'like', `%${reference}%`],
+          ['docstatus', '!=', 2],
+        ],
+        orderBy: 'docstatus desc',
+        limit: 1,
+      }),
+    );
+    if (!receipt) {
+      return 'not-found';
+    }
+    return receipt.docstatus === 0 ? { draft: receipt.name } : { receipt: receipt.name };
+  }
+
+  /** Deletes a receipt draft a failed confirmation left behind. */
+  async discardReceipt(draft: string): Promise<void> {
+    await firstValueFrom(
+      this.erpnext.post('frappe.client.delete', { doctype: 'Purchase Receipt', name: draft }),
+    );
+  }
+
   private orderDoc(request: OrderRequest): Record<string, unknown> {
     return {
       doctype: 'Purchase Order',
@@ -379,6 +472,20 @@ function summary(
     orderedQty: quantities?.ordered ?? 0,
     receivedQty: quantities?.received ?? 0,
   };
+}
+
+function sameReceipt(doc: ReceiptDoc, request: ReceiptRequest): boolean {
+  return (
+    doc.items.length === request.lines.length &&
+    request.lines.every((l) =>
+      doc.items.some(
+        (i) =>
+          i.purchase_order_item === l.row &&
+          i.warehouse === request.warehouse &&
+          nearlyEqual(Number(i.qty), l.qty),
+      ),
+    )
+  );
 }
 
 function sameOrder(doc: OrderDoc, request: OrderRequest): boolean {

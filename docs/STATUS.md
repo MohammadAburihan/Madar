@@ -13,21 +13,18 @@ _Last updated: 14 Oct 2026_
 | #5 | **Quick sale** (customer or walk-in, items, basket, price/discount, stock check, payment, receipt) and the **Store associate** role |
 | #6 | **Receive payment** (customer collections), the **Money** page (payment history) and the **sales invoice** page |
 | #7 | **Move stock** between warehouses and the **Inventory** page (balances, low/out of stock, movement history) |
+| #12 | **Purchase orders** (step 3a): the Purchasing officer role, the Purchasing workspace, creating and confirming an order, the order page |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
 ## In progress — step 3 of 6: Purchase
 
 Split into three PRs, each through the delivery loop:
-- **3a — Purchase orders** (this PR): the Purchasing officer role (Purchase User, Stock User, Accounts User), the
-  Purchasing workspace, creating and confirming a purchase order, and the order page.
-  Review pass 1 (2 medium, 5 low) fixed: stale typed price after re-adding a line, explicit company currency on
-  orders, supplier balance converted per currency, late draft saves and leftover drafts, every supplier listed,
-  rounding-tolerant check of an earlier confirmed order.
-  Review pass 2 (3 low) fixed: open and awaiting-receipt counts cover every order, not the latest 50; Purchases
-  hidden from sales-only roles. Deferred (low): saving a draft for the first time isn't looked up by reference
-  after a dropped connection, so tapping Save draft again can leave a second unsubmitted draft.
-- **3b — Receive goods**, partly or in full.
+- **3a — Purchase orders**: merged (#12). Deferred (low): the first "Save draft" isn't looked up by its reference
+  after a dropped connection, so tapping it again can leave a second unsubmitted draft.
+- **3b — Receive goods** (this PR): receive part or all of an order into a warehouse from the order page, receive the
+  remainder later, and see whether the order is partly or fully received. Owner, store associate, warehouse worker
+  and purchasing officer, as their ERPNext roles allow (Stock User can read orders and post receipts in v16).
 - **3c — Supplier invoice and paying the supplier.**
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry

@@ -42,6 +42,8 @@ export interface OrderSummary {
 }
 
 export interface OrderLineDetail {
+  /** The order row's name, which a receipt line points back to. */
+  row: string;
   code: string;
   name: string;
   uom: string;
@@ -49,10 +51,20 @@ export interface OrderLineDetail {
   receivedQty: number;
   rate: number;
   amount: number;
+  /** Where the order expects the goods. */
+  warehouse: string | null;
 }
 
 export interface OrderDetail extends OrderSummary {
   lines: OrderLineDetail[];
+}
+
+export interface ReceiptRequest {
+  reference: string;
+  order: string;
+  warehouse: string;
+  /** Only rows receiving something; qty is in the row's unit. */
+  lines: { row: string; qty: number }[];
 }
 
 export interface PurchasingOverview {

@@ -33,6 +33,29 @@ export const purchaseRoutes: Route[] = [
     ],
   },
   {
+    path: 'purchases/order/:name/receive',
+    loadComponent: () =>
+      import('./containers/receipt-flow.container').then((m) => m.ReceiptFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/receipt-form.container').then((m) => m.ReceiptFormContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/receipt-checking.container').then((m) => m.ReceiptCheckingContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/receipt-done.container').then((m) => m.ReceiptDoneContainer),
+      },
+    ],
+  },
+  {
     path: 'purchases/order/:name',
     loadComponent: () =>
       import('./containers/purchase-order.container').then((m) => m.PurchaseOrderContainer),

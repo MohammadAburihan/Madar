@@ -120,6 +120,7 @@ describe('purchase view', () => {
       receivedQty: 0,
       lines: [
         {
+          row: 'row-1',
           code: 'POT-30',
           name: 'Ceramic planter',
           uom: 'Unit',
@@ -127,6 +128,7 @@ describe('purchase view', () => {
           receivedQty: 0,
           rate: 45,
           amount: 450,
+          warehouse: 'Stores - RN',
         },
       ],
     };

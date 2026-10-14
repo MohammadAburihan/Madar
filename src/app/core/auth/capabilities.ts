@@ -17,6 +17,8 @@ export interface Capabilities {
   transferStock: boolean;
   /** Create and confirm purchase orders. */
   orderPurchases: boolean;
+  /** Record goods arriving against a purchase order. */
+  receiveGoods: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -29,6 +31,7 @@ const SALES_ROLE: Capabilities = {
   money: 'own',
   transferStock: false,
   orderPurchases: false,
+  receiveGoods: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -42,9 +45,10 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     money: 'all',
     transferStock: true,
     orderPurchases: true,
+    receiveGoods: true,
   },
   salesperson: SALES_ROLE,
-  storeAssociate: { ...SALES_ROLE, transferStock: true },
+  storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
   warehouse: {
     sell: false,
     sellToWalkIn: false,
@@ -55,6 +59,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     money: 'none',
     transferStock: true,
     orderPurchases: false,
+    receiveGoods: true,
   },
   purchasing: {
     sell: false,
@@ -66,12 +71,19 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     money: 'none',
     transferStock: false,
     orderPurchases: true,
+    receiveGoods: true,
   },
 };
 
 // Moving stock needs three ERPNext v16 permissions; a role list for each (from the doctypes' permissions).
 // Purchase Order create and submit in v16.
 const ORDER_PURCHASES_ROLES = ['Purchase User', 'Purchase Manager'];
+
+// Receiving reads the Purchase Order and creates and submits a Purchase Receipt (v16 permissions).
+const RECEIVE_GOODS_NEEDS = [
+  ['Purchase User', 'Purchase Manager', 'Stock User'], // read Purchase Order
+  ['Purchase User', 'Stock User', 'Stock Manager'], // create and submit Purchase Receipt
+];
 
 const MOVE_STOCK_NEEDS = [
   ['Stock User', 'Stock Manager', 'Manufacturing User', 'Manufacturing Manager'], // create Stock Entry
@@ -109,5 +121,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
       MOVE_STOCK_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
     orderPurchases:
       caps.orderPurchases && ORDER_PURCHASES_ROLES.some((role) => roles.includes(role)),
+    receiveGoods:
+      caps.receiveGoods &&
+      RECEIVE_GOODS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

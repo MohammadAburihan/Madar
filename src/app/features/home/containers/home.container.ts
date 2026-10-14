@@ -122,6 +122,8 @@ export class HomeContainer {
     const routes: Record<string, string[]> = {
       sell: ['/sales/new'],
       buy: ['/purchases/new'],
+      // Goods arrive against an order, so receiving starts from the list of orders.
+      receiveGoods: ['/purchases'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
     };
