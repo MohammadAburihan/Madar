@@ -97,6 +97,19 @@ describe('inventory view', () => {
       });
     });
 
+    it('adds up a move made with one row per batch', () => {
+      const moved = movement('Stock Entry', [
+        { warehouse: MAIN.id, qty: -3 },
+        { warehouse: MAIN.id, qty: -2 },
+        { warehouse: SHOP.id, qty: 3 },
+        { warehouse: SHOP.id, qty: 2 },
+      ]);
+      expect(entry(moved).title).toBe('Moved 5 Unit Olive tree');
+      expect(visible(view.movementRow(moved, OLIVE, WAREHOUSES, en)).cells[1]).toBe(
+        '5 Unit Main warehouse → Garden shop',
+      );
+    });
+
     it('names receipts, sales, returns and stock entries in and out', () => {
       const title = (type: string, qty: number) =>
         entry(movement(type, [{ warehouse: MAIN.id, qty }])).title;

@@ -115,8 +115,10 @@ function warehouseName(id: string, warehouses: readonly WarehouseInfo[]): string
 function moveSides(movement: Movement, warehouses: readonly WarehouseInfo[]) {
   const out = movement.lines.find((l) => l.qty < 0);
   const into = movement.lines.find((l) => l.qty > 0);
+  // A move made in Desk with one row per batch has several ledger lines per side.
+  const moved = movement.lines.reduce((sum, l) => sum + Math.max(l.qty, 0), 0);
   return {
-    qty: Math.abs(into?.qty ?? out?.qty ?? 0),
+    qty: moved,
     from: warehouseName(out?.warehouse ?? '', warehouses),
     to: warehouseName(into?.warehouse ?? '', warehouses),
   };

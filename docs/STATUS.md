@@ -24,14 +24,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   - The Inventory page: balances per item and warehouse, low and out of stock, movement history.
   - Both on mobile and desktop, in English and Arabic.
   - The "Checking your transfer" screen after a timeout.
-- **Reviews:** 9 passes. Every finding through pass 8 is fixed and pushed.
-- **Pass 9 fixes (made and tested, not yet committed):**
-  - Stock counts in the movement history showed a change of 0. They now show the counted balance, e.g. "Stock count: 20 Unit".
-  - The browser Back button from Review reset an item the user had changed.
-- **Left for step 2:**
-  1. Commit and push the pass 9 fixes.
-  2. Run another review pass; fix anything it finds.
-  3. Merge PR #7 once a review comes back clean and CI is green.
+- **Reviews:** 10 passes. Every finding through pass 10 is fixed and pushed.
+  - Pass 10: a move made in Desk with one row per batch now shows its full quantity, and history no longer
+    shows the previous item's movements while the newly selected item's history loads.
+- **Left for step 2:** merge PR #7 once a review comes back clean and CI is green.
 
 ## Not started yet
 

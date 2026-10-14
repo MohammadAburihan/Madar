@@ -392,8 +392,8 @@ export class InventoryContainer implements OnInit {
 
   private async loadHistory(item: StockItem | null): Promise<void> {
     const run = ++this.historyRun;
+    this.history.set(null);
     if (!item) {
-      this.history.set(null);
       return;
     }
     try {
