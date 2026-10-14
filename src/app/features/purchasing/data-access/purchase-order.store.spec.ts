@@ -145,6 +145,38 @@ describe('PurchaseOrderStore', () => {
     expect(api.discard).toHaveBeenCalledWith('PO-2049');
   });
 
+  it('still deletes a leftover draft when an edit cleared the failure before starting over', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementation(async (_req, _draft, onInserted) => {
+      onInserted('PO-2049');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+    store.setQty(0, 11);
+    expect(store.state()).toBe('idle');
+    store.start();
+    expect(api.discard).toHaveBeenCalledWith('PO-2049');
+  });
+
+  it('sends the company currency with the order', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockResolvedValue('PO-2048');
+    await store.confirm();
+    expect(api.confirm.mock.calls[0][0].currency).toBe('ILS');
+  });
+
+  it("doesn't attach a draft saved late to the order started since", async () => {
+    const { store, api } = await ready();
+    let finish!: (name: string) => void;
+    api.saveDraft.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    const saving = store.saveDraft();
+    await new Promise((resolve) => setTimeout(resolve));
+    store.start();
+    finish('PO-2048');
+    expect(await saving).toBeNull();
+    expect(store.draft()).toBeNull();
+  });
+
   it('names a permission failure', async () => {
     const { store, api } = await ready();
     api.confirm.mockRejectedValue(new HttpErrorResponse({ status: 403 }));

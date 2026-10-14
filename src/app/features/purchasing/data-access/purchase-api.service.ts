@@ -69,7 +69,7 @@ export class PurchaseApiService {
     return settings?.buying_price_list ?? null;
   });
 
-  async overview(company: string): Promise<PurchasingOverview> {
+  async overview(company: string, companyCurrency: string): Promise<PurchasingOverview> {
     const [rows, supplierBalance] = await Promise.all([
       firstValueFrom(
         this.erpnext.list<OrderDoc>('Purchase Order', {
@@ -82,7 +82,7 @@ export class PurchaseApiService {
           limit: ORDER_LIMIT,
         }),
       ),
-      this.supplierBalance(company).catch(() => null),
+      this.supplierBalance(company, companyCurrency).catch(() => null),
     ]);
     const quantities = await this.quantities(rows.map((r) => r.name));
     return {
@@ -246,6 +246,9 @@ export class PurchaseApiService {
       doctype: 'Purchase Order',
       company: request.company,
       supplier: request.supplier,
+      // Explicit, or ERPNext takes the supplier's party account currency while prices are in company currency.
+      currency: request.currency,
+      conversion_rate: 1,
       // No transaction_date: ERPNext uses the site's own "today", not the device's.
       schedule_date: request.scheduleDate,
       // Purchase Order has no remarks; this field is otherwise unused (decided 14 Oct 2026).
@@ -320,18 +323,28 @@ export class PurchaseApiService {
     return totals;
   }
 
-  private async supplierBalance(company: string): Promise<number> {
-    const [row] = await firstValueFrom(
-      this.erpnext.list<Record<string, number>>('Purchase Invoice', {
-        fields: [{ SUM: 'outstanding_amount' }],
+  /** Outstanding amounts are in each party's account currency, so they're converted per currency and rate. */
+  private async supplierBalance(company: string, companyCurrency: string): Promise<number> {
+    const groups = await firstValueFrom(
+      this.erpnext.list<Record<string, number | string>>('Purchase Invoice', {
+        fields: ['party_account_currency', 'conversion_rate', { SUM: 'outstanding_amount' }],
         filters: [
           ['company', '=', company],
           ['docstatus', '=', 1],
+          ['outstanding_amount', '!=', 0],
         ],
-        limit: 1,
+        groupBy: 'party_account_currency, conversion_rate',
+        limit: 0,
       }),
     );
-    return Number(row?.['SUM(`outstanding_amount`)'] ?? 0);
+    return groups.reduce((total, group) => {
+      const outstanding = Number(group['SUM(`outstanding_amount`)'] ?? 0);
+      const rate =
+        group['party_account_currency'] === companyCurrency
+          ? 1
+          : Number(group['conversion_rate']) || 1;
+      return total + outstanding * rate;
+    }, 0);
   }
 }
 
@@ -359,8 +372,13 @@ function sameOrder(doc: OrderDoc, request: OrderRequest): boolean {
     request.lines.every(
       (l, i) =>
         rows[i].item_code === l.item &&
-        Number(rows[i].qty) === l.qty &&
-        Number(rows[i].rate) === l.rate,
+        nearlyEqual(Number(rows[i].qty), l.qty) &&
+        nearlyEqual(Number(rows[i].rate), l.rate),
     )
   );
+}
+
+/** ERPNext rounds quantities and prices to their precision, so 4.555 comes back as 4.56. */
+function nearlyEqual(stored: number, sent: number): boolean {
+  return Math.abs(stored - sent) <= 0.005 + 1e-9;
 }

@@ -233,7 +233,7 @@ export class PurchasingContainer implements OnInit {
         this.state.set('error');
         return;
       }
-      this.overview.set(await this.api.overview(business.name));
+      this.overview.set(await this.api.overview(business.name, business.currency));
       this.state.set('ready');
     } catch {
       this.state.set('error');

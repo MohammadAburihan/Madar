@@ -57,8 +57,8 @@ export class PurchaseOrderStore {
 
   start(): void {
     const draft = this.draft();
-    // A saved draft is the user's; only a draft a failed confirmation left behind is cleaned up.
-    if (draft && this.state() === 'failed' && !this.draftSaved()) {
+    // A saved draft is the user's; only a draft a failed or unresolved confirmation left behind is cleaned up.
+    if (draft && this.state() !== 'confirmed' && !this.draftSaved()) {
       void this.api.discard(draft).catch(() => undefined);
     }
     this.reference.set(newReference('PUR'));
@@ -165,12 +165,17 @@ export class PurchaseOrderStore {
     }
     this.savingDraft.set(true);
     this.failure.set(null);
+    const reference = this.reference();
+    const current = () => this.reference() === reference;
     try {
       const request = await this.request();
       if (!request) {
         return null;
       }
       const name = await this.api.saveDraft(request, this.draft());
+      if (!current()) {
+        return null;
+      }
       this.draft.set(name);
       this.draftSaved.set(true);
       if (this.state() === 'failed') {
@@ -178,10 +183,14 @@ export class PurchaseOrderStore {
       }
       return name;
     } catch (error) {
-      this.fail(error);
+      if (current()) {
+        this.fail(error);
+      }
       return null;
     } finally {
-      this.savingDraft.set(false);
+      if (current()) {
+        this.savingDraft.set(false);
+      }
     }
   }
 
@@ -250,6 +259,7 @@ export class PurchaseOrderStore {
     return {
       reference: this.reference(),
       company: business.name,
+      currency: business.currency,
       supplier,
       scheduleDate: toIsoDate(this.clock.now()),
       lines: this.lines().map((l) => ({

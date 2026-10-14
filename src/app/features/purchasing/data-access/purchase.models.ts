@@ -18,6 +18,8 @@ export interface OrderLine {
 export interface OrderRequest {
   reference: string;
   company: string;
+  /** The company currency, which Madar's buying prices are in. */
+  currency: string;
   supplier: string;
   /** "Required By" on every line; ERPNext rejects an order without it. */
   scheduleDate: string;

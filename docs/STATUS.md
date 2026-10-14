@@ -21,6 +21,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 Split into three PRs, each through the delivery loop:
 - **3a — Purchase orders** (this PR): the Purchasing officer role (Purchase User, Stock User, Accounts User), the
   Purchasing workspace, creating and confirming a purchase order, and the order page.
+  Review pass 1 (2 medium, 5 low) fixed: stale typed price after re-adding a line, explicit company currency on
+  orders, supplier balance converted per currency, late draft saves and leftover drafts, every supplier listed,
+  rounding-tolerant check of an earlier confirmed order.
 - **3b — Receive goods**, partly or in full.
 - **3c — Supplier invoice and paying the supplier.**
 

@@ -9,6 +9,7 @@ import { OrderRequest, orderProgress } from './purchase.models';
 const request = (overrides: Partial<OrderRequest> = {}): OrderRequest => ({
   reference: 'PUR-ABC1234',
   company: 'Rehan Nursery',
+  currency: 'ILS',
   supplier: 'Green Clay',
   scheduleDate: '2026-10-14',
   lines: [{ item: 'POT-30', uom: 'Unit', qty: 10, rate: 45 }],
@@ -66,9 +67,12 @@ describe('PurchaseApiService', () => {
         { parent: 'PO-2048', qty: 6, received_qty: 6 },
         { parent: 'PO-2048', qty: 4, received_qty: 0 },
       ],
-      'Purchase Invoice': () => [{ 'SUM(`outstanding_amount`)': 170 }],
+      'Purchase Invoice': () => [
+        { party_account_currency: 'ILS', conversion_rate: 1, 'SUM(`outstanding_amount`)': 100 },
+        { party_account_currency: 'USD', conversion_rate: 3.5, 'SUM(`outstanding_amount`)': 20 },
+      ],
     });
-    const overview = await api().overview('Rehan Nursery');
+    const overview = await api().overview('Rehan Nursery', 'ILS');
     expect(overview.supplierBalance).toBe(170);
     expect(overview.orders).toEqual([
       {
@@ -93,7 +97,7 @@ describe('PurchaseApiService', () => {
     fakeErpnext({
       'Purchase Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
     });
-    expect((await api().overview('Rehan Nursery')).supplierBalance).toBeNull();
+    expect((await api().overview('Rehan Nursery', 'ILS')).supplierBalance).toBeNull();
   });
 
   it('prices items from the buying price list, else the last purchase rate', async () => {
@@ -141,6 +145,8 @@ describe('PurchaseApiService', () => {
     expect(doc).toMatchObject({
       doctype: 'Purchase Order',
       supplier: 'Green Clay',
+      currency: 'ILS',
+      conversion_rate: 1,
       schedule_date: '2026-10-14',
       order_confirmation_no: 'PUR-ABC1234',
       items: [{ item_code: 'POT-30', qty: 10, rate: 45, uom: 'Unit', schedule_date: '2026-10-14' }],
@@ -163,6 +169,20 @@ describe('PurchaseApiService', () => {
     const { postCalls } = fakeErpnext({}, {}, { 'Purchase Order/PO-2048': ORDER });
     expect(await api().confirm(request(), 'PO-2048')).toBe('PO-2048');
     expect(postCalls).toEqual([]);
+  });
+
+  it('reports an earlier order as the result when ERPNext only rounded its price', async () => {
+    fakeErpnext(
+      {},
+      {},
+      { 'Purchase Order/PO-2048': { ...ORDER, items: [{ ...ORDER.items[0], rate: 4.56 }] } },
+    );
+    expect(
+      await api().confirm(
+        request({ lines: [{ item: 'POT-30', uom: 'Unit', qty: 10, rate: 4.555 }] }),
+        'PO-2048',
+      ),
+    ).toBe('PO-2048');
   });
 
   it("won't report an earlier, different order as this one's result", async () => {

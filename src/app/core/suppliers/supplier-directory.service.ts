@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
 
 export interface SupplierOption {
@@ -13,18 +12,17 @@ export interface SupplierOption {
 export class SupplierDirectoryService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async list(limit = 100): Promise<SupplierOption[]> {
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ name: string; supplier_name: string; primary_address: string | null }>(
-        'Supplier',
-        {
-          fields: ['name', 'supplier_name', 'primary_address'],
-          filters: [['disabled', '=', 0]],
-          orderBy: 'supplier_name asc',
-          limit,
-        },
-      ),
-    );
+  /** Every enabled supplier: the picker has no search, so a cut-off list would hide suppliers. */
+  async list(): Promise<SupplierOption[]> {
+    const rows = await this.erpnext.listAll<{
+      name: string;
+      supplier_name: string;
+      primary_address: string | null;
+    }>('Supplier', {
+      fields: ['name', 'supplier_name', 'primary_address'],
+      filters: [['disabled', '=', 0]],
+      orderBy: 'supplier_name asc, name asc',
+    });
     return rows.map((r) => ({
       id: r.name,
       name: r.supplier_name,

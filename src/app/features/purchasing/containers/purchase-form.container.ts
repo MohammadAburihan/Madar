@@ -21,7 +21,7 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { PurchaseItem } from '../data-access/purchase.models';
 import { injectPurchaseContext } from './purchase-context';
-import { itemResult, lineRows } from './purchase-view';
+import { itemResult, keptRateInputs, lineRows } from './purchase-view';
 
 const SEARCH_DELAY_MS = 250;
 
@@ -206,6 +206,11 @@ export class PurchaseFormContainer implements OnInit {
   protected readonly lines = computed(() => lineRows(this.ctx.store.lines(), this.ctx.currency()));
 
   constructor() {
+    // A line removed and added again gets its suggested price, so the field must not keep the old text.
+    effect(() => {
+      const lines = this.ctx.store.lines();
+      untracked(() => this.rateInputs.update((inputs) => keptRateInputs(inputs, lines)));
+    });
     effect((onCleanup) => {
       const term = this.term();
       const kind = this.kind() as 'product' | 'service';

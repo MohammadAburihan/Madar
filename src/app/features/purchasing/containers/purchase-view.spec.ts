@@ -27,6 +27,12 @@ const PLANTER = {
 const LINE: OrderLine = { item: PLANTER, qty: 10, rate: 45 };
 
 describe('purchase view', () => {
+  it('forgets what was typed for a price once its line is off the order', () => {
+    expect(view.keptRateInputs({ 'POT-30': '50', SOIL: '12.' }, [LINE])).toEqual({
+      'POT-30': '50',
+    });
+  });
+
   it('describes where an order stands, as in the workspace mock', () => {
     expect(visible(view.progressText(ORDER, en))).toBe('6 received · 4 open');
     expect(visible(view.progressText({ ...ORDER, progress: 'awaitingReceipt' }, en))).toBe(

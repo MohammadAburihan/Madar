@@ -132,6 +132,16 @@ export function itemResult(item: PurchaseItem, currency: string, tr: Translator)
   };
 }
 
+/** What was typed in the price fields, for the lines still on the order. */
+export function keptRateInputs(
+  inputs: Record<string, string>,
+  lines: readonly OrderLine[],
+): Record<string, string> {
+  return Object.fromEntries(
+    lines.filter((l) => l.item.code in inputs).map((l) => [l.item.code, inputs[l.item.code]]),
+  );
+}
+
 /** "10 × ILS 45.00 … ILS 450.00" for each line on the order form. */
 export function lineRows(lines: readonly OrderLine[], currency: string): TotalRow[] {
   return lines.map((l) => ({
