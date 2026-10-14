@@ -25,6 +25,9 @@ Split into three PRs, each through the delivery loop:
 - **3b — Receive goods** (this PR): receive part or all of an order into a warehouse from the order page, receive the
   remainder later, and see whether the order is partly or fully received. Owner, store associate, warehouse worker
   and purchasing officer, as their ERPNext roles allow (Stock User can read orders and post receipts in v16).
+  Review pass 1 (1 high, 1 medium, 2 low) fixed. The high one: "Check result" could run while a slow confirmation
+  was still going and invite a second post; it is now guarded in every task flow (sale, collection, transfer, purchase
+  order, receipt).
 - **3c — Supplier invoice and paying the supplier.**
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
