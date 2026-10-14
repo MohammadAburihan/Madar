@@ -181,11 +181,7 @@ export class SalesApiService {
       if (!sameSale(current, sale)) {
         throw new PostedEarlierError(current.name);
       }
-      // find() records the payment only if it's missing.
-      const found = await this.find(sale);
-      if (found !== 'not-found' && !('draft' in found)) {
-        return found;
-      }
+      return this.postedResult(sale, current);
     }
     let invoice: InvoiceDoc;
     try {
@@ -227,6 +223,11 @@ export class SalesApiService {
     if (invoice.docstatus === 0) {
       return { draft: invoice.name };
     }
+    return this.postedResult(sale, invoice);
+  }
+
+  /** The result for this sale's posted invoice, recording the payment only if it's missing. */
+  private async postedResult(sale: SaleRequest, invoice: InvoiceDoc): Promise<SaleResult> {
     const [payment] = await firstValueFrom(
       this.erpnext.list<{ name: string; paid_amount: number }>('Payment Entry', {
         fields: ['name', 'paid_amount'],

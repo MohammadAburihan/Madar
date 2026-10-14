@@ -24,9 +24,11 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   - The Inventory page: balances per item and warehouse, low and out of stock, movement history.
   - Both on mobile and desktop, in English and Arabic.
   - The "Checking your transfer" screen after a timeout.
-- **Reviews:** 10 passes. Every finding through pass 10 is fixed and pushed.
+- **Reviews:** 11 passes. Every finding through pass 11 is fixed and pushed.
   - Pass 10: a move made in Desk with one row per batch now shows its full quantity, and history no longer
     shows the previous item's movements while the newly selected item's history loads.
+  - Pass 11: a sale already posted by a slow earlier attempt is never resubmitted, even if its remarks were
+    edited since.
 - **Left for step 2:** merge PR #7 once a review comes back clean and CI is green.
 
 ## Not started yet

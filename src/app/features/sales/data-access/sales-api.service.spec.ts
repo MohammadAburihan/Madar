@@ -275,6 +275,17 @@ describe('SalesApiService', () => {
     expect(result).toMatchObject({ invoice: 'SI-1', payment: null });
   });
 
+  it("doesn't resubmit a confirmed draft whose remarks no longer carry the reference", async () => {
+    const { api, postCalls } = setup(
+      { 'Sales Invoice': () => [], 'Payment Entry': () => [] },
+      {},
+      { 'Sales Invoice/SI-1': POSTED },
+    );
+    const result = await api.confirm(sale(), 'SI-1');
+    expect(postCalls).toEqual([]);
+    expect(result).toMatchObject({ invoice: 'SI-1', total: 303, payment: null });
+  });
+
   it("won't report an earlier, different sale as this one's result", async () => {
     const { api } = setup(
       {},
