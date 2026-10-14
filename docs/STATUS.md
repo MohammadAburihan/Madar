@@ -30,6 +30,8 @@ Split into three PRs, each through the delivery loop:
   order, receipt).
   Review pass 2 (1 medium, 1 low) fixed: buying prices, order values and the supplier balance are hidden from roles
   that don't see costs, and order amounts use the order's own currency.
+  Review pass 3 found only low items (fixed): the checking page's unit count is rounded, and On Hold orders no longer
+  count as open or awaiting receipt.
 - **3c — Supplier invoice and paying the supplier.**
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry

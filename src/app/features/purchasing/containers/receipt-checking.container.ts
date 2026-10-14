@@ -63,7 +63,7 @@ export class ReceiptCheckingContainer implements OnInit {
     const { t } = tr;
     const store = this.ctx.store;
     const sent = store.sent();
-    const units = sent?.lines.reduce((sum, l) => sum + l.qty, 0) ?? 0;
+    const units = Math.round((sent?.lines.reduce((sum, l) => sum + l.qty, 0) ?? 0) * 1e6) / 1e6;
     return {
       back: t('sale.back'),
       title: t('purchase.receive.checking.title'),

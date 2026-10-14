@@ -86,7 +86,8 @@ export class PurchaseApiService {
     const submitted: Filter[] = [
       ['company', '=', company],
       ['docstatus', '=', 1],
-      ['status', '!=', 'Closed'],
+      // On Hold orders can't be received or billed until reopened, so they aren't open work.
+      ['status', 'not in', ['Closed', 'On Hold']],
     ];
     const [rows, awaitingReceipt, awaitingInvoice, supplierBalance] = await Promise.all([
       firstValueFrom(

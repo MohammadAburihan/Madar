@@ -116,13 +116,13 @@ describe('PurchaseApiService', () => {
       [
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
-        ['status', '!=', 'Closed'],
+        ['status', 'not in', ['Closed', 'On Hold']],
         ['per_received', '<', 100],
       ],
       [
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
-        ['status', '!=', 'Closed'],
+        ['status', 'not in', ['Closed', 'On Hold']],
         ['per_received', '>=', 100],
         ['per_billed', '<', 100],
       ],
