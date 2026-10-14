@@ -121,6 +121,7 @@ export class HomeContainer {
   protected openAction(id: string): void {
     const routes: Record<string, string[]> = {
       sell: ['/sales/new'],
+      buy: ['/purchases/new'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
     };

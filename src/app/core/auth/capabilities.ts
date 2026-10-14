@@ -15,6 +15,8 @@ export interface Capabilities {
   money: 'all' | 'own' | 'none';
   /** Move stock between the business's warehouses. */
   transferStock: boolean;
+  /** Create and confirm purchase orders. */
+  orderPurchases: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -26,6 +28,7 @@ const SALES_ROLE: Capabilities = {
   collect: true,
   money: 'own',
   transferStock: false,
+  orderPurchases: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -38,6 +41,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     collect: true,
     money: 'all',
     transferStock: true,
+    orderPurchases: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true },
@@ -50,10 +54,25 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     collect: false,
     money: 'none',
     transferStock: true,
+    orderPurchases: false,
+  },
+  purchasing: {
+    sell: false,
+    sellToWalkIn: false,
+    editPrice: false,
+    maxDiscount: 0,
+    paymentModes: [],
+    collect: false,
+    money: 'none',
+    transferStock: false,
+    orderPurchases: true,
   },
 };
 
 // Moving stock needs three ERPNext v16 permissions; a role list for each (from the doctypes' permissions).
+// Purchase Order create and submit in v16.
+const ORDER_PURCHASES_ROLES = ['Purchase User', 'Purchase Manager'];
+
 const MOVE_STOCK_NEEDS = [
   ['Stock User', 'Stock Manager', 'Manufacturing User', 'Manufacturing Manager'], // create Stock Entry
   [
@@ -80,13 +99,15 @@ const MOVE_STOCK_NEEDS = [
  */
 export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Capabilities {
   const caps = CAPABILITIES[persona];
-  if (!roles || !caps.transferStock) {
+  if (!roles) {
     return caps;
   }
   return {
     ...caps,
-    transferStock: MOVE_STOCK_NEEDS.every((allowed) =>
-      allowed.some((role) => roles.includes(role)),
-    ),
+    transferStock:
+      caps.transferStock &&
+      MOVE_STOCK_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    orderPurchases:
+      caps.orderPurchases && ORDER_PURCHASES_ROLES.some((role) => roles.includes(role)),
   };
 }

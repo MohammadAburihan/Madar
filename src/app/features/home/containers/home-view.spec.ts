@@ -226,6 +226,32 @@ describe('buildHomeView', () => {
     expect(view.draftsLink).toBeNull();
   });
 
+  it('builds the purchasing officer home from deliveries and stock, without sales', () => {
+    const view = buildHomeView(
+      input({
+        persona: 'purchasing',
+        data: { lowStock: DATA.lowStock, supply: DATA.supply, deliveries: DATA.deliveries },
+      }),
+      realTranslator('en'),
+    );
+    expect(view.title).toBe('Today in purchasing');
+    expect(view.roleLabel).toBe('Purchasing officer');
+    expect(view.actions.map((a) => a.id)).toEqual(['buy', 'receiveGoods']);
+    expect(view.cards[0].title).toBe('Delivery arriving today');
+    expect(view.draftsLink).toBeNull();
+    expect(view.note).toBeNull();
+    const ar = buildHomeView(input({ persona: 'purchasing', data: {} }), realTranslator('ar'));
+    expect([ar.title, ar.roleLabel]).toEqual(['اليوم في المشتريات', 'مسؤول المشتريات']);
+  });
+
+  it("hides Buy from a user whose roles can't create purchase orders", () => {
+    const view = buildHomeView(
+      { ...input(), capabilities: { transferStock: true, orderPurchases: false } },
+      realTranslator('en'),
+    );
+    expect(view.actions.map((a) => a.id)).not.toContain('buy');
+  });
+
   it('marks overdue work and says when nothing needs attention', () => {
     const overdue = buildHomeView(
       input({ data: { invoicesDue: [{ ...DATA.invoicesDue![0], dueDate: '2026-10-01' }] } }),

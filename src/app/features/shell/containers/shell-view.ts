@@ -16,27 +16,33 @@ import { NavItem } from '../components/nav-item';
 
 type NavDefinition = Omit<NavItem, 'label'> & { hiddenFor?: Persona[] };
 
-// The warehouse mock drops Sales from the tab bar; money stays hidden from that role too.
+// The warehouse mock drops Sales from the tab bar; money stays hidden from that role too. Purchasing
+// officers neither sell nor see payments, and sales roles don't buy (docs/PERMISSIONS.md).
 const DESKTOP_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse'] },
-  { id: 'purchases', icon: LucideShoppingBag, route: '/purchases' },
+  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse', 'purchasing'] },
+  {
+    id: 'purchases',
+    icon: LucideShoppingBag,
+    route: '/purchases',
+    hiddenFor: ['salesperson', 'storeAssociate'],
+  },
   { id: 'inventory', icon: LucideBoxes, route: '/inventory' },
   { id: 'contacts', icon: LucideUsers, route: '/contacts' },
-  { id: 'money', icon: LucideWallet, route: '/money', hiddenFor: ['warehouse'] },
+  { id: 'money', icon: LucideWallet, route: '/money', hiddenFor: ['warehouse', 'purchasing'] },
   { id: 'projects', icon: LucideLayers, route: '/projects' },
   {
     id: 'reports',
     icon: LucideChartColumn,
     route: '/reports',
-    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse'],
+    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'],
   },
   { id: 'settings', icon: LucideSettings, route: '/settings' },
 ];
 
 const MOBILE_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse'] },
+  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse', 'purchasing'] },
   { id: 'stock', icon: LucideBoxes, route: '/inventory' },
   {
     id: 'more',

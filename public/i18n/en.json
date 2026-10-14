@@ -36,13 +36,15 @@
     "title": {
       "salesperson": "Ready for your next sale?",
       "warehouse": "Today in the warehouse",
-      "storeAssociate": "Today at the store"
+      "storeAssociate": "Today at the store",
+      "purchasing": "Today in purchasing"
     },
     "role": {
       "owner": "Owner",
       "salesperson": "Salesperson",
       "warehouse": "Warehouse worker",
-      "storeAssociate": "Store associate"
+      "storeAssociate": "Store associate",
+      "purchasing": "Purchasing officer"
     },
     "new": "+ New",
     "actionsHeading": "What needs doing?",
@@ -800,5 +802,162 @@
       "message": "Check the connection and try again."
     },
     "retry": "Try again"
+  },
+  "purchase": {
+    "workspaceTitle": "Purchasing workspace",
+    "workspaceSubtitle": "Purchase orders, receiving, invoices, and supplier balances",
+    "title": "Purchases",
+    "subtitle": "Orders from suppliers",
+    "newOrder": "New purchase order",
+    "stats": {
+      "open": "Open orders",
+      "awaitingReceipt": "Awaiting receipt",
+      "supplierBalance": "Supplier balance"
+    },
+    "ordersHeading": "Purchase orders",
+    "search": "Search",
+    "searchOrders": "Search order or supplier",
+    "headers": {
+      "order": "PO / Supplier",
+      "created": "Created",
+      "status": "Status",
+      "total": "Total"
+    },
+    "orderLabel": "{{order}} · {{supplier}}",
+    "orderDetail": "{{status}} · {{total}}",
+    "progress": {
+      "draft": "Draft",
+      "awaitingReceipt": "Awaiting receipt",
+      "partlyReceived": "{{received}} received · {{open}} open",
+      "awaitingInvoice": "Awaiting invoice",
+      "complete": "Fully received",
+      "closed": "Closed"
+    },
+    "chip": {
+      "draft": "Draft",
+      "awaitingReceipt": "Confirmed",
+      "partlyReceived": "Partially received",
+      "awaitingInvoice": "Fully received",
+      "complete": "Completed",
+      "closed": "Closed"
+    },
+    "panel": {
+      "total": "Purchase order total",
+      "received": "Received",
+      "receivedValue": "{{received}} of {{ordered}} units · {{open}} open",
+      "open": "Open purchase order",
+      "choose": "Choose an order to see its details."
+    },
+    "empty": "No purchase orders yet.",
+    "noResults": "No orders match.",
+    "loading": "Loading purchase orders…",
+    "error": {
+      "title": "Purchase orders couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "retry": "Try again",
+    "noAccess": {
+      "title": "You can't create purchase orders",
+      "message": "Your ERPNext role doesn't allow it. Ask the owner if you need to order from suppliers."
+    },
+    "form": {
+      "title": "New purchase order",
+      "step": "1 of 5 · Choose supplier and items",
+      "supplier": "Supplier *",
+      "chooseSupplier": "Choose supplier",
+      "kind": "Item type",
+      "search": "Search",
+      "placeholder": "Search name, code or barcode",
+      "supplierFirst": "Choose the supplier first.",
+      "noResults": "No purchasable items match.",
+      "noSuppliers": {
+        "title": "No suppliers yet",
+        "message": "Add the supplier in ERPNext first, then come back to order."
+      },
+      "qty": "Quantity of {{item}}",
+      "decrease": "One fewer {{item}}",
+      "increase": "One more {{item}}",
+      "rate": "Price each",
+      "review": "Review purchase order",
+      "loadFailed": {
+        "title": "Suppliers couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "products": "Products",
+      "services": "Services"
+    },
+    "kind": {
+      "product": "Product",
+      "service": "Service"
+    },
+    "itemMeta": "{{code}} · {{kind}} · {{uom}}",
+    "each": "{{amount}} each",
+    "review": {
+      "title": "Review purchase order",
+      "subtitle": "{{supplier}} · {{business}}",
+      "lineMeta": "{{code}} · {{qty}} × {{rate}}",
+      "lineValue": "Order value {{amount}}",
+      "beforeTitle": "Before you confirm",
+      "beforeMessage": "Creates a purchase order for {{what}}, worth {{total}}. No stock receipt, supplier invoice or payment is recorded.",
+      "oneItem": "{{qty}} × {{item}}",
+      "items": {
+        "one": "one item",
+        "other": "{{count}} items"
+      },
+      "confirm": "Confirm purchase order",
+      "confirming": "Confirming…",
+      "saveDraft": "Save draft",
+      "savingDraft": "Saving…",
+      "draftSaved": {
+        "title": "Draft saved",
+        "message": "{{order}} is saved in ERPNext as a draft. Confirm it here when you're ready."
+      },
+      "edit": "Edit order",
+      "reference": "Madar reference {{reference}}"
+    },
+    "notCreated": {
+      "title": "The order wasn't created",
+      "message": "ERPNext has no confirmed order for this request. Check the details and confirm again."
+    },
+    "failed": {
+      "permission": {
+        "title": "You can't confirm this order",
+        "message": "ERPNext didn't allow it for your role. Nothing was ordered."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "The order wasn't sent. Check the connection and confirm again."
+      },
+      "error": {
+        "title": "The order wasn't confirmed",
+        "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "changed": {
+        "title": "An earlier version was already confirmed",
+        "message": "The order was confirmed before your latest changes. Check the purchasing workspace before confirming again; confirming now creates a new order."
+      }
+    },
+    "checking": {
+      "title": "Checking your purchase order",
+      "cardTitle": "We didn't get a final answer",
+      "cardMessage": "The order may have been created. Check the result instead of confirming again, so it isn't created twice.",
+      "planned": "Planned order"
+    },
+    "detail": {
+      "title": "Purchase order",
+      "subtitle": "{{order}} · {{supplier}}",
+      "supplier": "Supplier",
+      "lineDetail": "Ordered {{qty}} · {{rate}} each",
+      "ordered": "Ordered",
+      "received": "Received",
+      "remaining": "Remaining",
+      "total": "Order total",
+      "note": "Stock changes only after a receipt is recorded.",
+      "workspace": "Open purchasing workspace",
+      "loadFailed": {
+        "title": "This order couldn't load",
+        "message": "Check the connection and try again."
+      }
+    }
   }
 }

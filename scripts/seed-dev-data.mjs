@@ -351,6 +351,13 @@ const users = [
     // Store associate: sells at the counter and handles stock (see docs/PERMISSIONS.md).
     roles: ['Sales User', 'Accounts User', 'Stock User'],
   },
+  {
+    email: 'nadia@rehan.example',
+    first_name: 'Nadia',
+    last_name: 'Barakat',
+    // Purchasing officer; Accounts User lets her record supplier invoices (see docs/PERMISSIONS.md).
+    roles: ['Purchase User', 'Stock User', 'Accounts User'],
+  },
 ];
 for (const u of users) {
   const [existing] = await list('User', { name: u.email });
