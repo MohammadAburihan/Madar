@@ -41,6 +41,7 @@ to the Owner.
 | Add customers | ✅ | ✅ | ✅ | — | — | ✅ |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |
+| Record supplier invoices | ✅ | — | — | — | ✅ | — |
 | Pay suppliers, record expenses | ✅ | — | — | — | — | — |
 | Transfer, count, or adjust stock | ✅ | — | ✅ | ✅ | — | — |
 | Supply a project | ✅ | — | ✅ | ✅ | — | ✅ |

@@ -37,6 +37,7 @@ const ORDER = {
       received_qty: 0,
       rate: 45,
       amount: 450,
+      billed_amt: 0,
       warehouse: 'Stores - RN',
     },
   ],
@@ -289,6 +290,7 @@ describe('PurchaseApiService', () => {
       receivedQty: 0,
       rate: 45,
       amount: 450,
+      billedAmount: 0,
       warehouse: 'Stores - RN',
     });
   });

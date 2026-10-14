@@ -3,8 +3,10 @@ import {
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
@@ -21,7 +23,9 @@ import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { PurchaseApiService } from '../data-access/purchase-api.service';
-import { PurchasingOverview } from '../data-access/purchase.models';
+import { OrderInvoice, PurchasingOverview } from '../data-access/purchase.models';
+import { SupplierInvoiceApiService } from '../data-access/supplier-invoice-api.service';
+import { panelInvoiceRows } from './invoice-view';
 import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from './purchase-view';
 
 /** Purchases: the orders with where each stands, the key figures, and a new order. */
@@ -110,9 +114,17 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
               @let chip = selectedChip()!;
               <app-status-chip [label]="chip.label" [tone]="chip.tone" />
               <app-totals-card density="compact" [rows]="panelRows()" />
+              @if (panelInvoices().length) {
+                <app-totals-card density="compact" [rows]="invoiceRows()" />
+              }
               <button type="button" class="md-btn md-btn--primary" (click)="open(order.name)">
                 {{ txt.openOrder }}
               </button>
+              @if (panelInvoices().length) {
+                <button type="button" class="md-btn" (click)="openInvoice(panelInvoices()[0].name)">
+                  {{ txt.openInvoice }}
+                </button>
+              }
             } @else {
               <p class="muted">{{ txt.choose }}</p>
             }
@@ -142,6 +154,7 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
 })
 export class PurchasingContainer implements OnInit {
   private readonly api = inject(PurchaseApiService);
+  private readonly invoiceApi = inject(SupplierInvoiceApiService);
   private readonly business = inject(BusinessService);
   private readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -172,6 +185,7 @@ export class PurchasingContainer implements OnInit {
         t(`purchase.headers.${k}`),
       ),
       openOrder: t('purchase.panel.open'),
+      openInvoice: t('purchase.panel.openInvoice'),
       choose: t('purchase.panel.choose'),
       loading: t('purchase.loading'),
       error: { title: t('purchase.error.title'), message: t('purchase.error.message') },
@@ -223,9 +237,42 @@ export class PurchasingContainer implements OnInit {
     return order ? orderPanel(order, this.caps().seeCosts, this.i18n.tr()) : [];
   });
 
+  /** The selected order's supplier invoices, loaded when it is selected (cost roles, desktop panel). */
+  protected readonly panelInvoices = signal<OrderInvoice[]>([]);
+  private invoiceRun = 0;
+
+  protected readonly invoiceRows = computed(() =>
+    panelInvoiceRows(this.panelInvoices(), this.i18n.tr()),
+  );
+
   protected readonly emptyText = computed(() =>
     this.i18n.tr().t(this.term().trim() ? 'purchase.noResults' : 'purchase.empty'),
   );
+
+  constructor() {
+    effect(() => {
+      const order = this.selectedOrder()?.name ?? null;
+      const load = this.desktop() && this.caps().seeCosts;
+      untracked(() => void this.loadInvoices(load ? order : null));
+    });
+  }
+
+  private async loadInvoices(order: string | null): Promise<void> {
+    const run = ++this.invoiceRun;
+    // Cleared first, so the previous order's invoice never shows under the newly selected one.
+    this.panelInvoices.set([]);
+    if (!order) {
+      return;
+    }
+    const invoices = await this.invoiceApi.forOrder(order).catch(() => []);
+    if (run === this.invoiceRun) {
+      this.panelInvoices.set(invoices);
+    }
+  }
+
+  protected openInvoice(invoice: string): void {
+    void this.router.navigate(['/purchases/invoice', invoice]);
+  }
 
   ngOnInit(): void {
     void this.load();

@@ -151,6 +151,7 @@ describe('purchase view', () => {
           receivedQty: 0,
           rate: 45,
           amount: 450,
+          billedAmount: 0,
           warehouse: 'Stores - RN',
         },
       ],

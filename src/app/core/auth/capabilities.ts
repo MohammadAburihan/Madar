@@ -21,6 +21,8 @@ export interface Capabilities {
   receiveGoods: boolean;
   /** See buying prices, order values and supplier balances. */
   seeCosts: boolean;
+  /** Record the supplier's invoice for goods received against an order. */
+  recordSupplierInvoices: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -35,6 +37,7 @@ const SALES_ROLE: Capabilities = {
   orderPurchases: false,
   receiveGoods: false,
   seeCosts: false,
+  recordSupplierInvoices: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -50,6 +53,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     orderPurchases: true,
     receiveGoods: true,
     seeCosts: true,
+    recordSupplierInvoices: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
@@ -65,6 +69,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     orderPurchases: false,
     receiveGoods: true,
     seeCosts: false,
+    recordSupplierInvoices: false,
   },
   purchasing: {
     sell: false,
@@ -78,6 +83,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     orderPurchases: true,
     receiveGoods: true,
     seeCosts: true,
+    recordSupplierInvoices: true,
   },
 };
 
@@ -119,6 +125,13 @@ const MOVE_STOCK_NEEDS = [
   ], // read Warehouse
 ];
 
+// Billing reads the order and its receipts and creates and submits a Purchase Invoice (v16 permissions).
+const RECORD_INVOICE_NEEDS = [
+  ['Purchase User', 'Purchase Manager', 'Stock User'], // read Purchase Order
+  ['Purchase User', 'Accounts User', 'Stock User', 'Stock Manager'], // read Purchase Receipt
+  ['Accounts User', 'Accounts Manager'], // create and submit Purchase Invoice
+];
+
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
  * do the task (an owner who is only an Accounts Manager can't move stock).
@@ -138,5 +151,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     receiveGoods:
       caps.receiveGoods &&
       RECEIVE_GOODS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    recordSupplierInvoices:
+      caps.recordSupplierInvoices &&
+      RECORD_INVOICE_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

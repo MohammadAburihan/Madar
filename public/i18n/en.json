@@ -850,7 +850,8 @@
       "received": "Received",
       "receivedValue": "{{received}} of {{ordered}} units · {{open}} open",
       "open": "Open purchase order",
-      "choose": "Choose an order to see its details."
+      "choose": "Choose an order to see its details.",
+      "openInvoice": "Open supplier invoice"
     },
     "empty": "No purchase orders yet.",
     "noResults": "No orders match.",
@@ -973,7 +974,14 @@
       "orderValue": "Order value",
       "receive": "Receive items",
       "receiveRemaining": "Receive remaining {{qty}}",
-      "lineDetailNoPrice": "Ordered {{qty}}"
+      "lineDetailNoPrice": "Ordered {{qty}}",
+      "billed": "Billed",
+      "invoicePaid": "Invoice paid",
+      "invoiceOutstanding": "Invoice outstanding",
+      "recordInvoice": "Record supplier invoice",
+      "viewInvoice": "View supplier invoice",
+      "billedQty": "{{qty}} billed",
+      "invoicesHeading": "Supplier invoices"
     },
     "receive": {
       "title": "Receive items",
@@ -1064,6 +1072,78 @@
       "fullMessage": "{{now}} received into {{warehouse}}. No invoice or payment created.",
       "openOrder": "Open purchase order",
       "backToPurchases": "Back to purchases"
+    },
+    "invoice": {
+      "title": "Supplier invoice",
+      "subtitle": "{{order}} · {{supplier}} · Record invoice",
+      "receivedChip": "{{units}} received",
+      "billNo": "Supplier invoice number *",
+      "lineDetail": "Received {{qty}} × {{rate}} each",
+      "total": "Invoice total",
+      "paid": "Amount paid",
+      "outstanding": "Outstanding",
+      "record": "Record supplier invoice",
+      "recording": "Recording…",
+      "recordedTitle": "Supplier invoice recorded",
+      "pageTitle": "Supplier invoice {{invoice}}",
+      "supplierRef": "Supplier ref {{ref}}",
+      "confirmed": "Invoice: Confirmed",
+      "cancelled": "Invoice: Cancelled",
+      "payment": {
+        "unpaid": "Payment: Unpaid",
+        "partlyPaid": "Payment: Partially paid",
+        "paid": "Payment: Paid"
+      },
+      "orderChip": "Order: {{received}} of {{ordered}} received",
+      "linkedPayment": "Linked payment {{payment}}",
+      "linkedPaymentMessage": "{{amount}} paid from {{account}}. This invoice is already recorded.",
+      "cardDetail": "{{total}} · {{outstanding}} outstanding",
+      "viewOrder": "View purchase order",
+      "nothingToBill": {
+        "title": "Nothing to invoice yet",
+        "message": "Every item received on this order is already invoiced. Receive goods first, then record the supplier's invoice."
+      },
+      "noAccess": {
+        "title": "You can't record supplier invoices",
+        "message": "Your ERPNext role doesn't allow it. Ask the owner if you need to record them."
+      },
+      "viewNoAccess": {
+        "title": "You can't view supplier invoices",
+        "message": "Your role doesn't include supplier invoices."
+      },
+      "loadFailed": {
+        "title": "This invoice couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't record this invoice",
+          "message": "ERPNext didn't allow it for your role. Nothing was recorded."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The invoice wasn't sent. Check the connection and try again."
+        },
+        "error": {
+          "title": "The invoice wasn't recorded",
+          "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "changed": {
+          "title": "These goods were already invoiced",
+          "message": "An earlier invoice went through before your latest changes. Reload the order to see what is still unbilled."
+        }
+      },
+      "reload": "Reload order",
+      "notCreated": {
+        "title": "The invoice wasn't recorded",
+        "message": "ERPNext has no invoice for this request. Check the details and confirm again."
+      },
+      "checking": {
+        "title": "Checking your supplier invoice",
+        "cardTitle": "We didn't get a final answer",
+        "cardMessage": "The invoice may have been recorded. Check the result instead of recording it again, so the goods aren't billed twice.",
+        "planned": "Planned invoice"
+      }
     }
   }
 }

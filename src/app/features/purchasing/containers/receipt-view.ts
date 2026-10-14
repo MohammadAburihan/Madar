@@ -210,9 +210,16 @@ export function receiveAction(order: OrderDetail, tr: Translator): string | null
   });
 }
 
-/** An order line once goods have arrived: "POT-30 · 10 ordered · 6 received", "4 remain to receive". */
+/** An order line once goods have arrived: "POT-30 · 10 ordered · 6 received", "6 billed · 4 remain to receive". */
 export function receivedLineCard(line: OrderLineDetail, tr: Translator): CardView {
   const left = remainingQty(line);
+  const billed = line.rate > 0 ? Math.round((line.billedAmount / line.rate) * 1e6) / 1e6 : 0;
+  const parts = [
+    ...(billed > 0 ? [tr.t('purchase.detail.billedQty', { qty: qty(billed) })] : []),
+    left > 0
+      ? tr.t('purchase.detail.remainToReceive', { qty: qty(left) })
+      : tr.t('purchase.detail.allReceived'),
+  ];
   return {
     title: line.name,
     meta: tr.t('purchase.detail.receivedMeta', {
@@ -220,10 +227,7 @@ export function receivedLineCard(line: OrderLineDetail, tr: Translator): CardVie
       ordered: qty(line.qty),
       received: qty(line.receivedQty),
     }),
-    detail:
-      left > 0
-        ? tr.t('purchase.detail.remainToReceive', { qty: qty(left) })
-        : tr.t('purchase.detail.allReceived'),
+    detail: parts.join(' · '),
     kind: 'product',
   };
 }
