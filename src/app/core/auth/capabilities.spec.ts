@@ -10,6 +10,7 @@ describe('capabilitiesFor', () => {
       paymentModes: 'all',
       collect: true,
       money: 'all',
+      transferStock: true,
     });
   });
 
@@ -23,8 +24,16 @@ describe('capabilitiesFor', () => {
         paymentModes: ['Cash', 'Credit Card'],
         collect: true,
         money: 'own',
+        transferStock: persona === 'storeAssociate',
       });
     }
+  });
+
+  it('lets the owner, store associate and warehouse worker move stock, not the salesperson', () => {
+    expect(capabilitiesFor('owner').transferStock).toBe(true);
+    expect(capabilitiesFor('storeAssociate').transferStock).toBe(true);
+    expect(capabilitiesFor('warehouse').transferStock).toBe(true);
+    expect(capabilitiesFor('salesperson').transferStock).toBe(false);
   });
 
   it("doesn't let warehouse workers sell", () => {

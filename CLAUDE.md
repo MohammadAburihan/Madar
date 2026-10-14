@@ -110,6 +110,10 @@ src/app/
 - Containers get language state and a translator from `injectI18n()` (`core/i18n/i18n.ts`); services that
   load something once share the in-flight call with `shareInFlight()` (`core/util/share-in-flight.ts`).
 - The shell keeps a single `<router-outlet>` for all layouts; switching layout must not recreate the page.
+- Multi-step tasks (Receive payment, Move stock) keep their state in a root store and are hosted by a parent
+  flow route component whose constructor calls `store.resume()`. It is created only when the task is entered
+  from elsewhere, so that is the "fresh visit": a half-done task starts over, while a running, unresolved, or
+  not-yet-shown confirmation is kept. Moving between steps, including the back button, keeps the work.
 - Containers turn data into display strings with a pure `*-view.ts` builder (see `home-view.ts`), so wording,
   plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
 

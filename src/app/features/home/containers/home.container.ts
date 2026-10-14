@@ -121,6 +121,7 @@ export class HomeContainer {
     const routes: Record<string, string[]> = {
       sell: ['/sales/new'],
       receivePayment: ['/money/receive'],
+      transferStock: ['/inventory/transfer'],
     };
     void this.router.navigate(routes[id] ?? ['/task', id]);
   }

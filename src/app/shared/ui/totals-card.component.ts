@@ -14,6 +14,9 @@ export interface TotalRow {
   host: { '[class.compact]': "density() === 'compact'" },
   template: `
     <dl>
+      @if (heading()) {
+        <dt class="heading">{{ heading() }}</dt>
+      }
       @for (row of rows(); track row.label) {
         <div class="row">
           <dt>{{ row.label }}</dt>
@@ -57,6 +60,11 @@ export interface TotalRow {
       color: var(--md-primary);
     }
 
+    .heading {
+      color: var(--md-ink);
+      font: 600 16px / var(--md-lh) var(--md-font);
+    }
+
     :host(.compact) dl {
       gap: 8px;
       padding: 14px;
@@ -74,4 +82,6 @@ export interface TotalRow {
 export class TotalsCardComponent {
   readonly rows = input.required<readonly TotalRow[]>();
   readonly density = input<'regular' | 'compact'>('regular');
+  /** Optional first line, e.g. "2 Unit · Main warehouse to Garden shop". */
+  readonly heading = input<string | null>(null);
 }

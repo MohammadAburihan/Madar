@@ -13,6 +13,8 @@ export interface Capabilities {
   collect: boolean;
   /** Payment history on the Money page: every payment, only the user's own, or none. */
   money: 'all' | 'own' | 'none';
+  /** Move stock between the business's warehouses. */
+  transferStock: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -23,6 +25,7 @@ const SALES_ROLE: Capabilities = {
   paymentModes: ['Cash', 'Credit Card'],
   collect: true,
   money: 'own',
+  transferStock: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -34,9 +37,10 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paymentModes: 'all',
     collect: true,
     money: 'all',
+    transferStock: true,
   },
   salesperson: SALES_ROLE,
-  storeAssociate: SALES_ROLE,
+  storeAssociate: { ...SALES_ROLE, transferStock: true },
   warehouse: {
     sell: false,
     sellToWalkIn: false,
@@ -45,6 +49,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paymentModes: [],
     collect: false,
     money: 'none',
+    transferStock: true,
   },
 };
 

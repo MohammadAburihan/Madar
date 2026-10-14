@@ -622,5 +622,164 @@
     "receivedBoth": "Both received in {{accounts}}.",
     "receivedAll": "All received in {{accounts}}.",
     "loading": "Loading invoice…"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": {
+      "one": "Balances · 1 location",
+      "other": "Balances · {{count}} locations"
+    },
+    "titleDesktop": "Stock & warehouses",
+    "subtitleDesktop": "{{business}} · All warehouses",
+    "current": "Current balances",
+    "locations": "Locations",
+    "movesToday": "Moves today",
+    "search": "Search",
+    "placeholder": "Search name, code or barcode",
+    "itemHeading": "{{item}} · {{code}}",
+    "warehouseDetail": "{{qty}} available · current stock",
+    "historyHeading": "Recent movement history",
+    "historyDesktop": "{{item}} · Movement history",
+    "qty": "{{qty}} {{uom}}",
+    "headers": {
+      "item": "Item",
+      "status": "Status",
+      "event": "Event",
+      "quantity": "Quantity",
+      "warehouse": "Warehouse"
+    },
+    "status": {
+      "available": "Available",
+      "low": "Low stock",
+      "out": "Out of stock"
+    },
+    "event": {
+      "received": "Received {{qty}} {{item}}",
+      "moved": "Moved {{qty}} {{item}}",
+      "sold": "Sold {{qty}} {{item}}",
+      "returned": "Returned {{qty}} {{item}}",
+      "adjusted": "Count adjustment {{qty}}",
+      "issued": "Issued {{qty}} {{item}}",
+      "added": "Added {{qty}} {{item}}",
+      "other": "{{type}} {{qty}}"
+    },
+    "eventShort": {
+      "received": "Received",
+      "moved": "Moved",
+      "sold": "Sold",
+      "returned": "Returned",
+      "adjusted": "Count adjustment",
+      "issued": "Issued",
+      "added": "Added",
+      "other": "{{type}}"
+    },
+    "movedQty": "{{qty}} {{from}} → {{to}}",
+    "signedQty": "{{qty}} {{direction}}",
+    "in": "in",
+    "out": "out",
+    "meta": "{{when}} · {{warehouse}} · {{voucher}}",
+    "metaMoved": "{{when}} · {{from}} to {{to}}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "actions": {
+      "move": "Move stock",
+      "transfer": "Transfer stock",
+      "count": "Count stock",
+      "damage": "Record damage or loss",
+      "supply": "Supply a project"
+    },
+    "empty": "No stock recorded yet.",
+    "noResults": "No items match.",
+    "noHistory": "No movements yet.",
+    "loading": "Loading stock…",
+    "error": {
+      "title": "Stock couldn't load",
+      "message": "Check the connection and try again."
+    }
+  },
+  "transfer": {
+    "title": "Move stock",
+    "subtitle": "Between your locations",
+    "ready": "Ready",
+    "search": "Item to move",
+    "placeholder": "Search name, code or barcode",
+    "noResults": "No stock items match.",
+    "itemDetail": "{{qty}} available · {{warehouse}}",
+    "change": "Change item",
+    "from": "From location",
+    "to": "To location",
+    "chooseLocation": "Choose a location",
+    "fromOption": "{{warehouse}} · {{qty}} available",
+    "toOption": "{{warehouse}} · {{qty}} on hand",
+    "qty": "Quantity to move",
+    "invalidQty": "Enter a whole number above zero.",
+    "tooMuch": "Only {{qty}} available in {{warehouse}}.",
+    "note": "This moves stock between locations. Company total stays {{qty}}.",
+    "reviewCard": {
+      "title": "Review both balances",
+      "message": "Next step shows source and destination balances before posting."
+    },
+    "review": "Review transfer",
+    "footnote": "No sale or expense is created by an internal transfer.",
+    "noAccess": {
+      "title": "You can't move stock",
+      "message": "Your role doesn't include stock transfers. Ask your business owner for access."
+    },
+    "oneWarehouse": {
+      "title": "Only one location",
+      "message": "Add a second warehouse in ERPNext to move stock between locations."
+    },
+    "reviewTitle": "Review transfer",
+    "readyToPost": "Ready to post",
+    "heading": "{{qty}} · {{from}} to {{to}}",
+    "companyTotal": "Company total",
+    "beforeAfter": "{{before}} → {{after}}",
+    "before": {
+      "title": "Before you confirm",
+      "message": "Confirm updates both locations and movement history now."
+    },
+    "confirm": "Confirm transfer",
+    "confirming": "Confirming…",
+    "edit": "Edit transfer",
+    "reference": "Reference {{reference}} · movement is traceable by item and location.",
+    "failed": {
+      "permission": {
+        "title": "You can't post this transfer",
+        "message": "ERPNext didn't allow it for your role. Nothing moved."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "The transfer wasn't sent. Check the connection and confirm again."
+      },
+      "stock": {
+        "title": "Not enough stock",
+        "message": "The source location no longer has that much. Check the quantity and try again."
+      },
+      "error": {
+        "title": "The transfer wasn't posted",
+        "message": "ERPNext rejected it. Check the details and try again."
+      }
+    },
+    "notCreated": {
+      "title": "The transfer wasn't posted",
+      "message": "Review it and confirm again."
+    },
+    "doneTitle": "Transfer complete",
+    "doneSubtitle": "Movement {{entry}}",
+    "confirmed": "Confirmed",
+    "moved": "{{qty}} {{item}} moved",
+    "movedMessage": "The move is complete. Both location balances updated.",
+    "fromRow": "From · {{warehouse}}",
+    "toRow": "To · {{warehouse}}",
+    "posted": "Posted",
+    "postedValue": "{{date}} · {{time}}",
+    "history": "View movement history",
+    "more": "Move more stock",
+    "checkingTitle": "Checking your transfer",
+    "checkingCard": {
+      "title": "Check before trying again",
+      "message": "Your request timed out. The move may already be posted. Do not post it again."
+    },
+    "plannedMove": "Planned move"
   }
 }
