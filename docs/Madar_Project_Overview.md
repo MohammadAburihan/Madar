@@ -184,7 +184,7 @@ Include:
 
 Figures come from ERPNext's own accounting (the general ledger and its standard reports such as Profit and Loss
 and Accounts Receivable/Payable), so Madar never calculates profit itself. Reports respect role permissions:
-for now they are for the Owner only (see `PERMISSIONS.md`); opening them to other roles is an open decision.
+they are for the Owner only (decided 14 Oct 2026; see `PERMISSIONS.md`).
 
 ## 5. Primary user workflows
 
@@ -343,7 +343,7 @@ Design inspection does not establish runtime accessibility. Completion of extern
 - Exact transaction mappings and backend customization needs.
 - Walk-in customer policy and warehouse defaults.
 - Priorities within the agreed eight-area release.
-- Reports: which roles besides the owner see which reports, and whether profit uses ERPNext's Profit and Loss as-is.
+- Reports: whether profit uses ERPNext's Profit and Loss as-is.
 
 Use this document as the product baseline. New modules or major actions should be treated as explicit scope changes.
 

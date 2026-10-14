@@ -36,4 +36,3 @@ when exactly 30 ledger rows come back, and the Inventory page ignores an `item` 
 - AWS server type and size, domain names, HTTPS, backups
 - Authentication and onboarding of businesses and users
 - VAT, invoice and numbering setup per business (Quick sale currently charges no VAT, as agreed)
-- Reports: which roles besides the owner see which reports (the permissions matrix gives them to the owner only for now)
