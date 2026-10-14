@@ -1,5 +1,6 @@
 import {
   LucideBoxes,
+  LucideChartColumn,
   LucideHouse,
   LucideLayers,
   LucideMenu,
@@ -24,6 +25,12 @@ const DESKTOP_NAV: NavDefinition[] = [
   { id: 'contacts', icon: LucideUsers, route: '/contacts' },
   { id: 'money', icon: LucideWallet, route: '/money', hiddenFor: ['warehouse'] },
   { id: 'projects', icon: LucideLayers, route: '/projects' },
+  {
+    id: 'reports',
+    icon: LucideChartColumn,
+    route: '/reports',
+    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse'],
+  },
   { id: 'settings', icon: LucideSettings, route: '/settings' },
 ];
 
@@ -35,7 +42,7 @@ const MOBILE_NAV: NavDefinition[] = [
     id: 'more',
     icon: LucideMenu,
     route: '/more',
-    also: ['/money', '/purchases', '/contacts', '/projects', '/settings'],
+    also: ['/money', '/purchases', '/contacts', '/projects', '/reports', '/settings'],
   },
 ];
 

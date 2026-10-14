@@ -38,6 +38,7 @@ export const routes: Routes = [
       placeholder('purchases', 'nav.purchases'),
       placeholder('contacts', 'nav.contacts'),
       placeholder('projects', 'nav.projects'),
+      placeholder('reports', 'nav.reports'),
       placeholder('settings', 'nav.settings'),
       placeholder('more', 'nav.more'),
       placeholder('new', 'nav.new'),
