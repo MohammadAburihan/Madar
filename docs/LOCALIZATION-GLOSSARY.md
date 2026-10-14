@@ -33,6 +33,12 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 | Required / optional | مطلوب / اختياري |
 | Back / cancel / keep editing | رجوع / إلغاء / متابعة التعديل |
 | Search / clear filters | بحث / مسح عوامل التصفية |
+| Reports | التقارير |
+| Profit / sales income / cost of goods sold / expenses | الربح / إيرادات المبيعات / تكلفة البضاعة المباعة / المصروفات |
+| Money in / money out / net for the period | الأموال الواردة / الأموال الصادرة / الصافي للفترة |
+| Customer statement / supplier statement | كشف حساب العميل / كشف حساب المورد |
+| Opening balance / invoiced / balance | الرصيد الافتتاحي / قيمة الفواتير / الرصيد |
+| Period: this month / last month / this year / custom | الفترة: هذا الشهر / الشهر الماضي / هذه السنة / مخصصة |
 
 ## Locale and direction
 
@@ -46,5 +52,5 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 
 ## Scope and parity
 
-All127 English screen frames have Arabic counterparts; see COMPLETION-MATRIX.md. The32 Arabic reusable component/state variants cover dialogs,selectors,notifications,empty/error/loading/permission/connection/unsaved/unresolved states. Eight pairs of shared form bodies support desktop task panels. Arabic functionality is specified to match English; native clickable flows remain blocked by Pencil's transition API limitation.
+All 132 English screen frames have Arabic counterparts; see COMPLETION-MATRIX.md. The32 Arabic reusable component/state variants cover dialogs,selectors,notifications,empty/error/loading/permission/connection/unsaved/unresolved states. Eight pairs of shared form bodies support desktop task panels. Arabic functionality is specified to match English; native clickable flows remain blocked by Pencil's transition API limitation.
 

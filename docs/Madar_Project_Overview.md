@@ -65,6 +65,7 @@ Target roles include owners/managers, sales staff, purchasing staff, warehouse s
 | Inventory & Warehouses | Track available stock and movements | Check, transfer, count, adjust, issue, and record losses |
 | Payments & Expenses | Track money received and paid | Collect, pay suppliers, allocate payments, record expenses, and attach receipts |
 | Basic Projects | Organize customer and internal work and costs | Create, budget, assign tasks, request/supply materials, record consumption, and track costs |
+| Reports | See how the business is doing over any period | Profit, money in and out, and customer statements by month or date range |
 
 ### 4.1 Items & Services
 
@@ -161,6 +162,30 @@ Include:
 
 Project-site stock remains available stock until consumed or otherwise issued. Task assignment is included; full HR, payroll, and detailed labor costing are deferred.
 
+### 4.8 Reports
+
+A **Reports** page with a small set of fixed reports, each filterable by period: this month, last month, this
+year, or a custom date range, with a month-by-month breakdown. The chosen period is kept across the Reports
+screens; month-by-month views cover the chosen period, and when it is a single month they also show the two
+months before it for comparison.
+
+| Report | Shows |
+|---|---|
+| Profit | Sales income, cost of goods sold, expenses, and the resulting profit for the period, plus a per-month breakdown |
+| Money in and out | Money received (customer collections) and money paid (supplier payments and expenses), totals and per month, by cash/bank account |
+| Customer statement | For one customer: invoices, payments, and the running balance for the period; amount still owed |
+| Supplier statement | The same for one supplier: bills, payments, and what is still owed to them (the customer statement screens in supplier mode) |
+
+Include:
+- Totals in the business's currency; amounts follow the same formatting as the rest of the app.
+- Opening a figure leads to the records behind it (invoices, payments, expenses).
+- Sharing or downloading a customer statement (PDF) so it can be sent to the customer.
+- Mobile and desktop layouts, English and Arabic/RTL.
+
+Figures come from ERPNext's own accounting (the general ledger and its standard reports such as Profit and Loss
+and Accounts Receivable/Payable), so Madar never calculates profit itself. Reports respect role permissions:
+they are for the Owner only (decided 14 Oct 2026; see `PERMISSIONS.md`).
+
 ## 5. Primary user workflows
 
 | Workflow | Main steps |
@@ -187,13 +212,13 @@ Primary shortcuts:
 - Transfer stock.
 - Supply a project.
 
-Proposed mobile navigation: **Home, Sales, Stock, More**, with a clearly labeled **New** action.
+Proposed mobile navigation: **Home, Sales, Stock, More**, with a clearly labeled **New** action. Reports lives under **More**.
 
-Proposed desktop navigation: **Home, Sales, Purchases, Inventory, Contacts, Money, Projects, Settings**.
+Proposed desktop navigation: **Home, Sales, Purchases, Inventory, Contacts, Money, Projects, Reports, Settings**.
 
 Items & Services can live within Inventory, provided service-only businesses can access the catalog naturally. Navigation should adapt sensibly to permissions and enabled areas.
 
-Home summaries and simple area-specific overviews are included. A full advanced reporting/analytics module is not part of release 1.
+Home summaries, simple area-specific overviews, and the fixed reports in section 4.8 are included. Configurable or advanced analytics (custom report builders, charts dashboards, forecasting) are not part of release 1.
 
 ## 7. UX and shared requirements
 
@@ -279,7 +304,7 @@ The Docker image covers the web frontend. Android and iOS apps are distributed t
 | Assets & Maintenance | Tools, vehicles, equipment custody, repairs, and maintenance |
 | Service Jobs | Specialized installation, repair, and maintenance dispatch |
 | Delivery Management | Driver assignment and delivery confirmation |
-| Advanced reporting and approvals | Deeper analytics and configurable approval workflows |
+| Advanced reporting and approvals | Custom report builders, deeper analytics beyond the fixed release 1 reports, and configurable approval workflows |
 
 Warehouse management is included in release 1. A broader branches/locations module for sales points, workshops, and staffing is future scope.
 
@@ -317,7 +342,8 @@ Design inspection does not establish runtime accessibility. Completion of extern
 - Business-specific tax, invoice, and numbering configuration.
 - Exact transaction mappings and backend customization needs.
 - Walk-in customer policy and warehouse defaults.
-- Priorities within the agreed seven-area release.
+- Priorities within the agreed eight-area release.
+- Reports: whether profit uses ERPNext's Profit and Loss as-is.
 
 Use this document as the product baseline. New modules or major actions should be treated as explicit scope changes.
 
