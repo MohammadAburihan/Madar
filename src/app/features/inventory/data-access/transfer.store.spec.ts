@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { InventoryApiService } from './inventory-api.service';
 import { StockItem, TransferResult } from './inventory.models';
 import { TransferStore } from './transfer.store';
@@ -182,6 +182,17 @@ describe('TransferStore', () => {
       expect(store.state()).toBe('failed');
       expect(store.failure()).toBe(failure);
     }
+  });
+
+  it('reports an earlier, different posted move and starts a fresh reference for a new one', async () => {
+    const { store, api } = await ready();
+    const reference = store.reference();
+    store.draft.set('MAT-STE-1');
+    api.transfer.mockRejectedValueOnce(new PostedEarlierError('MAT-STE-1'));
+    await store.confirm();
+    expect(store.failure()).toBe('changed');
+    expect(store.draft()).toBeNull();
+    expect(store.reference()).not.toBe(reference);
   });
 
   it('clears a failure when the transfer changes', async () => {

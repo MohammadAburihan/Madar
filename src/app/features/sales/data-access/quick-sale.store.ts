@@ -2,7 +2,11 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
 import { CatalogFilter, SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 import {
   CatalogItem,
@@ -21,7 +25,7 @@ import {
 
 export type ConfirmState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
-export type ConfirmFailure = 'stock' | 'permission' | 'offline' | 'error';
+export type ConfirmFailure = 'stock' | 'permission' | 'offline' | 'changed' | 'error';
 
 /** One sale in progress, kept across the quick-sale steps until it is confirmed or discarded. */
 @Injectable({ providedIn: 'root' })
@@ -190,6 +194,14 @@ export class QuickSaleStore {
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
+        return;
+      }
+      if (error instanceof PostedEarlierError) {
+        // The earlier version stands in ERPNext. Confirming again is a deliberate new document.
+        this.draft.set(null);
+        this.reference.set(newReference('SALE'));
+        this.failure.set('changed');
+        this.state.set('failed');
         return;
       }
       this.fail(error);

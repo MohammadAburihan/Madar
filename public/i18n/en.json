@@ -319,6 +319,10 @@
         "error": {
           "title": "The sale wasn't confirmed",
           "message": "Nothing was saved. Try again in a moment."
+        },
+        "changed": {
+          "title": "An earlier version was already confirmed",
+          "message": "Your sale was confirmed before your latest changes. Check Sales before confirming again; confirming now creates a new sale."
         }
       },
       "notCreated": {
@@ -517,6 +521,10 @@
       "error": {
         "title": "The payment wasn't recorded",
         "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "changed": {
+        "title": "An earlier version was already recorded",
+        "message": "The payment was recorded before your latest changes. Check Money before confirming again; confirming now records a new payment."
       }
     },
     "notCreated": {
@@ -758,6 +766,10 @@
       "error": {
         "title": "The transfer wasn't posted",
         "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "changed": {
+        "title": "An earlier version was already posted",
+        "message": "The move was posted before your latest changes. Check Inventory before confirming again; confirming now posts a new move."
       }
     },
     "notCreated": {

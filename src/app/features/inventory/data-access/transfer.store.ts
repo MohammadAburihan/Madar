@@ -1,6 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import { InventoryApiService } from './inventory-api.service';
@@ -14,7 +18,7 @@ import {
 
 export type TransferState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
-export type TransferFailure = 'permission' | 'offline' | 'stock' | 'error';
+export type TransferFailure = 'permission' | 'offline' | 'stock' | 'changed' | 'error';
 
 /** State of one "Move stock" task, from choosing the item to the posted transfer. */
 @Injectable({ providedIn: 'root' })
@@ -168,6 +172,14 @@ export class TransferStore {
       }
       if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
+        return;
+      }
+      if (error instanceof PostedEarlierError) {
+        // The earlier version stands in ERPNext. Confirming again is a deliberate new document.
+        this.draft.set(null);
+        this.reference.set(newReference('TRF'));
+        this.failure.set('changed');
+        this.state.set('failed');
         return;
       }
       const erpnextError = ErpnextError.from(error);

@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ListQuery } from '../../../core/erpnext/erpnext-client';
 import { InventoryApiService } from './inventory-api.service';
 import { TransferRequest } from './inventory.models';
@@ -354,11 +354,32 @@ describe('InventoryApiService', () => {
       });
     });
 
+    it("won't report an earlier, different posted move as this one's result", async () => {
+      fakeErpnext(
+        {},
+        {},
+        {
+          'Stock Entry/MAT-STE-1': {
+            ...ENTRY,
+            items: [{ item_code: 'OLV-20', qty: 5, s_warehouse: MAIN, t_warehouse: SHOP }],
+          },
+        },
+      );
+      await expect(
+        TestBed.inject(InventoryApiService).transfer(request(), 'MAT-STE-1'),
+      ).rejects.toBeInstanceOf(PostedEarlierError);
+    });
+
     it('shows a remembered draft that a slow earlier attempt already posted, without resubmitting', async () => {
       const { postCalls } = fakeErpnext(
         { Bin: balances, Item: ITEMS, Warehouse: WAREHOUSES },
         {},
-        { 'Stock Entry/MAT-STE-1': ENTRY },
+        {
+          'Stock Entry/MAT-STE-1': {
+            ...ENTRY,
+            items: [{ item_code: 'OLV-20', qty: 2, s_warehouse: MAIN, t_warehouse: SHOP }],
+          },
+        },
       );
       const result = await TestBed.inject(InventoryApiService).transfer(request(), 'MAT-STE-1');
       expect(postCalls).toEqual([]);

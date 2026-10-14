@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import {
   InventoryOverview,
@@ -169,7 +174,10 @@ export class InventoryApiService {
       ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
       : null;
     if (current?.docstatus === 1) {
-      // A slow earlier attempt posted it after all.
+      // A slow earlier attempt posted it after all; it's this request's result only if nothing changed since.
+      if (!sameTransfer(current, request)) {
+        throw new PostedEarlierError(current.name);
+      }
       return this.result(current, request);
     }
     let entry: EntryDoc;
@@ -353,4 +361,15 @@ export class InventoryApiService {
       .filter((item) => includeEmpty || Object.values(item.stock).some((qty) => qty !== 0))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
+}
+
+function sameTransfer(entry: EntryDoc, request: TransferRequest): boolean {
+  const rows = (entry['items'] as Record<string, unknown>[] | undefined) ?? [];
+  return (
+    rows.length === 1 &&
+    rows[0]['item_code'] === request.item &&
+    Number(rows[0]['qty']) === request.qty &&
+    rows[0]['s_warehouse'] === request.from &&
+    rows[0]['t_warehouse'] === request.to
+  );
 }

@@ -59,3 +59,13 @@ export async function reusableDraft<T extends { docstatus: number }>(
     throw error;
   }
 }
+
+/**
+ * A remembered draft turned out to be posted by a slow earlier attempt, but with details the user has since
+ * changed. It must not be reported as this request's result.
+ */
+export class PostedEarlierError extends Error {
+  constructor(readonly document: string) {
+    super(`An earlier version was already posted as ${document}`);
+  }
+}

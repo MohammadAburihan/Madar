@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
@@ -172,7 +177,11 @@ export class SalesApiService {
       ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
       : null;
     if (current?.docstatus === 1) {
-      // A slow earlier attempt confirmed it after all. find() records the payment only if it's missing.
+      // A slow earlier attempt confirmed it after all; it's this sale's result only if nothing changed since.
+      if (!sameSale(current, sale)) {
+        throw new PostedEarlierError(current.name);
+      }
+      // find() records the payment only if it's missing.
       const found = await this.find(sale);
       if (found !== 'not-found' && !('draft' in found)) {
         return found;
@@ -377,4 +386,20 @@ export class SalesApiService {
       lists.find((l) => l.name === 'Standard Selling')?.name ?? lists[0]?.name ?? null;
     return this.sellingPriceList;
   }
+}
+
+function sameSale(invoice: InvoiceDoc, sale: SaleRequest): boolean {
+  const rows = (invoice['items'] as Record<string, unknown>[] | undefined) ?? [];
+  return (
+    invoice['customer'] === sale.customer &&
+    rows.length === sale.lines.length &&
+    sale.lines.every((line, i) => {
+      const row = rows[i];
+      return (
+        row['item_code'] === line.item.code &&
+        Number(row['qty']) === line.qty &&
+        round2(Number(row['rate'])) === unitRate(line)
+      );
+    })
+  );
 }

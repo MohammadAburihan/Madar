@@ -1,7 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
   CustomerDirectoryService,
@@ -17,7 +21,7 @@ import { CollectionRequest, CollectionResult, UnpaidInvoice, allocate } from './
 
 export type CollectionState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
-export type CollectionFailure = 'permission' | 'offline' | 'error';
+export type CollectionFailure = 'permission' | 'offline' | 'changed' | 'error';
 
 /** State of one "Receive payment" task, from choosing the customer to the recorded payment. */
 @Injectable({ providedIn: 'root' })
@@ -200,6 +204,14 @@ export class CollectionStore {
       }
       if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
+        return;
+      }
+      if (error instanceof PostedEarlierError) {
+        // The earlier version stands in ERPNext. Confirming again is a deliberate new document.
+        this.draft.set(null);
+        this.reference.set(newReference('COLL'));
+        this.failure.set('changed');
+        this.state.set('failed');
         return;
       }
       const kind = ErpnextError.from(error).kind;

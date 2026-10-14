@@ -4,7 +4,7 @@ import { NEVER, Observable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { ErpnextClient, ListQuery } from '../../../core/erpnext/erpnext-client';
 import { CatalogItem, SaleRequest } from './sale.models';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
 type Lister = (query: ListQuery) => unknown[];
@@ -72,6 +72,16 @@ const INVOICE = {
   posting_date: '2026-10-13',
   grand_total: 303,
   outstanding_amount: 303,
+};
+
+// What ERPNext holds for sale() once submitted: the same customer, lines and rates.
+const POSTED = {
+  ...INVOICE,
+  customer: 'Lina Haddad',
+  items: [
+    { item_code: 'OLV-20', qty: 2, rate: 76.5 },
+    { item_code: 'SRV-GARDEN', qty: 1, rate: 150 },
+  ],
 };
 
 const paymentPosts = (paid = 100): Record<string, Poster> => ({
@@ -257,11 +267,25 @@ describe('SalesApiService', () => {
     const { api, postCalls } = setup(
       { 'Sales Invoice': () => [INVOICE], 'Payment Entry': () => [] },
       {},
-      { 'Sales Invoice/SI-1': INVOICE },
+      { 'Sales Invoice/SI-1': POSTED },
     );
     const result = await api.confirm(sale(), 'SI-1');
     expect(postCalls).toEqual([]);
     expect(result).toMatchObject({ invoice: 'SI-1', payment: null });
+  });
+
+  it("won't report an earlier, different sale as this one's result", async () => {
+    const { api } = setup(
+      {},
+      {},
+      {
+        'Sales Invoice/SI-1': {
+          ...POSTED,
+          items: [{ item_code: 'OLV-20', qty: 5, rate: 76.5 }],
+        },
+      },
+    );
+    await expect(api.confirm(sale(), 'SI-1')).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
   it('submits an existing draft instead of inserting a new invoice', async () => {
