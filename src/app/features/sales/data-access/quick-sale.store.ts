@@ -232,7 +232,8 @@ export class QuickSaleStore {
         ? 'permission'
         : erpnextError.kind === 'offline'
           ? 'offline'
-          : /stock|insufficient|negative/.test(message)
+          : erpnextError.excType === 'NegativeStockError' ||
+              /stock|insufficient|negative/.test(message)
             ? 'stock'
             : 'error',
     );

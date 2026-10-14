@@ -17,8 +17,10 @@ const WAREHOUSES = () => [
 
 const bins = (rows: { item: string; warehouse: string; qty: number }[]) => (query: ListQuery) => {
   const codes = query.filters?.find((f) => f[0] === 'item_code')?.[2] as string[] | undefined;
+  const places = query.filters?.find((f) => f[0] === 'warehouse')?.[2] as string[] | undefined;
   return rows
     .filter((r) => !codes || codes.includes(r.item))
+    .filter((r) => !places || places.includes(r.warehouse))
     .map((r) => ({
       item_code: r.item,
       warehouse: r.warehouse,
@@ -127,6 +129,32 @@ describe('InventoryApiService', () => {
     expect(overview.items).toEqual([]);
   });
 
+  it('looks item details up in batches so long catalogues keep the URL short', async () => {
+    const codes = Array.from({ length: 250 }, (_, i) => `ITEM-${i}`);
+    const { listCalls } = fakeErpnext({
+      Warehouse: WAREHOUSES,
+      Bin: () =>
+        codes.map((code) => ({
+          item_code: code,
+          warehouse: MAIN,
+          actual_qty: 1,
+          stock_uom: 'Unit',
+        })),
+      Item: (query: ListQuery) =>
+        (query.filters?.find((f) => f[0] === 'name')?.[2] as string[]).map((name) => ({
+          name,
+          item_name: name,
+          stock_uom: 'Unit',
+        })),
+    });
+    const overview = await TestBed.inject(InventoryApiService).overview('Rehan Nursery', 'x');
+    const itemCalls = listCalls.filter((c) => c.doctype === 'Item');
+    expect(itemCalls.map((c) => (c.query.filters?.[0][2] as string[]).length)).toEqual([
+      100, 100, 50,
+    ]);
+    expect(overview.items).toHaveLength(250);
+  });
+
   it('searches stock items by code, name or barcode, including ones without stock', async () => {
     const { listCalls } = fakeErpnext({
       Item: ITEMS,
@@ -215,7 +243,7 @@ describe('InventoryApiService', () => {
 
     it('inserts a material transfer, submits it, and reads the balances back', async () => {
       const { postCalls } = fakeErpnext(
-        { Bin: balances, Item: ITEMS },
+        { Bin: balances, Item: ITEMS, Warehouse: WAREHOUSES },
         {
           'frappe.client.insert': (body) => ({
             ...(body['doc'] as object),
@@ -265,7 +293,8 @@ describe('InventoryApiService', () => {
         postingTime: '09:41:00',
         fromQty: 22,
         toQty: 8,
-        totalQty: 35,
+        // Stores isn't one of the company's listed locations, so it isn't in the total Review showed.
+        totalQty: 30,
       });
     });
 
@@ -352,6 +381,7 @@ describe('InventoryApiService', () => {
     it('returns the posted transfer with the balances as they stand now', async () => {
       fakeErpnext({
         'Stock Entry': () => [ENTRY],
+        Warehouse: WAREHOUSES,
         Bin: bins([
           { item: 'OLV-20', warehouse: MAIN, qty: 22 },
           { item: 'OLV-20', warehouse: SHOP, qty: 8 },

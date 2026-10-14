@@ -20,6 +20,16 @@ interface EntryDoc {
 }
 
 const HISTORY_LIMIT = 30;
+// Keeps `in` filters short enough for the GET URL (see stockFor on Home).
+const ITEM_BATCH = 100;
+
+function batches<T>(values: T[]): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < values.length; i += ITEM_BATCH) {
+    chunks.push(values.slice(i, i + ITEM_BATCH));
+  }
+  return chunks;
+}
 
 /** Stock balances, movement history, and warehouse transfers (Stock Entry, Material Transfer). */
 @Injectable({ providedIn: 'root' })
@@ -87,6 +97,12 @@ export class InventoryApiService {
           true,
         )
       : [];
+  }
+
+  /** One stock item by its exact code, with its balances; null when it isn't a stock item. */
+  async item(code: string, warehouses: string[]): Promise<StockItem | null> {
+    const [item] = await this.stockItems(warehouses, [code], true);
+    return item ?? null;
   }
 
   async history(item: string, warehouses: string[]): Promise<Movement[]> {
@@ -221,29 +237,24 @@ export class InventoryApiService {
   }
 
   private async result(entry: EntryDoc, request: TransferRequest): Promise<TransferResult> {
-    const [item] = await this.stockItems([request.from, request.to], [request.item], true).catch(
-      () => [],
-    );
-    const all = await this.allStock(request.item).catch(() => null);
+    // The same locations the move screen totals, so "Company total" reads the same before and after.
+    const warehouses = await this.warehouses(request.company).catch(() => [
+      { id: request.from, name: request.from },
+      { id: request.to, name: request.to },
+    ]);
+    const item = await this.item(
+      request.item,
+      warehouses.map((w) => w.id),
+    ).catch(() => null);
+    const stock = item?.stock ?? {};
     return {
       entry: entry.name,
       postingDate: entry.posting_date,
       postingTime: entry.posting_time,
-      fromQty: item?.stock[request.from] ?? 0,
-      toQty: item?.stock[request.to] ?? 0,
-      totalQty: all ?? (item?.stock[request.from] ?? 0) + (item?.stock[request.to] ?? 0),
+      fromQty: stock[request.from] ?? 0,
+      toQty: stock[request.to] ?? 0,
+      totalQty: Object.values(stock).reduce((sum, qty) => sum + qty, 0),
     };
-  }
-
-  private async allStock(item: string): Promise<number> {
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ actual_qty: number }>('Bin', {
-        fields: ['actual_qty'],
-        filters: [['item_code', '=', item]],
-        limit: 0,
-      }),
-    );
-    return rows.reduce((sum, r) => sum + r.actual_qty, 0);
   }
 
   /**
@@ -277,24 +288,38 @@ export class InventoryApiService {
       return [];
     }
     const [items, reorder] = await Promise.all([
-      firstValueFrom(
-        this.erpnext.list<{ name: string; item_name: string; stock_uom: string }>('Item', {
-          fields: ['name', 'item_name', 'stock_uom'],
-          filters: [['name', 'in', itemCodes]],
-          limit: 0,
-        }),
-      ),
-      firstValueFrom(
-        this.erpnext.list<{ parent: string; warehouse: string; warehouse_reorder_level: number }>(
-          'Item Reorder',
-          {
-            fields: ['parent', 'warehouse', 'warehouse_reorder_level'],
-            filters: [['parent', 'in', itemCodes]],
-            parent: 'Item',
-            limit: 0,
-          },
+      Promise.all(
+        batches(itemCodes).map((chunk) =>
+          firstValueFrom(
+            this.erpnext.list<{ name: string; item_name: string; stock_uom: string }>('Item', {
+              fields: ['name', 'item_name', 'stock_uom'],
+              filters: [
+                ['name', 'in', chunk],
+                ['is_stock_item', '=', 1],
+              ],
+              limit: 0,
+            }),
+          ),
         ),
-      ).catch(() => []),
+      ).then((chunks) => chunks.flat()),
+      Promise.all(
+        batches(itemCodes).map((chunk) =>
+          firstValueFrom(
+            this.erpnext.list<{
+              parent: string;
+              warehouse: string;
+              warehouse_reorder_level: number;
+            }>('Item Reorder', {
+              fields: ['parent', 'warehouse', 'warehouse_reorder_level'],
+              filters: [['parent', 'in', chunk]],
+              parent: 'Item',
+              limit: 0,
+            }),
+          ),
+        ),
+      )
+        .then((chunks) => chunks.flat())
+        .catch(() => []),
     ]);
     return items
       .map((item) => {

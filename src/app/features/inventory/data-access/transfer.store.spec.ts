@@ -35,6 +35,7 @@ function setup() {
       { id: SHOP, name: 'Garden shop' },
     ]),
     searchItems: vi.fn().mockResolvedValue([OLIVE]),
+    item: vi.fn(async (code: string) => (code === OLIVE.code ? OLIVE : null)),
     transfer: vi.fn(),
     find: vi.fn(),
     discard: vi.fn().mockResolvedValue(undefined),
@@ -156,6 +157,19 @@ describe('TransferStore', () => {
         new HttpErrorResponse({
           status: 417,
           error: { message: 'Insufficient stock: NegativeStockError' },
+        }),
+        'stock',
+      ],
+      [
+        // ERPNext's real shortage response: the class in exc_type, wording without "stock".
+        new HttpErrorResponse({
+          status: 417,
+          error: {
+            exc_type: 'NegativeStockError',
+            _server_messages: JSON.stringify([
+              JSON.stringify({ message: '3 units of Olive tree needed in Main warehouse.' }),
+            ]),
+          },
         }),
         'stock',
       ],
@@ -298,7 +312,7 @@ describe('TransferStore', () => {
     const { store, api } = setup();
     await store.loadWarehouses();
     await store.openItem('OLV-20');
-    expect(api.searchItems).toHaveBeenCalledWith('OLV-20', [STORES, MAIN, SHOP]);
+    expect(api.item).toHaveBeenCalledWith('OLV-20', [STORES, MAIN, SHOP]);
     expect(store.item()).toEqual(OLIVE);
 
     store.item.set(null);

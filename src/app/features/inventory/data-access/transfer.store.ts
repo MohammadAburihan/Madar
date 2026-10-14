@@ -115,11 +115,14 @@ export class TransferStore {
     this.qtyInput.set('');
   }
 
-  /** Loads a deep-linked item by code. */
+  /** Loads a deep-linked item by its exact code. */
   async openItem(code: string): Promise<void> {
-    const [match] = (await this.searchItems(code)).filter((i) => i.code === code);
-    if (match) {
-      this.selectItem(match);
+    const item = await this.api.item(
+      code,
+      this.warehouses().map((w) => w.id),
+    );
+    if (item) {
+      this.selectItem(item);
     }
   }
 
@@ -174,7 +177,7 @@ export class TransferStore {
           ? 'permission'
           : erpnextError.kind === 'offline'
             ? 'offline'
-            : message.includes('stock') || message.includes('negative')
+            : erpnextError.excType === 'NegativeStockError' || message.includes('stock')
               ? 'stock'
               : 'error',
       );
