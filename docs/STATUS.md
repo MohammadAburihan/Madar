@@ -32,6 +32,7 @@ Split into three PRs, each through the delivery loop:
   that don't see costs, and order amounts use the order's own currency.
   Review pass 3 found only low items (fixed): the checking page's unit count is rounded, and On Hold orders no longer
   count as open or awaiting receipt.
+  Review pass 3 (2 low) fixed: the checking page rounds the unit count, and On Hold orders aren't counted as open.
 - **3c — Supplier invoice and paying the supplier.**
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
