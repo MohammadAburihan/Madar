@@ -831,7 +831,9 @@
       "partlyReceived": "{{received}} received · {{open}} open",
       "awaitingInvoice": "Awaiting invoice",
       "complete": "Fully received",
-      "closed": "Closed"
+      "closed": "Closed",
+      "onHold": "On hold",
+      "cancelled": "Cancelled"
     },
     "chip": {
       "draft": "Draft",
@@ -839,7 +841,9 @@
       "partlyReceived": "Partially received",
       "awaitingInvoice": "Fully received",
       "complete": "Completed",
-      "closed": "Closed"
+      "closed": "Closed",
+      "onHold": "On hold",
+      "cancelled": "Cancelled"
     },
     "panel": {
       "total": "Purchase order total",
@@ -1040,6 +1044,10 @@
         "cardMessage": "The receipt may have been recorded. Check the result instead of recording it again, so the goods aren't received twice.",
         "planned": "Planned receipt",
         "plannedValue": "{{units}} into {{warehouse}}"
+      },
+      "notReceivable": {
+        "title": "This order can't be received",
+        "message": "It is on hold, closed or cancelled in ERPNext. Reopen it there first."
       }
     },
     "receipt": {

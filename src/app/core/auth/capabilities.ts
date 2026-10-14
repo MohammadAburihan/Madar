@@ -83,6 +83,14 @@ const ORDER_PURCHASES_ROLES = ['Purchase User', 'Purchase Manager'];
 const RECEIVE_GOODS_NEEDS = [
   ['Purchase User', 'Purchase Manager', 'Stock User'], // read Purchase Order
   ['Purchase User', 'Stock User', 'Stock Manager'], // create and submit Purchase Receipt
+  [
+    'Stock User',
+    'Item Manager',
+    'Sales User',
+    'Purchase User',
+    'Accounts User',
+    'Manufacturing User',
+  ], // read Warehouse, to choose where the goods go
 ];
 
 const MOVE_STOCK_NEEDS = [

@@ -210,6 +210,10 @@ export class QuickSaleStore {
 
   /** After an unresolved confirmation: found opens the result, a draft or nothing returns to review. */
   async checkResult(): Promise<'found' | 'not-found' | 'pending'> {
+    // Only once the confirmation gave up: while it still runs, finding nothing doesn't mean nothing was posted.
+    if (this.state() !== 'unresolved') {
+      return 'pending';
+    }
     this.state.set('checking');
     try {
       const lines = this.lines();

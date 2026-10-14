@@ -260,6 +260,7 @@ describe('QuickSaleStore', () => {
   it('adopts the draft a timed-out confirmation left, so confirming again submits it', async () => {
     const { store, api } = setup();
     withBasket(store);
+    store.state.set('unresolved');
     api.find.mockResolvedValue({ draft: 'SI-7' });
 
     expect(await store.checkResult()).toBe('not-found');
@@ -274,10 +275,12 @@ describe('QuickSaleStore', () => {
   it('opens the result when the check finds the sale, and stays unresolved when it fails', async () => {
     const { store, api } = setup();
     withBasket(store);
+    store.state.set('unresolved');
     api.find.mockResolvedValueOnce('not-found');
     expect(await store.checkResult()).toBe('not-found');
     expect(store.draft()).toBeNull();
 
+    store.state.set('unresolved');
     api.find.mockRejectedValueOnce(new HttpErrorResponse({ status: 0 }));
     expect(await store.checkResult()).toBe('pending');
     expect(store.state()).toBe('unresolved');
@@ -313,5 +316,16 @@ describe('QuickSaleStore', () => {
     expect(store.draft()).toBeNull();
     expect(store.state()).toBe('idle');
     expect(store.result()).toBeNull();
+  });
+
+  it("won't look the result up while the confirmation is still running", async () => {
+    const { store, api } = setup();
+    withBasket(store);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(await store.checkResult()).toBe('pending');
+    expect(api.find).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
   });
 });

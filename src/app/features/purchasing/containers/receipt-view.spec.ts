@@ -143,6 +143,8 @@ describe('receipt view', () => {
     expect(view.receiveAction({ ...ORDER, progress: 'awaitingInvoice' }, en)).toBeNull();
     expect(view.receiveAction({ ...ORDER, progress: 'draft' }, en)).toBeNull();
     expect(view.receiveAction({ ...ORDER, progress: 'closed' }, en)).toBeNull();
+    expect(view.receiveAction({ ...ORDER, progress: 'onHold' }, en)).toBeNull();
+    expect(view.receiveAction({ ...ORDER, progress: 'cancelled' }, en)).toBeNull();
   });
 
   it('shows an order line after receipt like the received-order mock', () => {

@@ -883,7 +883,9 @@
       "partlyReceived": "تم استلام {{received}} · متبقٍّ {{open}}",
       "awaitingInvoice": "بانتظار الفاتورة",
       "complete": "مستلم بالكامل",
-      "closed": "مغلق"
+      "closed": "مغلق",
+      "onHold": "معلّق",
+      "cancelled": "ملغى"
     },
     "chip": {
       "draft": "مسودة",
@@ -891,7 +893,9 @@
       "partlyReceived": "مستلم جزئياً",
       "awaitingInvoice": "مستلم بالكامل",
       "complete": "مكتمل",
-      "closed": "مغلق"
+      "closed": "مغلق",
+      "onHold": "معلّق",
+      "cancelled": "ملغى"
     },
     "panel": {
       "total": "إجمالي أمر الشراء",
@@ -1100,6 +1104,10 @@
         "cardMessage": "ربما سُجّل الاستلام. تحقّق من النتيجة بدلاً من تسجيله مجدداً، حتى لا تُستلم البضائع مرتين.",
         "planned": "الاستلام المخطط",
         "plannedValue": "{{units}} في {{warehouse}}"
+      },
+      "notReceivable": {
+        "title": "لا يمكن استلام هذا الأمر",
+        "message": "الأمر معلّق أو مغلق أو ملغى في ERPNext. أعد فتحه هناك أولاً."
       }
     },
     "receipt": {

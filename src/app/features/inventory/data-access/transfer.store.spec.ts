@@ -239,9 +239,11 @@ describe('TransferStore', () => {
     expect(store.draft()).toBe('MAT-STE-7');
     expect(store.state()).toBe('idle');
 
+    store.state.set('unresolved');
     api.find.mockResolvedValueOnce('not-found');
     expect(await store.checkResult()).toBe('not-found');
 
+    store.state.set('unresolved');
     api.find.mockRejectedValueOnce(new HttpErrorResponse({ status: 0 }));
     expect(await store.checkResult()).toBe('pending');
     expect(store.state()).toBe('unresolved');
@@ -330,5 +332,15 @@ describe('TransferStore', () => {
     store.item.set(null);
     await store.openItem('NOPE');
     expect(store.item()).toBeNull();
+  });
+
+  it("won't look the result up while the confirmation is still running", async () => {
+    const { store, api } = await ready();
+    api.transfer.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(await store.checkResult()).toBe('pending');
+    expect(api.find).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
   });
 });

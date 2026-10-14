@@ -2,7 +2,12 @@ import { formatMoney } from '../../../core/format/format';
 import { Translator } from '../../../core/i18n/translator';
 import { Stat } from '../../../shared/ui/stat-card.component';
 import { TotalRow } from '../../../shared/ui/totals-card.component';
-import { OrderDetail, OrderLineDetail, ReceiptRequest } from '../data-access/purchase.models';
+import {
+  OrderDetail,
+  OrderLineDetail,
+  ReceiptRequest,
+  receivable,
+} from '../data-access/purchase.models';
 import { remainingQty } from '../data-access/receipt.store';
 import { CardView } from './purchase-view';
 
@@ -191,15 +196,15 @@ export function receiptDone(
 
 /** "Receive items" before anything arrived, "Receive remaining 4" after; nothing once all is in. */
 export function receiveAction(order: OrderDetail, tr: Translator): string | null {
+  if (!receivable(order.progress)) {
+    return null;
+  }
   if (order.progress === 'awaitingReceipt') {
     return tr.t('purchase.detail.receive');
   }
-  if (order.progress === 'partlyReceived') {
-    return tr.t('purchase.detail.receiveRemaining', {
-      qty: qty(Math.max(order.orderedQty - order.receivedQty, 0)),
-    });
-  }
-  return null;
+  return tr.t('purchase.detail.receiveRemaining', {
+    qty: qty(Math.max(order.orderedQty - order.receivedQty, 0)),
+  });
 }
 
 /** An order line once goods have arrived: "POT-30 · 10 ordered · 6 received", "4 remain to receive". */

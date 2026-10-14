@@ -203,4 +203,30 @@ describe('ReceiptStore', () => {
     await store.confirm();
     expect([store.state(), store.failure()]).toEqual(['failed', 'permission']);
   });
+
+  it("won't look the result up while the confirmation is still running", async () => {
+    const { store, api } = await loaded();
+    api.receive.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(await store.checkResult()).toBe('pending');
+    expect(api.findReceipt).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
+  });
+
+  it('pre-fills and accepts the open quantity without floating-point error', async () => {
+    const { store } = await loaded({ ...ORDER, lines: [{ ...LINE, qty: 1, receivedQty: 0.9 }] });
+    expect(store.qtyInputs()).toEqual({ 'row-1': '0.1' });
+    store.setQty('row-1', '0.1');
+    expect(store.ready()).toBe(true);
+  });
+
+  it('offers nothing to receive on an order that is on hold, closed or cancelled', async () => {
+    for (const progress of ['onHold', 'closed', 'cancelled'] as const) {
+      TestBed.resetTestingModule();
+      const { store } = await loaded({ ...ORDER, progress });
+      expect(store.openLines()).toEqual([]);
+      expect(store.ready()).toBe(false);
+    }
+  });
 });

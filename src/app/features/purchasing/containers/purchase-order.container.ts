@@ -24,7 +24,7 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { PurchaseApiService } from '../data-access/purchase-api.service';
-import { OrderDetail } from '../data-access/purchase.models';
+import { OrderDetail, stopped } from '../data-access/purchase.models';
 import { PurchaseOrderStore } from '../data-access/purchase-order.store';
 import { detailLineCard, detailStats, progressChip } from './purchase-view';
 import { receiveAction, receivedLineCard } from './receipt-view';
@@ -146,7 +146,9 @@ export class PurchaseOrderContainer {
           business: this.business.active()?.name ?? '',
         }),
         chips: [
-          { label: tr.t('purchase.detail.orderConfirmed'), tone: 'tint' as const },
+          stopped(order.progress)
+            ? progressChip(order.progress, tr)
+            : { label: tr.t('purchase.detail.orderConfirmed'), tone: 'tint' as const },
           {
             label: tr.t(full ? 'purchase.detail.deliveryFull' : 'purchase.detail.deliveryPartial'),
             tone: full ? ('tint' as const) : ('warning' as const),

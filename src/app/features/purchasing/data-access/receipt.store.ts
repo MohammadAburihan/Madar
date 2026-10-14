@@ -12,13 +12,15 @@ import {
   WarehouseOption,
 } from '../../../core/stock/warehouse-directory.service';
 import { PurchaseApiService } from './purchase-api.service';
-import { OrderDetail, OrderLineDetail, ReceiptRequest } from './purchase.models';
+import { OrderDetail, OrderLineDetail, ReceiptRequest, receivable } from './purchase.models';
 
 export type ReceiptState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
 export type ReceiptFailure = 'permission' | 'offline' | 'changed' | 'error';
 
-export const remainingQty = (line: OrderLineDetail) => Math.max(line.qty - line.receivedQty, 0);
+// Rounded so 1 − 0.9 reads 0.1, not 0.09999999999999998.
+export const remainingQty = (line: OrderLineDetail) =>
+  Math.max(Math.round((line.qty - line.receivedQty) * 1e6) / 1e6, 0);
 
 /** State of one "Receive items" task for a purchase order, from the quantities to the posted receipt. */
 @Injectable({ providedIn: 'root' })
@@ -47,9 +49,12 @@ export class ReceiptStore {
   readonly sent = signal<ReceiptRequest | null>(null);
 
   /** The order's rows that still have something to receive. */
-  readonly openLines = computed(() =>
-    (this.order()?.lines ?? []).filter((l) => remainingQty(l) > 0),
-  );
+  readonly openLines = computed(() => {
+    const order = this.order();
+    return order && receivable(order.progress)
+      ? order.lines.filter((l) => remainingQty(l) > 0)
+      : [];
+  });
   readonly quantities = computed(() =>
     Object.fromEntries(
       this.openLines().map((l) => [l.row, parseNumber(this.qtyInputs()[l.row] ?? '')]),
@@ -170,6 +175,10 @@ export class ReceiptStore {
 
   /** After an unresolved confirmation: found shows the receipt, a draft or nothing returns to the form. */
   async checkResult(): Promise<'found' | 'not-found' | 'pending'> {
+    // Only once the confirmation gave up: while it still runs, finding nothing doesn't mean nothing was posted.
+    if (this.state() !== 'unresolved') {
+      return 'pending';
+    }
     const reference = this.reference();
     const current = () => this.reference() === reference;
     this.state.set('checking');

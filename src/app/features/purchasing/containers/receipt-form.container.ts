@@ -18,6 +18,7 @@ import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
+import { stopped } from '../data-access/purchase.models';
 import { remainingQty } from '../data-access/receipt.store';
 import { injectReceiptContext } from './receipt-context';
 import {
@@ -76,7 +77,12 @@ import {
     } @else if (!ctx.store.order()) {
       <p class="muted" role="status">{{ txt.loading }}</p>
     } @else if (!ctx.store.openLines().length) {
-      <app-feedback-card [title]="txt.nothingOpen.title" [message]="txt.nothingOpen.message" />
+      @let closed = notReceivable();
+      <app-feedback-card
+        [tone]="closed ? 'warning' : 'tint'"
+        [title]="closed ? txt.notReceivable.title : txt.nothingOpen.title"
+        [message]="closed ? txt.notReceivable.message : txt.nothingOpen.message"
+      />
       <button type="button" class="md-btn md-btn--primary" (click)="ctx.openOrder()">
         {{ txt.openOrder }}
       </button>
@@ -171,6 +177,7 @@ export class ReceiptFormContainer implements OnInit {
       noAccess: block('purchase.receive.noAccess'),
       loadFailed: block('purchase.detail.loadFailed'),
       nothingOpen: block('purchase.receive.nothingOpen'),
+      notReceivable: block('purchase.receive.notReceivable'),
       noWarehouses: block('purchase.receive.noWarehouses'),
     };
   });
@@ -181,6 +188,11 @@ export class ReceiptFormContainer implements OnInit {
     return order
       ? receiveHeading(order, this.ctx.i18n.tr())
       : { title: t('purchase.receive.title'), subtitle: this.ctx.store.orderName() ?? '' };
+  });
+
+  protected readonly notReceivable = computed(() => {
+    const order = this.ctx.store.order();
+    return !!order && stopped(order.progress);
   });
 
   protected readonly warehouseOptions = computed(() =>

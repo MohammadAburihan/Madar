@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  effect,
+  signal,
+  untracked,
+} from '@angular/core';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -30,13 +38,13 @@ import { injectReceiptContext } from './receipt-context';
     <app-feedback-card tone="warning" [title]="txt.cardTitle" [message]="txt.cardMessage" />
     <app-totals-card density="compact" [rows]="txt.rows" />
     <p class="muted">{{ txt.reference }}</p>
-    @if (pending()) {
+    @if (pending() || ctx.store.state() === 'confirming') {
       <p class="muted" role="status">{{ txt.pending }}</p>
     }
     <button
       type="button"
       class="md-btn md-btn--primary"
-      [disabled]="ctx.store.state() === 'checking'"
+      [disabled]="ctx.store.state() !== 'unresolved'"
       (click)="check()"
     >
       {{ ctx.store.state() === 'checking' ? txt.checkingNow : txt.check }}
@@ -80,6 +88,16 @@ export class ReceiptCheckingContainer implements OnInit {
       home: t('sale.checking.home'),
     };
   });
+
+  constructor() {
+    // Reached while a slow confirmation still runs: move on as soon as it settles.
+    effect(() => {
+      const state = this.ctx.store.state();
+      if (state === 'confirmed' || state === 'failed') {
+        untracked(() => this.ngOnInit());
+      }
+    });
+  }
 
   ngOnInit(): void {
     const store = this.ctx.store;

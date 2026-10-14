@@ -84,7 +84,13 @@ describe('capabilitiesFor', () => {
       false,
     );
     expect(capabilitiesFor('owner', ['Stock Manager']).receiveGoods).toBe(false);
-    expect(capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager']).receiveGoods).toBe(true);
+    // Managers alone can't read Warehouse, so they couldn't choose where the goods go.
+    expect(capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager']).receiveGoods).toBe(
+      false,
+    );
+    expect(
+      capabilitiesFor('owner', ['Stock Manager', 'Purchase Manager', 'Item Manager']).receiveGoods,
+    ).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

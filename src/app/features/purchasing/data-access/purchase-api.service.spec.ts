@@ -84,6 +84,8 @@ describe('orderProgress', () => {
     expect(at(100, 60)).toBe('awaitingInvoice');
     expect(at(100, 100, 'Completed')).toBe('complete');
     expect(at(40, 0, 'Closed')).toBe('closed');
+    expect(at(0, 0, 'On Hold')).toBe('onHold');
+    expect(at(0, 0, 'Cancelled', 2)).toBe('cancelled');
   });
 });
 

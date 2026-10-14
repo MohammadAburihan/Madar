@@ -39,7 +39,9 @@ export function progressChip(
 ): { label: string; tone: 'tint' | 'warning' } {
   return {
     label: tr.t(`purchase.chip.${progress}`),
-    tone: progress === 'partlyReceived' || progress === 'draft' ? 'warning' : 'tint',
+    tone: ['partlyReceived', 'draft', 'onHold', 'cancelled'].includes(progress)
+      ? 'warning'
+      : 'tint',
   };
 }
 
