@@ -53,6 +53,22 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
   },
 };
 
-export function capabilitiesFor(persona: Persona): Capabilities {
-  return CAPABILITIES[persona];
+// ERPNext v16 lets only these roles create a Stock Entry.
+const STOCK_ENTRY_ROLES = [
+  'Stock User',
+  'Stock Manager',
+  'Manufacturing User',
+  'Manufacturing Manager',
+];
+
+/**
+ * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
+ * do the task (an owner who is only an Accounts Manager can't move stock).
+ */
+export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Capabilities {
+  const caps = CAPABILITIES[persona];
+  if (!roles || !caps.transferStock) {
+    return caps;
+  }
+  return { ...caps, transferStock: STOCK_ENTRY_ROLES.some((role) => roles.includes(role)) };
 }

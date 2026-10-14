@@ -226,14 +226,12 @@ export class QuickSaleStore {
 
   private fail(error: unknown): void {
     const erpnextError = ErpnextError.from(error);
-    const message = erpnextError.message.toLowerCase();
     this.failure.set(
       erpnextError.kind === 'forbidden'
         ? 'permission'
         : erpnextError.kind === 'offline'
           ? 'offline'
-          : erpnextError.excType === 'NegativeStockError' ||
-              /stock|insufficient|negative/.test(message)
+          : erpnextError.excType === 'NegativeStockError'
             ? 'stock'
             : 'error',
     );

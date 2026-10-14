@@ -154,11 +154,12 @@ describe('TransferStore', () => {
       [new HttpErrorResponse({ status: 403 }), 'permission'],
       [new HttpErrorResponse({ status: 0 }), 'offline'],
       [
+        // Mentions stock but isn't a shortage: the user mustn't be told to lower the quantity.
         new HttpErrorResponse({
           status: 417,
-          error: { message: 'Insufficient stock: NegativeStockError' },
+          error: { message: 'Stock transactions before 2026-01-01 are frozen' },
         }),
-        'stock',
+        'error',
       ],
       [
         // ERPNext's real shortage response: the class in exc_type, wording without "stock".

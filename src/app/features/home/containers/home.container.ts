@@ -57,6 +57,7 @@ export class HomeContainer {
       {
         data: this.facade.data() ?? {},
         persona: this.session.persona(),
+        capabilities: this.session.capabilities(),
         firstName: this.session.user()?.firstName ?? '',
         business: this.business.active() ?? { name: '', currency: '' },
         language: this.language(),

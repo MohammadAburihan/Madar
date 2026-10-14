@@ -171,13 +171,12 @@ export class TransferStore {
         return;
       }
       const erpnextError = ErpnextError.from(error);
-      const message = erpnextError.message.toLowerCase();
       this.failure.set(
         erpnextError.kind === 'forbidden'
           ? 'permission'
           : erpnextError.kind === 'offline'
             ? 'offline'
-            : erpnextError.excType === 'NegativeStockError' || message.includes('stock')
+            : erpnextError.excType === 'NegativeStockError'
               ? 'stock'
               : 'error',
       );

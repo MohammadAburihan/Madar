@@ -71,6 +71,14 @@ const buildHomeView = (...args: Parameters<typeof build>) =>
   >;
 
 describe('buildHomeView', () => {
+  it("hides Transfer stock from an owner whose roles can't move stock", () => {
+    const view = buildHomeView(
+      { ...input(), capabilities: { transferStock: false } },
+      realTranslator('en'),
+    );
+    expect(view.actions.map((a) => a.id)).not.toContain('transferStock');
+  });
+
   it('builds the owner home like the mobile and desktop mocks', () => {
     const view = buildHomeView(input(), realTranslator('en'));
 

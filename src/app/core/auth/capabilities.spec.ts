@@ -36,6 +36,13 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('salesperson').transferStock).toBe(false);
   });
 
+  it('only lets users whose ERPNext roles can create stock entries move stock', () => {
+    expect(capabilitiesFor('owner', ['Accounts Manager']).transferStock).toBe(false);
+    expect(capabilitiesFor('owner', ['System Manager', 'Stock Manager']).transferStock).toBe(true);
+    expect(capabilitiesFor('warehouse', ['Stock User']).transferStock).toBe(true);
+    expect(capabilitiesFor('salesperson', ['Sales User', 'Stock User']).transferStock).toBe(false);
+  });
+
   it("doesn't let warehouse workers sell", () => {
     const caps = capabilitiesFor('warehouse');
     expect(caps.sell).toBe(false);
