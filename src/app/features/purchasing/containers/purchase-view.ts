@@ -11,7 +11,6 @@ import {
   OrderSummary,
   PurchaseItem,
   PurchasingOverview,
-  isOpen,
   linesTotal,
 } from '../data-access/purchase.models';
 
@@ -49,16 +48,9 @@ export function workspaceStats(
   currency: string,
   tr: Translator,
 ): Stat[] {
-  const open = overview.orders.filter((o) => isOpen(o.progress));
   const stats: Stat[] = [
-    { label: tr.t('purchase.stats.open'), value: String(open.length) },
-    {
-      label: tr.t('purchase.stats.awaitingReceipt'),
-      value: String(
-        open.filter((o) => o.progress === 'awaitingReceipt' || o.progress === 'partlyReceived')
-          .length,
-      ),
-    },
+    { label: tr.t('purchase.stats.open'), value: String(overview.openOrders) },
+    { label: tr.t('purchase.stats.awaitingReceipt'), value: String(overview.awaitingReceipt) },
   ];
   if (overview.supplierBalance !== null) {
     stats.push({

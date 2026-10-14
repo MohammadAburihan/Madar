@@ -56,7 +56,11 @@ export interface OrderDetail extends OrderSummary {
 }
 
 export interface PurchasingOverview {
+  /** The most recent orders, for the table. */
   orders: OrderSummary[];
+  /** Counted over every order, not just the listed ones. */
+  openOrders: number;
+  awaitingReceipt: number;
   /** Unpaid supplier invoices in company currency; null when the role can't read them. */
   supplierBalance: number | null;
 }
@@ -80,11 +84,6 @@ export function orderProgress(order: {
     return 'partlyReceived';
   }
   return order.per_billed < 100 ? 'awaitingInvoice' : 'complete';
-}
-
-/** Still expecting goods or an invoice. */
-export function isOpen(progress: OrderProgress): boolean {
-  return progress !== 'draft' && progress !== 'complete' && progress !== 'closed';
 }
 
 export function linesTotal(lines: readonly { qty: number; rate: number }[]): number {

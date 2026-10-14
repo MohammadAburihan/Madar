@@ -61,19 +61,41 @@ describe('orderProgress', () => {
 
 describe('PurchaseApiService', () => {
   it('lists the company’s orders with ordered and received quantities and the supplier balance', async () => {
-    const { listCalls } = fakeErpnext({
-      'Purchase Order': () => [{ ...ORDER, per_received: 60 }],
-      'Purchase Order Item': () => [
-        { parent: 'PO-2048', qty: 6, received_qty: 6 },
-        { parent: 'PO-2048', qty: 4, received_qty: 0 },
-      ],
-      'Purchase Invoice': () => [
-        { party_account_currency: 'ILS', conversion_rate: 1, 'SUM(`outstanding_amount`)': 100 },
-        { party_account_currency: 'USD', conversion_rate: 3.5, 'SUM(`outstanding_amount`)': 20 },
-      ],
-    });
+    const { listCalls, countCalls } = fakeErpnext(
+      {
+        'Purchase Order': () => [{ ...ORDER, per_received: 60 }],
+        'Purchase Order Item': () => [
+          { parent: 'PO-2048', qty: 6, received_qty: 6 },
+          { parent: 'PO-2048', qty: 4, received_qty: 0 },
+        ],
+        'Purchase Invoice': () => [
+          { party_account_currency: 'ILS', conversion_rate: 1, 'SUM(`outstanding_amount`)': 100 },
+          { party_account_currency: 'USD', conversion_rate: 3.5, 'SUM(`outstanding_amount`)': 20 },
+        ],
+      },
+      {},
+      {},
+      { 'Purchase Order': 4 },
+    );
     const overview = await api().overview('Rehan Nursery', 'ILS');
     expect(overview.supplierBalance).toBe(170);
+    // Counted over every submitted order: awaiting receipt, plus received but not yet invoiced.
+    expect([overview.openOrders, overview.awaitingReceipt]).toEqual([8, 4]);
+    expect(countCalls.map((c) => c.filters)).toEqual([
+      [
+        ['company', '=', 'Rehan Nursery'],
+        ['docstatus', '=', 1],
+        ['status', '!=', 'Closed'],
+        ['per_received', '<', 100],
+      ],
+      [
+        ['company', '=', 'Rehan Nursery'],
+        ['docstatus', '=', 1],
+        ['status', '!=', 'Closed'],
+        ['per_received', '>=', 100],
+        ['per_billed', '<', 100],
+      ],
+    ]);
     expect(overview.orders).toEqual([
       {
         name: 'PO-2048',

@@ -24,6 +24,9 @@ Split into three PRs, each through the delivery loop:
   Review pass 1 (2 medium, 5 low) fixed: stale typed price after re-adding a line, explicit company currency on
   orders, supplier balance converted per currency, late draft saves and leftover drafts, every supplier listed,
   rounding-tolerant check of an earlier confirmed order.
+  Review pass 2 (3 low) fixed: open and awaiting-receipt counts cover every order, not the latest 50; Purchases
+  hidden from sales-only roles. Deferred (low): saving a draft for the first time isn't looked up by reference
+  after a dropped connection, so tapping Save draft again can leave a second unsubmitted draft.
 - **3b — Receive goods**, partly or in full.
 - **3c — Supplier invoice and paying the supplier.**
 

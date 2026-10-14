@@ -61,12 +61,26 @@ describe('purchase view', () => {
       { ...ORDER, name: 'PO-3', progress: 'complete' as const },
       { ...ORDER, name: 'PO-4', progress: 'draft' as const },
     ];
-    expect(visible(view.workspaceStats({ orders, supplierBalance: 170 }, 'ILS', en))).toEqual([
+    expect(
+      visible(
+        view.workspaceStats(
+          { orders, openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 },
+          'ILS',
+          en,
+        ),
+      ),
+    ).toEqual([
       { label: 'Open orders', value: '3' },
       { label: 'Awaiting receipt', value: '2' },
       { label: 'Supplier balance', value: 'ILS 170.00' },
     ]);
-    expect(view.workspaceStats({ orders, supplierBalance: null }, 'ILS', en)).toHaveLength(2);
+    expect(
+      view.workspaceStats(
+        { orders, openOrders: 3, awaitingReceipt: 2, supplierBalance: null },
+        'ILS',
+        en,
+      ),
+    ).toHaveLength(2);
   });
 
   it('summarises the selected order in the side panel', () => {

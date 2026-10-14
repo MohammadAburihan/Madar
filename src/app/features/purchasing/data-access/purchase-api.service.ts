@@ -6,7 +6,7 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { shareInFlight } from '../../../core/util/share-in-flight';
 import {
   OrderDetail,
@@ -70,7 +70,12 @@ export class PurchaseApiService {
   });
 
   async overview(company: string, companyCurrency: string): Promise<PurchasingOverview> {
-    const [rows, supplierBalance] = await Promise.all([
+    const submitted: Filter[] = [
+      ['company', '=', company],
+      ['docstatus', '=', 1],
+      ['status', '!=', 'Closed'],
+    ];
+    const [rows, awaitingReceipt, awaitingInvoice, supplierBalance] = await Promise.all([
       firstValueFrom(
         this.erpnext.list<OrderDoc>('Purchase Order', {
           fields: ORDER_FIELDS,
@@ -82,11 +87,23 @@ export class PurchaseApiService {
           limit: ORDER_LIMIT,
         }),
       ),
+      firstValueFrom(
+        this.erpnext.count('Purchase Order', [...submitted, ['per_received', '<', 100]]),
+      ),
+      firstValueFrom(
+        this.erpnext.count('Purchase Order', [
+          ...submitted,
+          ['per_received', '>=', 100],
+          ['per_billed', '<', 100],
+        ]),
+      ),
       this.supplierBalance(company, companyCurrency).catch(() => null),
     ]);
     const quantities = await this.quantities(rows.map((r) => r.name));
     return {
       orders: rows.map((r) => summary(r, quantities.get(r.name))),
+      openOrders: awaitingReceipt + awaitingInvoice,
+      awaitingReceipt,
       supplierBalance,
     };
   }
