@@ -392,13 +392,15 @@ function sameSale(invoice: InvoiceDoc, sale: SaleRequest): boolean {
   const rows = (invoice['items'] as Record<string, unknown>[] | undefined) ?? [];
   return (
     invoice['customer'] === sale.customer &&
+    invoice['set_warehouse'] === sale.warehouse &&
     rows.length === sale.lines.length &&
     sale.lines.every((line, i) => {
       const row = rows[i];
       return (
         row['item_code'] === line.item.code &&
         Number(row['qty']) === line.qty &&
-        round2(Number(row['rate'])) === unitRate(line)
+        round2(Number(row['rate'])) === unitRate(line) &&
+        (!line.item.isStock || row['warehouse'] === sale.warehouse)
       );
     })
   );

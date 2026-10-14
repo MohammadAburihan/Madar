@@ -78,8 +78,9 @@ const INVOICE = {
 const POSTED = {
   ...INVOICE,
   customer: 'Lina Haddad',
+  set_warehouse: 'Main warehouse - RN',
   items: [
-    { item_code: 'OLV-20', qty: 2, rate: 76.5 },
+    { item_code: 'OLV-20', qty: 2, rate: 76.5, warehouse: 'Main warehouse - RN' },
     { item_code: 'SRV-GARDEN', qty: 1, rate: 150 },
   ],
 };
@@ -286,6 +287,13 @@ describe('SalesApiService', () => {
       },
     );
     await expect(api.confirm(sale(), 'SI-1')).rejects.toBeInstanceOf(PostedEarlierError);
+  });
+
+  it('treats a sale posted from another warehouse as an earlier, different version', async () => {
+    const { api } = setup({}, {}, { 'Sales Invoice/SI-1': POSTED });
+    await expect(
+      api.confirm(sale({ warehouse: 'Garden shop - RN' }), 'SI-1'),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
   it('submits an existing draft instead of inserting a new invoice', async () => {
