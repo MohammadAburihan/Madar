@@ -2180,6 +2180,7 @@
                           "type": "frame",
                           "id": "eZlRw",
                           "name": "Nav Reports",
+                          "context": "Role: navigation link. Accessible name: Reports. Route specification: Thmid. Shown to the Owner only (PERMISSIONS.md).",
                           "width": "fill_container",
                           "height": 48,
                           "fill": "#FFFFFF",
@@ -38153,6 +38154,7 @@
                           "type": "frame",
                           "id": "k8F1qZ",
                           "name": "Nav Reports",
+                          "context": "Role: navigation link. Accessible name: التقارير. Route specification: sIyxx. Shown to the Owner only.",
                           "width": "fill_container",
                           "fill": "#FFFFFF",
                           "cornerRadius": 8,
@@ -97035,7 +97037,7 @@
               "type": "ref",
               "ref": "jhYHZ",
               "name": "Period",
-              "context": "Role: button (opens period sheet). Accessible name: Period, This month, 1 to 14 October 2026. Options: This month, Last month, This year, Custom range (dd/MM/yyyy from–to). Changing period reloads every figure on this screen; keep the choice when opening a report and coming back.",
+              "context": "Role: button (opens period sheet MJa3o). Accessible name: Period, This month, 1 to 14 October 2026. Options: This month, Last month, This year, Custom range (two dd/MM/yyyy date fields, From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "descendants": {
                 "tmtQA": {
                   "content": "Period"
@@ -97049,7 +97051,7 @@
               "type": "frame",
               "id": "UZp9v",
               "name": "Profit",
-              "context": "Role: link. Accessible name: Profit ILS 6,270.00 this month; open profit by month for the last 3 months. Route specification: NziRK (opens on the last 3 months; period can be changed there).",
+              "context": "Role: link. Accessible name: Profit ILS 6,270.00 this month; profit by month. Route specification: NziRK with the selected period. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "width": "fill_container",
               "fill": "#FFFFFF",
               "cornerRadius": 10,
@@ -98015,7 +98017,7 @@
               "ref": "Nb1tB",
               "name": "Supplier statement",
               "width": "fill_container",
-              "context": "Role: link. Accessible name: Supplier statement. Route specification: supplier selector, then the supplier counterpart of N2LZ8. Keeps the selected period.",
+              "context": "Role: link. Accessible name: Supplier statement. Route specification: N2LZ8 in supplier mode (supplier selector; labels Supplier, Bills, Paid, Outstanding to supplier; entries are supplier invoices and supplier payments).",
               "descendants": {
                 "sMCOE": {
                   "icon": "truck"
@@ -98306,13 +98308,13 @@
               "type": "ref",
               "ref": "jhYHZ",
               "name": "Period",
-              "context": "Role: button (opens period sheet). Accessible name: Period, custom range 1 August to 14 October 2026. Opened from Reports it covers the current month and the two before it.",
+              "context": "Role: button (opens period sheet). Accessible name: Period. Keeps the period chosen on LmHj5; shown here as This month with the two months before it. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "descendants": {
                 "tmtQA": {
                   "content": "Period"
                 },
                 "sedCr": {
-                  "content": "Custom · 01/08/2026 – 14/10/2026  ▾"
+                  "content": "This month · with Aug and Sep  ▾"
                 }
               }
             },
@@ -99858,7 +99860,7 @@
             },
             "eZlRw": {
               "fill": "$md-tint",
-              "context": "Role: navigation link, current page. Accessible name: Reports. Route specification: 05 Desktop / Reports workspace."
+              "context": "Role: navigation link, current page. Accessible name: Reports. Route specification: Thmid. Shown to the Owner only (PERMISSIONS.md)."
             },
             "qg1BL": {
               "fontWeight": "700"
@@ -101007,7 +101009,7 @@
                   "type": "frame",
                   "id": "ZyDeV",
                   "name": "Supplier statement",
-                  "context": "Role: link. Accessible name: Supplier statement. Route specification: supplier counterpart. Keeps the selected period.",
+                  "context": "Role: link. Accessible name: Supplier statement. Route specification: cjvib in supplier mode (same layout, supplier selector, supplier invoices and payments).",
                   "width": "fill_container",
                   "fill": "#FFFFFF",
                   "cornerRadius": 10,
@@ -101158,7 +101160,7 @@
             },
             "eZlRw": {
               "fill": "$md-tint",
-              "context": "Role: navigation link, current page. Accessible name: Reports. Route specification: 05 Desktop / Reports workspace."
+              "context": "Role: navigation link, current page. Accessible name: Reports. Route specification: Thmid. Shown to the Owner only (PERMISSIONS.md)."
             },
             "qg1BL": {
               "fontWeight": "700"
@@ -102624,7 +102626,7 @@
               "type": "ref",
               "ref": "g9WDP",
               "name": "Period",
-              "context": "Role: button (opens period sheet). Accessible name: الفترة، هذا الشهر، 1 إلى 14 أكتوبر 2026. Options: هذا الشهر، الشهر الماضي، هذه السنة، فترة مخصصة.",
+              "context": "Role: button (opens period sheet Zukeg). Accessible name: الفترة، هذا الشهر. Options: هذا الشهر، الشهر الماضي، هذه السنة، فترة مخصصة (dd/MM/yyyy). Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "descendants": {
                 "Ia4Iv": {
                   "content": "الفترة"
@@ -102638,7 +102640,7 @@
               "type": "frame",
               "id": "xHkZL",
               "name": "Profit",
-              "context": "Role: link. Accessible name: الربح ILS 6,270.00 هذا الشهر؛ الربح حسب الشهر لآخر 3 أشهر. Route specification: tBvvI.",
+              "context": "Role: link. Accessible name: الربح حسب الشهر. Route specification: tBvvI with the selected period. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "width": "fill_container",
               "fill": "#FFFFFF",
               "cornerRadius": 10,
@@ -103616,7 +103618,7 @@
               "ref": "iMXdD",
               "name": "كشف حساب المورد",
               "width": "fill_container",
-              "context": "Role: link. Accessible name: كشف حساب المورد. Route specification: supplier selector, then the supplier counterpart of f0uNfU. Keeps the selected period.",
+              "context": "Role: link. Accessible name: كشف حساب المورد. Route specification: f0uNfU in supplier mode (المورد، فواتير المورد، المدفوع، المتبقي للمورد).",
               "descendants": {
                 "Lc3zp": {
                   "content": "كشف حساب المورد"
@@ -103920,13 +103922,13 @@
               "type": "ref",
               "ref": "g9WDP",
               "name": "Period",
-              "context": "Role: button (opens period sheet). Accessible name: الفترة، مخصصة من 01/08/2026 إلى 14/10/2026. Opened from Reports it covers the current month and the two before it.",
+              "context": "Role: button. Accessible name: الفترة. Keeps the period chosen on uuUcY. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
               "descendants": {
                 "Ia4Iv": {
                   "content": "الفترة"
                 },
                 "empG8": {
-                  "content": "مخصصة · 01/08/2026 – 14/10/2026  ▾"
+                  "content": "هذا الشهر · مع أغسطس وسبتمبر  ▾"
                 }
               }
             },
@@ -106526,7 +106528,7 @@
                   "type": "frame",
                   "id": "HTZ8k",
                   "name": "كشف حساب المورد",
-                  "context": "Role: link. Accessible name: كشف حساب المورد. Route specification: supplier counterpart. Keeps the selected period.",
+                  "context": "Role: link. Accessible name: كشف حساب المورد. Route specification: Km7r7 in supplier mode.",
                   "width": "fill_container",
                   "fill": "#FFFFFF",
                   "cornerRadius": 10,
@@ -106760,7 +106762,7 @@
             },
             "k8F1qZ": {
               "fill": "$md-tint",
-              "context": "Role: navigation link, current page. Accessible name: التقارير."
+              "context": "Role: navigation link, current page. Accessible name: التقارير. Route specification: sIyxx. Shown to the Owner only."
             },
             "qrrFN": {
               "fontWeight": "700"
@@ -108083,7 +108085,7 @@
             },
             "k8F1qZ": {
               "fill": "$md-tint",
-              "context": "Role: navigation link, current page. Accessible name: التقارير."
+              "context": "Role: navigation link, current page. Accessible name: التقارير. Route specification: sIyxx. Shown to the Owner only."
             },
             "qrrFN": {
               "fontWeight": "700"

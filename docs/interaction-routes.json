@@ -14404,27 +14404,27 @@
         {
           "id": "CvINx",
           "name": "Period",
-          "context": "Role: button (opens period sheet). Options: This month, Last month, This year, Custom range (dd/MM/yyyy). Changing period reloads every figure; the choice is kept across Reports screens."
+          "context": "Role: button (opens period sheet MJa3o). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
         },
         {
           "id": "UZp9v",
           "name": "Profit",
-          "context": "Role: link. Route specification: NziRK, opened on the last 3 months."
+          "context": "Role: link. Route specification: NziRK with the selected period."
         },
         {
           "id": "SKaCR",
           "name": "Payments link",
-          "context": "Role: link. Route specification: Leztk filtered to this period; each account row opens it filtered to that account."
+          "context": "Role: link. Route specification: Leztk filtered to the selected period; each account row opens it filtered to that account."
         },
         {
           "id": "X65Nof",
           "name": "Customer statement",
-          "context": "Role: link. Route specification: customer selector (MJa3o), then N2LZ8. Keeps the selected period."
+          "context": "Role: link. Route specification: customer selector MJa3o, then N2LZ8. Keeps the selected period."
         },
         {
           "id": "u7dvxb",
           "name": "Supplier statement",
-          "context": "Role: link. Route specification: supplier selector, then the supplier counterpart of N2LZ8."
+          "context": "Role: link. Route specification: N2LZ8 in supplier mode (supplier selector; supplier invoices and supplier payments; outstanding to supplier). Keeps the selected period."
         }
       ]
     },
@@ -14449,6 +14449,11 @@
           "context": "Role: button. Route specification: LmHj5. Keeps the selected period."
         },
         {
+          "id": "z0AcW",
+          "name": "Period",
+          "context": "Role: button (opens period sheet MJa3o). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
           "id": "NIPY5",
           "name": "October 2026",
           "context": "Role: link. Opens that month's posted sales invoices, expenses and stock cost entries."
@@ -14456,12 +14461,12 @@
         {
           "id": "N1DQD",
           "name": "September 2026",
-          "context": "Role: link. Same as October."
+          "context": "Role: link. As October."
         },
         {
           "id": "EoDPN",
           "name": "August 2026",
-          "context": "Role: link. Same as October."
+          "context": "Role: link. As October."
         }
       ]
     },
@@ -14491,8 +14496,23 @@
           "context": "Role: button. Opens customer selector MJa3o; Cancel keeps the current customer."
         },
         {
+          "id": "Q9rpl",
+          "name": "Period",
+          "context": "Role: button (opens period sheet MJa3o). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
           "id": "LQcbM",
           "name": "Entry Invoice SI-1038",
+          "context": "Role: link. Opens the sales invoice."
+        },
+        {
+          "id": "B5kzGm",
+          "name": "Entry Payment PAY-0149",
+          "context": "Role: link. Opens the payment."
+        },
+        {
+          "id": "WFGTy",
+          "name": "Entry Invoice SI-1042",
           "context": "Role: link. Opens the sales invoice."
         },
         {
@@ -14503,7 +14523,7 @@
         {
           "id": "f3BEZ",
           "name": "Share statement",
-          "context": "Role: button. Shares the ERPNext statement PDF for this customer and period."
+          "context": "Role: button (primary on mobile). Shares the ERPNext statement PDF via the device share sheet."
         },
         {
           "id": "zjncx",
@@ -14523,6 +14543,11 @@
       },
       "controls": [
         {
+          "id": "VJPlK/eZlRw",
+          "name": "Nav Reports",
+          "context": "Role: navigation link, current page. Route specification: Thmid. Owner only (PERMISSIONS.md)."
+        },
+        {
           "id": "Y2Vch",
           "name": "Language switch",
           "context": "Role: button. Accessible name: Change language to Arabic. Route specification: sIyxx. Preserve business, current route, input, query, filters and focused control. Annotation only."
@@ -14530,17 +14555,22 @@
         {
           "id": "Kfvdl",
           "name": "Segmented control",
-          "context": "Role: radiogroup. This month / Last month / This year / Custom; Custom shows the From–to field NU4ek."
+          "context": "Role: radiogroup. This month / Last month / This year / Custom. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
+          "id": "NU4ek",
+          "name": "Custom range",
+          "context": "Role: group of two date fields (dd/MM/yyyy), shown for Custom. From not after To, To not after today (SuNbt)."
         },
         {
           "id": "WiiSe",
           "name": "Money in",
-          "context": "Role: link. Route specification: UtoWK filtered to this period."
+          "context": "Role: link. Route specification: UtoWK filtered to the selected period."
         },
         {
           "id": "QxVIn",
           "name": "Money out",
-          "context": "Role: link. Route specification: UtoWK filtered to this period."
+          "context": "Role: link. Route specification: UtoWK filtered to the selected period."
         },
         {
           "id": "E3VYAX",
@@ -14555,7 +14585,7 @@
         {
           "id": "ZyDeV",
           "name": "Supplier statement",
-          "context": "Role: link. Supplier counterpart of cjvib."
+          "context": "Role: link. Route specification: cjvib in supplier mode (supplier selector; supplier invoices and supplier payments; outstanding to supplier). Keeps the selected period."
         }
       ]
     },
@@ -14570,9 +14600,9 @@
       },
       "controls": [
         {
-          "id": "Y6v4u",
-          "name": "Language switch",
-          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: Km7r7. Preserve business, current route, input, query, filters and focused control. Annotation only."
+          "id": "SUa8w/eZlRw",
+          "name": "Nav Reports",
+          "context": "Role: navigation link, current page. Route specification: Thmid. Owner only (PERMISSIONS.md)."
         },
         {
           "id": "aZEJh",
@@ -14580,9 +14610,24 @@
           "context": "Role: link. Route specification: Thmid."
         },
         {
+          "id": "Y6v4u",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: Change language to Arabic. Route specification: Km7r7. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
           "id": "c7wl0s",
           "name": "Customer",
           "context": "Role: combobox. Opens customer selector MJa3o."
+        },
+        {
+          "id": "bikvd",
+          "name": "Segmented control",
+          "context": "Role: radiogroup. As Thmid."
+        },
+        {
+          "id": "spsZo",
+          "name": "Custom range",
+          "context": "Role: group of two date fields (dd/MM/yyyy). As Thmid."
         },
         {
           "id": "aCikH",
@@ -14612,9 +14657,34 @@
       },
       "controls": [
         {
-          "id": "—",
-          "name": "Mirrors LmHj5",
-          "context": "Arabic RTL counterpart of LmHj5; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to LmHj5."
+          "id": "LwAf5",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: LmHj5. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "S6cyn",
+          "name": "Period",
+          "context": "Role: button (opens period sheet Zukeg). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
+          "id": "xHkZL",
+          "name": "Profit",
+          "context": "Role: link. Route specification: tBvvI with the selected period."
+        },
+        {
+          "id": "M6Rp2u",
+          "name": "Payments link",
+          "context": "Role: link. Route specification: Iy72g filtered to the selected period."
+        },
+        {
+          "id": "Q3Jof",
+          "name": "Customer statement",
+          "context": "Role: link. Route specification: customer selector Zukeg, then f0uNfU."
+        },
+        {
+          "id": "PFFTq",
+          "name": "Supplier statement",
+          "context": "Role: link. Route specification: f0uNfU in supplier mode (supplier selector; supplier invoices and supplier payments; outstanding to supplier). Keeps the selected period."
         }
       ]
     },
@@ -14629,9 +14699,34 @@
       },
       "controls": [
         {
-          "id": "—",
-          "name": "Mirrors NziRK",
-          "context": "Arabic RTL counterpart of NziRK; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to NziRK."
+          "id": "XDxLW",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: NziRK. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "gMwta",
+          "name": "Back navigation",
+          "context": "Role: button. Route specification: uuUcY."
+        },
+        {
+          "id": "d4rdMs",
+          "name": "Period",
+          "context": "Role: button (opens period sheet Zukeg). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
+          "id": "L0s6LX",
+          "name": "October 2026",
+          "context": "Role: link. As NIPY5."
+        },
+        {
+          "id": "Tahnb",
+          "name": "September 2026",
+          "context": "Role: link. As N1DQD."
+        },
+        {
+          "id": "fCTWd",
+          "name": "August 2026",
+          "context": "Role: link. As EoDPN."
         }
       ]
     },
@@ -14646,9 +14741,54 @@
       },
       "controls": [
         {
-          "id": "—",
-          "name": "Mirrors N2LZ8",
-          "context": "Arabic RTL counterpart of N2LZ8; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to N2LZ8."
+          "id": "IAFIi",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: N2LZ8. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "iu4qo",
+          "name": "Back navigation",
+          "context": "Role: button. Route specification: uuUcY."
+        },
+        {
+          "id": "PjjHz",
+          "name": "Customer",
+          "context": "Role: button. Opens customer selector Zukeg."
+        },
+        {
+          "id": "i8Byv",
+          "name": "Period",
+          "context": "Role: button (opens period sheet Zukeg). Options: this month, last month, this year, custom range (two dd/MM/yyyy fields; From not after To, To not after today). The choice is kept across Reports screens. Month-by-month views cover the selected period; when it is a single month they also show the two months before it."
+        },
+        {
+          "id": "p1bCHR",
+          "name": "Entry SI-1038",
+          "context": "Role: link. Opens the sales invoice."
+        },
+        {
+          "id": "tGCPb",
+          "name": "Entry PAY-0149",
+          "context": "Role: link. Opens the payment."
+        },
+        {
+          "id": "hTua4",
+          "name": "Entry SI-1042",
+          "context": "Role: link. Opens the sales invoice."
+        },
+        {
+          "id": "p6GnSs",
+          "name": "Entry PAY-0154",
+          "context": "Role: link. Opens the payment."
+        },
+        {
+          "id": "G1mnkC",
+          "name": "Share statement",
+          "context": "Role: button (primary on mobile). Device share sheet."
+        },
+        {
+          "id": "Ubfeg",
+          "name": "Download statement",
+          "context": "Role: button. Downloads the PDF."
         }
       ]
     },
@@ -14663,9 +14803,39 @@
       },
       "controls": [
         {
-          "id": "—",
-          "name": "Mirrors Thmid",
-          "context": "Arabic RTL counterpart of Thmid; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to Thmid."
+          "id": "aWL5r/k8F1qZ",
+          "name": "Nav Reports",
+          "context": "Role: navigation link, current page. Accessible name: التقارير. Route specification: sIyxx. Owner only."
+        },
+        {
+          "id": "W5VLkm",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: Thmid. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "uH65V",
+          "name": "Segmented control",
+          "context": "Role: radiogroup. As Kfvdl."
+        },
+        {
+          "id": "yryBr",
+          "name": "Custom range",
+          "context": "Role: group of two date fields (dd/MM/yyyy). As NU4ek."
+        },
+        {
+          "id": "lrVNB",
+          "name": "By month table",
+          "context": "Role: table. As E3VYAX."
+        },
+        {
+          "id": "r4sQ7",
+          "name": "Customer statement",
+          "context": "Role: link. Route specification: Km7r7."
+        },
+        {
+          "id": "HTZ8k",
+          "name": "Supplier statement",
+          "context": "Role: link. Route specification: Km7r7 in supplier mode (supplier selector; supplier invoices and supplier payments; outstanding to supplier). Keeps the selected period."
         }
       ]
     },
@@ -14680,9 +14850,49 @@
       },
       "controls": [
         {
-          "id": "—",
-          "name": "Mirrors cjvib",
-          "context": "Arabic RTL counterpart of cjvib; same routes with Arabic ids (Iy72g, Zukeg, ZuF0D for desktop Money). Language switch returns to cjvib."
+          "id": "gk09U/k8F1qZ",
+          "name": "Nav Reports",
+          "context": "Role: navigation link, current page. Accessible name: التقارير. Route specification: sIyxx. Owner only."
+        },
+        {
+          "id": "aUbW9",
+          "name": "Back navigation",
+          "context": "Role: link. Route specification: sIyxx."
+        },
+        {
+          "id": "gO6U2",
+          "name": "Language switch",
+          "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: cjvib. Preserve business, current route, input, query, filters and focused control. Annotation only."
+        },
+        {
+          "id": "c4gYXI",
+          "name": "Customer",
+          "context": "Role: combobox. Opens customer selector Zukeg."
+        },
+        {
+          "id": "fonjO",
+          "name": "Segmented control",
+          "context": "Role: radiogroup. As bikvd."
+        },
+        {
+          "id": "TINKs",
+          "name": "Custom range",
+          "context": "Role: group of two date fields. As spsZo."
+        },
+        {
+          "id": "FHe6P",
+          "name": "Download statement",
+          "context": "Role: button (primary). Downloads the PDF."
+        },
+        {
+          "id": "yxtZq",
+          "name": "Share statement",
+          "context": "Role: button. Shown only where the browser can share files."
+        },
+        {
+          "id": "B481tx",
+          "name": "Entries table",
+          "context": "Role: table. As q6PII."
         }
       ]
     }

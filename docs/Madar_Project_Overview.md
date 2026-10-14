@@ -165,14 +165,16 @@ Project-site stock remains available stock until consumed or otherwise issued. T
 ### 4.8 Reports
 
 A **Reports** page with a small set of fixed reports, each filterable by period: this month, last month, this
-year, or a custom date range, with a month-by-month breakdown.
+year, or a custom date range, with a month-by-month breakdown. The chosen period is kept across the Reports
+screens; month-by-month views cover the chosen period, and when it is a single month they also show the two
+months before it for comparison.
 
 | Report | Shows |
 |---|---|
 | Profit | Sales income, cost of goods sold, expenses, and the resulting profit for the period, plus a per-month breakdown |
 | Money in and out | Money received (customer collections) and money paid (supplier payments and expenses), totals and per month, by cash/bank account |
 | Customer statement | For one customer: invoices, payments, and the running balance for the period; amount still owed |
-| Supplier statement | The same for one supplier: bills, payments, and what is still owed to them |
+| Supplier statement | The same for one supplier: bills, payments, and what is still owed to them (the customer statement screens in supplier mode) |
 
 Include:
 - Totals in the business's currency; amounts follow the same formatting as the rest of the app.
@@ -182,7 +184,7 @@ Include:
 
 Figures come from ERPNext's own accounting (the general ledger and its standard reports such as Profit and Loss
 and Accounts Receivable/Payable), so Madar never calculates profit itself. Reports respect role permissions:
-profit and cost figures are for roles allowed to see them.
+for now they are for the Owner only (see `PERMISSIONS.md`); opening them to other roles is an open decision.
 
 ## 5. Primary user workflows
 
