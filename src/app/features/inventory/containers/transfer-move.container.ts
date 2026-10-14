@@ -298,7 +298,8 @@ export class TransferMoveContainer implements OnInit {
     }
     try {
       const deepLink = this.item();
-      if (deepLink && this.ctx.store.item()?.code !== deepLink) {
+      // Only to start the task: back from Review keeps an item the user has since changed.
+      if (deepLink && !this.ctx.store.item()) {
         await this.ctx.store.openItem(deepLink);
       }
     } catch {

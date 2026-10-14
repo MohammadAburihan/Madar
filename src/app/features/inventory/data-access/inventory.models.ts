@@ -18,8 +18,11 @@ export interface Movement {
   voucher: string;
   postingDate: string;
   postingTime: string;
-  /** One line per warehouse the voucher touched: positive in, negative out. */
-  lines: { warehouse: string; qty: number }[];
+  /**
+   * One line per warehouse the voucher touched: positive in, negative out, and the balance after. A stock
+   * count (Stock Reconciliation) records 0 as its change; only `after` says what was counted.
+   */
+  lines: { warehouse: string; qty: number; after: number }[];
 }
 
 export interface InventoryOverview {

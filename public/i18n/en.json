@@ -666,7 +666,7 @@
       "moved": "Moved {{qty}} {{item}}",
       "sold": "Sold {{qty}} {{item}}",
       "returned": "Returned {{qty}} {{item}}",
-      "adjusted": "Count adjustment {{qty}}",
+      "adjusted": "Stock count: {{qty}}",
       "issued": "Issued {{qty}} {{item}}",
       "added": "Added {{qty}} {{item}}",
       "other": "{{type}} {{qty}}"
@@ -703,7 +703,8 @@
     "error": {
       "title": "Stock couldn't load",
       "message": "Check the connection and try again."
-    }
+    },
+    "countedQty": "{{qty}} counted"
   },
   "transfer": {
     "title": "Move stock",

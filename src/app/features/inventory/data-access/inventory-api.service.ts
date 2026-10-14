@@ -117,6 +117,7 @@ export class InventoryApiService {
         voucher_no: string;
         warehouse: string;
         actual_qty: number;
+        qty_after_transaction: number;
         posting_date: string;
         posting_time: string;
       }>('Stock Ledger Entry', {
@@ -125,6 +126,7 @@ export class InventoryApiService {
           'voucher_no',
           'warehouse',
           'actual_qty',
+          'qty_after_transaction',
           'posting_date',
           'posting_time',
         ],
@@ -140,7 +142,11 @@ export class InventoryApiService {
     const movements: Movement[] = [];
     for (const row of rows) {
       const existing = movements.find((m) => m.voucher === row.voucher_no);
-      const line = { warehouse: row.warehouse, qty: row.actual_qty };
+      const line = {
+        warehouse: row.warehouse,
+        qty: row.actual_qty,
+        after: row.qty_after_transaction,
+      };
       if (existing) {
         existing.lines.push(line);
       } else {

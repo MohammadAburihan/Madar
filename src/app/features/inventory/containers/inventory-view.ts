@@ -129,10 +129,13 @@ export function movementEntry(
   }
   const net = movement.lines.reduce((sum, line) => sum + line.qty, 0);
   const places = [...new Set(movement.lines.map((l) => warehouseName(l.warehouse, warehouses)))];
+  const counted = movement.lines.reduce((sum, line) => sum + line.after, 0);
   const qty =
-    kind === 'adjusted' || kind === 'other'
-      ? `${net > 0 ? '+' : ''}${qtyFormat.format(net)}`
-      : qtyText(Math.abs(net), item.uom, tr);
+    kind === 'adjusted'
+      ? qtyText(counted, item.uom, tr)
+      : kind === 'other'
+        ? `${net > 0 ? '+' : ''}${qtyFormat.format(net)}`
+        : qtyText(Math.abs(net), item.uom, tr);
   return {
     title: tr.t(`inventory.event.${kind}`, { qty, item: item.name, type: movement.voucherType }),
     meta: tr.t('inventory.meta', {
@@ -163,10 +166,18 @@ export function movementRow(
             from: side.from,
             to: side.to,
           })
-        : tr.t('inventory.signedQty', {
-            qty: qtyText(Math.abs(net), item.uom, tr),
-            direction: tr.t(net >= 0 ? 'inventory.in' : 'inventory.out'),
-          }),
+        : kind === 'adjusted'
+          ? tr.t('inventory.countedQty', {
+              qty: qtyText(
+                movement.lines.reduce((sum, line) => sum + line.after, 0),
+                item.uom,
+                tr,
+              ),
+            })
+          : tr.t('inventory.signedQty', {
+              qty: qtyText(Math.abs(net), item.uom, tr),
+              direction: tr.t(net >= 0 ? 'inventory.in' : 'inventory.out'),
+            }),
       kind === 'moved'
         ? side.to
         : [...new Set(movement.lines.map((l) => warehouseName(l.warehouse, warehouses)))].join(

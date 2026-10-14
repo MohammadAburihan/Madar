@@ -718,7 +718,7 @@
       "moved": "نقل {{qty}} {{item}}",
       "sold": "بيع {{qty}} {{item}}",
       "returned": "إرجاع {{qty}} {{item}}",
-      "adjusted": "تسوية الجرد {{qty}}",
+      "adjusted": "جرد المخزون: {{qty}}",
       "issued": "صرف {{qty}} {{item}}",
       "added": "إضافة {{qty}} {{item}}",
       "other": "{{type}} {{qty}}"
@@ -755,7 +755,8 @@
     "error": {
       "title": "تعذّر تحميل المخزون",
       "message": "تحقّق من الاتصال وحاول مجدداً."
-    }
+    },
+    "countedQty": "{{qty}} بعد الجرد"
   },
   "transfer": {
     "title": "نقل المخزون",

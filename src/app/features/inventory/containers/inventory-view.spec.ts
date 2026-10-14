@@ -27,9 +27,15 @@ const TODAY = new Date(2026, 9, 14);
 
 const movement = (
   voucherType: string,
-  lines: { warehouse: string; qty: number }[],
+  lines: { warehouse: string; qty: number; after?: number }[],
   postingDate = '2026-10-14',
-): Movement => ({ voucherType, voucher: 'V-1', postingDate, postingTime: '09:41:00', lines });
+): Movement => ({
+  voucherType,
+  voucher: 'V-1',
+  postingDate,
+  postingTime: '09:41:00',
+  lines: lines.map((line) => ({ after: 0, ...line })),
+});
 
 const entry = (m: Movement, tr = en) =>
   visible(view.movementEntry(m, OLIVE, WAREHOUSES, TODAY, tr === en ? 'en' : 'ar', tr));
@@ -102,10 +108,15 @@ describe('inventory view', () => {
       expect(title('Stock Entry', -3)).toBe('Issued 3 Unit Olive tree');
     });
 
-    it('shows count adjustments and unknown vouchers with a signed quantity', () => {
-      expect(entry(movement('Stock Reconciliation', [{ warehouse: MAIN.id, qty: 3 }])).title).toBe(
-        'Count adjustment +3',
+    it('shows a stock count as the counted balance, since ERPNext records its change as 0', () => {
+      const count = movement('Stock Reconciliation', [{ warehouse: MAIN.id, qty: 0, after: 20 }]);
+      expect(entry(count).title).toBe('Stock count: 20 Unit');
+      expect(visible(view.movementRow(count, OLIVE, WAREHOUSES, en)).cells[1]).toBe(
+        '20 Unit counted',
       );
+    });
+
+    it('shows unknown vouchers with a signed quantity', () => {
       expect(entry(movement('Asset Capitalization', [{ warehouse: MAIN.id, qty: -1 }])).title).toBe(
         'Asset Capitalization -1',
       );
