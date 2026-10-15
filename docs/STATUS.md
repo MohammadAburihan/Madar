@@ -14,8 +14,8 @@ _Last updated: 14 Oct 2026_
 | #6 | **Receive payment** (customer collections), the **Money** page (payment history) and the **sales invoice** page |
 | #7 | **Move stock** between warehouses and the **Inventory** page (balances, low/out of stock, movement history) |
 | #12 | **Purchase orders** (step 3a): the Purchasing officer role, the Purchasing workspace, creating and confirming an order, the order page |
-| #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
 | #13 | **Receive goods** (step 3b): part or all of an order into a warehouse, the remainder later; checking a timed-out result is now guarded in every task flow; buying prices hidden from receiving roles |
+| #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
