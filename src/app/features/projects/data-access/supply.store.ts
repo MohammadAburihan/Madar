@@ -37,6 +37,8 @@ export class SupplyStore {
   /** The delivered step has shown the result; until then, returning to the task must show it. */
   readonly resultShown = signal(false);
   readonly sent = signal<SupplyRequest | null>(null);
+  /** ERPNext refused the delivery in a way that may mean the plan is out of date; it must be reloaded first. */
+  readonly stale = computed(() => ['changed', 'stock', 'error'].includes(this.failure() ?? ''));
 
   readonly source = computed(
     () => this.plan()?.sources.find((s) => s.warehouse === this.from()) ?? null,
@@ -60,7 +62,12 @@ export class SupplyStore {
     return Math.max(Math.round((plan.need - sending - ordered) * 1e6) / 1e6, 0);
   });
   readonly ready = computed(
-    () => !!this.plan() && !!this.source() && this.qtyValid() && this.state() !== 'confirming',
+    () =>
+      !!this.plan() &&
+      !!this.source() &&
+      this.qtyValid() &&
+      this.state() !== 'confirming' &&
+      !this.stale(),
   );
   /** A confirmation is running or its result is still open; leaving keeps the delivery. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
@@ -141,7 +148,7 @@ export class SupplyStore {
     const plan = this.plan();
     const project = this.project();
     const source = this.source();
-    if (!plan || !project || !source || !this.qtyValid()) {
+    if (!plan || !project || !source || !this.qtyValid() || this.stale()) {
       return;
     }
     this.state.set('confirming');
@@ -243,7 +250,8 @@ export class SupplyStore {
   }
 
   private clearFailure(): void {
-    if (this.state() === 'failed') {
+    // Editing doesn't fix a plan ERPNext refused; only reloading it does.
+    if (this.state() === 'failed' && !this.stale()) {
       this.state.set('idle');
       this.failure.set(null);
     }

@@ -100,20 +100,28 @@ export class SupplyApiService {
           limit: 1,
         }),
       ),
+      // Closed, held and completed orders will deliver nothing more.
       firstValueFrom(
         this.erpnext.list<{
           parent: string;
+          project: string | null;
           stock_qty: number;
           received_qty: number;
           conversion_factor: number;
-        }>('Purchase Order Item', {
-          fields: ['parent', 'stock_qty', 'received_qty', 'conversion_factor'],
-          filters: [
-            ['project', '=', project],
-            ['item_code', '=', item],
-            ['docstatus', '=', 1],
+        }>('Purchase Order', {
+          fields: [
+            'name as parent',
+            'items.project as project',
+            'items.stock_qty as stock_qty',
+            'items.received_qty as received_qty',
+            'items.conversion_factor as conversion_factor',
           ],
-          parent: 'Purchase Order',
+          filters: [
+            ['Purchase Order Item', 'project', '=', project],
+            ['Purchase Order Item', 'item_code', '=', item],
+            ['docstatus', '=', 1],
+            ['status', 'not in', ['Closed', 'On Hold', 'Completed']],
+          ],
           limit: 0,
         }),
       ).catch(() => []),
@@ -128,7 +136,7 @@ export class SupplyApiService {
       .filter((r) => r.open > 0);
     const names = new Map(warehouses.map((w) => [w.name, w.warehouse_name]));
     const pending = new Map<string, number>();
-    for (const o of orders) {
+    for (const o of orders.filter((o) => o.project === project)) {
       // Received quantities are in the order row's unit; stock_qty is in the stock unit.
       const open = o.stock_qty - (o.received_qty || 0) * (o.conversion_factor || 1);
       if (open > 0) {

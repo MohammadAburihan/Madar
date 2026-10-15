@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { Viewport, ViewportService } from '../../../core/layout/viewport.service';
@@ -24,7 +25,14 @@ describe('ShellContainer', () => {
       providers: [
         provideRouter([{ path: '', component: CountingPage }]),
         { provide: ViewportService, useValue: { viewport } },
-        { provide: SessionService, useValue: { user: () => null, persona: () => 'owner' } },
+        {
+          provide: SessionService,
+          useValue: {
+            user: () => null,
+            persona: () => 'owner',
+            capabilities: () => capabilitiesFor('owner'),
+          },
+        },
         {
           provide: BusinessService,
           useValue: { active: () => null, ensure: () => Promise.resolve(null) },

@@ -52,7 +52,7 @@ import {
     @let txt = text();
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     <app-back-link [label]="txt.back" (back)="router.navigate(['/projects'])" />
-    @if (!caps().manageProjects) {
+    @if (!caps().manageProjects && !caps().supplyProjects) {
       <app-feedback-card
         tone="warning"
         [title]="txt.noAccess.title"
@@ -61,7 +61,9 @@ import {
     } @else if (view(); as v) {
       <app-page-heading [title]="v.heading.title" [subtitle]="v.heading.subtitle" />
       <app-status-chip [label]="v.heading.chip.label" [tone]="v.heading.chip.tone" />
-      <app-stat-card [stats]="v.stats" />
+      @if (caps().manageProjects) {
+        <app-stat-card [stats]="v.stats" />
+      }
       @if (v.tasks) {
         <app-project-section [heading]="txt.tasks" [items]="v.tasks" [empty]="txt.noTasks" />
       }
@@ -89,15 +91,17 @@ import {
           {{ txt.supply }}
         </button>
       }
-      <button
-        type="button"
-        class="md-btn"
-        [class.md-btn--primary]="!(caps().supplyProjects && v.nextItem)"
-        (click)="addRequirement()"
-      >
-        {{ txt.addRequirement }}
-      </button>
-      <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
+      @if (caps().manageProjects) {
+        <button
+          type="button"
+          class="md-btn"
+          [class.md-btn--primary]="!(caps().supplyProjects && v.nextItem)"
+          (click)="addRequirement()"
+        >
+          {{ txt.addRequirement }}
+        </button>
+        <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
+      }
     } @else if (failed()) {
       <app-page-heading [title]="txt.title" [subtitle]="name()" />
       <app-feedback-card
@@ -180,7 +184,7 @@ export class ProjectContainer {
   constructor() {
     effect(() => {
       const name = this.name();
-      if (this.caps().manageProjects) {
+      if (this.caps().manageProjects || this.caps().supplyProjects) {
         untracked(() => void this.load(name));
       }
     });

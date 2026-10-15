@@ -99,6 +99,7 @@ export class ShellContainer implements OnInit {
     buildShellView(
       {
         persona: this.session.persona(),
+        capabilities: this.session.capabilities(),
         businessName: this.businessName(),
         userName: this.session.user()?.fullName ?? '',
       },

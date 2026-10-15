@@ -10,11 +10,15 @@ import {
   LucideUsers,
   LucideWallet,
 } from '@lucide/angular';
+import { Capabilities } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { Translator } from '../../../core/i18n/translator';
 import { NavItem } from '../components/nav-item';
 
-type NavDefinition = Omit<NavItem, 'label'> & { hiddenFor?: Persona[] };
+type NavDefinition = Omit<NavItem, 'label'> & {
+  hiddenFor?: Persona[];
+  shownIf?: (caps: Capabilities) => boolean;
+};
 
 // The warehouse mock drops Sales from the tab bar; money stays hidden from that role too. Purchasing
 // officers neither sell nor see payments; salespeople neither buy nor receive goods (docs/PERMISSIONS.md).
@@ -40,12 +44,12 @@ const DESKTOP_NAV: NavDefinition[] = [
     route: '/money',
     hiddenFor: ['warehouse', 'purchasing', 'projectManager'],
   },
-  // Projects are for the roles that run them (docs/PERMISSIONS.md).
+  // Projects are for the roles that run or supply them (docs/PERMISSIONS.md).
   {
     id: 'projects',
     icon: LucideLayers,
     route: '/projects',
-    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'],
+    shownIf: (caps) => caps.manageProjects || caps.supplyProjects,
   },
   {
     id: 'reports',
@@ -75,6 +79,7 @@ const MOBILE_NAV: NavDefinition[] = [
 
 export interface ShellViewInput {
   persona: Persona;
+  capabilities: Capabilities;
   businessName: string;
   userName: string;
 }
@@ -96,8 +101,11 @@ export interface ShellView {
 export function buildShellView(input: ShellViewInput, { t }: Translator): ShellView {
   const labelled = (items: NavDefinition[]): NavItem[] =>
     items
-      .filter((item) => !item.hiddenFor?.includes(input.persona))
-      .map(({ hiddenFor, ...item }) => ({ ...item, label: t(`nav.${item.id}`) }));
+      .filter(
+        (item) =>
+          !item.hiddenFor?.includes(input.persona) && (item.shownIf?.(input.capabilities) ?? true),
+      )
+      .map(({ hiddenFor, shownIf, ...item }) => ({ ...item, label: t(`nav.${item.id}`) }));
   return {
     brand: t('app.name'),
     wordmark: t('app.wordmark'),

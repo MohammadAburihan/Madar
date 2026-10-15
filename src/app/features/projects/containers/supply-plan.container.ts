@@ -92,7 +92,7 @@ import { planRows, supplyAdvice, supplyUnits } from './supply-view';
       }
       @if (notice(); as n) {
         <app-feedback-card tone="danger" [title]="n.title" [message]="n.message" />
-        @if (ctx.store.failure() === 'changed' || ctx.store.failure() === 'stock') {
+        @if (ctx.store.stale()) {
           <button type="button" class="md-btn" (click)="reload()">{{ txt.reload }}</button>
         }
       }
@@ -107,7 +107,7 @@ import { planRows, supplyAdvice, supplyUnits } from './supply-view';
           {{ v.toReview }}
         </button>
       }
-      @if (v.shortfall > 0) {
+      @if (v.shortfall > 0 && ctx.session.capabilities().orderPurchases) {
         <button type="button" class="md-btn" (click)="buy(v.shortfall)">{{ v.buy }}</button>
       }
     } @else {

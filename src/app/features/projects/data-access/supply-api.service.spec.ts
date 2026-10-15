@@ -26,6 +26,7 @@ const api = () => TestBed.inject(SupplyApiService);
 
 describe('SupplyApiService', () => {
   it("plans an item: open requests, own warehouses' stock, the project's site share and open orders", async () => {
+    let orderQuery: { filters?: unknown[] } | undefined;
     fakeErpnext({
       Warehouse: (query) =>
         query.filters?.some((f) => f[0] === 'warehouse_name' && f[1] === '=')
@@ -45,9 +46,25 @@ describe('SupplyApiService', () => {
         { warehouse: 'Project sites - RN', actual_qty: 2 },
       ],
       'Stock Ledger Entry': () => [{ 'SUM(`actual_qty`)': 2 }],
-      'Purchase Order Item': () => [
-        { parent: 'PO-2049', stock_qty: 4, received_qty: 1, conversion_factor: 1 },
-      ],
+      'Purchase Order': (query) => {
+        orderQuery = query;
+        return [
+          {
+            parent: 'PO-2049',
+            project: 'PROJ-0001',
+            stock_qty: 4,
+            received_qty: 1,
+            conversion_factor: 1,
+          },
+          {
+            parent: 'PO-2050',
+            project: 'PROJ-0009',
+            stock_qty: 9,
+            received_qty: 0,
+            conversion_factor: 1,
+          },
+        ];
+      },
     });
     expect(await api().plan('PROJ-0001', 'POT-30', 'Rehan Nursery')).toEqual({
       item: 'POT-30',
@@ -63,6 +80,12 @@ describe('SupplyApiService', () => {
       ],
       pendingOrders: [{ name: 'PO-2049', qty: 3 }],
     });
+    // Closed, held or completed orders will deliver nothing more.
+    expect(orderQuery?.filters).toContainEqual([
+      'status',
+      'not in',
+      ['Closed', 'On Hold', 'Completed'],
+    ]);
   });
 
   it('delivers to the site booked to the project, filling the oldest requests first', async () => {

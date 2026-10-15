@@ -33,6 +33,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     warehouse as a transfer booked to the project and linked to the open requests, and buy the shortfall through a
     purchase order prefilled with the item and booked to the project. Owner, project manager, warehouse and store
     associates with Projects User.
+    Review pass 1 (3 medium, 1 low) fixed: store associates who supply projects can open Projects (without budget,
+    costs or editing); "Buy" shows only to roles that order purchases; closed, held and completed orders no longer
+    count as on order; after ERPNext refuses a delivery the plan must be reloaded before trying again.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

@@ -1,3 +1,4 @@
+import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { realTranslator } from '../../../../testing/real-translator';
 import { buildPlaceholderView } from './placeholder-view';
@@ -6,9 +7,14 @@ import { buildShellView } from './shell-view';
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, ''));
 
 describe('buildShellView', () => {
-  const build = (persona: Persona, language: 'en' | 'ar' = 'en') =>
+  const build = (persona: Persona, language: 'en' | 'ar' = 'en', roles?: string[]) =>
     buildShellView(
-      { persona, businessName: 'Rehan Nursery', userName: 'Rehan Mansour' },
+      {
+        persona,
+        capabilities: capabilitiesFor(persona, roles),
+        businessName: 'Rehan Nursery',
+        userName: 'Rehan Mansour',
+      },
       realTranslator(language),
     );
 
@@ -68,12 +74,19 @@ describe('buildShellView', () => {
     expect(view.wordmark).toBe('مدار');
   });
 
-  it('shows Projects to the owner and the project manager only, now that it is a real page', () => {
+  it('shows Projects to the roles that run projects, and to those that supply them', () => {
     for (const persona of ['owner', 'projectManager'] as const) {
       expect(build(persona).desktopNav.map((i) => i.id)).toContain('projects');
     }
-    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+    for (const persona of ['salesperson', 'purchasing'] as const) {
       expect(build(persona).desktopNav.map((i) => i.id)).not.toContain('projects');
+    }
+    for (const persona of ['storeAssociate', 'warehouse'] as const) {
+      const stock = ['Sales User', 'Stock User'];
+      expect(build(persona, 'en', stock).desktopNav.map((i) => i.id)).not.toContain('projects');
+      expect(
+        build(persona, 'en', [...stock, 'Projects User']).desktopNav.map((i) => i.id),
+      ).toContain('projects');
     }
     expect(build('projectManager').desktopNav.map((i) => i.id)).toEqual([
       'home',

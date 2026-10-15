@@ -139,7 +139,8 @@ describe('SupplyStore', () => {
     );
     await store.confirm();
     expect(store.failure()).toBe('stock');
-    store.setQty('7');
+    store.start('PROJ-0001', 'POT-30');
+    await store.load();
     api.deliver.mockRejectedValueOnce(new HttpErrorResponse({ status: 403 }));
     await store.confirm();
     expect(store.failure()).toBe('permission');
@@ -155,5 +156,16 @@ describe('SupplyStore', () => {
     store.setQty('5');
     store.start('PROJ-0001', 'POT-30');
     expect(api.discard).toHaveBeenCalledWith('STE-1');
+  });
+
+  it('asks for a reload after ERPNext refuses the delivery, instead of posting the same plan again', async () => {
+    const { store, api } = await loaded();
+    api.deliver.mockRejectedValueOnce(new HttpErrorResponse({ status: 417 }));
+    await store.confirm();
+    store.setQty('7');
+    expect([store.failure(), store.ready()]).toEqual(['error', false]);
+    store.start('PROJ-0001', 'POT-30');
+    await store.load();
+    expect(store.ready()).toBe(true);
   });
 });
