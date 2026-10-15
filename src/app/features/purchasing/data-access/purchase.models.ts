@@ -100,6 +100,8 @@ export interface InvoiceRequest {
   /** The supplier's own invoice number. */
   billNo: string;
   receipts: string[];
+  /** The total the user was shown, which the invoice must still come to. */
+  total: number;
 }
 
 export type PaymentStatus = 'unpaid' | 'partlyPaid' | 'paid';

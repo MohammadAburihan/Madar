@@ -141,12 +141,14 @@ export function orderBillingRows(
   invoices: readonly OrderInvoice[],
   tr: Translator,
 ): TotalRow[] {
+  // Billed is this order's share (ERPNext's billed amounts); an invoice made in Desk may bill other orders too.
+  const billed = order.lines.reduce((sum, l) => sum + l.billedAmount, 0);
   const total = invoices.reduce((sum, i) => sum + i.total, 0);
   const outstanding = invoices.reduce((sum, i) => sum + i.outstanding, 0);
   const money = (value: number) => formatMoney(value, order.currency);
   return [
     { label: tr.t('purchase.detail.orderValue'), value: money(order.total) },
-    { label: tr.t('purchase.detail.billed'), value: money(total) },
+    { label: tr.t('purchase.detail.billed'), value: money(billed) },
     { label: tr.t('purchase.detail.invoicePaid'), value: money(total - outstanding) },
     { label: tr.t('purchase.detail.invoiceOutstanding'), value: money(outstanding) },
   ];

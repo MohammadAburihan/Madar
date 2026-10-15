@@ -7,7 +7,7 @@ import {
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { PurchaseApiService } from './purchase-api.service';
 import { InvoicePreview, InvoiceRequest, OrderDetail } from './purchase.models';
-import { SupplierInvoiceApiService } from './supplier-invoice-api.service';
+import { BillingChangedError, SupplierInvoiceApiService } from './supplier-invoice-api.service';
 
 export type InvoiceState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
@@ -106,6 +106,7 @@ export class SupplierInvoiceStore {
       order: order.name,
       billNo: this.billNo().trim(),
       receipts: preview.receipts,
+      total: preview.total,
     };
     this.state.set('confirming');
     this.failure.set(null);
@@ -168,8 +169,8 @@ export class SupplierInvoiceStore {
       this.state.set('unresolved');
       return;
     }
-    if (error instanceof PostedEarlierError) {
-      // The earlier invoice stands in ERPNext and billed these receipts; what is left must be reloaded.
+    if (error instanceof PostedEarlierError || error instanceof BillingChangedError) {
+      // An invoice (earlier or from Desk) billed these receipts meanwhile; what is left must be reloaded.
       this.draft.set(null);
       this.reference.set(newReference('BILL'));
       this.failure.set('changed');

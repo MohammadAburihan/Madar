@@ -140,12 +140,16 @@ describe('invoice view', () => {
     const invoices = [
       { name: 'PINV-0068', billNo: 'GC-8831', currency: 'ILS', total: 270, outstanding: 170 },
     ];
-    expect(visible(view.orderBillingRows(ORDER, invoices, en))).toEqual([
+    const billedOrder = { ...ORDER, lines: [{ ...LINE, billedAmount: 270 }] };
+    expect(visible(view.orderBillingRows(billedOrder, invoices, en))).toEqual([
       { label: 'Order value', value: 'ILS 450.00' },
       { label: 'Billed', value: 'ILS 270.00' },
       { label: 'Invoice paid', value: 'ILS 100.00' },
       { label: 'Invoice outstanding', value: 'ILS 170.00' },
     ]);
+    // An invoice made in Desk for two orders: "Billed" stays this order's share.
+    const shared = [{ ...invoices[0], total: 900, outstanding: 900 }];
+    expect(visible(view.orderBillingRows(billedOrder, shared, en))[1].value).toBe('ILS 270.00');
     expect(visible(receivedLineCard({ ...LINE, billedAmount: 270 }, en).detail)).toBe(
       '6 billed · 4 remain to receive',
     );

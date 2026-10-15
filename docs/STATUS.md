@@ -30,6 +30,9 @@ Split into PRs, each through the delivery loop:
   Review pass 1 (2 medium, 3 low) fixed, except one deferred (low): when one invoice bills several receipts, ERPNext's
   mapper keeps only the last receipt's fixed ("Actual") charges, such as freight. Madar orders carry no taxes or
   charges yet (VAT setup is still open), so this only affects receipts with charges added in Desk.
+  Review pass 2 (3 medium, 2 low) fixed: totals use ERPNext's rounded total, "Billed" is the order's own share,
+  only this order's rows are billed, the preview keeps taxes when rows are left out, and recording refuses to post
+  when the receipts were billed elsewhere meanwhile.
 - **3c-2 — Pay supplier**: the payment form, the recorded payment and its page, and "Pay supplier" on the invoice.
   Owner only.
 

@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { PurchaseApiService } from './purchase-api.service';
 import { InvoicePreview, OrderDetail } from './purchase.models';
-import { SupplierInvoiceApiService } from './supplier-invoice-api.service';
+import { BillingChangedError, SupplierInvoiceApiService } from './supplier-invoice-api.service';
 import { SupplierInvoiceStore } from './supplier-invoice.store';
 
 const ORDER = { name: 'PO-2048', supplierName: 'Green Clay' } as OrderDetail;
@@ -66,6 +66,7 @@ describe('SupplierInvoiceStore', () => {
       order: 'PO-2048',
       billNo: 'GC-8831',
       receipts: ['MAT-PRE-1'],
+      total: 270,
     });
     expect([store.draft(), store.state(), store.result()]).toEqual([
       'PINV-0068',
@@ -137,6 +138,15 @@ describe('SupplierInvoiceStore', () => {
     finish(PREVIEW);
     await loading;
     expect(store.preview()).toBeNull();
+  });
+
+  it('asks to reload when the receipts were billed elsewhere since the preview', async () => {
+    const { store, api } = await loaded();
+    const first = store.reference();
+    api.record.mockRejectedValue(new BillingChangedError());
+    await store.confirm();
+    expect([store.state(), store.failure()]).toEqual(['failed', 'changed']);
+    expect(store.reference()).not.toBe(first);
   });
 
   it('names a permission failure', async () => {

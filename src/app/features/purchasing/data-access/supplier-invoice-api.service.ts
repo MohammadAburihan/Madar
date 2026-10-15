@@ -23,6 +23,8 @@ interface InvoiceDoc {
   bill_no: string | null;
   currency: string;
   grand_total: number;
+  /** Zero when the company turns rounding off; outstanding follows it otherwise. */
+  rounded_total?: number;
   outstanding_amount: number;
   items: {
     item_code: string;
@@ -34,6 +36,17 @@ interface InvoiceDoc {
     purchase_receipt?: string | null;
   }[];
   [key: string]: unknown;
+}
+
+/** What the supplier is owed: ERPNext rounds the total by default and bases outstanding on it. */
+const payable = (doc: { grand_total: number; rounded_total?: number }) =>
+  doc.rounded_total || doc.grand_total;
+
+/** The receipts no longer bill what the user was shown: someone billed some of them meanwhile. */
+export class BillingChangedError extends Error {
+  constructor() {
+    super('What is left to bill changed since it was shown');
+  }
 }
 
 const MAKE_INVOICE =
@@ -60,7 +73,7 @@ export class SupplierInvoiceApiService {
         rate: i.rate,
       })),
       currency: template.doc.currency,
-      total: template.doc.grand_total,
+      total: template.total,
     };
   }
 
@@ -88,8 +101,13 @@ export class SupplierInvoiceApiService {
       await this.discard(current.name);
     }
     const template = await this.template(request.order, request.receipts);
-    if (!template) {
-      throw new Error('Nothing left to bill on these receipts');
+    // Built again now: if it no longer bills what the user confirmed, they must look again first.
+    if (
+      !template ||
+      template.receipts.length !== request.receipts.length ||
+      Math.abs(template.total - request.total) > 0.005
+    ) {
+      throw new BillingChangedError();
     }
     const doc = {
       ...template.doc,
@@ -147,7 +165,7 @@ export class SupplierInvoiceApiService {
       supplierName: doc.supplier_name,
       order: doc.items.find((i) => i.purchase_order)?.purchase_order ?? null,
       currency: doc.currency,
-      total: doc.grand_total,
+      total: payable(doc),
       outstanding: doc.outstanding_amount,
       cancelled: doc.docstatus === 2,
       payments,
@@ -162,9 +180,17 @@ export class SupplierInvoiceApiService {
         bill_no: string | null;
         currency: string;
         grand_total: number;
+        rounded_total: number;
         outstanding_amount: number;
       }>('Purchase Invoice', {
-        fields: ['name', 'bill_no', 'currency', 'grand_total', 'outstanding_amount'],
+        fields: [
+          'name',
+          'bill_no',
+          'currency',
+          'grand_total',
+          'rounded_total',
+          'outstanding_amount',
+        ],
         filters: [
           ['Purchase Invoice Item', 'purchase_order', '=', order],
           ['docstatus', '=', 1],
@@ -183,7 +209,7 @@ export class SupplierInvoiceApiService {
         name: r.name,
         billNo: r.bill_no || null,
         currency: r.currency,
-        total: r.grand_total,
+        total: payable(r),
         outstanding: r.outstanding_amount,
       }));
   }
@@ -213,7 +239,7 @@ export class SupplierInvoiceApiService {
   private async template(
     order: string,
     receipts: readonly string[],
-  ): Promise<{ doc: InvoiceDoc; receipts: string[] } | null> {
+  ): Promise<{ doc: InvoiceDoc; receipts: string[]; total: number } | null> {
     let doc: InvoiceDoc | null = null;
     const used: string[] = [];
     for (const receipt of receipts) {
@@ -236,17 +262,20 @@ export class SupplierInvoiceApiService {
     if (!doc) {
       return null;
     }
-    const items = doc.items.filter((i) => !i.purchase_order || i.purchase_order === order);
+    const all = doc.items;
+    const items = all.filter((i) => i.purchase_order === order);
     if (!items.length) {
       return null;
     }
     const kept = used.filter((r) => items.some((i) => i.purchase_receipt === r));
-    // ERPNext recalculates totals on insert; the preview needs them without the dropped rows.
+    // ERPNext recalculates on insert; for the preview, its total (with taxes and rounding) is scaled down to the
+    // rows kept.
+    const value = (rows: InvoiceDoc['items']) => rows.reduce((sum, i) => sum + i.qty * i.rate, 0);
     const total =
-      items.length === doc.items.length
-        ? doc.grand_total
-        : items.reduce((sum, i) => sum + i.qty * i.rate, 0);
-    return { doc: { ...doc, items, grand_total: total }, receipts: kept };
+      items.length === all.length
+        ? payable(doc)
+        : Math.round(((payable(doc) * value(items)) / (value(all) || 1)) * 100) / 100;
+    return { doc: { ...doc, items }, receipts: kept, total };
   }
 
   private async payments(invoice: string): Promise<LinkedPayment[]> {

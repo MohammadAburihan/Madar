@@ -1130,7 +1130,7 @@
         },
         "changed": {
           "title": "These goods were already invoiced",
-          "message": "An earlier invoice went through before your latest changes. Reload the order to see what is still unbilled."
+          "message": "They were invoiced since this form opened. Reload the order to see what is still unbilled."
         }
       },
       "reload": "Reload order",

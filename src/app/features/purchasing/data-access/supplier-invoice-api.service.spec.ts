@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { InvoiceRequest, paymentStatus } from './purchase.models';
-import { SupplierInvoiceApiService } from './supplier-invoice-api.service';
+import { BillingChangedError, SupplierInvoiceApiService } from './supplier-invoice-api.service';
 
 const MAKE = 'erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_purchase_invoice';
 
@@ -13,6 +13,7 @@ const request = (overrides: Partial<InvoiceRequest> = {}): InvoiceRequest => ({
   order: 'PO-2048',
   billNo: 'GC-8831',
   receipts: ['MAT-PRE-1', 'MAT-PRE-2'],
+  total: 450,
   ...overrides,
 });
 
@@ -124,7 +125,7 @@ describe('SupplierInvoiceApiService', () => {
     });
   });
 
-  it("leaves out another order's rows on a shared receipt", async () => {
+  it("leaves out other orders' rows and rows of no order on a shared receipt", async () => {
     fakeErpnext(
       { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
       {
@@ -132,15 +133,42 @@ describe('SupplierInvoiceApiService', () => {
           const doc = mapper(body);
           return {
             ...doc,
-            items: [...doc.items, { ...doc.items[0], qty: 3, purchase_order: 'PO-9999' }],
-            grand_total: 405,
+            items: [
+              ...doc.items,
+              { ...doc.items[0], qty: 3, purchase_order: 'PO-9999' },
+              { ...doc.items[0], qty: 1, purchase_order: null },
+            ],
+            // 450 of goods with 15% tax.
+            grand_total: 517.5,
           };
         },
       },
     );
     const preview = await api().preview('PO-2048');
     expect(preview.lines.map((l) => l.qty)).toEqual([6]);
-    expect(preview.total).toBe(270);
+    // The taxed total, scaled to the 270 of goods kept.
+    expect(preview.total).toBe(310.5);
+  });
+
+  it("uses the rounded total ERPNext bases what's owed on", async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
+      { [MAKE]: (body) => ({ ...mapper(body), grand_total: 269.6, rounded_total: 270 }) },
+    );
+    expect((await api().preview('PO-2048')).total).toBe(270);
+  });
+
+  it('refuses to post when what is left to bill changed since it was shown', async () => {
+    const { postCalls } = fakeErpnext({}, { [MAKE]: mapper });
+    await expect(api().record(request({ total: 500 }), null)).rejects.toBeInstanceOf(
+      BillingChangedError,
+    );
+    expect(postCalls.map((c) => c.method)).not.toContain('frappe.client.insert');
+  });
+
+  it('refuses to post when every receipt was billed meanwhile', async () => {
+    fakeErpnext({}, { [MAKE]: () => throwError(() => new HttpErrorResponse({ status: 417 })) });
+    await expect(api().record(request(), null)).rejects.toBeInstanceOf(BillingChangedError);
   });
 
   it("doesn't hide a real failure while building the invoice", async () => {
@@ -243,7 +271,14 @@ describe('SupplierInvoiceApiService', () => {
         Account: () => [{ name: 'Main bank - RN', account_name: 'Main bank' }],
       },
       {},
-      { 'Purchase Invoice/PINV-0068': { ...POSTED, grand_total: 270, outstanding_amount: 170 } },
+      {
+        'Purchase Invoice/PINV-0068': {
+          ...POSTED,
+          grand_total: 269.6,
+          rounded_total: 270,
+          outstanding_amount: 170,
+        },
+      },
     );
     expect(await api().invoice('PINV-0068')).toEqual({
       name: 'PINV-0068',
