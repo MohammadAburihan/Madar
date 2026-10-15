@@ -50,7 +50,15 @@ import { invoiceView } from './invoice-view';
     } @else {
       <p class="muted" role="status">{{ txt.loading }}</p>
     }
-    <button type="button" class="md-btn md-btn--primary" (click)="ctx.openOrder()">
+    @if (canPay()) {
+      <button type="button" class="md-btn md-btn--primary" (click)="pay()">{{ txt.pay }}</button>
+    }
+    <button
+      type="button"
+      class="md-btn"
+      [class.md-btn--primary]="!canPay()"
+      (click)="ctx.openOrder()"
+    >
       {{ txt.viewOrder }}
     </button>
   `,
@@ -67,6 +75,7 @@ export class InvoiceDoneContainer implements OnInit {
       back: t('sale.back'),
       title: t('purchase.invoice.recordedTitle'),
       viewOrder: t('purchase.invoice.viewOrder'),
+      pay: t('purchase.invoice.pay'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
       loadFailed: {
@@ -80,6 +89,15 @@ export class InvoiceDoneContainer implements OnInit {
     const invoice = this.invoice();
     return invoice ? invoiceView(invoice, this.ctx.store.order(), true, this.ctx.i18n.tr()) : null;
   });
+
+  protected readonly canPay = computed(
+    () =>
+      this.ctx.session.capabilities().paySuppliers && (this.invoice()?.outstanding ?? 0) > 0.005,
+  );
+
+  protected pay(): void {
+    void this.ctx.router.navigate(['/purchases/invoice', this.ctx.store.result(), 'pay']);
+  }
 
   ngOnInit(): void {
     if (!this.ctx.store.result()) {

@@ -15,6 +15,7 @@ describe('capabilitiesFor', () => {
       receiveGoods: true,
       seeCosts: true,
       recordSupplierInvoices: true,
+      paySuppliers: true,
     });
   });
 
@@ -33,6 +34,7 @@ describe('capabilitiesFor', () => {
         receiveGoods: persona === 'storeAssociate',
         seeCosts: false,
         recordSupplierInvoices: false,
+        paySuppliers: false,
       });
     }
   });
@@ -121,6 +123,15 @@ describe('capabilitiesFor', () => {
       capabilitiesFor('owner', ['Accounts Manager', 'Purchase Manager', 'Stock Manager'])
         .recordSupplierInvoices,
     ).toBe(true);
+  });
+
+  it('lets only the owner pay suppliers, as their ERPNext roles allow', () => {
+    expect(capabilitiesFor('owner').paySuppliers).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(capabilitiesFor(persona).paySuppliers).toBe(false);
+    }
+    expect(capabilitiesFor('owner', ['System Manager']).paySuppliers).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager']).paySuppliers).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

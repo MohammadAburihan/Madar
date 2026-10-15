@@ -252,6 +252,14 @@ describe('buildHomeView', () => {
     expect(view.actions.map((a) => a.id)).not.toContain('buy');
   });
 
+  it("hides Pay supplier from an owner whose roles can't record payments", () => {
+    const view = buildHomeView(
+      { ...input(), capabilities: { paySuppliers: false } },
+      realTranslator('en'),
+    );
+    expect(view.actions.map((a) => a.id)).not.toContain('paySupplier');
+  });
+
   it("hides Receive goods from a user whose roles can't post receipts", () => {
     const view = buildHomeView(
       { ...input({ persona: 'warehouse' }), capabilities: { receiveGoods: false } },

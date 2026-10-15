@@ -1148,6 +1148,90 @@
         "title": "Record this invoice in ERPNext",
         "sharedReceipt": "A receipt for this order also holds another order's goods. Record the supplier's invoice in ERPNext so each order is billed correctly.",
         "charges": "These receipts carry fixed charges such as freight, which Madar can't combine into one invoice yet. Record the supplier's invoice in ERPNext."
+      },
+      "pay": "Pay supplier",
+      "viewPayment": "View payment record"
+    },
+    "pay": {
+      "title": "Pay supplier",
+      "subtitle": "{{supplier}} · {{invoice}}",
+      "invoice": "Invoice to pay",
+      "invoiceOption": "{{invoice}} · Outstanding {{amount}}",
+      "amount": "Amount to pay *",
+      "from": "Pay from",
+      "chooseAccount": "Choose account",
+      "allocation": "Allocation",
+      "allocationValue": "{{amount}} to {{invoice}}",
+      "amountError": "Enter an amount above 0 and up to {{max}}",
+      "reviewTitle": "Review payment",
+      "review": "Pay {{amount}} from {{account}}. The supplier invoice will have {{left}} outstanding. This does not receive goods.",
+      "reviewFull": "Pay {{amount}} from {{account}}. The supplier invoice will be paid in full. This does not receive goods.",
+      "confirm": "Confirm payment · {{amount}}",
+      "confirming": "Recording…",
+      "saveDraft": "Save draft",
+      "savingDraft": "Saving…",
+      "draftSaved": {
+        "title": "Draft saved",
+        "message": "{{payment}} is saved in ERPNext as a draft. Confirm it here when you're ready."
+      },
+      "nothingToPay": {
+        "title": "Nothing to pay",
+        "message": "This supplier has no unpaid invoices in {{currency}}."
+      },
+      "noAccounts": {
+        "title": "No account to pay from",
+        "message": "Set up a Mode of Payment with an account in ERPNext first."
+      },
+      "noAccess": {
+        "title": "You can't pay suppliers",
+        "message": "Paying suppliers is for the owner."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't record this payment",
+          "message": "ERPNext didn't allow it for your role. Nothing was paid."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The payment wasn't sent. Check the connection and try again."
+        },
+        "error": {
+          "title": "The payment wasn't recorded",
+          "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "changed": {
+          "title": "An earlier payment was already recorded",
+          "message": "A payment went through before your latest changes. Check the invoice before paying again; confirming now records a new payment."
+        }
+      },
+      "reload": "Reload invoice",
+      "notCreated": {
+        "title": "The payment wasn't recorded",
+        "message": "ERPNext has no payment for this request. Check the details and confirm again."
+      },
+      "checking": {
+        "title": "Checking your payment",
+        "cardTitle": "We didn't get a final answer",
+        "cardMessage": "The payment may have been recorded. Check the result instead of paying again, so the supplier isn't paid twice.",
+        "planned": "Planned payment"
+      }
+    },
+    "payment": {
+      "recordedTitle": "Payment recorded",
+      "pageTitle": "Supplier payment",
+      "partial": "Partial payment",
+      "full": "Paid in full",
+      "recordedCard": "{{amount}} recorded",
+      "recordedMessage": "Supplier invoice total {{total}}. {{left}} remains outstanding.",
+      "recordedMessageFull": "Supplier invoice total {{total}}. Nothing remains outstanding.",
+      "pageMessage": "This payment belongs to {{order}}. {{left}} remains due on the supplier invoice.",
+      "pageMessageFull": "This payment belongs to {{order}}. The supplier invoice is paid in full.",
+      "paidFrom": "Paid from",
+      "viewInvoice": "View supplier invoice",
+      "workspace": "Open purchasing workspace",
+      "loadFailed": {
+        "title": "This payment couldn't load",
+        "message": "Check the connection and try again."
       }
     }
   }

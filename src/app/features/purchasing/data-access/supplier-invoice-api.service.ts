@@ -19,6 +19,7 @@ import {
 interface InvoiceDoc {
   name: string;
   docstatus: number;
+  supplier: string;
   supplier_name: string;
   bill_no: string | null;
   currency: string;
@@ -178,6 +179,7 @@ export class SupplierInvoiceApiService {
     return {
       name: doc.name,
       billNo: doc.bill_no || null,
+      supplier: doc.supplier,
       supplierName: doc.supplier_name,
       order: doc.items.find((i) => i.purchase_order)?.purchase_order ?? null,
       currency: doc.currency,

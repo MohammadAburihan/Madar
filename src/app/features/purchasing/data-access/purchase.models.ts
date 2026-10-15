@@ -117,6 +117,7 @@ export interface LinkedPayment {
 export interface SupplierInvoice {
   name: string;
   billNo: string | null;
+  supplier: string;
   supplierName: string;
   order: string | null;
   currency: string;
@@ -133,6 +134,33 @@ export interface OrderInvoice {
   currency: string;
   total: number;
   outstanding: number;
+}
+
+/** A supplier invoice that still owes something, as offered on "Pay supplier". */
+export interface UnpaidSupplierInvoice {
+  name: string;
+  billNo: string | null;
+  total: number;
+  outstanding: number;
+}
+
+export interface SupplierPaymentRequest {
+  reference: string;
+  invoice: string;
+  amount: number;
+  /** The Mode of Payment and its account the money is paid from. */
+  account: { mode: string; account: string; label: string };
+}
+
+export interface SupplierPayment {
+  name: string;
+  docstatus: number;
+  supplierName: string;
+  amount: number;
+  /** The account's name, e.g. "Main bank". */
+  paidFrom: string;
+  /** The supplier invoices it paid, with the amount allocated to each. */
+  invoices: { invoice: string; allocated: number }[];
 }
 
 export function paymentStatus(invoice: { total: number; outstanding: number }): PaymentStatus {

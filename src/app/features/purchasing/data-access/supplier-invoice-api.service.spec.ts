@@ -46,6 +46,7 @@ const mapper = (body: Record<string, unknown>) => {
 const POSTED = {
   name: 'PINV-0068',
   docstatus: 1,
+  supplier: 'Green Clay',
   supplier_name: 'Green Clay',
   bill_no: 'GC-8831',
   currency: 'ILS',
@@ -318,6 +319,7 @@ describe('SupplierInvoiceApiService', () => {
     expect(await api().invoice('PINV-0068')).toEqual({
       name: 'PINV-0068',
       billNo: 'GC-8831',
+      supplier: 'Green Clay',
       supplierName: 'Green Clay',
       order: 'PO-2048',
       currency: 'ILS',
