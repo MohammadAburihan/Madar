@@ -62,6 +62,15 @@ describe('SupplyStore', () => {
     ]).toEqual(['Main warehouse - RN', '8', 3, 1, true]);
   });
 
+  it('never buys what is still in stock, sending part of a warehouse or nothing valid yet', async () => {
+    const { store } = await loaded();
+    store.setQty('5');
+    // 7 still needed: 3 left in Main and 3 in Garden shop, so 1 to buy.
+    expect([store.elsewhere(), store.shortfall()]).toEqual([6, 1]);
+    store.setQty('20');
+    expect([store.elsewhere(), store.shortfall()]).toEqual([11, 1]);
+  });
+
   it('counts open purchase orders against the shortfall', async () => {
     const { store } = await loaded(() =>
       Promise.resolve({ ...PLAN, pendingOrders: [{ name: 'PO-2049', qty: 4 }] }),

@@ -196,6 +196,7 @@ const MANAGE_PROJECTS_NEEDS = [
 const SUPPLY_PROJECTS_NEEDS = [
   ['Projects User', 'Projects Manager'], // read Project
   ['Stock User', 'Stock Manager'], // read Material Request and Bin; create and submit Stock Entry
+  ['Stock User', 'Accounts Manager'], // read Stock Ledger Entry (the project's site stock); Stock Manager can't
 ];
 
 /**

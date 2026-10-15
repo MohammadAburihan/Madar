@@ -174,6 +174,14 @@ describe('capabilitiesFor', () => {
     // A warehouse worker also needs Projects User to read the project in v16.
     expect(capabilitiesFor('warehouse', ['Stock User']).supplyProjects).toBe(false);
     expect(capabilitiesFor('warehouse', ['Stock User', 'Projects User']).supplyProjects).toBe(true);
+    // Stock Manager can't read the stock ledger the site stock comes from; Accounts Manager can.
+    expect(
+      capabilitiesFor('projectManager', ['Projects User', 'Stock Manager']).supplyProjects,
+    ).toBe(false);
+    expect(
+      capabilitiesFor('owner', ['Projects Manager', 'Stock Manager', 'Accounts Manager'])
+        .supplyProjects,
+    ).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

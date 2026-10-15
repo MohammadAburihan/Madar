@@ -22,7 +22,7 @@ Salesperson or Warehouse worker.
 Supplying a project reads the project, which ERPNext allows only Projects User or Manager. A store associate who
 supplies projects therefore also needs **Projects User**; a warehouse worker given Projects User becomes a Project
 manager, who supplies projects too. Roles that only supply see the project without its budget and costs, and can't
-edit it.
+edit it. The plan reads the stock ledger, which v16 opens to Stock User and Accounts Manager but not Stock Manager.
 
 The purchasing officer holds **Accounts User** because ERPNext v16 lets only Accounts User/Manager create supplier
 invoices (decided 14 Oct 2026). Accounts User could also record payments in ERPNext; Madar still keeps paying suppliers

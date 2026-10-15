@@ -41,6 +41,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     Review pass 3 (2 medium) fixed: the prefilled item is looked up by its exact code (and the form says when it can't
     be bought); the shortfall to buy leaves out what other warehouses still hold, and the plan says to send it from
     there.
+    Review pass 4 (3 medium) fixed: what stays in the chosen warehouse also counts as still in stock (with a partial or
+    empty quantity); supplying needs a role that can read the stock ledger (Stock User or Accounts Manager).
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

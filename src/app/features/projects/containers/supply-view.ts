@@ -42,7 +42,7 @@ export function planRows(
   return rows;
 }
 
-/** "Supply in two parts: move 8 now, buy 4 more", sending the rest from other warehouses, or all of it now. */
+/** "Supply in two parts: move 8 now, buy 4 more", the rest in another delivery, or all of it now. */
 export function supplyAdvice(
   sending: number,
   shortfall: number,

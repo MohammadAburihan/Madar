@@ -61,12 +61,11 @@ export class SupplyStore {
     const ordered = plan.pendingOrders.reduce((sum, o) => sum + o.qty, 0);
     return Math.max(Math.round((plan.need - sending - ordered) * 1e6) / 1e6, 0);
   });
-  /** What the other warehouses can still send: the business already owns it, so it isn't bought. */
+  /** What warehouses can still send after this delivery: the business already owns it, so it isn't bought. */
   readonly elsewhere = computed(() => {
-    const other = (this.plan()?.sources ?? [])
-      .filter((s) => s.warehouse !== this.from())
-      .reduce((sum, s) => sum + s.qty, 0);
-    return Math.round(Math.min(this.remaining(), other) * 1e6) / 1e6;
+    const stock = (this.plan()?.sources ?? []).reduce((sum, s) => sum + s.qty, 0);
+    const sending = this.qtyValid() ? this.qty() : 0;
+    return Math.round(Math.max(Math.min(this.remaining(), stock - sending), 0) * 1e6) / 1e6;
   });
   /** What no warehouse holds and no order brings: the shortfall to buy. */
   readonly shortfall = computed(

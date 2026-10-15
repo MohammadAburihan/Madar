@@ -1506,11 +1506,11 @@
       "twoParts": {
         "title": "Supply in two parts",
         "message": "Move {{now}} now. Buy {{later}} more; ordered units stay pending until received.",
-        "messageElsewhere": "Move {{now}} now and {{rest}} from your other warehouses. Buy {{later}} more; ordered units stay pending until received."
+        "messageElsewhere": "Move {{now}} now and {{rest}} more from stock in another delivery. Buy {{later}} more; ordered units stay pending until received."
       },
       "elsewhere": {
-        "title": "Send the rest from another warehouse",
-        "message": "Move {{now}} now. {{rest}} more are in your other warehouses; supply again from there."
+        "title": "Send the rest in another delivery",
+        "message": "Move {{now}} now. {{rest}} more are still in stock; send them in another delivery."
       },
       "allNow": {
         "title": "Supply now",

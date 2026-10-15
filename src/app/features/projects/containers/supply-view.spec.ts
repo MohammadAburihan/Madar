@@ -34,11 +34,11 @@ describe('supply view', () => {
     expect(visible(view.supplyAdvice(8, 0, 0, en)).title).toBe('Supply now');
     expect(visible(view.supplyAdvice(8, 0, 3, en))).toEqual({
       tone: 'tint',
-      title: 'Send the rest from another warehouse',
-      message: 'Move 8 now. 3 more are in your other warehouses; supply again from there.',
+      title: 'Send the rest in another delivery',
+      message: 'Move 8 now. 3 more are still in stock; send them in another delivery.',
     });
     expect(visible(view.supplyAdvice(8, 1, 3, ar)).message).toBe(
-      'انقل 8 الآن و3 من مستودعاتك الأخرى، واشترِ 1 إضافية. تظل الوحدات المطلوبة معلّقة حتى استلامها.',
+      'انقل 8 الآن و3 من المخزون في توريد آخر، واشترِ 1 إضافية. تظل الوحدات المطلوبة معلّقة حتى استلامها.',
     );
     expect(visible(view.planRows(PLAN, MAIN, 4, ar))[0]).toEqual({
       label: 'متطلبات المشروع',
