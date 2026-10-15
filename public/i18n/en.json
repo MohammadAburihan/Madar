@@ -37,14 +37,16 @@
       "salesperson": "Ready for your next sale?",
       "warehouse": "Today in the warehouse",
       "storeAssociate": "Today at the store",
-      "purchasing": "Today in purchasing"
+      "purchasing": "Today in purchasing",
+      "projectManager": "Today on your projects"
     },
     "role": {
       "owner": "Owner",
       "salesperson": "Salesperson",
       "warehouse": "Warehouse worker",
       "storeAssociate": "Store associate",
-      "purchasing": "Purchasing officer"
+      "purchasing": "Purchasing officer",
+      "projectManager": "Project manager"
     },
     "new": "+ New",
     "actionsHeading": "What needs doing?",
@@ -1336,5 +1338,145 @@
       "cardMessage": "The expense may have been recorded. Check the result instead of recording it again, so it isn't counted twice.",
       "planned": "Planned expense"
     }
+  },
+  "project": {
+    "title": "Projects",
+    "subtitle": "Business projects",
+    "newProject": "New project",
+    "card": "{{title}} · {{name}}",
+    "customerProject": "Customer project · {{customer}}",
+    "internalProject": "Internal project · No customer required",
+    "empty": "No projects yet.",
+    "loading": "Loading projects…",
+    "error": {
+      "title": "Projects couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "You can't see projects",
+      "message": "Your ERPNext role doesn't include projects. Ask the owner if you need them."
+    },
+    "retry": "Try again",
+    "back": "Back",
+    "status": {
+      "open": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "overview": {
+      "customerSubtitle": "{{customer}} · Site project",
+      "internalSubtitle": "Internal project · {{name}}",
+      "budget": "Budget",
+      "actual": "Actual",
+      "remaining": "Remaining",
+      "tasks": "Next tasks",
+      "noTasks": "No open tasks.",
+      "taskDetail": "{{due}} · {{owners}}",
+      "noDue": "No date",
+      "requirements": "Material requirement",
+      "noRequirements": "No material requirements yet.",
+      "requirementLine": "{{item}} · {{code}}",
+      "requirementStatus": "{{required}} needed · {{available}} available",
+      "attachments": "Attachments",
+      "noAttachments": "No attachments.",
+      "linked": "Linked records",
+      "noLinked": "No linked records yet.",
+      "kinds": {
+        "sale": "Sale",
+        "order": "Sales order",
+        "purchase": "Purchase",
+        "expense": "Expense"
+      },
+      "addRequirement": "Add material requirement",
+      "edit": "Edit project",
+      "loadFailed": {
+        "title": "This project couldn't load",
+        "message": "Check the connection and try again."
+      }
+    },
+    "form": {
+      "newTitle": "New project",
+      "editTitle": "Edit project",
+      "required": "Required fields marked *",
+      "name": "Project name *",
+      "type": "Project type *",
+      "customerType": "Customer project",
+      "internalType": "Internal project",
+      "customer": "Customer · required for customer projects *",
+      "searchCustomer": "Search customer name or phone",
+      "noCustomers": "No customers match.",
+      "chosenCustomer": "Customer: {{customer}}",
+      "changeCustomer": "Change customer",
+      "budget": "Budget · optional",
+      "plannedDate": "Planned date · optional",
+      "internalTitle": "Internal project?",
+      "internalMessage": "Choose Internal to hide the customer requirement. Keep budget and materials.",
+      "save": "Save project",
+      "saving": "Saving…",
+      "failed": {
+        "title": "The project wasn't saved",
+        "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "noAccess": {
+        "title": "You can't create or edit projects",
+        "message": "Your ERPNext role doesn't allow it. Ask the owner if you need to."
+      },
+      "offline": {
+        "title": "We couldn't confirm the save",
+        "message": "Check the connection and tap Save again. Madar checks first, so the project is never created twice."
+      }
+    },
+    "saved": {
+      "title": "Project saved",
+      "subtitle": "{{name}} · {{business}}",
+      "card": "Confirmed",
+      "message": "{{title}} is ready for material requests. No stock moved.",
+      "open": "Open project",
+      "all": "All projects"
+    },
+    "requirement": {
+      "title": "Add material requirement",
+      "subtitle": "{{project}} · {{name}}",
+      "search": "Search item",
+      "placeholder": "Search name, code or barcode",
+      "noResults": "No stock items match.",
+      "qty": "Quantity needed *",
+      "qtyError": "Enter a quantity above 0",
+      "chosen": "{{item}} · {{code}}",
+      "change": "Change item",
+      "note": "Records what the project needs. No stock moves until it is supplied.",
+      "confirm": "Add requirement",
+      "confirming": "Adding…",
+      "failed": {
+        "permission": {
+          "title": "You can't add requirements",
+          "message": "ERPNext didn't allow it for your role. Nothing was added."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The requirement wasn't sent. Check the connection and try again."
+        },
+        "error": {
+          "title": "The requirement wasn't added",
+          "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "warehouse": {
+          "title": "The project sites warehouse is missing",
+          "message": "Madar keeps site stock in a 'Project sites' warehouse and couldn't create it for your role. Ask the owner to add it in ERPNext."
+        },
+        "changed": {
+          "title": "An earlier version was already added",
+          "message": "The requirement was added before your latest changes. Check the project before adding again; adding now records a new requirement."
+        }
+      },
+      "unresolved": {
+        "title": "We didn't get a final answer",
+        "message": "The requirement may have been added. Check the result instead of adding it again."
+      },
+      "check": "Check result",
+      "checking": "Checking…",
+      "pending": "Still not resolved. Try again in a moment."
+    },
+    "noCustomer": "No customer set"
   }
 }

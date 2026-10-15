@@ -39,13 +39,12 @@ describe('buildShellView', () => {
     }
   });
 
-  it('hides Sales and Money from the purchasing officer', () => {
+  it('hides Sales, Money and Projects from the purchasing officer', () => {
     expect(build('purchasing').desktopNav.map((i) => i.id)).toEqual([
       'home',
       'purchases',
       'inventory',
       'contacts',
-      'projects',
       'settings',
     ]);
     expect(build('purchasing').mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
@@ -67,6 +66,22 @@ describe('buildShellView', () => {
     expect(view.mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
     expect(view.desktopNav.map((i) => i.id)).not.toContain('money');
     expect(view.wordmark).toBe('مدار');
+  });
+
+  it('shows Projects to the owner and the project manager only, now that it is a real page', () => {
+    for (const persona of ['owner', 'projectManager'] as const) {
+      expect(build(persona).desktopNav.map((i) => i.id)).toContain('projects');
+    }
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(build(persona).desktopNav.map((i) => i.id)).not.toContain('projects');
+    }
+    expect(build('projectManager').desktopNav.map((i) => i.id)).toEqual([
+      'home',
+      'inventory',
+      'contacts',
+      'projects',
+      'settings',
+    ]);
   });
 });
 

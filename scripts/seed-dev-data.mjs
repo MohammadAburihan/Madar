@@ -358,6 +358,13 @@ const users = [
     // Purchasing officer; Accounts User lets her record supplier invoices (see docs/PERMISSIONS.md).
     roles: ['Purchase User', 'Stock User', 'Accounts User'],
   },
+  {
+    email: 'yara@rehan.example',
+    first_name: 'Yara',
+    last_name: 'Nasser',
+    // Project manager: runs projects and requests and supplies their materials.
+    roles: ['Projects User', 'Stock User'],
+  },
 ];
 for (const u of users) {
   const [existing] = await list('User', { name: u.email });

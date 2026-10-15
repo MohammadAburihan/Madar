@@ -43,7 +43,8 @@ export class HomeApiService {
   async load(scope: HomeScope): Promise<HomeLoadResult> {
     const ctx: LoadContext = { ...scope, forbidden: false, succeeded: false };
     const { persona } = ctx;
-    const sells = persona !== 'warehouse' && persona !== 'purchasing';
+    const sells =
+      persona !== 'warehouse' && persona !== 'purchasing' && persona !== 'projectManager';
     const stocks = persona !== 'salesperson';
     const [todaySales, receivables, invoicesDue, drafts, deliveries, supply, lowStock] =
       await Promise.all([

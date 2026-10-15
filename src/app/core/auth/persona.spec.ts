@@ -23,4 +23,10 @@ describe('personaFor', () => {
   it('limits both sales roles to their own sales', () => {
     expect(OWN_SALES_ONLY).toEqual(['salesperson', 'storeAssociate']);
   });
+
+  it('maps projects roles without a sales role to the project manager', () => {
+    expect(personaFor(['Projects User', 'Stock User'])).toBe('projectManager');
+    expect(personaFor(['Projects User', 'Sales User', 'Stock User'])).toBe('storeAssociate');
+    expect(personaFor(['Projects Manager', 'System Manager'])).toBe('owner');
+  });
 });

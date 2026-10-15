@@ -27,6 +27,11 @@ export function formatShortDate(isoDate: string, language: Language): string {
   return `${d} ${month.format(date)} ${y}`;
 }
 
+/** An ERPNext `YYYY-MM-DD` date without its year, for dates close at hand: "12 Oct" / "12 أكتوبر". */
+export function formatDayMonth(isoDate: string, language: Language): string {
+  return formatShortDate(isoDate, language).replace(/ \d{4}$/, '');
+}
+
 /** Calendar days from `today` to an ERPNext `YYYY-MM-DD` date (negative when overdue). */
 export function daysUntil(isoDate: string, today: Date): number {
   const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
