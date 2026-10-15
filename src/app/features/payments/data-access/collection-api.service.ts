@@ -8,6 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
+import { spreadAllocation, withoutLocalFlags } from '../../../core/erpnext/payment-entry';
 import { round2 } from '../../../core/format/number';
 import {
   CollectedInvoice,
@@ -177,7 +178,7 @@ export class CollectionApiService {
       reference_date: first.posting_date,
       remarks: `Madar collection ${request.reference}`,
       references: entries.flatMap((entry, i) =>
-        spread(entry.references, request.allocations[i].amount),
+        spreadAllocation(entry.references, request.allocations[i].amount),
       ),
     };
   }
@@ -224,27 +225,6 @@ export class CollectionApiService {
       }),
     };
   }
-}
-
-/**
- * An invoice with payment terms comes back as one reference row per term. Each row's
- * `outstanding_amount` is the whole invoice's; what the term still owes is `payment_term_outstanding`.
- * Fill the rows in order so no term is allocated more than it owes.
- */
-function spread(rows: Record<string, unknown>[], amount: number): Record<string, unknown>[] {
-  let left = amount;
-  return rows
-    .map((row, i) => {
-      const owed = Number(row['payment_term_outstanding'] ?? row['outstanding_amount'] ?? 0);
-      const share = i === rows.length - 1 ? left : round2(Math.min(left, owed));
-      left = round2(left - share);
-      return { ...row, allocated_amount: share };
-    })
-    .filter((row) => row.allocated_amount > 0);
-}
-
-function withoutLocalFlags(doc: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(doc).filter(([key]) => !key.startsWith('__')));
 }
 
 function samePayment(payment: PaymentDoc, request: CollectionRequest): boolean {

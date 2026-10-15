@@ -52,11 +52,13 @@ const PREVIEW: InvoicePreview = {
 const INVOICE: SupplierInvoice = {
   name: 'PINV-0068',
   billNo: 'GC-8831',
+  supplier: 'Green Clay',
   supplierName: 'Green Clay',
   order: 'PO-2048',
   currency: 'ILS',
   total: 270,
   outstanding: 270,
+  submitted: true,
   cancelled: false,
   payments: [],
 };

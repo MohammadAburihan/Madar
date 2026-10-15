@@ -15,6 +15,7 @@ _Last updated: 14 Oct 2026_
 | #7 | **Move stock** between warehouses and the **Inventory** page (balances, low/out of stock, movement history) |
 | #12 | **Purchase orders** (step 3a): the Purchasing officer role, the Purchasing workspace, creating and confirming an order, the order page |
 | #13 | **Receive goods** (step 3b): part or all of an order into a warehouse, the remainder later; checking a timed-out result is now guarded in every task flow; buying prices hidden from receiving roles |
+| #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
@@ -24,22 +25,18 @@ Split into PRs, each through the delivery loop:
 - **3a — Purchase orders**: merged (#12). Deferred (low): the first "Save draft" isn't looked up by its reference
   after a dropped connection, so tapping it again can leave a second unsubmitted draft.
 - **3b — Receive goods**: merged (#13).
-- **3c-1 — Supplier invoice** (this PR): record the supplier's invoice for the goods received and not yet billed,
-  the invoice page with its payments, billing on the order page and in the workspace panel. Owner and purchasing
-  officer (Accounts User or Manager in ERPNext).
-  Review pass 1 (2 medium, 3 low) fixed.
-  Review pass 2 (3 medium, 2 low) fixed: totals use ERPNext's rounded total, "Billed" is the order's own share,
-  only this order's rows are billed, the preview keeps taxes when rows are left out, and recording refuses to post
-  when the receipts were billed elsewhere meanwhile.
-  Review pass 3 (1 high, 1 medium, 1 low) fixed: a leftover invoice draft is submitted, not deleted (Accounts User
-  can't delete invoices), and receipts Madar can't bill exactly (shared with another order, or several carrying fixed
-  charges) are sent to ERPNext with a message instead of being billed with a wrong total.
-  Review pass 4: two low items deferred. A leftover invoice draft from a failed attempt can't be deleted by the
-  purchasing officer (Accounts User has no delete on Purchase Invoice), so it stays in ERPNext as a draft. And for a
-  Desk invoice billing several orders, the order page's "Invoice paid / outstanding" lines are the whole invoice's,
-  while "Billed" is the order's share.
-- **3c-2 — Pay supplier**: the payment form, the recorded payment and its page, and "Pay supplier" on the invoice.
+- **3c-1 — Supplier invoice**: merged (#14). Deferred (low): leftover invoice drafts the purchasing officer can't
+  delete, and whole-invoice paid/outstanding lines for Desk invoices that bill several orders.
+- **3c-2 — Pay supplier** (this PR): the payment form with save draft, the recorded payment and its page, "Pay
+  supplier" and "View payment record" on the invoice, and Home's "Pay supplier" (opens the purchasing workspace).
   Owner only.
+  Review pass 1 (1 high, 1 medium, 2 low) fixed: the form never puts another invoice in place of the one opened
+  (another currency, or already paid) and says why; the opened invoice is always listed; the payment page shows the
+  invoice it was opened from; a timed-out draft save adopts the draft it inserted.
+  Review pass 2 (2 medium, 1 low) fixed: a failed or timed-out "Save draft" ends cleanly and leaves the task usable,
+  and the payment page shows the amount that paid this invoice.
+  Review pass 3: "Pay supplier" no longer shows on a draft invoice. Deferred (low), as for purchase-order drafts: a
+  "Save draft" whose insert times out and isn't found yet can leave a second unsubmitted draft.
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.

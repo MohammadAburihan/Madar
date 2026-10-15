@@ -46,6 +46,7 @@ const mapper = (body: Record<string, unknown>) => {
 const POSTED = {
   name: 'PINV-0068',
   docstatus: 1,
+  supplier: 'Green Clay',
   supplier_name: 'Green Clay',
   bill_no: 'GC-8831',
   currency: 'ILS',
@@ -318,14 +319,21 @@ describe('SupplierInvoiceApiService', () => {
     expect(await api().invoice('PINV-0068')).toEqual({
       name: 'PINV-0068',
       billNo: 'GC-8831',
+      supplier: 'Green Clay',
       supplierName: 'Green Clay',
       order: 'PO-2048',
       currency: 'ILS',
       total: 270,
       outstanding: 170,
+      submitted: true,
       cancelled: false,
       payments: [{ name: 'PAY-0155', amount: 100, account: 'Main bank' }],
     });
+  });
+
+  it("reads a draft invoice as not submitted, so it isn't offered for payment", async () => {
+    fakeErpnext({}, {}, { 'Purchase Invoice/PINV-0068': { ...POSTED, docstatus: 0 } });
+    expect((await api().invoice('PINV-0068')).submitted).toBe(false);
   });
 
   it("lists an order's invoices once each, though ERPNext returns a row per billed line", async () => {

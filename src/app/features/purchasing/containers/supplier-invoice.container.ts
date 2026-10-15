@@ -49,8 +49,27 @@ import { invoiceView } from './invoice-view';
     } @else if (view(); as v) {
       <app-page-heading [title]="v.title" [subtitle]="v.subtitle" />
       <app-invoice-summary [chips]="v.chips" [totals]="v.totals" [payments]="v.payments" />
+      @let actions = primary();
+      @if (actions.pay) {
+        <button type="button" class="md-btn md-btn--primary" (click)="pay()">{{ txt.pay }}</button>
+      }
+      @if (actions.payment; as payment) {
+        <button
+          type="button"
+          class="md-btn"
+          [class.md-btn--primary]="!actions.pay"
+          (click)="openPayment(payment)"
+        >
+          {{ txt.viewPayment }}
+        </button>
+      }
       @if (invoice()?.order; as order) {
-        <button type="button" class="md-btn md-btn--primary" (click)="openOrder(order)">
+        <button
+          type="button"
+          class="md-btn"
+          [class.md-btn--primary]="!actions.pay && !actions.payment"
+          (click)="openOrder(order)"
+        >
           {{ txt.viewOrder }}
         </button>
       }
@@ -89,6 +108,8 @@ export class SupplierInvoiceContainer {
       back: t('sale.back'),
       title: t('purchase.invoice.title'),
       viewOrder: t('purchase.invoice.viewOrder'),
+      pay: t('purchase.invoice.pay'),
+      viewPayment: t('purchase.invoice.viewPayment'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
       noAccess: {
@@ -106,6 +127,26 @@ export class SupplierInvoiceContainer {
     const invoice = this.invoice();
     return invoice ? invoiceView(invoice, this.order(), false, this.i18n.tr()) : null;
   });
+
+  /** "Pay supplier" while something is owed (owner), and the latest payment's record once there is one. */
+  protected readonly primary = computed(() => {
+    const invoice = this.invoice();
+    return {
+      pay:
+        !!invoice && invoice.submitted && invoice.outstanding > 0.005 && this.caps().paySuppliers,
+      payment: invoice?.payments.at(-1)?.name ?? null,
+    };
+  });
+
+  protected pay(): void {
+    void this.router.navigate(['/purchases/invoice', this.name(), 'pay']);
+  }
+
+  protected openPayment(payment: string): void {
+    void this.router.navigate(['/purchases/payment', payment], {
+      queryParams: { invoice: this.name() },
+    });
+  }
 
   constructor() {
     effect(() => {
