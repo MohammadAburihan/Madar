@@ -43,6 +43,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     there.
     Review pass 4 (3 medium) fixed: what stays in the chosen warehouse also counts as still in stock (with a partial or
     empty quantity); supplying needs a role that can read the stock ledger (Stock User or Accounts Manager).
+    Review pass 5 (2 low), deferred: extra stock already at the site isn't counted against a later requirement's
+    shortfall; a quantity ERPNext refuses for an item counted in whole units needs a reload instead of an edit.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
