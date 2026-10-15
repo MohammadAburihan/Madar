@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
@@ -67,7 +68,7 @@ import { projectCard } from './project-view';
     }
   `,
 })
-export class ProjectsContainer implements OnInit {
+export class ProjectsContainer {
   private readonly api = inject(ProjectsApiService);
   private readonly business = inject(BusinessService);
   private readonly router = inject(Router);
@@ -97,10 +98,13 @@ export class ProjectsContainer implements OnInit {
     this.projects().map((p) => ({ id: p.name, view: projectCard(p, this.i18n.tr()) })),
   );
 
-  ngOnInit(): void {
-    if (this.caps().manageProjects) {
-      void this.load();
-    }
+  constructor() {
+    // The roles may arrive after the page opens (a session that recovers), so load once they allow it.
+    effect(() => {
+      if (this.caps().manageProjects) {
+        untracked(() => void this.load());
+      }
+    });
   }
 
   protected async load(): Promise<void> {

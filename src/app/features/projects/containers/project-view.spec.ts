@@ -95,4 +95,16 @@ describe('project view', () => {
       view.attachmentCard({ name: 'photo.jpg', size: 42_000, date: '2026-10-10' }, 'en').message,
     ).toBe('42 KB');
   });
+
+  it('shows only the date for a task nobody is assigned to', () => {
+    expect(
+      visible(
+        view.taskCard(
+          { subject: 'Order shelving', due: '2026-10-13', owners: [], status: 'Open' },
+          'en',
+          en,
+        ),
+      ).message,
+    ).toBe('13 Oct');
+  });
 });

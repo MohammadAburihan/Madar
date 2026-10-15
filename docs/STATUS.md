@@ -42,6 +42,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     Review pass 4 (2 medium, 1 low) fixed: remaining needs subtract the delivered quantity in the stock unit (transfer
     requests only), a retried save writes the latest details over the project it finds, and a rounded quantity
     still matches its draft.
+    Review pass 5 (3 low): two fixed (the list loads once the session recovers; an unassigned task shows only its date).
+    Deferred: a project with 20 or more undated open tasks shows only those as next tasks.
   - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 

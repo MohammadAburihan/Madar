@@ -67,10 +67,14 @@ export function budgetStats(project: ProjectDetail, currency: string, tr: Transl
 export function taskCard(task: ProjectTask, language: Language, tr: Translator): TextCard {
   return {
     title: task.subject,
-    message: tr.t('project.overview.taskDetail', {
-      due: task.due ? formatDayMonth(task.due, language) : tr.t('project.overview.noDue'),
-      owners: task.owners.join(', '),
-    }),
+    message: task.owners.length
+      ? tr.t('project.overview.taskDetail', {
+          due: task.due ? formatDayMonth(task.due, language) : tr.t('project.overview.noDue'),
+          owners: task.owners.join(', '),
+        })
+      : task.due
+        ? formatDayMonth(task.due, language)
+        : tr.t('project.overview.noDue'),
   };
 }
 
