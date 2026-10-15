@@ -92,7 +92,9 @@ export class InvoiceDoneContainer implements OnInit {
 
   protected readonly canPay = computed(
     () =>
-      this.ctx.session.capabilities().paySuppliers && (this.invoice()?.outstanding ?? 0) > 0.005,
+      this.ctx.session.capabilities().paySuppliers &&
+      !!this.invoice()?.submitted &&
+      (this.invoice()?.outstanding ?? 0) > 0.005,
   );
 
   protected pay(): void {

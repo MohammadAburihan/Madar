@@ -325,9 +325,15 @@ describe('SupplierInvoiceApiService', () => {
       currency: 'ILS',
       total: 270,
       outstanding: 170,
+      submitted: true,
       cancelled: false,
       payments: [{ name: 'PAY-0155', amount: 100, account: 'Main bank' }],
     });
+  });
+
+  it("reads a draft invoice as not submitted, so it isn't offered for payment", async () => {
+    fakeErpnext({}, {}, { 'Purchase Invoice/PINV-0068': { ...POSTED, docstatus: 0 } });
+    expect((await api().invoice('PINV-0068')).submitted).toBe(false);
   });
 
   it("lists an order's invoices once each, though ERPNext returns a row per billed line", async () => {

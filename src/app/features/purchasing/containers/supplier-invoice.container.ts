@@ -133,7 +133,7 @@ export class SupplierInvoiceContainer {
     const invoice = this.invoice();
     return {
       pay:
-        !!invoice && !invoice.cancelled && invoice.outstanding > 0.005 && this.caps().paySuppliers,
+        !!invoice && invoice.submitted && invoice.outstanding > 0.005 && this.caps().paySuppliers,
       payment: invoice?.payments.at(-1)?.name ?? null,
     };
   });

@@ -123,6 +123,8 @@ export interface SupplierInvoice {
   currency: string;
   total: number;
   outstanding: number;
+  /** Submitted, so it can be paid; a draft can't. */
+  submitted: boolean;
   cancelled: boolean;
   payments: LinkedPayment[];
 }

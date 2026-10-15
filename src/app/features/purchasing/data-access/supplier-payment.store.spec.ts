@@ -18,6 +18,7 @@ const INVOICE: SupplierInvoice = {
   currency: 'ILS',
   total: 270,
   outstanding: 270,
+  submitted: true,
   cancelled: false,
   payments: [],
 };
