@@ -38,6 +38,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     count as on order; after ERPNext refuses a delivery the plan must be reloaded before trying again.
     Review pass 2 (1 medium, 2 low) fixed: clickable requirement rows keep their layout; drop-shipped orders don't count
     as on order; a late search for an earlier supplier can't price the prefilled line.
+    Review pass 3 (2 medium) fixed: the prefilled item is looked up by its exact code (and the form says when it can't
+    be bought); the shortfall to buy leaves out what other warehouses still hold, and the plan says to send it from
+    there.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

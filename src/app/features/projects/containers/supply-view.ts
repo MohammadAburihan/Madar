@@ -42,22 +42,42 @@ export function planRows(
   return rows;
 }
 
-/** "Supply in two parts: move 8 now, buy 4 more", or all of it now. */
-export function supplyAdvice(sending: number, shortfall: number, tr: Translator) {
-  return shortfall > 0
-    ? {
-        tone: 'warning' as const,
-        title: tr.t('project.supply.twoParts.title'),
-        message: tr.t('project.supply.twoParts.message', {
-          now: qty(sending),
-          later: qty(shortfall),
-        }),
-      }
-    : {
-        tone: 'tint' as const,
-        title: tr.t('project.supply.allNow.title'),
-        message: tr.t('project.supply.allNow.message', { now: supplyUnits(sending, tr) }),
-      };
+/** "Supply in two parts: move 8 now, buy 4 more", sending the rest from other warehouses, or all of it now. */
+export function supplyAdvice(
+  sending: number,
+  shortfall: number,
+  elsewhere: number,
+  tr: Translator,
+) {
+  if (shortfall > 0) {
+    return {
+      tone: 'warning' as const,
+      title: tr.t('project.supply.twoParts.title'),
+      message:
+        elsewhere > 0
+          ? tr.t('project.supply.twoParts.messageElsewhere', {
+              now: qty(sending),
+              rest: qty(elsewhere),
+              later: qty(shortfall),
+            })
+          : tr.t('project.supply.twoParts.message', { now: qty(sending), later: qty(shortfall) }),
+    };
+  }
+  if (elsewhere > 0) {
+    return {
+      tone: 'tint' as const,
+      title: tr.t('project.supply.elsewhere.title'),
+      message: tr.t('project.supply.elsewhere.message', {
+        now: qty(sending),
+        rest: qty(elsewhere),
+      }),
+    };
+  }
+  return {
+    tone: 'tint' as const,
+    title: tr.t('project.supply.allNow.title'),
+    message: tr.t('project.supply.allNow.message', { now: supplyUnits(sending, tr) }),
+  };
 }
 
 /** "Main warehouse 8 → 0 · Project site 0 → 8 · Required 12 · 4 still to buy", as on the review mock. */

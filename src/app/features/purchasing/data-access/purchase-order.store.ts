@@ -34,6 +34,8 @@ export class PurchaseOrderStore {
   readonly project = signal<string | null>(null);
   /** An item and quantity to add once a supplier is chosen, from "Buy missing" on a project. */
   readonly prefill = signal<{ item: string; qty: number } | null>(null);
+  /** The project's item can't be bought (disabled or not a purchase item), so no line was added. */
+  readonly prefillMissing = signal<string | null>(null);
   readonly draft = signal<string | null>(null);
   readonly state = signal<OrderState>('idle');
   readonly failure = signal<OrderFailure | null>(null);
@@ -70,6 +72,7 @@ export class PurchaseOrderStore {
     this.lines.set([]);
     this.project.set(null);
     this.prefill.set(null);
+    this.prefillMissing.set(null);
     this.draft.set(null);
     this.state.set('idle');
     this.failure.set(null);
@@ -113,6 +116,7 @@ export class PurchaseOrderStore {
   forProject(project: string, item: string | null, qty: number | null): void {
     this.project.set(project);
     this.prefill.set(item && qty && qty > 0 ? { item, qty } : null);
+    this.prefillMissing.set(null);
   }
 
   /** Once a supplier is chosen, adds the queued item at that supplier's buying price. */
@@ -122,15 +126,24 @@ export class PurchaseOrderStore {
     if (!prefill || !supplier) {
       return;
     }
-    const [match] = (await this.searchItems(prefill.item, 'product')).filter(
-      (i) => i.code === prefill.item,
-    );
+    const business = await this.business.ensure();
+    await this.clock.ensure();
+    if (!business) {
+      return;
+    }
+    const match = await this.api.item(prefill.item, {
+      company: business.name,
+      supplier,
+      currency: business.currency,
+      date: toIsoDate(this.clock.now()),
+    });
     // A quicker supplier change owns the prefill now; this price is the previous supplier's.
     if (this.supplier() !== supplier || this.prefill() !== prefill) {
       return;
     }
     // Only once: a later supplier change keeps the line the user may have edited.
     this.prefill.set(null);
+    this.prefillMissing.set(match ? null : prefill.item);
     if (match && !this.lines().some((l) => l.item.code === match.code)) {
       this.lines.update((lines) => [...lines, { item: match, qty: prefill.qty, rate: match.rate }]);
     }

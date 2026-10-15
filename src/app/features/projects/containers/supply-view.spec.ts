@@ -26,12 +26,20 @@ describe('supply view', () => {
       { label: 'Main warehouse stock', value: '8 available' },
       { label: 'Shortfall to buy', value: '4 units', accent: true },
     ]);
-    expect(visible(view.supplyAdvice(8, 4, en))).toEqual({
+    expect(visible(view.supplyAdvice(8, 4, 0, en))).toEqual({
       tone: 'warning',
       title: 'Supply in two parts',
       message: 'Move 8 now. Buy 4 more; ordered units stay pending until received.',
     });
-    expect(visible(view.supplyAdvice(8, 0, en)).title).toBe('Supply now');
+    expect(visible(view.supplyAdvice(8, 0, 0, en)).title).toBe('Supply now');
+    expect(visible(view.supplyAdvice(8, 0, 3, en))).toEqual({
+      tone: 'tint',
+      title: 'Send the rest from another warehouse',
+      message: 'Move 8 now. 3 more are in your other warehouses; supply again from there.',
+    });
+    expect(visible(view.supplyAdvice(8, 1, 3, ar)).message).toBe(
+      'انقل 8 الآن و3 من مستودعاتك الأخرى، واشترِ 1 إضافية. تظل الوحدات المطلوبة معلّقة حتى استلامها.',
+    );
     expect(visible(view.planRows(PLAN, MAIN, 4, ar))[0]).toEqual({
       label: 'متطلبات المشروع',
       value: '12 وحدة',

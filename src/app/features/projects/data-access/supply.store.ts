@@ -51,8 +51,8 @@ export class SupplyStore {
       this.qty() > 0 &&
       this.qty() <= (this.source()?.qty ?? 0) + 1e-9,
   );
-  /** What stays to buy once this delivery goes, less what is already on order. */
-  readonly shortfall = computed(() => {
+  /** What this delivery leaves open, less what is already on order. */
+  private readonly remaining = computed(() => {
     const plan = this.plan();
     if (!plan) {
       return 0;
@@ -61,6 +61,17 @@ export class SupplyStore {
     const ordered = plan.pendingOrders.reduce((sum, o) => sum + o.qty, 0);
     return Math.max(Math.round((plan.need - sending - ordered) * 1e6) / 1e6, 0);
   });
+  /** What the other warehouses can still send: the business already owns it, so it isn't bought. */
+  readonly elsewhere = computed(() => {
+    const other = (this.plan()?.sources ?? [])
+      .filter((s) => s.warehouse !== this.from())
+      .reduce((sum, s) => sum + s.qty, 0);
+    return Math.round(Math.min(this.remaining(), other) * 1e6) / 1e6;
+  });
+  /** What no warehouse holds and no order brings: the shortfall to buy. */
+  readonly shortfall = computed(
+    () => Math.round((this.remaining() - this.elsewhere()) * 1e6) / 1e6,
+  );
   readonly ready = computed(
     () =>
       !!this.plan() &&

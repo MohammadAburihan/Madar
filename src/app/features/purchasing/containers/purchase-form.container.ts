@@ -97,6 +97,9 @@ const SEARCH_DELAY_MS = 250;
       @if (ctx.store.project(); as project) {
         <p class="muted">{{ forProject(project) }}</p>
       }
+      @if (ctx.store.prefillMissing(); as item) {
+        <p class="muted" role="status">{{ prefillMissing(item) }}</p>
+      }
       @if (ctx.store.supplier()) {
         <app-filter-chips [label]="txt.kind" [options]="txt.kinds" [(value)]="kind" />
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
@@ -268,6 +271,10 @@ export class PurchaseFormContainer implements OnInit {
 
   protected forProject(project: string): string {
     return this.ctx.i18n.tr().t('purchase.form.forProject', { project });
+  }
+
+  protected prefillMissing(item: string): string {
+    return this.ctx.i18n.tr().t('purchase.form.prefillMissing', { item });
   }
 
   protected chooseSupplier(supplier: string | null): void {

@@ -52,12 +52,14 @@ async function loaded(plan?: () => Promise<SupplyPlan>) {
 describe('SupplyStore', () => {
   it('suggests sending what the warehouse with the most holds, up to the need, and the shortfall to buy', async () => {
     const { store } = await loaded();
-    expect([store.from(), store.qtyInput(), store.shortfall(), store.ready()]).toEqual([
-      'Main warehouse - RN',
-      '8',
-      4,
-      true,
-    ]);
+    // Needs 12: 8 from Main now, 3 more sit in Garden shop, so only 1 is bought.
+    expect([
+      store.from(),
+      store.qtyInput(),
+      store.elsewhere(),
+      store.shortfall(),
+      store.ready(),
+    ]).toEqual(['Main warehouse - RN', '8', 3, 1, true]);
   });
 
   it('counts open purchase orders against the shortfall', async () => {

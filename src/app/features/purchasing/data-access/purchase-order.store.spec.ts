@@ -20,6 +20,7 @@ const PLANTER: PurchaseItem = {
 function setup() {
   const api = {
     searchItems: vi.fn().mockResolvedValue([PLANTER]),
+    item: vi.fn().mockResolvedValue(PLANTER),
     confirm: vi.fn(),
     saveDraft: vi.fn(),
     find: vi.fn(),
@@ -245,16 +246,28 @@ describe('PurchaseOrderStore', () => {
     const { store, api } = setup();
     await store.loadSuppliers();
     store.forProject('PROJ-0001', 'POT-30', 4);
-    let answerFirst: (items: PurchaseItem[]) => void = () => undefined;
-    api.searchItems
+    let answerFirst: (item: PurchaseItem) => void = () => undefined;
+    api.item
       .mockReturnValueOnce(new Promise((resolve) => (answerFirst = resolve)))
-      .mockResolvedValueOnce([{ ...PLANTER, rate: 40 }]);
+      .mockResolvedValueOnce({ ...PLANTER, rate: 40 });
     store.setSupplier('Green Clay');
     const first = store.applyPrefill();
     store.setSupplier('Blue Stone');
     await store.applyPrefill();
-    answerFirst([PLANTER]);
+    answerFirst(PLANTER);
     await first;
     expect(store.lines()).toEqual([{ item: { ...PLANTER, rate: 40 }, qty: 4, rate: 40 }]);
+  });
+
+  it("looks the project's item up by its exact code, and says so when it can't be bought", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'ITM-1', 4);
+    api.item.mockResolvedValueOnce(null);
+    store.setSupplier('Green Clay');
+    await store.applyPrefill();
+    expect(api.item.mock.calls[0][0]).toBe('ITM-1');
+    expect(api.searchItems).not.toHaveBeenCalled();
+    expect([store.lines(), store.prefillMissing()]).toEqual([[], 'ITM-1']);
   });
 });

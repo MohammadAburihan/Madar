@@ -895,7 +895,8 @@
       },
       "products": "Products",
       "services": "Services",
-      "forProject": "Bought for project {{project}}"
+      "forProject": "Bought for project {{project}}",
+      "prefillMissing": "{{item}} can't be bought, so it wasn't added. Check that it's an active purchase item."
     },
     "kind": {
       "product": "Product",
@@ -1504,7 +1505,12 @@
       "sendValue": "{{units}} · {{warehouse}} to site",
       "twoParts": {
         "title": "Supply in two parts",
-        "message": "Move {{now}} now. Buy {{later}} more; ordered units stay pending until received."
+        "message": "Move {{now}} now. Buy {{later}} more; ordered units stay pending until received.",
+        "messageElsewhere": "Move {{now}} now and {{rest}} from your other warehouses. Buy {{later}} more; ordered units stay pending until received."
+      },
+      "elsewhere": {
+        "title": "Send the rest from another warehouse",
+        "message": "Move {{now}} now. {{rest}} more are in your other warehouses; supply again from there."
       },
       "allNow": {
         "title": "Supply now",

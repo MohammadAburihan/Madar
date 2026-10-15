@@ -166,7 +166,7 @@ export class SupplyPlanContainer implements OnInit {
         store.qtyInput().trim() && !store.qtyValid()
           ? tr.t('project.supply.qtyError', { max: source?.qty ?? 0 })
           : null,
-      advice: sending > 0 ? supplyAdvice(sending, shortfall, tr) : null,
+      advice: sending > 0 ? supplyAdvice(sending, shortfall, store.elsewhere(), tr) : null,
       shortfall,
       toReview: tr.t('project.supply.toReview', { qty: sending }),
       buy: tr.t('project.supply.buy', { units: supplyUnits(shortfall, tr) }),
