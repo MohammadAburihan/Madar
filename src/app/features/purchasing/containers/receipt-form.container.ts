@@ -269,6 +269,10 @@ export class ReceiptFormContainer implements OnInit {
       void this.ctx.go('done', { replaceUrl: true });
       return;
     }
+    if (store.state() === 'confirmed') {
+      // The receipt was posted and shown (here by Back): this visit is a new receipt for the order.
+      store.start(store.orderName() ?? '');
+    }
     if (!store.order()) {
       void this.load();
     }

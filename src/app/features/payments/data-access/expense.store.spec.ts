@@ -122,6 +122,20 @@ describe('ExpenseStore', () => {
     expect(api.attachReceipt).toHaveBeenLastCalledWith('ACC-JV-0091', expect.any(File));
   });
 
+  it("attaches a new expense's receipt even after an earlier one's was attached", async () => {
+    const { store, api } = await filled();
+    store.setReceipt(receipt());
+    api.record.mockResolvedValueOnce('ACC-JV-0091').mockResolvedValueOnce('ACC-JV-0092');
+    await store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(store.receiptState()).toBe('attached');
+    store.state.set('idle');
+    await store.confirm();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(api.attachReceipt).toHaveBeenLastCalledWith('ACC-JV-0092', expect.any(File));
+    expect(store.receiptState()).toBe('attached');
+  });
+
   it("won't look the result up while the confirmation is still running", async () => {
     const { store, api } = await filled();
     api.record.mockReturnValue(new Promise(() => undefined));

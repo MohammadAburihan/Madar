@@ -26,6 +26,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   project and receipt photo, then review and record. The expense is a Journal Entry from the expense account to the
   cash or bank account, with the project on the expense row and the receipt attached after recording. Expenses join
   the Money page's history; its "Pay supplier" and "Record expense" shortcuts now open the real tasks. Owner only.
+  Review pass 1 (1 medium, 1 low) fixed: a task form reopened after its result was shown (browser Back) starts a new
+  task instead of editing the recorded one (expense, and the receipt, supplier invoice and supplier payment forms), and
+  a new expense's receipt is always attached.
 - **4b — Supply a project.**
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

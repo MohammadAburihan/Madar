@@ -191,6 +191,10 @@ export class ExpenseFormContainer implements OnInit {
       void this.ctx.go('recorded', { replaceUrl: true });
       return;
     }
+    if (store.state() === 'confirmed') {
+      // The expense was recorded and shown (here by Back): this visit is a new expense.
+      store.start();
+    }
     if (!store.loaded()) {
       void this.load();
     }

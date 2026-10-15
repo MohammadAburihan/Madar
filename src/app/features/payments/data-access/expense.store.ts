@@ -257,6 +257,8 @@ export class ExpenseStore {
   private finish(expense: string): void {
     this.result.set(expense);
     this.state.set('confirmed');
+    // A new expense's receipt starts over, whatever happened to an earlier one's.
+    this.receiptState.set('none');
     if (this.receipt()) {
       void this.attachReceipt();
     }
