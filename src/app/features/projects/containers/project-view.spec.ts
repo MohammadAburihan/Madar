@@ -49,7 +49,7 @@ describe('project view', () => {
       { label: 'Actual', value: 'ILS 1,320' },
       { label: 'Remaining', value: 'ILS 3,680' },
     ]);
-    expect(visible(view.taskCard(PROJECT.tasks[0], 'en', en))).toEqual({
+    expect(visible(view.taskCard(PROJECT.tasks![0], 'en', en))).toEqual({
       title: 'Prepare planting beds',
       message: '12 Oct · Salim',
     });
@@ -82,5 +82,17 @@ describe('project view', () => {
     const none = { ...PROJECT, customer: null, customerName: null };
     expect(visible(view.projectCard(none, en)).message).toBe('Customer project · No customer set');
     expect(visible(view.overviewHeading(none, en)).subtitle).toBe('No customer set · Site project');
+  });
+
+  it('leaves amounts out of linked records for roles that see no costs', () => {
+    expect(visible(view.linkedRows(PROJECT.linked, null, en))).toEqual([
+      { label: 'Expense', value: 'EX-019' },
+    ]);
+  });
+
+  it('shows small attachments in KB', () => {
+    expect(
+      view.attachmentCard({ name: 'photo.jpg', size: 42_000, date: '2026-10-10' }, 'en').message,
+    ).toBe('42 KB');
   });
 });

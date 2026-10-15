@@ -33,6 +33,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     replaced, never submitted stale; editing never saves over a project that didn't load; linked amounts are in the
     company currency and a split expense counts only its project's share; dated tasks come first; requirements count
     in the stock unit; Projects is hidden from roles that don't run them.
+    Review pass 2 (1 high, 2 medium, 3 low) fixed: linked order and expense amounts are hidden from roles that don't
+    see costs; the project type is set only where the site has it under that name (setup names them in its language);
+    requirements count what is still to deliver and skip stopped requests; tasks are left out for roles that can't
+    read them; a slow earlier load can't fill another project's edit form; small attachments show in KB.
   - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 

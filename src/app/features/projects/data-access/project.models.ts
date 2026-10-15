@@ -47,7 +47,8 @@ export interface ProjectDetail extends ProjectSummary {
   /** What the project's expense postings add up to; null for roles that can't read the ledger. */
   actual: number | null;
   plannedDate: string | null;
-  tasks: ProjectTask[];
+  /** Null when the role can't read tasks. */
+  tasks: ProjectTask[] | null;
   requirements: Requirement[];
   attachments: Attachment[];
   linked: LinkedRecord[];

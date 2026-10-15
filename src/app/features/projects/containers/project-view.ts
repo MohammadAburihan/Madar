@@ -94,20 +94,26 @@ export function attachmentCard(attachment: Attachment, language: Language): Text
     title: attachment.name,
     message:
       attachment.size !== null && attachment.size > 0
-        ? `${(attachment.size / 1_000_000).toFixed(1)} MB`
+        ? attachment.size >= 1_000_000
+          ? `${(attachment.size / 1_000_000).toFixed(1)} MB`
+          : `${Math.max(Math.round(attachment.size / 1000), 1)} KB`
         : formatShortDate(attachment.date, language),
   };
 }
 
 /** "Sale · SI-042 · ILS 500.00" for each linked record. */
+/** Amounts only when a currency is given (roles that see costs). */
 export function linkedRows(
   linked: readonly LinkedRecord[],
-  currency: string,
+  currency: string | null,
   tr: Translator,
 ): TotalRow[] {
   return linked.map((record) => ({
     label: tr.t(`project.overview.kinds.${record.kind}`),
-    value: [record.name, record.amount !== null ? formatMoney(record.amount, currency) : null]
+    value: [
+      record.name,
+      record.amount !== null && currency !== null ? formatMoney(record.amount, currency) : null,
+    ]
       .filter(Boolean)
       .join(' · '),
   }));

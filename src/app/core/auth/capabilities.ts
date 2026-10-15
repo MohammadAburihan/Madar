@@ -181,7 +181,7 @@ const RECORD_EXPENSES_NEEDS = [
 
 // Projects and tasks are Projects User/Manager doctypes; requirements are Material Requests (stock or purchase roles).
 const MANAGE_PROJECTS_NEEDS = [
-  ['Projects User', 'Projects Manager'], // read, create and write Project and Task
+  ['Projects User', 'Projects Manager'], // read, create and write Project (tasks need Projects User)
   ['Stock User', 'Stock Manager', 'Purchase User', 'Purchase Manager'], // create and submit Material Request
 ];
 

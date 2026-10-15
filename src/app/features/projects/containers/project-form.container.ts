@@ -161,6 +161,7 @@ export class ProjectFormContainer {
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
   private searchRun = 0;
+  private loadRun = 0;
 
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
@@ -274,10 +275,15 @@ export class ProjectFormContainer {
   }
 
   private async loadExisting(name: string): Promise<void> {
+    const run = ++this.loadRun;
     this.loading.set(true);
     this.loadFailed.set(false);
     try {
       const project = await this.api.project(name);
+      // Moving from one project's edit page to another's reuses this form: a slow earlier load must not win.
+      if (run !== this.loadRun) {
+        return;
+      }
       this.title.set(project.title);
       this.kind.set(project.kind);
       this.customer.set(
@@ -288,9 +294,13 @@ export class ProjectFormContainer {
       this.budget.set(project.budget ? project.budget.toFixed(2) : '');
       this.plannedDate.set(project.plannedDate ?? '');
     } catch {
-      this.loadFailed.set(true);
+      if (run === this.loadRun) {
+        this.loadFailed.set(true);
+      }
     } finally {
-      this.loading.set(false);
+      if (run === this.loadRun) {
+        this.loading.set(false);
+      }
     }
   }
 

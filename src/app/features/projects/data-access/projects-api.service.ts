@@ -64,8 +64,12 @@ function batches<T>(values: readonly T[], size = BATCH): T[][] {
 }
 
 /** A customer project has a customer, or is typed External in ERPNext; anything else is internal. */
+/**
+ * A project with a customer is a customer project. ERPNext's own type names follow the language the site was set
+ * up in, so they only break the tie for an "External" project without a customer.
+ */
 const kindOf = (type: string | null, customer: string | null): ProjectKind =>
-  type === 'External' || (type !== 'Internal' && !!customer) ? 'customer' : 'internal';
+  customer || type === 'External' ? 'customer' : 'internal';
 const statusOf = (status: string): ProjectStatus =>
   status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : 'open';
 
@@ -88,7 +92,8 @@ export class ProjectsApiService {
     const doc = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', name));
     const [names, tasks, requirements, attachments, linked, actual] = await Promise.all([
       this.customerNames(doc.customer ? [doc.customer] : []),
-      this.tasks(name).catch(() => []),
+      // Only Projects User reads tasks; for other roles the section is left out rather than shown empty.
+      this.tasks(name).catch(() => null),
       this.requirements(name, doc.company).catch(() => []),
       this.attachments(name).catch(() => []),
       this.linked(name).catch(() => []),
@@ -111,9 +116,14 @@ export class ProjectsApiService {
    * type with its customer; an internal one has none.
    */
   async save(company: string, request: ProjectRequest, existing: string | null): Promise<string> {
+    // Set the type only when the site has it under that name: setup creates them in its own language.
+    const types = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Project Type', { fields: ['name'], limit: 0 }),
+    ).catch(() => []);
+    const type = request.kind === 'internal' ? 'Internal' : 'External';
     const fields = {
       project_name: request.title.trim(),
-      project_type: request.kind === 'internal' ? 'Internal' : 'External',
+      ...(types.some((t) => t.name === type) ? { project_type: type } : {}),
       customer: request.kind === 'internal' ? null : request.customer,
       estimated_costing: request.budget ?? 0,
       expected_start_date: request.plannedDate,
@@ -339,24 +349,45 @@ export class ProjectsApiService {
   }
 
   /** What the project's material requests ask for, item by item, with the stock outside the project sites. */
+  /**
+   * What the project still needs, item by item: each open request's quantity less what has been delivered against
+   * it, in the stock unit (as Bin quantities are). Stopped requests no longer count.
+   */
   private async requirements(project: string, company: string): Promise<Requirement[]> {
-    const rows = await firstValueFrom(
+    const lines = await firstValueFrom(
       this.erpnext.list<{
+        project: string | null;
         item_code: string;
         item_name: string;
         stock_uom: string;
         stock_qty: number;
-      }>('Material Request Item', {
-        // In the stock unit, as Bin quantities are: a request in boxes of 12 counts 12 per box.
-        fields: ['item_code', 'item_name', 'stock_uom', 'stock_qty'],
-        filters: [
-          ['project', '=', project],
-          ['docstatus', '=', 1],
+        qty: number;
+        ordered_qty: number;
+      }>('Material Request', {
+        fields: [
+          'items.project as project',
+          'items.item_code as item_code',
+          'items.item_name as item_name',
+          'items.stock_uom as stock_uom',
+          'items.stock_qty as stock_qty',
+          'items.qty as qty',
+          'items.ordered_qty as ordered_qty',
         ],
-        parent: 'Material Request',
+        filters: [
+          ['Material Request Item', 'project', '=', project],
+          ['docstatus', '=', 1],
+          ['status', '!=', 'Stopped'],
+        ],
         limit: 0,
       }),
     );
+    // A request can hold other projects' rows too; delivered quantities are in the row's own unit.
+    const rows = lines
+      .filter((l) => l.project === project)
+      .map((l) => ({
+        ...l,
+        stock_qty: l.qty > 0 ? l.stock_qty * Math.max(1 - (l.ordered_qty || 0) / l.qty, 0) : 0,
+      }));
     const byItem = new Map<string, Requirement>();
     for (const row of rows) {
       const seen = byItem.get(row.item_code);

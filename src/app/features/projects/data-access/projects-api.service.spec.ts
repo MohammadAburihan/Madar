@@ -66,10 +66,36 @@ describe('ProjectsApiService', () => {
           },
         ],
         User: () => [{ name: 'yara@rehan.example', full_name: 'Yara' }],
-        'Material Request Item': () => [
-          { item_code: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit', stock_qty: 8 },
-          // A request made in boxes of 4 in Desk counts in the stock unit.
-          { item_code: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit', stock_qty: 4 },
+        'Material Request': () => [
+          {
+            project: 'PROJ-0001',
+            item_code: 'POT-30',
+            item_name: 'Ceramic planter',
+            stock_uom: 'Unit',
+            stock_qty: 8,
+            qty: 8,
+            ordered_qty: 0,
+          },
+          // A request in boxes of 4 counts in the stock unit; half of it was already delivered.
+          {
+            project: 'PROJ-0001',
+            item_code: 'POT-30',
+            item_name: 'Ceramic planter',
+            stock_uom: 'Unit',
+            stock_qty: 8,
+            qty: 2,
+            ordered_qty: 1,
+          },
+          // Another project's row on the same request doesn't count.
+          {
+            project: 'PROJ-0009',
+            item_code: 'POT-30',
+            item_name: 'Ceramic planter',
+            stock_uom: 'Unit',
+            stock_qty: 50,
+            qty: 50,
+            ordered_qty: 0,
+          },
         ],
         Bin: () => [
           { item_code: 'POT-30', warehouse: 'Main warehouse - RN', actual_qty: 8 },
@@ -120,22 +146,28 @@ describe('ProjectsApiService', () => {
     ]);
   });
 
-  it("leaves the cost out for a role that can't read the ledger", async () => {
+  it("leaves the cost and tasks out for a role that can't read them", async () => {
     fakeErpnext(
       {
         Account: () => [{ name: 'Travel Expenses - RN' }],
         'GL Entry': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+        Task: () => throwError(() => new HttpErrorResponse({ status: 403 })),
       },
       {},
       { 'Project/PROJ-0001': { ...PROJECT, project_type: 'Internal', customer: null } },
     );
     const project = await api().project('PROJ-0001');
-    expect([project.actual, project.kind, project.customerName]).toEqual([null, 'internal', null]);
+    expect([project.actual, project.kind, project.customerName, project.tasks]).toEqual([
+      null,
+      'internal',
+      null,
+      null,
+    ]);
   });
 
   it('creates a customer project as External with its customer, and an internal one without', async () => {
     const { postCalls } = fakeErpnext(
-      {},
+      { 'Project Type': () => [{ name: 'Internal' }, { name: 'External' }] },
       { 'frappe.client.insert': () => ({ name: 'PROJ-0002' }) },
     );
     await api().save(
@@ -169,6 +201,19 @@ describe('ProjectsApiService', () => {
       customer: null,
       estimated_costing: 0,
     });
+  });
+
+  it('leaves the type out where the site named its project types in another language', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Project Type': () => [{ name: 'داخلي' }, { name: 'خارجي' }] },
+      { 'frappe.client.insert': () => ({ name: 'PROJ-0002' }) },
+    );
+    await api().save(
+      'Rehan Nursery',
+      { title: 'Court', kind: 'internal', customer: null, budget: null, plannedDate: null },
+      null,
+    );
+    expect(postCalls[0].body['doc']).not.toHaveProperty('project_type');
   });
 
   it('saves changes over an existing project', async () => {
@@ -339,7 +384,7 @@ describe('ProjectsApiService', () => {
       {},
       { 'Project/PROJ-0001': PROJECT },
     );
-    expect((await api().project('PROJ-0001')).tasks[0].subject).toBe('Due soon');
+    expect((await api().project('PROJ-0001')).tasks![0].subject).toBe('Due soon');
   });
 
   it('replaces a remembered draft whose item or quantity changed, instead of submitting it stale', async () => {

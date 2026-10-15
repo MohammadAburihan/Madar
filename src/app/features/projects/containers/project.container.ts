@@ -62,7 +62,9 @@ import {
       <app-page-heading [title]="v.heading.title" [subtitle]="v.heading.subtitle" />
       <app-status-chip [label]="v.heading.chip.label" [tone]="v.heading.chip.tone" />
       <app-stat-card [stats]="v.stats" />
-      <app-project-section [heading]="txt.tasks" [items]="v.tasks" [empty]="txt.noTasks" />
+      @if (v.tasks) {
+        <app-project-section [heading]="txt.tasks" [items]="v.tasks" [empty]="txt.noTasks" />
+      }
       <app-project-section
         [heading]="txt.requirements"
         [rows]="v.requirements"
@@ -148,10 +150,11 @@ export class ProjectContainer {
     return {
       heading: overviewHeading(project, tr),
       stats: budgetStats(project, currency, tr),
-      tasks: project.tasks.map((task) => taskCard(task, language, tr)),
+      tasks: project.tasks?.map((task) => taskCard(task, language, tr)) ?? null,
       requirements: project.requirements.map((r) => requirementRow(r, tr)),
       attachments: project.attachments.map((a) => attachmentCard(a, language)),
-      linked: linkedRows(project.linked, currency, tr),
+      // Order values and expense amounts only for roles that see costs (docs/PERMISSIONS.md).
+      linked: linkedRows(project.linked, this.caps().seeCosts ? currency : null, tr),
     };
   });
 
