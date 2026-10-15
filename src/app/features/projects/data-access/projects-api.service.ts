@@ -115,7 +115,12 @@ export class ProjectsApiService {
    * Creates the project, or saves the changes over an existing one. A customer project is ERPNext's "External"
    * type with its customer; an internal one has none.
    */
-  async save(company: string, request: ProjectRequest, existing: string | null): Promise<string> {
+  async save(
+    company: string,
+    request: ProjectRequest,
+    existing: string | null,
+    reference: string,
+  ): Promise<string> {
     // Set the type only when the site has it under that name: setup creates them in its own language.
     const types = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Project Type', { fields: ['name'], limit: 0 }),
@@ -135,9 +140,26 @@ export class ProjectsApiService {
       );
       return saved.name;
     }
-    const inserted = await firstValueFrom(
+    // A save whose answer was lost may have created the project: find it by its reference before inserting again.
+    const [found] = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Project', {
+        fields: ['name'],
+        filters: [['notes', 'like', `%${reference}%`]],
+        limit: 1,
+      }),
+    );
+    if (found) {
+      return found.name;
+    }
+    const inserted = await confirmRequest(
       this.erpnext.post<ProjectDoc>('frappe.client.insert', {
-        doc: { doctype: 'Project', company, status: 'Open', ...fields },
+        doc: {
+          doctype: 'Project',
+          company,
+          status: 'Open',
+          notes: `Madar project ${reference}`,
+          ...fields,
+        },
       }),
     );
     return inserted.name;
@@ -417,7 +439,8 @@ export class ProjectsApiService {
         requirement.available += bin.actual_qty;
       }
     }
-    return [...byItem.values()];
+    // Fully delivered requests leave nothing to show.
+    return [...byItem.values()].filter((r) => r.required > 1e-6);
   }
 
   /** The company's stock warehouses that can supply a project: not groups, transit, or the project sites. */
@@ -565,13 +588,19 @@ export class ProjectsApiService {
     if (!unique.length) {
       return new Map();
     }
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ name: string; customer_name: string }>('Customer', {
-        fields: ['name', 'customer_name'],
-        filters: [['name', 'in', unique]],
-        limit: 0,
-      }),
-    ).catch(() => []);
+    const rows = (
+      await Promise.all(
+        batches(unique).map((group) =>
+          firstValueFrom(
+            this.erpnext.list<{ name: string; customer_name: string }>('Customer', {
+              fields: ['name', 'customer_name'],
+              filters: [['name', 'in', group]],
+              limit: 0,
+            }),
+          ).catch(() => []),
+        ),
+      )
+    ).flat();
     return new Map(rows.map((r) => [r.name, r.customer_name]));
   }
 }

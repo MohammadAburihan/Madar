@@ -167,7 +167,7 @@ describe('ProjectsApiService', () => {
 
   it('creates a customer project as External with its customer, and an internal one without', async () => {
     const { postCalls } = fakeErpnext(
-      { 'Project Type': () => [{ name: 'Internal' }, { name: 'External' }] },
+      { 'Project Type': () => [{ name: 'Internal' }, { name: 'External' }], Project: () => [] },
       { 'frappe.client.insert': () => ({ name: 'PROJ-0002' }) },
     );
     await api().save(
@@ -180,16 +180,19 @@ describe('ProjectsApiService', () => {
         plannedDate: '2026-10-20',
       },
       null,
+      'PRJ-REF',
     );
     await api().save(
       'Rehan Nursery',
       { title: 'Court', kind: 'internal', customer: 'CUST-LINA', budget: null, plannedDate: null },
       null,
+      'PRJ-REF',
     );
     expect(postCalls[0].body['doc']).toEqual({
       doctype: 'Project',
       company: 'Rehan Nursery',
       status: 'Open',
+      notes: 'Madar project PRJ-REF',
       project_name: 'Garden',
       project_type: 'External',
       customer: 'CUST-LINA',
@@ -212,6 +215,7 @@ describe('ProjectsApiService', () => {
       'Rehan Nursery',
       { title: 'Court', kind: 'internal', customer: null, budget: null, plannedDate: null },
       null,
+      'PRJ-REF',
     );
     expect(postCalls[0].body['doc']).not.toHaveProperty('project_type');
   });
@@ -226,6 +230,7 @@ describe('ProjectsApiService', () => {
       'Rehan Nursery',
       { title: 'Garden', kind: 'customer', customer: 'CUST-LINA', budget: 6000, plannedDate: null },
       'PROJ-0001',
+      'PRJ-REF',
     );
     expect(postCalls[0].body['doc']).toMatchObject({
       name: 'PROJ-0001',
@@ -443,5 +448,46 @@ describe('ProjectsApiService', () => {
     await expect(
       api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001'),
     ).rejects.toBeInstanceOf(PostedEarlierError);
+  });
+
+  it('finds a project a lost save already created instead of creating it twice', async () => {
+    const { postCalls, listCalls } = fakeErpnext({
+      'Project Type': () => [],
+      Project: () => [{ name: 'PROJ-0002' }],
+    });
+    expect(
+      await api().save(
+        'Rehan Nursery',
+        { title: 'Court', kind: 'internal', customer: null, budget: null, plannedDate: null },
+        null,
+        'PRJ-REF',
+      ),
+    ).toBe('PROJ-0002');
+    expect(postCalls).toEqual([]);
+    expect(listCalls.find((c) => c.doctype === 'Project')!.query.filters).toEqual([
+      ['notes', 'like', '%PRJ-REF%'],
+    ]);
+  });
+
+  it('leaves fully delivered requirements off the overview', async () => {
+    fakeErpnext(
+      {
+        'Material Request': () => [
+          {
+            project: 'PROJ-0001',
+            item_code: 'POT-30',
+            item_name: 'Ceramic planter',
+            stock_uom: 'Unit',
+            stock_qty: 12,
+            qty: 12,
+            ordered_qty: 12,
+          },
+        ],
+        Account: () => [],
+      },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    expect((await api().project('PROJ-0001')).requirements).toEqual([]);
   });
 });

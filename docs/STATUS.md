@@ -37,6 +37,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     see costs; the project type is set only where the site has it under that name (setup names them in its language);
     requirements count what is still to deliver and skip stopped requests; tasks are left out for roles that can't
     read them; a slow earlier load can't fill another project's edit form; small attachments show in KB.
+    Review pass 3 (1 medium, 2 low) fixed: creating a project is safe to repeat (a reference in its notes is looked up
+    before inserting), fully delivered requirements leave the overview, and customer names are fetched in batches.
   - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 

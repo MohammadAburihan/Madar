@@ -15,6 +15,8 @@ import {
   CustomerDirectoryService,
   CustomerOption,
 } from '../../../core/customers/customer-directory.service';
+import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -117,11 +119,11 @@ const SEARCH_DELAY_MS = 250;
         (valueChange)="plannedDate.set($event)"
       />
       <app-feedback-card [title]="txt.internalTitle" [message]="txt.internalMessage" />
-      @if (failed()) {
+      @if (failed(); as f) {
         <app-feedback-card
           tone="danger"
-          [title]="txt.failed.title"
-          [message]="txt.failed.message"
+          [title]="txt.failed[f].title"
+          [message]="txt.failed[f].message"
         />
       }
       <button
@@ -156,7 +158,8 @@ export class ProjectFormContainer {
   protected readonly customers = signal<CustomerOption[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
-  protected readonly failed = signal(false);
+  protected readonly failed = signal<'offline' | 'error' | null>(null);
+  private readonly reference = newReference('PRJ');
   protected readonly loadFailed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
@@ -192,7 +195,13 @@ export class ProjectFormContainer {
         title: t('project.overview.loadFailed.title'),
         message: t('project.overview.loadFailed.message'),
       },
-      failed: { title: t('project.form.failed.title'), message: t('project.form.failed.message') },
+      failed: {
+        error: { title: t('project.form.failed.title'), message: t('project.form.failed.message') },
+        offline: {
+          title: t('project.form.offline.title'),
+          message: t('project.form.offline.message'),
+        },
+      },
       noAccess: {
         title: t('project.form.noAccess.title'),
         message: t('project.form.noAccess.message'),
@@ -237,7 +246,7 @@ export class ProjectFormContainer {
       return;
     }
     this.saving.set(true);
-    this.failed.set(false);
+    this.failed.set(null);
     try {
       const business = await this.business.ensure();
       if (!business) {
@@ -253,10 +262,16 @@ export class ProjectFormContainer {
           plannedDate: this.plannedDate() || null,
         },
         this.name() ?? null,
+        this.reference,
       );
       void this.router.navigate(['/projects', saved, 'saved'], { replaceUrl: true });
-    } catch {
-      this.failed.set(true);
+    } catch (error) {
+      // Lost answers keep the reference, so saving again finds the project instead of creating a second one.
+      this.failed.set(
+        error instanceof UnresolvedError || ErpnextError.from(error).kind === 'offline'
+          ? 'offline'
+          : 'error',
+      );
     } finally {
       this.saving.set(false);
     }

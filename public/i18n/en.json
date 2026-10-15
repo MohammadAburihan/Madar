@@ -1420,6 +1420,10 @@
       "noAccess": {
         "title": "You can't create or edit projects",
         "message": "Your ERPNext role doesn't allow it. Ask the owner if you need to."
+      },
+      "offline": {
+        "title": "We couldn't confirm the save",
+        "message": "Check the connection and tap Save again. Madar checks first, so the project is never created twice."
       }
     },
     "saved": {
