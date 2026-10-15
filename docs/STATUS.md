@@ -34,6 +34,10 @@ Split into PRs, each through the delivery loop:
   Review pass 3 (1 high, 1 medium, 1 low) fixed: a leftover invoice draft is submitted, not deleted (Accounts User
   can't delete invoices), and receipts Madar can't bill exactly (shared with another order, or several carrying fixed
   charges) are sent to ERPNext with a message instead of being billed with a wrong total.
+  Review pass 4: two low items deferred. A leftover invoice draft from a failed attempt can't be deleted by the
+  purchasing officer (Accounts User has no delete on Purchase Invoice), so it stays in ERPNext as a draft. And for a
+  Desk invoice billing several orders, the order page's "Invoice paid / outstanding" lines are the whole invoice's,
+  while "Billed" is the order's share.
 - **3c-2 — Pay supplier**: the payment form, the recorded payment and its page, and "Pay supplier" on the invoice.
   Owner only.
 
