@@ -76,7 +76,7 @@ describe('ProjectsApiService', () => {
             qty: 8,
             ordered_qty: 0,
           },
-          // A request in boxes of 4 counts in the stock unit; half of it was already delivered.
+          // A request for 2 boxes of 4 counts in the stock unit; 4 units (in the stock unit) were delivered.
           {
             project: 'PROJ-0001',
             item_code: 'POT-30',
@@ -84,7 +84,7 @@ describe('ProjectsApiService', () => {
             stock_uom: 'Unit',
             stock_qty: 8,
             qty: 2,
-            ordered_qty: 1,
+            ordered_qty: 4,
           },
           // Another project's row on the same request doesn't count.
           {
@@ -450,11 +450,15 @@ describe('ProjectsApiService', () => {
     ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
-  it('finds a project a lost save already created instead of creating it twice', async () => {
-    const { postCalls, listCalls } = fakeErpnext({
-      'Project Type': () => [],
-      Project: () => [{ name: 'PROJ-0002' }],
-    });
+  it('finds a project a lost save already created, and saves the latest details over it', async () => {
+    const { postCalls, listCalls } = fakeErpnext(
+      {
+        'Project Type': () => [],
+        Project: () => [{ name: 'PROJ-0002' }],
+      },
+      { 'frappe.client.save': (body) => body['doc'] },
+      { 'Project/PROJ-0002': { ...PROJECT, name: 'PROJ-0002', project_name: 'Old title' } },
+    );
     expect(
       await api().save(
         'Rehan Nursery',
@@ -463,7 +467,8 @@ describe('ProjectsApiService', () => {
         'PRJ-REF',
       ),
     ).toBe('PROJ-0002');
-    expect(postCalls).toEqual([]);
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.save']);
+    expect(postCalls[0].body['doc']).toMatchObject({ name: 'PROJ-0002', project_name: 'Court' });
     expect(listCalls.find((c) => c.doctype === 'Project')!.query.filters).toEqual([
       ['notes', 'like', '%PRJ-REF%'],
     ]);
@@ -489,5 +494,28 @@ describe('ProjectsApiService', () => {
       { 'Project/PROJ-0001': PROJECT },
     );
     expect((await api().project('PROJ-0001')).requirements).toEqual([]);
+  });
+
+  it('treats a draft ERPNext rounded to 3 decimals as the same requirement', async () => {
+    const { postCalls } = fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }] },
+      { 'frappe.client.submit': () => ({ name: 'MAT-MR-0001' }) },
+      {
+        'Material Request/MAT-MR-0001': {
+          name: 'MAT-MR-0001',
+          docstatus: 0,
+          items: [{ item_code: 'SOIL', qty: 2.556, uom: 'Kg', project: 'PROJ-0001' }],
+        },
+      },
+    );
+    const request = {
+      reference: 'REQ-1',
+      project: 'PROJ-0001',
+      item: 'SOIL',
+      uom: 'Kg',
+      qty: 2.5555,
+    };
+    await api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001');
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.submit']);
   });
 });

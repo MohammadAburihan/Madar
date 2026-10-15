@@ -39,6 +39,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     read them; a slow earlier load can't fill another project's edit form; small attachments show in KB.
     Review pass 3 (1 medium, 2 low) fixed: creating a project is safe to repeat (a reference in its notes is looked up
     before inserting), fully delivered requirements leave the overview, and customer names are fetched in batches.
+    Review pass 4 (2 medium, 1 low) fixed: remaining needs subtract the delivered quantity in the stock unit (transfer
+    requests only), a retried save writes the latest details over the project it finds, and a rounded quantity
+    still matches its draft.
   - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 

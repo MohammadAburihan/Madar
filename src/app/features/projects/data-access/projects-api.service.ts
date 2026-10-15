@@ -149,7 +149,12 @@ export class ProjectsApiService {
       }),
     );
     if (found) {
-      return found.name;
+      // Save the latest details over it: the user may have changed them since the first, unanswered save.
+      const current = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', found.name));
+      const saved = await firstValueFrom(
+        this.erpnext.post<ProjectDoc>('frappe.client.save', { doc: { ...current, ...fields } }),
+      );
+      return saved.name;
     }
     const inserted = await confirmRequest(
       this.erpnext.post<ProjectDoc>('frappe.client.insert', {
@@ -399,17 +404,17 @@ export class ProjectsApiService {
           ['Material Request Item', 'project', '=', project],
           ['docstatus', '=', 1],
           ['status', '!=', 'Stopped'],
+          // Transfer requests, as Madar raises them: their delivered quantity is what moved to the site.
+          ['material_request_type', '=', 'Material Transfer'],
         ],
         limit: 0,
       }),
     );
-    // A request can hold other projects' rows too; delivered quantities are in the row's own unit.
+    // A request can hold other projects' rows too. ERPNext keeps a transfer request's delivered quantity in the
+    // stock unit, as stock_qty is.
     const rows = lines
       .filter((l) => l.project === project)
-      .map((l) => ({
-        ...l,
-        stock_qty: l.qty > 0 ? l.stock_qty * Math.max(1 - (l.ordered_qty || 0) / l.qty, 0) : 0,
-      }));
+      .map((l) => ({ ...l, stock_qty: Math.max(l.stock_qty - (l.ordered_qty || 0), 0) }));
     const byItem = new Map<string, Requirement>();
     for (const row of rows) {
       const seen = byItem.get(row.item_code);
@@ -612,7 +617,8 @@ function sameRequirement(doc: RequestDoc, request: RequirementRequest): boolean 
     rows[0].item_code === request.item &&
     rows[0].uom === request.uom &&
     rows[0].project === request.project &&
-    Math.abs(Number(rows[0].qty) - request.qty) < 1e-6
+    // ERPNext rounds quantities to 3 decimals by default: 2.5555 comes back as 2.556.
+    Math.abs(Number(rows[0].qty) - request.qty) <= 0.0005 + 1e-9
   );
 }
 
