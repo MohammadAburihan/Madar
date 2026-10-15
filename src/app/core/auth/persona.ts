@@ -1,9 +1,11 @@
-export type Persona = 'owner' | 'salesperson' | 'storeAssociate' | 'warehouse' | 'purchasing';
+export type Persona =
+  'owner' | 'salesperson' | 'storeAssociate' | 'warehouse' | 'purchasing' | 'projectManager';
 
 const OWNER_ROLES = ['System Manager', 'Accounts Manager'];
 const SALES_ROLES = ['Sales User', 'Sales Manager'];
 const STOCK_ROLES = ['Stock User', 'Stock Manager'];
 const PURCHASE_ROLES = ['Purchase User', 'Purchase Manager'];
+const PROJECT_ROLES = ['Projects User', 'Projects Manager'];
 
 // Role names are ERPNext defaults; the mapping is documented in docs/PERMISSIONS.md.
 export function personaFor(roles: readonly string[]): Persona {
@@ -14,6 +16,10 @@ export function personaFor(roles: readonly string[]): Persona {
   // Purchasing officers also hold Stock User (to receive) and Accounts User (supplier invoices).
   if (has(PURCHASE_ROLES)) {
     return 'purchasing';
+  }
+  // Project managers also hold Stock User (to request and supply their materials), but no sales role.
+  if (has(PROJECT_ROLES) && !has(SALES_ROLES)) {
+    return 'projectManager';
   }
   if (has(SALES_ROLES) && has(STOCK_ROLES)) {
     return 'storeAssociate';

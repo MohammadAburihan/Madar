@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
@@ -16,6 +21,12 @@ import {
   Requirement,
   RequirementRequest,
 } from './project.models';
+
+interface RequestDoc {
+  name: string;
+  docstatus: number;
+  items?: { item_code: string; qty: number; uom: string; project?: string | null }[];
+}
 
 interface ProjectDoc {
   name: string;
@@ -177,20 +188,33 @@ export class ProjectsApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<string> {
-    const current = draft
-      ? await reusableDraft(
-          this.erpnext.doc<{ name: string; docstatus: number }>('Material Request', draft),
-        )
+    const remembered = draft
+      ? await reusableDraft(this.erpnext.doc<RequestDoc>('Material Request', draft))
       : null;
-    if (current?.docstatus === 1) {
-      return current.name;
+    if (remembered?.docstatus === 1) {
+      // A slow earlier attempt submitted it; that is this request's result only if nothing changed.
+      if (!sameRequirement(remembered, request)) {
+        throw new PostedEarlierError(remembered.name);
+      }
+      return remembered.name;
+    }
+    let current = remembered;
+    if (current && !sameRequirement(current, request)) {
+      // The user changed the item or quantity since the draft was inserted: replace it, never submit it stale.
+      await firstValueFrom(
+        this.erpnext.post('frappe.client.delete', {
+          doctype: 'Material Request',
+          name: current.name,
+        }),
+      );
+      current = null;
     }
     const warehouse = await this.siteWarehouse(company);
     try {
       const doc = current
         ? current
         : await confirmRequest(
-            this.erpnext.post<{ name: string; docstatus: number }>('frappe.client.insert', {
+            this.erpnext.post<RequestDoc>('frappe.client.insert', {
               doc: {
                 doctype: 'Material Request',
                 material_request_type: 'Material Transfer',
@@ -287,8 +311,14 @@ export class ProjectsApiService {
           ['status', 'not in', ['Completed', 'Cancelled', 'Template']],
         ],
         orderBy: 'exp_end_date asc, creation asc',
-        limit: TASK_LIMIT,
+        // MariaDB sorts undated tasks first; fetch more and put them last before keeping the next few.
+        limit: TASK_LIMIT * 4,
       }),
+    ).then((all) =>
+      [...all.filter((r) => r.exp_end_date), ...all.filter((r) => !r.exp_end_date)].slice(
+        0,
+        TASK_LIMIT,
+      ),
     );
     const users = [...new Set(rows.flatMap((r) => assignees(r._assign)))];
     const names = users.length
@@ -311,18 +341,21 @@ export class ProjectsApiService {
   /** What the project's material requests ask for, item by item, with the stock outside the project sites. */
   private async requirements(project: string, company: string): Promise<Requirement[]> {
     const rows = await firstValueFrom(
-      this.erpnext.list<{ item_code: string; item_name: string; uom: string; qty: number }>(
-        'Material Request Item',
-        {
-          fields: ['item_code', 'item_name', 'uom', 'qty'],
-          filters: [
-            ['project', '=', project],
-            ['docstatus', '=', 1],
-          ],
-          parent: 'Material Request',
-          limit: 0,
-        },
-      ),
+      this.erpnext.list<{
+        item_code: string;
+        item_name: string;
+        stock_uom: string;
+        stock_qty: number;
+      }>('Material Request Item', {
+        // In the stock unit, as Bin quantities are: a request in boxes of 12 counts 12 per box.
+        fields: ['item_code', 'item_name', 'stock_uom', 'stock_qty'],
+        filters: [
+          ['project', '=', project],
+          ['docstatus', '=', 1],
+        ],
+        parent: 'Material Request',
+        limit: 0,
+      }),
     );
     const byItem = new Map<string, Requirement>();
     for (const row of rows) {
@@ -330,8 +363,8 @@ export class ProjectsApiService {
       byItem.set(row.item_code, {
         item: row.item_code,
         itemName: row.item_name,
-        uom: row.uom,
-        required: (seen?.required ?? 0) + row.qty,
+        uom: row.stock_uom,
+        required: (seen?.required ?? 0) + row.stock_qty,
         available: 0,
       });
     }
@@ -399,11 +432,12 @@ export class ProjectsApiService {
       firstValueFrom(
         this.erpnext.list<{
           name: string;
-          grand_total: number;
-          rounded_total: number;
+          base_grand_total: number;
+          base_rounded_total: number;
           status: string;
         }>(doctype, {
-          fields: ['name', 'grand_total', 'rounded_total', 'status'],
+          // Company-currency totals: the overview labels every amount with the company currency.
+          fields: ['name', 'base_grand_total', 'base_rounded_total', 'status'],
           filters: [
             ['project', '=', project],
             ['docstatus', '<', 2],
@@ -417,31 +451,38 @@ export class ProjectsApiService {
             kind,
             name: r.name,
             detail: r.status,
-            amount: invoiceTotal(r),
+            amount: invoiceTotal({
+              grand_total: r.base_grand_total,
+              rounded_total: r.base_rounded_total,
+            }),
           })),
         )
         .catch(() => [] as LinkedRecord[]);
+    // The rows booked to this project only: an entry can split its amount across several projects.
     const expenses = firstValueFrom(
-      this.erpnext.list<{ name: string; total_debit: number }>('Journal Entry', {
-        fields: ['name', 'total_debit'],
-        filters: [
-          ['Journal Entry Account', 'project', '=', project],
-          ['docstatus', '=', 1],
-        ],
-        orderBy: 'posting_date desc, creation desc',
-        limit: LINK_LIMIT,
-      }),
+      this.erpnext.list<{ parent: string; debit: number; credit: number }>(
+        'Journal Entry Account',
+        {
+          fields: ['parent', 'debit', 'credit'],
+          filters: [
+            ['project', '=', project],
+            ['docstatus', '=', 1],
+          ],
+          parent: 'Journal Entry',
+          orderBy: 'creation desc',
+          limit: 0,
+        },
+      ),
     )
       .then((rows) => {
-        const seen = new Set<string>();
-        return rows
-          .filter((r) => !seen.has(r.name) && seen.add(r.name))
-          .map((r): LinkedRecord => ({
-            kind: 'expense',
-            name: r.name,
-            detail: '',
-            amount: r.total_debit,
-          }));
+        const totals = new Map<string, number>();
+        for (const row of rows) {
+          totals.set(row.parent, (totals.get(row.parent) ?? 0) + row.debit - row.credit);
+        }
+        return [...totals.entries()]
+          .filter(([, amount]) => amount > 0)
+          .slice(0, LINK_LIMIT)
+          .map(([name, amount]): LinkedRecord => ({ kind: 'expense', name, detail: '', amount }));
       })
       .catch(() => [] as LinkedRecord[]);
     const groups = await Promise.all([
@@ -502,6 +543,17 @@ export class ProjectsApiService {
     ).catch(() => []);
     return new Map(rows.map((r) => [r.name, r.customer_name]));
   }
+}
+
+function sameRequirement(doc: RequestDoc, request: RequirementRequest): boolean {
+  const rows = doc.items ?? [];
+  return (
+    rows.length === 1 &&
+    rows[0].item_code === request.item &&
+    rows[0].uom === request.uom &&
+    rows[0].project === request.project &&
+    Math.abs(Number(rows[0].qty) - request.qty) < 1e-6
+  );
 }
 
 function summary(doc: ProjectDoc, names: Map<string, string>): ProjectSummary {

@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ProjectsApiService, SiteWarehouseMissingError } from './projects-api.service';
 
 const PROJECT = {
@@ -67,8 +67,9 @@ describe('ProjectsApiService', () => {
         ],
         User: () => [{ name: 'yara@rehan.example', full_name: 'Yara' }],
         'Material Request Item': () => [
-          { item_code: 'POT-30', item_name: 'Ceramic planter', uom: 'Unit', qty: 8 },
-          { item_code: 'POT-30', item_name: 'Ceramic planter', uom: 'Unit', qty: 4 },
+          { item_code: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit', stock_qty: 8 },
+          // A request made in boxes of 4 in Desk counts in the stock unit.
+          { item_code: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit', stock_qty: 4 },
         ],
         Bin: () => [
           { item_code: 'POT-30', warehouse: 'Main warehouse - RN', actual_qty: 8 },
@@ -79,11 +80,13 @@ describe('ProjectsApiService', () => {
           { file_name: 'Site plan.pdf', file_size: 1800000, creation: '2026-10-10 09:00:00' },
         ],
         'Sales Invoice': () => [
-          { name: 'SI-042', grand_total: 500, rounded_total: 500, status: 'Paid' },
+          // A USD invoice: the company-currency totals are the ones shown.
+          { name: 'SI-042', base_grand_total: 500, base_rounded_total: 500, status: 'Paid' },
         ],
-        'Journal Entry': () => [
-          { name: 'JV-019', total_debit: 1320 },
-          { name: 'JV-019', total_debit: 1320 },
+        // An entry split across two projects: only this project's rows count.
+        'Journal Entry Account': () => [
+          { parent: 'JV-019', debit: 1000, credit: 0 },
+          { parent: 'JV-019', debit: 320, credit: 0 },
         ],
         Account: () => [{ name: 'Travel Expenses - RN' }],
         'GL Entry': () => [{ 'SUM(`debit`)': 1400, 'SUM(`credit`)': 80 }],
@@ -251,7 +254,8 @@ describe('ProjectsApiService', () => {
       uom: 'Unit',
       qty: 12,
     };
-    let draft = { name: 'MAT-MR-0001', docstatus: 0 };
+    const items = [{ item_code: 'POT-30', qty: 12, uom: 'Unit', project: 'PROJ-0001' }];
+    let draft = { name: 'MAT-MR-0001', docstatus: 0, items };
     const { postCalls } = fakeErpnext(
       { Warehouse: () => [{ name: 'Project sites - RN' }] },
       { 'frappe.client.submit': () => ({ name: 'MAT-MR-0001' }) },
@@ -261,7 +265,7 @@ describe('ProjectsApiService', () => {
       'MAT-MR-0001',
     );
     expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.submit']);
-    draft = { name: 'MAT-MR-0001', docstatus: 1 };
+    draft = { name: 'MAT-MR-0001', docstatus: 1, items };
     expect(await api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001')).toBe(
       'MAT-MR-0001',
     );
@@ -316,5 +320,83 @@ describe('ProjectsApiService', () => {
       'internal',
       'customer',
     ]);
+  });
+
+  it('shows dated tasks before undated ones', async () => {
+    fakeErpnext(
+      {
+        Task: () => [
+          ...Array.from({ length: 5 }, (_, i) => ({
+            subject: `Undated ${i}`,
+            exp_end_date: null,
+            status: 'Open',
+            _assign: null,
+          })),
+          { subject: 'Due soon', exp_end_date: '2026-10-14', status: 'Open', _assign: null },
+        ],
+        Account: () => [],
+      },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    expect((await api().project('PROJ-0001')).tasks[0].subject).toBe('Due soon');
+  });
+
+  it('replaces a remembered draft whose item or quantity changed, instead of submitting it stale', async () => {
+    const { postCalls } = fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }] },
+      {
+        'frappe.client.delete': () => ({}),
+        'frappe.client.insert': () => ({ name: 'MAT-MR-0002', docstatus: 0 }),
+        'frappe.client.submit': () => ({ name: 'MAT-MR-0002' }),
+      },
+      {
+        'Material Request/MAT-MR-0001': {
+          name: 'MAT-MR-0001',
+          docstatus: 0,
+          items: [{ item_code: 'POT-30', qty: 10, uom: 'Unit', project: 'PROJ-0001' }],
+        },
+        'Material Request/MAT-MR-0002': { name: 'MAT-MR-0002', docstatus: 0 },
+      },
+    );
+    const request = {
+      reference: 'REQ-1',
+      project: 'PROJ-0001',
+      item: 'POT-30',
+      uom: 'Unit',
+      qty: 4,
+    };
+    expect(await api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001')).toBe(
+      'MAT-MR-0002',
+    );
+    expect(postCalls.map((c) => c.method)).toEqual([
+      'frappe.client.delete',
+      'frappe.client.insert',
+      'frappe.client.submit',
+    ]);
+  });
+
+  it("won't report an earlier, different requirement as this one's result", async () => {
+    fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }] },
+      {},
+      {
+        'Material Request/MAT-MR-0001': {
+          name: 'MAT-MR-0001',
+          docstatus: 1,
+          items: [{ item_code: 'POT-30', qty: 10, uom: 'Unit', project: 'PROJ-0001' }],
+        },
+      },
+    );
+    const request = {
+      reference: 'REQ-1',
+      project: 'PROJ-0001',
+      item: 'POT-30',
+      uom: 'Unit',
+      qty: 4,
+    };
+    await expect(
+      api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001'),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 });

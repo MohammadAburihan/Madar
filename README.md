@@ -62,6 +62,7 @@ It never touches the `frontend` site. Users (password `Madar-Dev-2026`):
 | `omar@rehan.example` | Stock User | Warehouse worker |
 | `sami@rehan.example` | Sales User, Accounts User, Stock User | Store associate |
 | `nadia@rehan.example` | Purchase User, Stock User, Accounts User | Purchasing officer |
+| `yara@rehan.example` | Projects User, Stock User | Project manager |
 
 The site also has the quick-sale catalogue from the mocks (olive tree, ceramic planter, garden consultation),
 stock in Main warehouse and Garden shop, a Walk-in Customer, and Cash and Card (Main bank) payment accounts.

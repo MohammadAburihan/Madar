@@ -11,7 +11,11 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
 import { parseNumber } from '../../../core/format/number';
@@ -29,7 +33,7 @@ import { ProjectsApiService, SiteWarehouseMissingError } from '../data-access/pr
 
 const SEARCH_DELAY_MS = 250;
 
-type Failure = 'permission' | 'offline' | 'error' | 'warehouse';
+type Failure = 'permission' | 'offline' | 'error' | 'warehouse' | 'changed';
 type Item = { code: string; name: string; uom: string };
 
 /** Adds what a project needs: an item and its quantity, recorded as a material request. */
@@ -182,6 +186,7 @@ export class RequirementContainer {
         offline: block('project.requirement.failed.offline'),
         error: block('project.requirement.failed.error'),
         warehouse: block('project.requirement.failed.warehouse'),
+        changed: block('project.requirement.failed.changed'),
       },
     };
   });
@@ -237,6 +242,14 @@ export class RequirementContainer {
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.state.set('unresolved');
+        return;
+      }
+      if (error instanceof PostedEarlierError) {
+        // The earlier version stands in ERPNext. Adding again is a deliberate new requirement.
+        this.reference = newReference('REQ');
+        this.draft = null;
+        this.failure.set('changed');
+        this.state.set('idle');
         return;
       }
       const erpnext = ErpnextError.from(error);

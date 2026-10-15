@@ -71,6 +71,7 @@ const ACTIONS: Record<Persona, string[]> = {
   storeAssociate: ['sell', 'receivePayment', 'receiveGoods', 'transferStock'],
   warehouse: ['receiveGoods', 'transferStock', 'countStock', 'supplyProjectShort'],
   purchasing: ['buy', 'receiveGoods'],
+  projectManager: ['supplyProject'],
 };
 
 const MOBILE_CARD_LIMIT = 2;
@@ -205,6 +206,8 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     cards = [lowStockCard, ...supplyCards, ...deliveryCards].filter((c): c is CardView => !!c);
   } else if (persona === 'purchasing') {
     cards = [...deliveryCards, lowStockCard].filter((c): c is CardView => !!c);
+  } else if (persona === 'projectManager') {
+    cards = [...supplyCards, lowStockCard].filter((c): c is CardView => !!c);
   } else {
     cards = [draftsCard, ...deliveryCards, ...paymentCards, ...supplyCards].filter(
       (c): c is CardView => !!c,
@@ -308,7 +311,10 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     glanceNote: tr.t('home.glance.note', { business: business.name }),
     note: persona === 'warehouse' ? tr.t('home.warehouseNote') : null,
     draftsLink:
-      persona !== 'warehouse' && persona !== 'purchasing' && draftCount
+      persona !== 'warehouse' &&
+      persona !== 'purchasing' &&
+      persona !== 'projectManager' &&
+      draftCount
         ? tr.t('home.draftsLink', { drafts: tr.plural('home.draftCount', draftCount) })
         : null,
   };

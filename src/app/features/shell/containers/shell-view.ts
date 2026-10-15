@@ -20,29 +20,50 @@ type NavDefinition = Omit<NavItem, 'label'> & { hiddenFor?: Persona[] };
 // officers neither sell nor see payments; salespeople neither buy nor receive goods (docs/PERMISSIONS.md).
 const DESKTOP_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse', 'purchasing'] },
+  {
+    id: 'sales',
+    icon: LucideReceipt,
+    route: '/sales',
+    hiddenFor: ['warehouse', 'purchasing', 'projectManager'],
+  },
   {
     id: 'purchases',
     icon: LucideShoppingBag,
     route: '/purchases',
-    hiddenFor: ['salesperson'],
+    hiddenFor: ['salesperson', 'projectManager'],
   },
   { id: 'inventory', icon: LucideBoxes, route: '/inventory' },
   { id: 'contacts', icon: LucideUsers, route: '/contacts' },
-  { id: 'money', icon: LucideWallet, route: '/money', hiddenFor: ['warehouse', 'purchasing'] },
-  { id: 'projects', icon: LucideLayers, route: '/projects' },
+  {
+    id: 'money',
+    icon: LucideWallet,
+    route: '/money',
+    hiddenFor: ['warehouse', 'purchasing', 'projectManager'],
+  },
+  // Projects are for the roles that run them (docs/PERMISSIONS.md).
+  {
+    id: 'projects',
+    icon: LucideLayers,
+    route: '/projects',
+    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'],
+  },
   {
     id: 'reports',
     icon: LucideChartColumn,
     route: '/reports',
-    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'],
+    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing', 'projectManager'],
   },
   { id: 'settings', icon: LucideSettings, route: '/settings' },
 ];
 
 const MOBILE_NAV: NavDefinition[] = [
   { id: 'home', icon: LucideHouse, route: '/' },
-  { id: 'sales', icon: LucideReceipt, route: '/sales', hiddenFor: ['warehouse', 'purchasing'] },
+  {
+    id: 'sales',
+    icon: LucideReceipt,
+    route: '/sales',
+    hiddenFor: ['warehouse', 'purchasing', 'projectManager'],
+  },
   { id: 'stock', icon: LucideBoxes, route: '/inventory' },
   {
     id: 'more',

@@ -37,14 +37,16 @@
       "salesperson": "Ready for your next sale?",
       "warehouse": "Today in the warehouse",
       "storeAssociate": "Today at the store",
-      "purchasing": "Today in purchasing"
+      "purchasing": "Today in purchasing",
+      "projectManager": "Today on your projects"
     },
     "role": {
       "owner": "Owner",
       "salesperson": "Salesperson",
       "warehouse": "Warehouse worker",
       "storeAssociate": "Store associate",
-      "purchasing": "Purchasing officer"
+      "purchasing": "Purchasing officer",
+      "projectManager": "Project manager"
     },
     "new": "+ New",
     "actionsHeading": "What needs doing?",
@@ -1457,6 +1459,10 @@
         "warehouse": {
           "title": "The project sites warehouse is missing",
           "message": "Madar keeps site stock in a 'Project sites' warehouse and couldn't create it for your role. Ask the owner to add it in ERPNext."
+        },
+        "changed": {
+          "title": "An earlier version was already added",
+          "message": "The requirement was added before your latest changes. Check the project before adding again; adding now records a new requirement."
         }
       },
       "unresolved": {

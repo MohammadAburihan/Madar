@@ -60,6 +60,13 @@ const SEARCH_DELAY_MS = 250;
       />
     } @else if (loading()) {
       <p class="muted" role="status">{{ txt.loading }}</p>
+    } @else if (loadFailed()) {
+      <app-feedback-card
+        tone="danger"
+        [title]="txt.loadFailed.title"
+        [message]="txt.loadFailed.message"
+      />
+      <button type="button" class="md-btn" (click)="retry()">{{ txt.retry }}</button>
     } @else {
       <app-text-field [label]="txt.name" [value]="title()" (valueChange)="title.set($event)" />
       <app-select-field
@@ -150,6 +157,7 @@ export class ProjectFormContainer {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly failed = signal(false);
+  protected readonly loadFailed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
   private searchRun = 0;
@@ -178,6 +186,11 @@ export class ProjectFormContainer {
       save: t('project.form.save'),
       saving: t('project.form.saving'),
       loading: t('project.loading'),
+      retry: t('project.retry'),
+      loadFailed: {
+        title: t('project.overview.loadFailed.title'),
+        message: t('project.overview.loadFailed.message'),
+      },
       failed: { title: t('project.form.failed.title'), message: t('project.form.failed.message') },
       noAccess: {
         title: t('project.form.noAccess.title'),
@@ -219,7 +232,7 @@ export class ProjectFormContainer {
 
   protected async save(): Promise<void> {
     // Set before the first await: a double tap must not create the project twice.
-    if (!this.ready() || this.saving()) {
+    if (!this.ready() || this.saving() || this.loading() || this.loadFailed()) {
       return;
     }
     this.saving.set(true);
@@ -253,8 +266,16 @@ export class ProjectFormContainer {
     void this.router.navigate(name ? ['/projects', name] : ['/projects']);
   }
 
+  protected retry(): void {
+    const name = this.name();
+    if (name) {
+      void this.loadExisting(name);
+    }
+  }
+
   private async loadExisting(name: string): Promise<void> {
     this.loading.set(true);
+    this.loadFailed.set(false);
     try {
       const project = await this.api.project(name);
       this.title.set(project.title);
@@ -267,7 +288,7 @@ export class ProjectFormContainer {
       this.budget.set(project.budget ? project.budget.toFixed(2) : '');
       this.plannedDate.set(project.plannedDate ?? '');
     } catch {
-      this.failed.set(true);
+      this.loadFailed.set(true);
     } finally {
       this.loading.set(false);
     }

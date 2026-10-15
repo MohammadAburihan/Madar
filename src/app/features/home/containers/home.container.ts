@@ -126,6 +126,8 @@ export class HomeContainer {
       receiveGoods: ['/purchases'],
       paySupplier: ['/purchases'],
       recordExpense: ['/money/expense'],
+      // Supplying starts from a project; the supply task itself arrives with step 4b-2.
+      supplyProject: ['/projects'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
     };

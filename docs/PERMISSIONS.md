@@ -15,9 +15,9 @@ business rules change, then the code (`src/app/core/auth/persona.ts`, `capabilit
 | **Project manager** | Runs projects and requests their materials | Projects User, Stock User |
 
 Madar picks the role from the user's ERPNext roles: Owner if they have System Manager or Accounts Manager; otherwise
-Purchasing officer if they have Purchase User or Purchase Manager; otherwise Store associate if they have both a sales
-and a stock role; otherwise Salesperson or Warehouse worker. The Project manager role arrives with its workflow; until
-then they see the Owner layout limited by what ERPNext lets them read.
+Purchasing officer if they have Purchase User or Purchase Manager; otherwise Project manager if they have Projects User or
+Projects Manager and no sales role; otherwise Store associate if they have both a sales and a stock role; otherwise
+Salesperson or Warehouse worker.
 
 The purchasing officer holds **Accounts User** because ERPNext v16 lets only Accounts User/Manager create supplier
 invoices (decided 14 Oct 2026). Accounts User could also record payments in ERPNext; Madar still keeps paying suppliers

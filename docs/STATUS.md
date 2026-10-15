@@ -27,7 +27,12 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - **4b — Projects and supplying them**, in three PRs:
   - **4b-1 — Projects** (this PR): the list, creating and editing a customer or internal project, and its overview
     (budget against actual cost, next tasks, material requirements against available stock, attachments, linked
-    records), plus adding a material requirement. Owner (Projects User/Manager with a stock or purchase role).
+    records), plus adding a material requirement. Owner and the new Project manager persona (Projects User or
+    Manager without a sales role).
+    Review pass 1 (2 high, 3 medium, 3 low) fixed: the Project manager persona exists; a changed requirement draft is
+    replaced, never submitted stale; editing never saves over a project that didn't load; linked amounts are in the
+    company currency and a split expense counts only its project's share; dated tasks come first; requirements count
+    in the stock unit; Projects is hidden from roles that don't run them.
   - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
