@@ -17,6 +17,7 @@ const ACCOUNTS = [
 
 function setup(
   projects: () => Promise<unknown> = () => Promise.resolve([{ id: 'PROJ-0001', name: 'Garden' }]),
+  accounts: unknown[] = ACCOUNTS,
 ) {
   const api = {
     categories: vi
@@ -30,7 +31,7 @@ function setup(
   TestBed.configureTestingModule({
     providers: [
       { provide: ExpenseApiService, useValue: api },
-      { provide: PaymentAccountsService, useValue: { list: () => Promise.resolve(ACCOUNTS) } },
+      { provide: PaymentAccountsService, useValue: { list: () => Promise.resolve(accounts) } },
       { provide: ProjectDirectoryService, useValue: { open: projects } },
       {
         provide: BusinessService,
@@ -74,6 +75,13 @@ describe('ExpenseStore', () => {
     store.start();
     await store.load('all');
     expect(store.accounts().map((a) => a.mode)).toEqual(['Cash', 'Bank Draft']);
+  });
+
+  it('suggests the first company-currency account, not a foreign one listed first', async () => {
+    const { store } = setup(undefined, [ACCOUNTS[2], ACCOUNTS[1]]);
+    store.start();
+    await store.load('all');
+    expect(store.account()).toBe('Bank Draft');
   });
 
   it("records without a project when the role can't read projects", async () => {

@@ -31,6 +31,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   a new expense's receipt is always attached.
   Review pass 2 (1 medium, 3 low) fixed: the Money history asks for expenses in batches of categories, leaves out Desk
   reversals, the form offers only company-currency accounts, and the receipt picker no longer forces the camera.
+  Review pass 3 (1 low) fixed: the suggested account is a company-currency one.
 - **4b — Supply a project.**
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

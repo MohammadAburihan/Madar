@@ -132,9 +132,11 @@ export class ExpenseStore {
     }
     this.categories.set(categories);
     // A foreign-currency account would need an exchange rate; Madar records expenses in the company currency.
-    this.accounts.set(accounts.filter((a) => !a.currency || a.currency === business.currency));
+    const usable = accounts.filter((a) => !a.currency || a.currency === business.currency);
+    this.accounts.set(usable);
     this.projects.set(projects);
-    this.account.set(this.account() ?? accounts[0]?.mode ?? null);
+    const kept = usable.some((a) => a.mode === this.account());
+    this.account.set(kept ? this.account() : (usable[0]?.mode ?? null));
     this.date.set(this.date() || toIsoDate(this.clock.now()));
     this.loaded.set(true);
   }
