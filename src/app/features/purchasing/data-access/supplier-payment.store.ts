@@ -199,7 +199,15 @@ export class SupplierPaymentStore {
       return name;
     } catch (error) {
       if (current()) {
-        this.fail(error);
+        // Before fail(): an "earlier payment" failure starts a new reference, and the save must still end.
+        this.savingDraft.set(false);
+        if (error instanceof UnresolvedError) {
+          // Only a draft was involved, so no payment can be waiting: report the connection, keep the task usable.
+          this.failure.set('offline');
+          this.state.set('failed');
+        } else {
+          this.fail(error);
+        }
       }
       return null;
     } finally {

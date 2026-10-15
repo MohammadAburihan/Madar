@@ -75,6 +75,18 @@ describe('payment view', () => {
       'PO-2048 · GC-8831 · Green Clay',
       'This payment belongs to PO-2048. ILS 170.00 remains due on the supplier invoice.',
     ]);
+    // A Desk payment of ILS 500 across two invoices: the card shows the part that paid this one.
+    const shared = {
+      ...PAYMENT,
+      amount: 500,
+      invoices: [
+        { invoice: 'PINV-0001', allocated: 400 },
+        { invoice: 'PINV-0068', allocated: 100 },
+      ],
+    };
+    expect(visible(view.paymentResult(shared, INVOICE, false, en)).cardTitle).toBe(
+      'ILS 100.00 recorded',
+    );
     const paid = visible(view.paymentResult(PAYMENT, { ...INVOICE, outstanding: 0 }, false, en));
     expect([paid.chip, paid.cardMessage]).toEqual([
       { label: 'Paid in full', tone: 'tint' },

@@ -33,6 +33,8 @@ Split into PRs, each through the delivery loop:
   Review pass 1 (1 high, 1 medium, 2 low) fixed: the form never puts another invoice in place of the one opened
   (another currency, or already paid) and says why; the opened invoice is always listed; the payment page shows the
   invoice it was opened from; a timed-out draft save adopts the draft it inserted.
+  Review pass 2 (2 medium, 1 low) fixed: a failed or timed-out "Save draft" ends cleanly and leaves the task usable,
+  and the payment page shows the amount that paid this invoice.
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.

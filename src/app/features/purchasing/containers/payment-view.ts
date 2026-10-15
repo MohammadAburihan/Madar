@@ -89,8 +89,11 @@ export function paymentResult(
 ): PaymentResultView {
   const money = (value: number) => formatMoney(value, invoice.currency);
   const paidUp = invoice.outstanding <= 0.005;
+  // A payment made in Desk may pay several invoices: this page is about the part that paid this one.
+  const allocated =
+    payment.invoices.find((i) => i.invoice === invoice.name)?.allocated ?? payment.amount;
   const params = {
-    amount: money(payment.amount),
+    amount: money(allocated),
     total: money(invoice.total),
     left: money(invoice.outstanding),
     order: invoice.order ?? invoice.name,

@@ -207,6 +207,22 @@ describe('SupplierPaymentStore', () => {
     expect(store.draft()).toBeNull();
   });
 
+  it('ends the save when an earlier payment turns out to be posted', async () => {
+    const { store, api } = await loaded();
+    api.saveDraft.mockRejectedValue(new PostedEarlierError('PAY-0155'));
+    expect(await store.saveDraft()).toBeNull();
+    expect([store.savingDraft(), store.failure()]).toEqual([false, 'changed']);
+  });
+
+  it('keeps the task usable when a draft save times out, since nothing can have been paid', async () => {
+    const { store, api } = await loaded();
+    api.saveDraft.mockRejectedValue(new UnresolvedError());
+    expect(await store.saveDraft()).toBeNull();
+    expect([store.busy(), store.state(), store.failure()]).toEqual([false, 'failed', 'offline']);
+    store.setAmount('90');
+    expect(store.ready()).toBe(true);
+  });
+
   it('names a permission failure', async () => {
     const { store, api } = await loaded();
     api.confirm.mockRejectedValue(new HttpErrorResponse({ status: 403 }));
