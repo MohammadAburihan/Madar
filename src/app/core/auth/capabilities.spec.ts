@@ -16,6 +16,7 @@ describe('capabilitiesFor', () => {
       seeCosts: true,
       recordSupplierInvoices: true,
       paySuppliers: true,
+      recordExpenses: true,
     });
   });
 
@@ -35,6 +36,7 @@ describe('capabilitiesFor', () => {
         seeCosts: false,
         recordSupplierInvoices: false,
         paySuppliers: false,
+        recordExpenses: false,
       });
     }
   });
@@ -132,6 +134,15 @@ describe('capabilitiesFor', () => {
     }
     expect(capabilitiesFor('owner', ['System Manager']).paySuppliers).toBe(false);
     expect(capabilitiesFor('owner', ['Accounts Manager']).paySuppliers).toBe(true);
+  });
+
+  it('lets only the owner record expenses, as their ERPNext roles allow', () => {
+    expect(capabilitiesFor('owner').recordExpenses).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(capabilitiesFor(persona).recordExpenses).toBe(false);
+    }
+    expect(capabilitiesFor('owner', ['System Manager']).recordExpenses).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager']).recordExpenses).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

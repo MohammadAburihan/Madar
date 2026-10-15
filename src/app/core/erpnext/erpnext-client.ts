@@ -56,6 +56,27 @@ export class ErpnextClient {
       );
   }
 
+  /** Uploads a file and attaches it to a document (Frappe's `upload_file`); resolves to the File record. */
+  upload(
+    file: Blob,
+    fileName: string,
+    attachTo: { doctype: string; name: string },
+  ): Observable<{ name: string; file_url: string }> {
+    const form = new FormData();
+    form.append('file', file, fileName);
+    form.append('doctype', attachTo.doctype);
+    form.append('docname', attachTo.name);
+    form.append('is_private', '1');
+    return this.http
+      .post<MethodResponse<{ name: string; file_url: string }>>(this.url('upload_file'), form, {
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => response.message),
+        catchError((error) => throwError(() => ErpnextError.from(error))),
+      );
+  }
+
   list<T>(doctype: string, query: ListQuery): Observable<T[]> {
     const params: Record<string, string | number> = {
       doctype,

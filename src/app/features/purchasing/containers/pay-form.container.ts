@@ -247,6 +247,10 @@ export class PayFormContainer implements OnInit {
       void this.ctx.go('done', { replaceUrl: true });
       return;
     }
+    if (store.state() === 'confirmed') {
+      // The payment was recorded and shown (here by Back): this visit is a new payment.
+      store.start(store.invoiceName() ?? '');
+    }
     if (!store.invoice()) {
       void this.load();
     }

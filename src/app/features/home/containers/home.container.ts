@@ -125,6 +125,7 @@ export class HomeContainer {
       // Goods arrive, and invoices are paid, against an order: both start from the list of orders.
       receiveGoods: ['/purchases'],
       paySupplier: ['/purchases'],
+      recordExpense: ['/money/expense'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
     };

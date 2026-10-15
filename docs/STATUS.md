@@ -16,27 +16,27 @@ _Last updated: 14 Oct 2026_
 | #12 | **Purchase orders** (step 3a): the Purchasing officer role, the Purchasing workspace, creating and confirming an order, the order page |
 | #13 | **Receive goods** (step 3b): part or all of an order into a warehouse, the remainder later; checking a timed-out result is now guarded in every task flow; buying prices hidden from receiving roles |
 | #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
+| #15 | **Pay suppliers** (step 3c-2): the payment form with save draft, the recorded payment and its page; step 3 (Purchase) is complete |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## In progress — step 3 of 6: Purchase
+## In progress — step 4 of 6: Record expense, then Supply a project
 
-Split into PRs, each through the delivery loop:
-- **3a — Purchase orders**: merged (#12). Deferred (low): the first "Save draft" isn't looked up by its reference
-  after a dropped connection, so tapping it again can leave a second unsubmitted draft.
-- **3b — Receive goods**: merged (#13).
-- **3c-1 — Supplier invoice**: merged (#14). Deferred (low): leftover invoice drafts the purchasing officer can't
-  delete, and whole-invoice paid/outstanding lines for Desk invoices that bill several orders.
-- **3c-2 — Pay supplier** (this PR): the payment form with save draft, the recorded payment and its page, "Pay
-  supplier" and "View payment record" on the invoice, and Home's "Pay supplier" (opens the purchasing workspace).
-  Owner only.
-  Review pass 1 (1 high, 1 medium, 2 low) fixed: the form never puts another invoice in place of the one opened
-  (another currency, or already paid) and says why; the opened invoice is always listed; the payment page shows the
-  invoice it was opened from; a timed-out draft save adopts the draft it inserted.
-  Review pass 2 (2 medium, 1 low) fixed: a failed or timed-out "Save draft" ends cleanly and leaves the task usable,
-  and the payment page shows the amount that paid this invoice.
-  Review pass 3: "Pay supplier" no longer shows on a draft invoice. Deferred (low), as for purchase-order drafts: a
-  "Save draft" whose insert times out and isn't found yet can leave a second unsubmitted draft.
+- **4a — Record expense** (this PR): category (an operating expense account), amount, date, account, an optional
+  project and receipt photo, then review and record. The expense is a Journal Entry from the expense account to the
+  cash or bank account, with the project on the expense row and the receipt attached after recording. Expenses join
+  the Money page's history; its "Pay supplier" and "Record expense" shortcuts now open the real tasks. Owner only.
+  Review pass 1 (1 medium, 1 low) fixed: a task form reopened after its result was shown (browser Back) starts a new
+  task instead of editing the recorded one (expense, and the receipt, supplier invoice and supplier payment forms), and
+  a new expense's receipt is always attached.
+  Review pass 2 (1 medium, 3 low) fixed: the Money history asks for expenses in batches of categories, leaves out Desk
+  reversals, the form offers only company-currency accounts, and the receipt picker no longer forces the camera.
+  Review pass 3 (1 low) fixed: the suggested account is a company-currency one.
+- **4b — Supply a project.**
+
+Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
+(purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;
+for a Desk invoice billing several orders, the order page's paid/outstanding lines are the whole invoice's.
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
@@ -45,8 +45,6 @@ when exactly 30 ledger rows come back, and the Inventory page ignores an `item` 
 
 | Step | What | Notes |
 |---|---|---|
-| 3 | **Purchase**: order → receive goods (partial or full) → supplier invoice → pay supplier, plus the Purchasing workspace | Designs exported and studied; this is the largest step (about 12 screens) |
-| 4 | **Record expense**, then **Supply a project** | Supply a project depends on stock (step 2) and purchasing (step 3) |
 | 5 | **Reports**: profit, money in and out, customer and supplier statements, by month or date range (overview §4.8) | Added to release 1 on 14 Oct 2026. Designed in Pencil (10 frames, EN/AR, mobile/desktop; overview, profit by month, customer statement). The Owner-only Reports entry is in the app navigation and opens a placeholder until this step. Profit needs purchasing and expenses (steps 3–4) to mean anything |
 | 6 | **First release and server**: tag `v0.1.0`, publish `madar-web:0.1.0`, set up deployment | Decided: GitHub Container Registry; one ERPNext stack with one site per business; tag and publish `v0.1.0` after steps 1–5. Still open: AWS server size, domain/HTTPS, backups, sign-in and onboarding |
 | — | **Final review** of the whole `development` branch | After step 6 |

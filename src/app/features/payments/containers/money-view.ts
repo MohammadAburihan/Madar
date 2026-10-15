@@ -15,6 +15,15 @@ export function matches(payment: PaymentRecord, term: string): boolean {
 
 export function paymentCard(payment: PaymentRecord, currency: string, tr: Translator) {
   const amount = formatMoney(payment.amount, currency);
+  if (payment.direction === 'expense') {
+    return {
+      title: tr.t('money.expenseRecord', { payment: payment.name, amount }),
+      message: [
+        tr.t('money.partyAccount', { party: payment.party, account: payment.account }),
+        tr.t(payment.receipt ? 'money.receiptAttached' : 'money.receiptMissing'),
+      ].join('\n'),
+    };
+  }
   return {
     title: tr.t(payment.direction === 'received' ? 'money.received' : 'money.paid', {
       payment: payment.name,
