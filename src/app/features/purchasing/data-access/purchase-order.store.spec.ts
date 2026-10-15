@@ -240,4 +240,21 @@ describe('PurchaseOrderStore', () => {
     await store.confirm();
     expect(api.confirm.mock.calls[0][0].project).toBe('PROJ-0001');
   });
+
+  it("prices the project's line for the supplier chosen last, even when an earlier search answers late", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'POT-30', 4);
+    let answerFirst: (items: PurchaseItem[]) => void = () => undefined;
+    api.searchItems
+      .mockReturnValueOnce(new Promise((resolve) => (answerFirst = resolve)))
+      .mockResolvedValueOnce([{ ...PLANTER, rate: 40 }]);
+    store.setSupplier('Green Clay');
+    const first = store.applyPrefill();
+    store.setSupplier('Blue Stone');
+    await store.applyPrefill();
+    answerFirst([PLANTER]);
+    await first;
+    expect(store.lines()).toEqual([{ item: { ...PLANTER, rate: 40 }, qty: 4, rate: 40 }]);
+  });
 });

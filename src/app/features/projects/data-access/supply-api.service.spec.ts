@@ -80,11 +80,11 @@ describe('SupplyApiService', () => {
       ],
       pendingOrders: [{ name: 'PO-2049', qty: 3 }],
     });
-    // Closed, held or completed orders will deliver nothing more.
+    // Closed, held, completed or drop-shipped orders bring nothing more into stock.
     expect(orderQuery?.filters).toContainEqual([
       'status',
       'not in',
-      ['Closed', 'On Hold', 'Completed'],
+      ['Closed', 'On Hold', 'Completed', 'Delivered'],
     ]);
   });
 

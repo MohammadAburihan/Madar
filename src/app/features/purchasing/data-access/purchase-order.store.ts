@@ -118,12 +118,17 @@ export class PurchaseOrderStore {
   /** Once a supplier is chosen, adds the queued item at that supplier's buying price. */
   async applyPrefill(): Promise<void> {
     const prefill = this.prefill();
-    if (!prefill || !this.supplier()) {
+    const supplier = this.supplier();
+    if (!prefill || !supplier) {
       return;
     }
     const [match] = (await this.searchItems(prefill.item, 'product')).filter(
       (i) => i.code === prefill.item,
     );
+    // A quicker supplier change owns the prefill now; this price is the previous supplier's.
+    if (this.supplier() !== supplier || this.prefill() !== prefill) {
+      return;
+    }
     // Only once: a later supplier change keeps the line the user may have edited.
     this.prefill.set(null);
     if (match && !this.lines().some((l) => l.item.code === match.code)) {

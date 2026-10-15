@@ -100,7 +100,7 @@ export class SupplyApiService {
           limit: 1,
         }),
       ),
-      // Closed, held and completed orders will deliver nothing more.
+      // Closed, held, completed and drop-shipped (Delivered) orders bring nothing more into stock.
       firstValueFrom(
         this.erpnext.list<{
           parent: string;
@@ -120,7 +120,7 @@ export class SupplyApiService {
             ['Purchase Order Item', 'project', '=', project],
             ['Purchase Order Item', 'item_code', '=', item],
             ['docstatus', '=', 1],
-            ['status', 'not in', ['Closed', 'On Hold', 'Completed']],
+            ['status', 'not in', ['Closed', 'On Hold', 'Completed', 'Delivered']],
           ],
           limit: 0,
         }),

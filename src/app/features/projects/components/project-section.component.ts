@@ -55,7 +55,8 @@ export interface SectionRow {
       font: 400 13px / var(--md-lh) var(--md-font);
     }
 
-    button.row {
+    /* Zero specificity, so .row's layout still applies to the button. */
+    :where(button.row) {
       all: unset;
       cursor: pointer;
     }
