@@ -49,6 +49,10 @@ export class SupplierPaymentStore {
   /** The draft was saved on purpose, so starting over must keep it. */
   private readonly draftSaved = signal(false);
 
+  /** The invoice the task was opened from is paid, or in another currency than the company's. */
+  readonly openedNotPayable = computed(
+    () => !!this.invoice() && !this.unpaid().some((i) => i.name === this.invoiceName()),
+  );
   readonly selectedInvoice = computed(
     () => this.unpaid().find((i) => i.name === this.selected()) ?? null,
   );
@@ -112,7 +116,7 @@ export class SupplierPaymentStore {
     const reference = this.reference();
     const invoice = await this.invoices.invoice(name);
     const [unpaid, accounts] = await Promise.all([
-      this.api.unpaidInvoices(invoice.supplier, business.name, business.currency),
+      this.api.unpaidInvoices(invoice.supplier, business.name, business.currency, name),
       this.paymentAccounts.list(business.name, allowedModes),
     ]);
     if (this.reference() !== reference) {
@@ -122,7 +126,8 @@ export class SupplierPaymentStore {
     this.unpaid.set(unpaid);
     this.accounts.set(accounts);
     this.account.set(accounts[0]?.mode ?? null);
-    this.selectInvoice(unpaid.find((i) => i.name === name)?.name ?? unpaid[0]?.name ?? null);
+    // Never another invoice in its place: if the opened one can't be paid here, the user chooses.
+    this.selectInvoice(unpaid.find((i) => i.name === name)?.name ?? null);
   }
 
   /** Picks the invoice to pay and suggests paying what it still owes. */

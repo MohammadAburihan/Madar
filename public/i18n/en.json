@@ -1214,7 +1214,12 @@
         "cardTitle": "We didn't get a final answer",
         "cardMessage": "The payment may have been recorded. Check the result instead of paying again, so the supplier isn't paid twice.",
         "planned": "Planned payment"
-      }
+      },
+      "notPayable": {
+        "title": "This invoice can't be paid here",
+        "message": "It's already paid, or it's in another currency than {{currency}}. Choose another invoice of this supplier, or pay it in ERPNext."
+      },
+      "chooseInvoice": "Choose invoice"
     },
     "payment": {
       "recordedTitle": "Payment recorded",

@@ -143,7 +143,9 @@ export class SupplierInvoiceContainer {
   }
 
   protected openPayment(payment: string): void {
-    void this.router.navigate(['/purchases/payment', payment]);
+    void this.router.navigate(['/purchases/payment', payment], {
+      queryParams: { invoice: this.name() },
+    });
   }
 
   constructor() {

@@ -69,6 +69,23 @@ describe('SupplierPaymentApiService', () => {
       ['docstatus', '=', 1],
       ['outstanding_amount', '>', 0],
     ]);
+    expect(listCalls[0].query.orderBy).toBe('posting_date desc, name desc');
+  });
+
+  it('always lists the invoice the task was opened from, even beyond the cap', async () => {
+    const row = (name: string) => ({
+      name,
+      bill_no: null,
+      grand_total: 10,
+      rounded_total: 0,
+      outstanding_amount: 10,
+    });
+    fakeErpnext({
+      'Purchase Invoice': (query) =>
+        query.filters?.some((f) => f[0] === 'name') ? [row('PINV-OLD')] : [row('PINV-NEW')],
+    });
+    const unpaid = await api().unpaidInvoices('Green Clay', 'Rehan Nursery', 'ILS', 'PINV-OLD');
+    expect(unpaid.map((i) => i.name)).toEqual(['PINV-OLD', 'PINV-NEW']);
   });
 
   it('pays from the chosen account, allocated to the invoice, with the Madar reference', async () => {
@@ -162,6 +179,17 @@ describe('SupplierPaymentApiService', () => {
       'frappe.client.save',
     ]);
     expect(postCalls[3].body['doc']).toMatchObject({ name: 'PAY-0155', paid_amount: 80 });
+  });
+
+  it('adopts the draft a timed-out save inserted, instead of inserting a second one', async () => {
+    fakeErpnext(
+      { 'Payment Entry': () => [{ name: 'PAY-0155', docstatus: 0 }] },
+      {
+        [GET_ENTRY]: () => TEMPLATE,
+        'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })),
+      },
+    );
+    expect(await api().saveDraft(request(), null)).toBe('PAY-0155');
   });
 
   it('finds a payment or its draft by the Madar reference', async () => {

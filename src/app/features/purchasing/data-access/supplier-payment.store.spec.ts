@@ -65,13 +65,34 @@ async function loaded() {
 describe('SupplierPaymentStore', () => {
   it('opens on the invoice it came from, suggesting what it owes and the first account', async () => {
     const { store, api, accounts } = await loaded();
-    expect(api.unpaidInvoices).toHaveBeenCalledWith('Green Clay', 'Rehan Nursery', 'ILS');
+    expect(api.unpaidInvoices).toHaveBeenCalledWith(
+      'Green Clay',
+      'Rehan Nursery',
+      'ILS',
+      'PINV-0068',
+    );
+    expect(store.openedNotPayable()).toBe(false);
     expect(accounts.list).toHaveBeenCalledWith('Rehan Nursery', 'all');
     expect([store.selected(), store.amountInput(), store.account()]).toEqual([
       'PINV-0068',
       '270.00',
       'Bank Draft',
     ]);
+    expect(store.ready()).toBe(true);
+  });
+
+  it('never puts another invoice in place of one that cannot be paid here', async () => {
+    const { store, api } = setup();
+    // The opened invoice is in another currency, so only the supplier's other invoice is payable.
+    api.unpaidInvoices.mockResolvedValue([UNPAID[0]]);
+    store.start('PINV-0068');
+    await store.load('all');
+    expect([store.selected(), store.openedNotPayable(), store.ready()]).toEqual([
+      null,
+      true,
+      false,
+    ]);
+    store.selectInvoice('PINV-0060');
     expect(store.ready()).toBe(true);
   });
 

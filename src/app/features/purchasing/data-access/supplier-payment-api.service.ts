@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import {
   PostedEarlierError,
+  UnresolvedError,
   confirmRequest,
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { spreadAllocation, withoutLocalFlags } from '../../../core/erpnext/payment-entry';
 import { round2 } from '../../../core/format/number';
@@ -27,13 +28,31 @@ interface PaymentDoc {
 export class SupplierPaymentApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** The supplier's invoices that still owe something, in the company currency, oldest first. */
+  /**
+   * The supplier's invoices that still owe something, in the company currency, newest first. `include` (the
+   * invoice the task was opened from) is always listed when it can be paid, even beyond the cap.
+   */
   async unpaidInvoices(
     supplier: string,
     company: string,
     currency: string,
+    include?: string,
   ): Promise<UnpaidSupplierInvoice[]> {
-    const rows = await firstValueFrom(
+    const [rows, extra] = await Promise.all([
+      this.unpaidRows(supplier, company, currency, null),
+      include ? this.unpaidRows(supplier, company, currency, include) : [],
+    ]);
+    const all = rows.some((r) => r.name === include) ? rows : [...extra, ...rows];
+    return all.map((r) => ({
+      name: r.name,
+      billNo: r.bill_no || null,
+      total: invoiceTotal(r),
+      outstanding: r.outstanding_amount,
+    }));
+  }
+
+  private unpaidRows(supplier: string, company: string, currency: string, name: string | null) {
+    return firstValueFrom(
       this.erpnext.list<{
         name: string;
         bill_no: string | null;
@@ -49,17 +68,12 @@ export class SupplierPaymentApiService {
           ['currency', '=', currency],
           ['docstatus', '=', 1],
           ['outstanding_amount', '>', 0],
+          ...(name ? [['name', '=', name] as Filter] : []),
         ],
-        orderBy: 'posting_date asc',
-        limit: 50,
+        orderBy: 'posting_date desc, name desc',
+        limit: name ? 1 : 50,
       }),
     );
-    return rows.map((r) => ({
-      name: r.name,
-      billNo: r.bill_no || null,
-      total: invoiceTotal(r),
-      outstanding: r.outstanding_amount,
-    }));
   }
 
   /**
@@ -112,14 +126,30 @@ export class SupplierPaymentApiService {
       // Recorded by a slow earlier attempt: saving a draft now would start a second payment.
       throw new PostedEarlierError(current.name);
     }
-    const saved = await firstValueFrom(
-      current
-        ? this.erpnext.post<PaymentDoc>('frappe.client.save', {
-            doc: this.overDraft(current, fresh),
-          })
-        : this.erpnext.post<PaymentDoc>('frappe.client.insert', { doc: fresh }),
-    );
-    return saved.name;
+    if (current) {
+      const saved = await firstValueFrom(
+        this.erpnext.post<PaymentDoc>('frappe.client.save', {
+          doc: this.overDraft(current, fresh),
+        }),
+      );
+      return saved.name;
+    }
+    try {
+      const inserted = await confirmRequest(
+        this.erpnext.post<PaymentDoc>('frappe.client.insert', { doc: fresh }),
+      );
+      return inserted.name;
+    } catch (error) {
+      // The insert may have gone through: adopt that draft rather than inserting a second one next time.
+      if (!(error instanceof UnresolvedError)) {
+        throw error;
+      }
+      const found = await this.find(request.reference).catch(() => 'not-found' as const);
+      if (found !== 'not-found' && 'draft' in found) {
+        return found.draft;
+      }
+      throw error;
+    }
   }
 
   /** Looks a payment up by its Madar reference after an unresolved confirmation. */

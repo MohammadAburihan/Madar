@@ -68,6 +68,8 @@ import { paymentResult } from './payment-view';
 })
 export class SupplierPaymentContainer {
   readonly name = input.required<string>();
+  /** The invoice the page was opened from; a payment made in Desk may pay several. */
+  readonly invoice = input<string | undefined>();
 
   private readonly payments = inject(SupplierPaymentApiService);
   private readonly invoices = inject(SupplierInvoiceApiService);
@@ -77,7 +79,7 @@ export class SupplierPaymentContainer {
   protected readonly i18n = injectI18n();
 
   private readonly payment = signal<SupplierPayment | null>(null);
-  private readonly invoice = signal<SupplierInvoice | null>(null);
+  private readonly paid = signal<SupplierInvoice | null>(null);
   protected readonly failed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   private run = 0;
@@ -105,7 +107,7 @@ export class SupplierPaymentContainer {
 
   protected readonly view = computed(() => {
     const payment = this.payment();
-    const invoice = this.invoice();
+    const invoice = this.paid();
     return payment && invoice ? paymentResult(payment, invoice, false, this.i18n.tr()) : null;
   });
 
@@ -121,18 +123,19 @@ export class SupplierPaymentContainer {
   protected async load(name: string): Promise<void> {
     const run = ++this.run;
     this.payment.set(null);
-    this.invoice.set(null);
+    this.paid.set(null);
     this.failed.set(false);
     try {
       const payment = await this.payments.payment(name);
-      const first = payment.invoices[0]?.invoice;
-      if (!first) {
+      const from = this.invoiceName();
+      const chosen = payment.invoices.find((i) => i.invoice === from) ?? payment.invoices[0];
+      if (!chosen) {
         throw new Error('The payment pays no supplier invoice');
       }
-      const invoice = await this.invoices.invoice(first);
+      const invoice = await this.invoices.invoice(chosen.invoice);
       if (run === this.run) {
         this.payment.set(payment);
-        this.invoice.set(invoice);
+        this.paid.set(invoice);
       }
     } catch {
       if (run === this.run) {
@@ -141,8 +144,12 @@ export class SupplierPaymentContainer {
     }
   }
 
+  private invoiceName(): string | undefined {
+    return this.invoice();
+  }
+
   protected openInvoice(): void {
-    const invoice = this.invoice();
+    const invoice = this.paid();
     if (invoice) {
       void this.router.navigate(['/purchases/invoice', invoice.name]);
     }
@@ -153,7 +160,7 @@ export class SupplierPaymentContainer {
   }
 
   protected back(): void {
-    const invoice = this.invoice();
+    const invoice = this.paid();
     void this.router.navigate(invoice ? ['/purchases/invoice', invoice.name] : ['/purchases']);
   }
 }

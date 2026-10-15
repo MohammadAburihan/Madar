@@ -72,9 +72,17 @@ import {
         [message]="txt.noAccounts.message"
       />
     } @else if (form(); as f) {
+      @if (ctx.store.openedNotPayable()) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.notPayable.title"
+          [message]="txt.notPayable.message"
+        />
+      }
       <app-select-field
         [label]="txt.invoice"
         [options]="f.invoices"
+        [placeholder]="txt.chooseInvoice"
         [value]="ctx.store.selected()"
         (valueChange)="ctx.store.selectInvoice($event)"
       />
@@ -159,6 +167,8 @@ export class PayFormContainer implements OnInit {
       loadFailed: block('purchase.invoice.loadFailed'),
       nothingToPay: block('purchase.pay.nothingToPay', { currency: this.ctx.currency() }),
       noAccounts: block('purchase.pay.noAccounts'),
+      notPayable: block('purchase.pay.notPayable', { currency: this.ctx.currency() }),
+      chooseInvoice: t('purchase.pay.chooseInvoice'),
     };
   });
 

@@ -30,6 +30,9 @@ Split into PRs, each through the delivery loop:
 - **3c-2 — Pay supplier** (this PR): the payment form with save draft, the recorded payment and its page, "Pay
   supplier" and "View payment record" on the invoice, and Home's "Pay supplier" (opens the purchasing workspace).
   Owner only.
+  Review pass 1 (1 high, 1 medium, 2 low) fixed: the form never puts another invoice in place of the one opened
+  (another currency, or already paid) and says why; the opened invoice is always listed; the payment page shows the
+  invoice it was opened from; a timed-out draft save adopts the draft it inserted.
 
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
