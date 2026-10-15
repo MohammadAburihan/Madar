@@ -5,6 +5,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from './erpnext-client';
 
 describe('ErpnextClient', () => {
@@ -31,6 +32,28 @@ describe('ErpnextClient', () => {
 
     expect((await all).length).toBe(503);
     http.verify();
+  });
+
+  it('uploads a file as a private attachment of the document', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const client = TestBed.inject(ErpnextClient);
+    const http = TestBed.inject(HttpTestingController);
+
+    const done = firstValueFrom(
+      client.upload(new Blob(['x']), 'receipt.jpg', { doctype: 'Journal Entry', name: 'JV-1' }),
+    );
+    const request = http.expectOne((r) => r.url.endsWith('/api/method/upload_file'));
+    const form = request.request.body as FormData;
+    expect([form.get('doctype'), form.get('docname'), form.get('is_private')]).toEqual([
+      'Journal Entry',
+      'JV-1',
+      '1',
+    ]);
+    expect((form.get('file') as File).name).toBe('receipt.jpg');
+    request.flush({ message: { name: 'FILE-1', file_url: '/private/files/receipt.jpg' } });
+    expect((await done).name).toBe('FILE-1');
   });
 
   it('defaults list queries to a bounded page and passes group_by through', () => {

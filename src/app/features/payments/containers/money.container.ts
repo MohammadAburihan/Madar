@@ -16,6 +16,7 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
+import { ExpenseApiService } from '../data-access/expense-api.service';
 import { MoneyApiService, MoneyOverview } from '../data-access/money-api.service';
 import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
 
@@ -121,6 +122,7 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
 })
 export class MoneyContainer implements OnInit {
   private readonly api = inject(MoneyApiService);
+  private readonly expenses = inject(ExpenseApiService);
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
   private readonly router = inject(Router);
@@ -161,15 +163,11 @@ export class MoneyContainer implements OnInit {
   /** The tasks this role can start from here; Pay supplier and Record expense are owner tasks. */
   protected readonly actions = computed(() => {
     const { t } = this.i18n.tr();
-    const owner = this.caps().money === 'all';
+    const caps = this.caps();
     return [
-      ...(this.caps().collect ? [{ id: 'receive', label: t('money.receive') }] : []),
-      ...(owner
-        ? [
-            { id: 'paySupplier', label: t('money.paySupplier') },
-            { id: 'expense', label: t('money.expense') },
-          ]
-        : []),
+      ...(caps.collect ? [{ id: 'receive', label: t('money.receive') }] : []),
+      ...(caps.paySuppliers ? [{ id: 'paySupplier', label: t('money.paySupplier') }] : []),
+      ...(caps.recordExpenses ? [{ id: 'expense', label: t('money.expense') }] : []),
     ];
   });
 
@@ -206,7 +204,13 @@ export class MoneyContainer implements OnInit {
   }
 
   protected open(action: string): void {
-    void this.router.navigate(action === 'receive' ? ['/money/receive'] : ['/task', action]);
+    const routes: Record<string, string[]> = {
+      receive: ['/money/receive'],
+      // Suppliers are paid against an order's invoice, found from the purchasing workspace.
+      paySupplier: ['/purchases'],
+      expense: ['/money/expense'],
+    };
+    void this.router.navigate(routes[action] ?? ['/task', action]);
   }
 
   private async load(): Promise<void> {
@@ -222,7 +226,17 @@ export class MoneyContainer implements OnInit {
         return;
       }
       const owner = access === 'own' ? (this.session.user()?.id ?? null) : null;
-      this.overview.set(await this.api.overview(business.name, owner));
+      // Expenses show for the roles that record them; their categories pick them out of the journal.
+      const categories = this.caps().recordExpenses
+        ? await this.expenses.categories(business.name).catch(() => [])
+        : [];
+      this.overview.set(
+        await this.api.overview(
+          business.name,
+          owner,
+          categories.map((c) => c.account),
+        ),
+      );
       this.state.set('ready');
     } catch {
       this.state.set('error');

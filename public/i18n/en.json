@@ -598,7 +598,10 @@
     "error": {
       "title": "Payments couldn't load",
       "message": "Check the connection and try again."
-    }
+    },
+    "expenseRecord": "{{payment}} · Expense {{amount}}",
+    "receiptAttached": "Receipt attached",
+    "receiptMissing": "Receipt not attached"
   },
   "invoice": {
     "title": "Sales invoice {{invoice}}",
@@ -1238,6 +1241,100 @@
         "title": "This payment couldn't load",
         "message": "Check the connection and try again."
       }
+    }
+  },
+  "expense": {
+    "title": "New expense",
+    "step1": "1 of 3 · Enter expense details",
+    "category": "Category *",
+    "chooseCategory": "Choose category",
+    "amount": "Amount *",
+    "date": "Date *",
+    "account": "Account *",
+    "chooseAccount": "Choose account",
+    "project": "Project · optional",
+    "noProject": "No project selected",
+    "addReceipt": "Add receipt photo · optional",
+    "changeReceipt": "Change receipt photo",
+    "removeReceipt": "Remove receipt",
+    "receiptChosen": "Receipt: {{file}}",
+    "toReview": "Review expense",
+    "amountError": "Enter an amount above 0",
+    "reviewTitle": "Review expense",
+    "step2": "2 of 3 · Confirm before recording",
+    "ready": "Ready to record",
+    "cardTitle": "New operating expense",
+    "cardMessage": "Pay {{amount}} from {{account}} for {{category}}. {{receipt}}",
+    "noReceiptSentence": "No receipt is attached.",
+    "receiptSentence": "The receipt photo is attached after recording.",
+    "rows": {
+      "category": "Category",
+      "amount": "Amount",
+      "date": "Date",
+      "account": "Account",
+      "project": "Project",
+      "receipt": "Receipt"
+    },
+    "none": "None",
+    "notAttached": "Not attached",
+    "toAttach": "Attached after recording",
+    "record": "Record expense",
+    "recording": "Recording…",
+    "edit": "Edit expense",
+    "recordedTitle": "Expense recorded",
+    "recorded": "Recorded",
+    "recordedCard": "{{amount}} expense recorded",
+    "recordedMessage": "Paid from {{account}} on {{date}}. {{receipt}}",
+    "receiptNone": "No receipt was attached.",
+    "receiptAttaching": "Attaching the receipt…",
+    "receiptAttached": "The receipt is attached.",
+    "receiptFailed": "The receipt couldn't be attached.",
+    "retryReceipt": "Attach receipt again",
+    "done": "Done",
+    "another": "New expense",
+    "noAccess": {
+      "title": "You can't record expenses",
+      "message": "Recording expenses is for the owner."
+    },
+    "noCategories": {
+      "title": "No expense categories",
+      "message": "Add an expense account in ERPNext first."
+    },
+    "noAccounts": {
+      "title": "No account to pay from",
+      "message": "Set up a Mode of Payment with an account in ERPNext first."
+    },
+    "loadFailed": {
+      "title": "The expense form couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "failed": {
+      "permission": {
+        "title": "You can't record this expense",
+        "message": "ERPNext didn't allow it for your role. Nothing was recorded."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "The expense wasn't sent. Check the connection and try again."
+      },
+      "error": {
+        "title": "The expense wasn't recorded",
+        "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "changed": {
+        "title": "An earlier version was already recorded",
+        "message": "The expense was recorded before your latest changes. Check the money history before recording again; recording now adds a new expense."
+      }
+    },
+    "notCreated": {
+      "title": "The expense wasn't recorded",
+      "message": "ERPNext has no expense for this request. Check the details and record it again."
+    },
+    "checking": {
+      "title": "Checking your expense",
+      "cardTitle": "We didn't get a final answer",
+      "cardMessage": "The expense may have been recorded. Check the result instead of recording it again, so it isn't counted twice.",
+      "planned": "Planned expense"
     }
   }
 }

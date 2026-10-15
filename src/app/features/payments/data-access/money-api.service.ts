@@ -5,13 +5,16 @@ import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 
 export interface PaymentRecord {
   name: string;
-  direction: 'received' | 'paid';
+  direction: 'received' | 'paid' | 'expense';
+  /** The customer or supplier; for an expense, its category. */
   party: string;
   account: string;
   amount: number;
   status: 'confirmed' | 'draft' | 'cancelled';
   postingDate: string;
   invoices: string[];
+  /** Expenses only: whether a receipt is attached. */
+  receipt?: boolean;
 }
 
 export interface OpenBalance {
@@ -34,15 +37,102 @@ const HISTORY_LIMIT = 50;
 export class MoneyApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async overview(company: string, owner: string | null): Promise<MoneyOverview> {
-    const [payments, receivable, payable] = await Promise.all([
+  /**
+   * `expenseAccounts` (the expense categories) adds the expenses recorded against them; roles that don't record
+   * expenses pass none.
+   */
+  async overview(
+    company: string,
+    owner: string | null,
+    expenseAccounts: readonly string[] = [],
+  ): Promise<MoneyOverview> {
+    const [payments, expenses, receivable, payable] = await Promise.all([
       this.payments(company, owner),
+      expenseAccounts.length
+        ? this.expenses(company, expenseAccounts).catch(() => [])
+        : Promise.resolve([]),
       this.largestOpen('Sales Invoice', 'customer_name', company).catch(() => null),
       owner
         ? Promise.resolve(null)
         : this.largestOpen('Purchase Invoice', 'supplier_name', company).catch(() => null),
     ]);
-    return { payments, receivable, payable };
+    // Both lists come newest first; merged, they are sorted again (stable, so same-day order holds).
+    const history = expenses.length
+      ? [...payments, ...expenses]
+          .sort((a, b) => b.postingDate.localeCompare(a.postingDate))
+          .slice(0, HISTORY_LIMIT)
+      : payments;
+    return { payments: history, receivable, payable };
+  }
+
+  /** Journal Entries that debit an expense category: Madar's expenses, and ones made the same way in Desk. */
+  private async expenses(
+    company: string,
+    expenseAccounts: readonly string[],
+  ): Promise<PaymentRecord[]> {
+    const entries = await firstValueFrom(
+      this.erpnext.list<{ name: string; posting_date: string; docstatus: number }>(
+        'Journal Entry',
+        {
+          fields: ['name', 'posting_date', 'docstatus'],
+          filters: [
+            ['company', '=', company],
+            ['docstatus', '<', 2],
+            ['Journal Entry Account', 'account', 'in', expenseAccounts],
+          ],
+          orderBy: 'posting_date desc, creation desc',
+          limit: HISTORY_LIMIT,
+        },
+      ),
+    );
+    // One row per matching account row: an entry with two expense rows comes back twice.
+    const names = [...new Set(entries.map((e) => e.name))];
+    if (!names.length) {
+      return [];
+    }
+    const [rows, files] = await Promise.all([
+      firstValueFrom(
+        this.erpnext.list<{ parent: string; account: string; debit: number; credit: number }>(
+          'Journal Entry Account',
+          {
+            fields: ['parent', 'account', 'debit', 'credit'],
+            filters: [['parent', 'in', names]],
+            parent: 'Journal Entry',
+            limit: 0,
+          },
+        ),
+      ),
+      firstValueFrom(
+        this.erpnext.list<{ attached_to_name: string }>('File', {
+          fields: ['attached_to_name'],
+          filters: [
+            ['attached_to_doctype', '=', 'Journal Entry'],
+            ['attached_to_name', 'in', names],
+          ],
+          limit: 0,
+        }),
+      ).catch(() => []),
+    ]);
+    const expense = new Set(expenseAccounts);
+    const accounts = await this.accountNames([...new Set(rows.map((r) => r.account))]);
+    const name = (account: string | undefined) =>
+      account ? (accounts.get(account) ?? account) : '';
+    return names.map((entryName) => {
+      const entry = entries.find((e) => e.name === entryName)!;
+      const own = rows.filter((r) => r.parent === entryName);
+      const debits = own.filter((r) => expense.has(r.account) && r.debit > 0);
+      return {
+        name: entryName,
+        direction: 'expense',
+        party: debits.map((r) => name(r.account)).join(', '),
+        account: name(own.find((r) => r.credit > 0)?.account),
+        amount: debits.reduce((sum, r) => sum + r.debit, 0),
+        status: entry.docstatus === 1 ? 'confirmed' : 'draft',
+        postingDate: entry.posting_date,
+        invoices: [],
+        receipt: files.some((f) => f.attached_to_name === entryName),
+      };
+    });
   }
 
   private async payments(company: string, owner: string | null): Promise<PaymentRecord[]> {

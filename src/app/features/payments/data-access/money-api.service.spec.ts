@@ -135,4 +135,50 @@ describe('MoneyApiService', () => {
     expect(overview.receivable).toBeNull();
     expect(overview.payable).toBeNull();
   });
+
+  it('adds the expenses recorded against the categories, newest first with the payments', async () => {
+    const { listCalls } = fakeErpnext({
+      'Payment Entry': PAYMENTS,
+      'Journal Entry': () => [
+        { name: 'ACC-JV-0091', posting_date: '2026-10-13', docstatus: 1 },
+        { name: 'ACC-JV-0091', posting_date: '2026-10-13', docstatus: 1 },
+      ],
+      'Journal Entry Account': () => [
+        { parent: 'ACC-JV-0091', account: 'Travel Expenses - RN', debit: 36.5, credit: 0 },
+        { parent: 'ACC-JV-0091', account: 'Cash - RN', debit: 0, credit: 36.5 },
+      ],
+      File: () => [],
+      Account: () => [
+        { name: 'Travel Expenses - RN', account_name: 'Travel Expenses' },
+        { name: 'Cash - RN', account_name: 'Main cash' },
+      ],
+    });
+    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
+      'Travel Expenses - RN',
+    ]);
+    expect(payments[0]).toEqual({
+      name: 'ACC-JV-0091',
+      direction: 'expense',
+      party: 'Travel Expenses',
+      account: 'Main cash',
+      amount: 36.5,
+      status: 'confirmed',
+      postingDate: '2026-10-13',
+      invoices: [],
+      receipt: false,
+    });
+    expect(payments.map((p) => p.name)).toEqual(['ACC-JV-0091', 'PAY-0155', 'PAY-0154']);
+    expect(listCalls.find((c) => c.doctype === 'Journal Entry')!.query.filters).toContainEqual([
+      'Journal Entry Account',
+      'account',
+      'in',
+      ['Travel Expenses - RN'],
+    ]);
+  });
+
+  it('leaves expenses out for roles that pass no categories', async () => {
+    const { listCalls } = fakeErpnext({ 'Payment Entry': PAYMENTS });
+    await TestBed.inject(MoneyApiService).overview('Rehan Nursery', 'lina@rehan.example');
+    expect(listCalls.some((c) => c.doctype === 'Journal Entry')).toBe(false);
+  });
 });

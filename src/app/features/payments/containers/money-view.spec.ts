@@ -71,4 +71,25 @@ describe('money view', () => {
       message: 'PINV-0068 · 270.00 billed · 100.00 paid',
     });
   });
+
+  it('shows an expense like the payments-and-expenses mock', () => {
+    const expense: PaymentRecord = {
+      name: 'EX-0091',
+      direction: 'expense',
+      party: 'Fuel & transport',
+      account: 'Main cash',
+      amount: 36.5,
+      status: 'confirmed',
+      postingDate: '2026-10-11',
+      invoices: [],
+      receipt: false,
+    };
+    expect(visible(paymentCard(expense, 'ILS', en))).toEqual({
+      title: 'EX-0091 · Expense ILS 36.50',
+      message: 'Fuel & transport · Main cash\nReceipt not attached',
+    });
+    expect(visible(paymentCard({ ...expense, receipt: true }, 'ILS', ar)).message).toBe(
+      'Fuel & transport · Main cash\nالإيصال مرفق',
+    );
+  });
 });

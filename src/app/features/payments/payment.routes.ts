@@ -34,4 +34,32 @@ export const paymentRoutes: Route[] = [
       },
     ],
   },
+  {
+    path: 'money/expense',
+    loadComponent: () =>
+      import('./containers/expense-flow.container').then((m) => m.ExpenseFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/expense-form.container').then((m) => m.ExpenseFormContainer),
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./containers/expense-review.container').then((m) => m.ExpenseReviewContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/expense-checking.container').then((m) => m.ExpenseCheckingContainer),
+      },
+      {
+        path: 'recorded',
+        loadComponent: () =>
+          import('./containers/expense-recorded.container').then((m) => m.ExpenseRecordedContainer),
+      },
+    ],
+  },
 ];

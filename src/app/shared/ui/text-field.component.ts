@@ -101,7 +101,7 @@ import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
 export class TextFieldComponent {
   readonly label = input.required<string>();
   readonly value = model('');
-  readonly type = input<'text' | 'tel' | 'email' | 'number'>('text');
+  readonly type = input<'text' | 'tel' | 'email' | 'number' | 'date'>('text');
   readonly inputmode = input<string | null>(null);
   readonly autocomplete = input<string | null>(null);
   readonly suffix = input<string | null>(null);

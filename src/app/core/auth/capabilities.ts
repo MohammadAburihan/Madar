@@ -25,6 +25,8 @@ export interface Capabilities {
   recordSupplierInvoices: boolean;
   /** Pay supplier invoices from the business's payment accounts. */
   paySuppliers: boolean;
+  /** Record operating expenses paid from the business's payment accounts. */
+  recordExpenses: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -41,6 +43,7 @@ const SALES_ROLE: Capabilities = {
   seeCosts: false,
   recordSupplierInvoices: false,
   paySuppliers: false,
+  recordExpenses: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -58,6 +61,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeCosts: true,
     recordSupplierInvoices: true,
     paySuppliers: true,
+    recordExpenses: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
@@ -75,6 +79,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeCosts: false,
     recordSupplierInvoices: false,
     paySuppliers: false,
+    recordExpenses: false,
   },
   purchasing: {
     sell: false,
@@ -91,6 +96,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordSupplierInvoices: true,
     // Accounts User could pay in ERPNext; paying suppliers stays with the Owner (docs/PERMISSIONS.md).
     paySuppliers: false,
+    recordExpenses: false,
   },
 };
 
@@ -145,6 +151,11 @@ const PAY_SUPPLIERS_NEEDS = [
   ['Accounts User', 'Accounts Manager'], // read Mode of Payment; create and submit Payment Entry
 ];
 
+// Recording reads expense and payment accounts and creates and submits a Journal Entry (v16 permissions).
+const RECORD_EXPENSES_NEEDS = [
+  ['Accounts User', 'Accounts Manager'], // read Account and Mode of Payment; create and submit Journal Entry
+];
+
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
  * do the task (an owner who is only an Accounts Manager can't move stock).
@@ -170,5 +181,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     paySuppliers:
       caps.paySuppliers &&
       PAY_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    recordExpenses:
+      caps.recordExpenses &&
+      RECORD_EXPENSES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }
