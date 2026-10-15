@@ -17,6 +17,7 @@ describe('capabilitiesFor', () => {
       recordSupplierInvoices: true,
       paySuppliers: true,
       recordExpenses: true,
+      manageProjects: true,
     });
   });
 
@@ -37,6 +38,7 @@ describe('capabilitiesFor', () => {
         recordSupplierInvoices: false,
         paySuppliers: false,
         recordExpenses: false,
+        manageProjects: false,
       });
     }
   });
@@ -143,6 +145,19 @@ describe('capabilitiesFor', () => {
     }
     expect(capabilitiesFor('owner', ['System Manager']).recordExpenses).toBe(false);
     expect(capabilitiesFor('owner', ['Accounts Manager']).recordExpenses).toBe(true);
+  });
+
+  it('lets the owner manage projects when they hold a projects role and can raise material requests', () => {
+    expect(capabilitiesFor('owner').manageProjects).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
+      expect(capabilitiesFor(persona).manageProjects).toBe(false);
+    }
+    expect(capabilitiesFor('owner', ['Accounts Manager', 'Stock Manager']).manageProjects).toBe(
+      false,
+    );
+    expect(capabilitiesFor('owner', ['Projects Manager', 'Stock Manager']).manageProjects).toBe(
+      true,
+    );
   });
 
   it("doesn't let warehouse workers sell", () => {

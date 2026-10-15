@@ -1,4 +1,11 @@
-import { formatShortDate, daysUntil, formatLongDate, formatMoney, minutesSince } from './format';
+import {
+  formatDayMonth,
+  formatShortDate,
+  daysUntil,
+  formatLongDate,
+  formatMoney,
+  minutesSince,
+} from './format';
 
 describe('format', () => {
   it('formats money with Western digits and the currency code first', () => {
@@ -27,5 +34,10 @@ describe('format', () => {
   it('formats a short date with the month name for each language', () => {
     expect(formatShortDate('2026-10-11', 'en')).toBe('11 Oct 2026');
     expect(formatShortDate('2026-10-11', 'ar')).toBe('11 أكتوبر 2026');
+  });
+
+  it('formats a near date without its year', () => {
+    expect(formatDayMonth('2026-10-12', 'en')).toBe('12 Oct');
+    expect(formatDayMonth('2026-10-12', 'ar')).toBe('12 أكتوبر');
   });
 });

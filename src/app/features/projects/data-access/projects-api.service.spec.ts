@@ -1,0 +1,320 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
+import { fakeErpnext } from '../../../../testing/fake-erpnext';
+import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { ProjectsApiService, SiteWarehouseMissingError } from './projects-api.service';
+
+const PROJECT = {
+  name: 'PROJ-0001',
+  project_name: 'Garden installation',
+  project_type: 'External',
+  customer: 'CUST-LINA',
+  status: 'Open',
+  estimated_costing: 5000,
+  expected_start_date: '2026-10-11',
+  company: 'Rehan Nursery',
+};
+
+const api = () => TestBed.inject(ProjectsApiService);
+
+describe('ProjectsApiService', () => {
+  it('lists projects as customer or internal, with the customer name', async () => {
+    fakeErpnext({
+      Project: () => [
+        PROJECT,
+        {
+          ...PROJECT,
+          name: 'PROJ-0002',
+          project_name: 'Warehouse expansion',
+          project_type: 'Internal',
+          customer: null,
+        },
+      ],
+      Customer: () => [{ name: 'CUST-LINA', customer_name: 'Lina Haddad' }],
+    });
+    expect(await api().list('Rehan Nursery')).toEqual([
+      {
+        name: 'PROJ-0001',
+        title: 'Garden installation',
+        kind: 'customer',
+        customer: 'CUST-LINA',
+        customerName: 'Lina Haddad',
+        status: 'open',
+      },
+      {
+        name: 'PROJ-0002',
+        title: 'Warehouse expansion',
+        kind: 'internal',
+        customer: null,
+        customerName: null,
+        status: 'open',
+      },
+    ]);
+  });
+
+  it("reads a project's budget, ledger cost, tasks, requirements, attachments and linked records", async () => {
+    const { listCalls } = fakeErpnext(
+      {
+        Customer: () => [{ name: 'CUST-LINA', customer_name: 'Lina Haddad' }],
+        Task: () => [
+          {
+            subject: 'Install 12 planters',
+            exp_end_date: '2026-10-14',
+            status: 'Open',
+            _assign: '["yara@rehan.example"]',
+          },
+        ],
+        User: () => [{ name: 'yara@rehan.example', full_name: 'Yara' }],
+        'Material Request Item': () => [
+          { item_code: 'POT-30', item_name: 'Ceramic planter', uom: 'Unit', qty: 8 },
+          { item_code: 'POT-30', item_name: 'Ceramic planter', uom: 'Unit', qty: 4 },
+        ],
+        Bin: () => [
+          { item_code: 'POT-30', warehouse: 'Main warehouse - RN', actual_qty: 8 },
+          { item_code: 'POT-30', warehouse: 'Project sites - RN', actual_qty: 3 },
+        ],
+        Warehouse: () => [{ name: 'Main warehouse - RN' }],
+        File: () => [
+          { file_name: 'Site plan.pdf', file_size: 1800000, creation: '2026-10-10 09:00:00' },
+        ],
+        'Sales Invoice': () => [
+          { name: 'SI-042', grand_total: 500, rounded_total: 500, status: 'Paid' },
+        ],
+        'Journal Entry': () => [
+          { name: 'JV-019', total_debit: 1320 },
+          { name: 'JV-019', total_debit: 1320 },
+        ],
+        Account: () => [{ name: 'Travel Expenses - RN' }],
+        'GL Entry': () => [{ 'SUM(`debit`)': 1400, 'SUM(`credit`)': 80 }],
+      },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    const project = await api().project('PROJ-0001');
+    expect(project).toMatchObject({
+      title: 'Garden installation',
+      customerName: 'Lina Haddad',
+      budget: 5000,
+      actual: 1320,
+      plannedDate: '2026-10-11',
+      tasks: [
+        { subject: 'Install 12 planters', due: '2026-10-14', owners: ['Yara'], status: 'Open' },
+      ],
+      requirements: [
+        { item: 'POT-30', itemName: 'Ceramic planter', uom: 'Unit', required: 12, available: 8 },
+      ],
+      attachments: [{ name: 'Site plan.pdf', size: 1800000, date: '2026-10-10' }],
+    });
+    expect(project.linked).toEqual([
+      { kind: 'sale', name: 'SI-042', detail: 'Paid', amount: 500 },
+      { kind: 'expense', name: 'JV-019', detail: '', amount: 1320 },
+    ]);
+    expect(listCalls.find((c) => c.doctype === 'GL Entry')!.query.filters).toContainEqual([
+      'project',
+      '=',
+      'PROJ-0001',
+    ]);
+  });
+
+  it("leaves the cost out for a role that can't read the ledger", async () => {
+    fakeErpnext(
+      {
+        Account: () => [{ name: 'Travel Expenses - RN' }],
+        'GL Entry': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+      },
+      {},
+      { 'Project/PROJ-0001': { ...PROJECT, project_type: 'Internal', customer: null } },
+    );
+    const project = await api().project('PROJ-0001');
+    expect([project.actual, project.kind, project.customerName]).toEqual([null, 'internal', null]);
+  });
+
+  it('creates a customer project as External with its customer, and an internal one without', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.insert': () => ({ name: 'PROJ-0002' }) },
+    );
+    await api().save(
+      'Rehan Nursery',
+      {
+        title: ' Garden ',
+        kind: 'customer',
+        customer: 'CUST-LINA',
+        budget: 3500,
+        plannedDate: '2026-10-20',
+      },
+      null,
+    );
+    await api().save(
+      'Rehan Nursery',
+      { title: 'Court', kind: 'internal', customer: 'CUST-LINA', budget: null, plannedDate: null },
+      null,
+    );
+    expect(postCalls[0].body['doc']).toEqual({
+      doctype: 'Project',
+      company: 'Rehan Nursery',
+      status: 'Open',
+      project_name: 'Garden',
+      project_type: 'External',
+      customer: 'CUST-LINA',
+      estimated_costing: 3500,
+      expected_start_date: '2026-10-20',
+    });
+    expect(postCalls[1].body['doc']).toMatchObject({
+      project_type: 'Internal',
+      customer: null,
+      estimated_costing: 0,
+    });
+  });
+
+  it('saves changes over an existing project', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      { 'Project/PROJ-0001': { ...PROJECT, modified: 'm1' } },
+    );
+    await api().save(
+      'Rehan Nursery',
+      { title: 'Garden', kind: 'customer', customer: 'CUST-LINA', budget: 6000, plannedDate: null },
+      'PROJ-0001',
+    );
+    expect(postCalls[0].body['doc']).toMatchObject({
+      name: 'PROJ-0001',
+      modified: 'm1',
+      estimated_costing: 6000,
+    });
+  });
+
+  it('finds the project sites warehouse, or creates it under the warehouse root', async () => {
+    let sites: unknown[] = [];
+    const { postCalls } = fakeErpnext(
+      {
+        Warehouse: (query) =>
+          query.filters?.some((f) => f[0] === 'warehouse_name')
+            ? sites
+            : [{ name: 'All Warehouses - RN' }],
+      },
+      { 'frappe.client.insert': () => ({ name: 'Project sites - RN' }) },
+    );
+    expect(await api().siteWarehouse('Rehan Nursery')).toBe('Project sites - RN');
+    expect(postCalls[0].body['doc']).toEqual({
+      doctype: 'Warehouse',
+      warehouse_name: 'Project sites',
+      company: 'Rehan Nursery',
+      parent_warehouse: 'All Warehouses - RN',
+    });
+    sites = [{ name: 'Project sites - RN' }];
+    expect(await api().siteWarehouse('Rehan Nursery')).toBe('Project sites - RN');
+    expect(postCalls).toHaveLength(1);
+  });
+
+  it('adds a requirement as a submitted transfer request to the project sites, with the reference', async () => {
+    const { postCalls } = fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }] },
+      {
+        'frappe.client.insert': () => ({ name: 'MAT-MR-0001', docstatus: 0 }),
+        'frappe.client.submit': () => ({ name: 'MAT-MR-0001' }),
+      },
+      { 'Material Request/MAT-MR-0001': { name: 'MAT-MR-0001', docstatus: 0 } },
+    );
+    const inserted: string[] = [];
+    const name = await api().addRequirement(
+      'Rehan Nursery',
+      { reference: 'REQ-1', project: 'PROJ-0001', item: 'POT-30', uom: 'Unit', qty: 12 },
+      '2026-10-16',
+      null,
+      (n) => inserted.push(n),
+    );
+    expect([name, inserted]).toEqual(['MAT-MR-0001', ['MAT-MR-0001']]);
+    expect(postCalls[0].body['doc']).toMatchObject({
+      material_request_type: 'Material Transfer',
+      set_warehouse: 'Project sites - RN',
+      title: 'Madar requirement REQ-1',
+      items: [
+        {
+          item_code: 'POT-30',
+          qty: 12,
+          uom: 'Unit',
+          warehouse: 'Project sites - RN',
+          project: 'PROJ-0001',
+        },
+      ],
+    });
+  });
+
+  it('submits a remembered requirement draft instead of adding another, and reports a submitted one', async () => {
+    const request = {
+      reference: 'REQ-1',
+      project: 'PROJ-0001',
+      item: 'POT-30',
+      uom: 'Unit',
+      qty: 12,
+    };
+    let draft = { name: 'MAT-MR-0001', docstatus: 0 };
+    const { postCalls } = fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }] },
+      { 'frappe.client.submit': () => ({ name: 'MAT-MR-0001' }) },
+      { 'Material Request/MAT-MR-0001': () => of(draft) },
+    );
+    expect(await api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001')).toBe(
+      'MAT-MR-0001',
+    );
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.submit']);
+    draft = { name: 'MAT-MR-0001', docstatus: 1 };
+    expect(await api().addRequirement('Rehan Nursery', request, '2026-10-16', 'MAT-MR-0001')).toBe(
+      'MAT-MR-0001',
+    );
+    expect(postCalls).toHaveLength(1);
+  });
+
+  it('turns a timeout into an unresolved result and finds the requirement by reference', async () => {
+    let rows: unknown[] = [];
+    const { listCalls } = fakeErpnext(
+      { Warehouse: () => [{ name: 'Project sites - RN' }], 'Material Request': () => rows },
+      { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })) },
+    );
+    await expect(
+      api().addRequirement(
+        'Rehan Nursery',
+        { reference: 'REQ-1', project: 'PROJ-0001', item: 'POT-30', uom: 'Unit', qty: 12 },
+        '2026-10-16',
+        null,
+      ),
+    ).rejects.toBeInstanceOf(UnresolvedError);
+    expect(await api().findRequirement('REQ-1')).toBe('not-found');
+    rows = [{ name: 'MAT-MR-0001', docstatus: 1 }];
+    expect(await api().findRequirement('REQ-1')).toEqual({ requirement: 'MAT-MR-0001' });
+    expect(listCalls.find((c) => c.doctype === 'Material Request')!.query.filters).toContainEqual([
+      'title',
+      '=',
+      'Madar requirement REQ-1',
+    ]);
+  });
+
+  it("reports a missing site warehouse a role can't create, distinctly", async () => {
+    fakeErpnext(
+      {
+        Warehouse: (query) =>
+          query.filters?.some((f) => f[0] === 'warehouse_name') ? [] : [{ name: 'All' }],
+      },
+      { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 403 })) },
+    );
+    await expect(api().siteWarehouse('Rehan Nursery')).rejects.toBeInstanceOf(
+      SiteWarehouseMissingError,
+    );
+  });
+
+  it('reads a project with no type as internal unless it has a customer', async () => {
+    fakeErpnext({
+      Project: () => [
+        { ...PROJECT, name: 'P-1', project_type: null, customer: null },
+        { ...PROJECT, name: 'P-2', project_type: null },
+      ],
+    });
+    expect((await api().list('Rehan Nursery')).map((p) => p.kind)).toEqual([
+      'internal',
+      'customer',
+    ]);
+  });
+});

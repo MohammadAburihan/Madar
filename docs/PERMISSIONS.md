@@ -44,6 +44,7 @@ to the Owner.
 | Record supplier invoices | ✅ | — | — | — | ✅ | — |
 | Pay suppliers, record expenses | ✅ | — | — | — | — | — |
 | Transfer, count, or adjust stock | ✅ | — | ✅ | ✅ | — | — |
+| Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project | ✅ | — | ✅ | ✅ | — | ✅ |
 | Create or edit items and prices | ✅ | — | — | — | ✅ | — |
 

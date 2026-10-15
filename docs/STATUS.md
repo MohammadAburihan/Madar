@@ -17,22 +17,19 @@ _Last updated: 14 Oct 2026_
 | #13 | **Receive goods** (step 3b): part or all of an order into a warehouse, the remainder later; checking a timed-out result is now guarded in every task flow; buying prices hidden from receiving roles |
 | #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
 | #15 | **Pay suppliers** (step 3c-2): the payment form with save draft, the recorded payment and its page; step 3 (Purchase) is complete |
+| #16 | **Record expense** (step 4a): category, amount, date, account, optional project and receipt photo; expenses in the Money history |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
 ## In progress — step 4 of 6: Record expense, then Supply a project
 
-- **4a — Record expense** (this PR): category (an operating expense account), amount, date, account, an optional
-  project and receipt photo, then review and record. The expense is a Journal Entry from the expense account to the
-  cash or bank account, with the project on the expense row and the receipt attached after recording. Expenses join
-  the Money page's history; its "Pay supplier" and "Record expense" shortcuts now open the real tasks. Owner only.
-  Review pass 1 (1 medium, 1 low) fixed: a task form reopened after its result was shown (browser Back) starts a new
-  task instead of editing the recorded one (expense, and the receipt, supplier invoice and supplier payment forms), and
-  a new expense's receipt is always attached.
-  Review pass 2 (1 medium, 3 low) fixed: the Money history asks for expenses in batches of categories, leaves out Desk
-  reversals, the form offers only company-currency accounts, and the receipt picker no longer forces the camera.
-  Review pass 3 (1 low) fixed: the suggested account is a company-currency one.
-- **4b — Supply a project.**
+- **4a — Record expense**: merged (#16).
+- **4b — Projects and supplying them**, in three PRs:
+  - **4b-1 — Projects** (this PR): the list, creating and editing a customer or internal project, and its overview
+    (budget against actual cost, next tasks, material requirements against available stock, attachments, linked
+    records), plus adding a material requirement. Owner (Projects User/Manager with a stock or purchase role).
+  - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
+  - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
 (purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;

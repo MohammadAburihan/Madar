@@ -27,6 +27,8 @@ export interface Capabilities {
   paySuppliers: boolean;
   /** Record operating expenses paid from the business's payment accounts. */
   recordExpenses: boolean;
+  /** See projects, and create and edit them and their material requirements. */
+  manageProjects: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -44,6 +46,7 @@ const SALES_ROLE: Capabilities = {
   recordSupplierInvoices: false,
   paySuppliers: false,
   recordExpenses: false,
+  manageProjects: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -62,6 +65,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordSupplierInvoices: true,
     paySuppliers: true,
     recordExpenses: true,
+    manageProjects: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
@@ -80,6 +84,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordSupplierInvoices: false,
     paySuppliers: false,
     recordExpenses: false,
+    manageProjects: false,
   },
   purchasing: {
     sell: false,
@@ -97,6 +102,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     // Accounts User could pay in ERPNext; paying suppliers stays with the Owner (docs/PERMISSIONS.md).
     paySuppliers: false,
     recordExpenses: false,
+    manageProjects: false,
   },
 };
 
@@ -156,6 +162,12 @@ const RECORD_EXPENSES_NEEDS = [
   ['Accounts User', 'Accounts Manager'], // read Account and Mode of Payment; create and submit Journal Entry
 ];
 
+// Projects and tasks are Projects User/Manager doctypes; requirements are Material Requests (stock or purchase roles).
+const MANAGE_PROJECTS_NEEDS = [
+  ['Projects User', 'Projects Manager'], // read, create and write Project and Task
+  ['Stock User', 'Stock Manager', 'Purchase User', 'Purchase Manager'], // create and submit Material Request
+];
+
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
  * do the task (an owner who is only an Accounts Manager can't move stock).
@@ -184,5 +196,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     recordExpenses:
       caps.recordExpenses &&
       RECORD_EXPENSES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    manageProjects:
+      caps.manageProjects &&
+      MANAGE_PROJECTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }
