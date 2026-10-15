@@ -35,6 +35,7 @@ interface InvoiceDoc {
     purchase_order?: string | null;
     purchase_receipt?: string | null;
   }[];
+  taxes?: { charge_type: string }[];
   [key: string]: unknown;
 }
 
@@ -61,7 +62,7 @@ export class SupplierInvoiceApiService {
   async preview(order: string): Promise<InvoicePreview> {
     const template = await this.template(order, await this.unbilledReceipts(order));
     if (!template) {
-      return { receipts: [], lines: [], currency: '', total: 0 };
+      return { receipts: [], lines: [], currency: '', total: 0, blocked: null };
     }
     return {
       receipts: template.receipts,
@@ -74,6 +75,7 @@ export class SupplierInvoiceApiService {
       })),
       currency: template.doc.currency,
       total: template.total,
+      blocked: template.blocked,
     };
   }
 
@@ -97,14 +99,19 @@ export class SupplierInvoiceApiService {
       return current.name;
     }
     if (current) {
-      // Rebuilt from the receipts rather than edited, so it bills exactly what is still unbilled.
-      await this.discard(current.name);
+      // Accounts User can't delete invoices, so a leftover draft is submitted, not rebuilt; ERPNext computed
+      // its totals, so it must still bill exactly the receipts and total the user confirmed.
+      if (!sameReceipts(current, request) || Math.abs(payable(current) - request.total) > 0.005) {
+        throw new BillingChangedError();
+      }
+      return this.submit({ ...current, bill_no: request.billNo });
     }
     const template = await this.template(request.order, request.receipts);
     // Built again now: if it no longer bills what the user confirmed, they must look again first.
     if (
       !template ||
-      template.receipts.length !== request.receipts.length ||
+      template.blocked ||
+      !sameReceipts(template.doc, request) ||
       Math.abs(template.total - request.total) > 0.005
     ) {
       throw new BillingChangedError();
@@ -114,13 +121,22 @@ export class SupplierInvoiceApiService {
       bill_no: request.billNo,
       remarks: `Madar bill ${request.reference}`,
     };
+    let inserted: InvoiceDoc;
     try {
-      const inserted = await confirmRequest(
+      inserted = await confirmRequest(
         this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc }),
       );
-      onInserted(inserted.name);
+    } catch (error) {
+      throw unresolvedOr(error);
+    }
+    onInserted(inserted.name);
+    return this.submit(inserted);
+  }
+
+  private async submit(doc: InvoiceDoc): Promise<string> {
+    try {
       const submitted = await confirmRequest(
-        this.erpnext.post<InvoiceDoc>('frappe.client.submit', { doc: inserted }),
+        this.erpnext.post<InvoiceDoc>('frappe.client.submit', { doc }),
       );
       return submitted.name;
     } catch (error) {
@@ -239,7 +255,12 @@ export class SupplierInvoiceApiService {
   private async template(
     order: string,
     receipts: readonly string[],
-  ): Promise<{ doc: InvoiceDoc; receipts: string[]; total: number } | null> {
+  ): Promise<{
+    doc: InvoiceDoc;
+    receipts: string[];
+    total: number;
+    blocked: InvoicePreview['blocked'];
+  } | null> {
     let doc: InvoiceDoc | null = null;
     const used: string[] = [];
     for (const receipt of receipts) {
@@ -262,20 +283,21 @@ export class SupplierInvoiceApiService {
     if (!doc) {
       return null;
     }
-    const all = doc.items;
-    const items = all.filter((i) => i.purchase_order === order);
+    const items = doc.items.filter((i) => i.purchase_order === order);
     if (!items.length) {
       return null;
     }
     const kept = used.filter((r) => items.some((i) => i.purchase_receipt === r));
-    // ERPNext recalculates on insert; for the preview, its total (with taxes and rounding) is scaled down to the
-    // rows kept.
-    const value = (rows: InvoiceDoc['items']) => rows.reduce((sum, i) => sum + i.qty * i.rate, 0);
-    const total =
-      items.length === all.length
-        ? payable(doc)
-        : Math.round(((payable(doc) * value(items)) / (value(all) || 1)) * 100) / 100;
-    return { doc: { ...doc, items }, receipts: kept, total };
+    // Madar can't bill these exactly: ERPNext would keep another order's charges on this invoice, or (the mapper
+    // replaces taxes per receipt) only the last receipt's fixed charges such as freight.
+    const fixedCharges = (doc.taxes ?? []).some((t) => t.charge_type === 'Actual');
+    const blocked =
+      items.length < doc.items.length
+        ? ('sharedReceipt' as const)
+        : fixedCharges && kept.length > 1
+          ? ('charges' as const)
+          : null;
+    return { doc: { ...doc, items }, receipts: kept, total: payable(doc), blocked };
   }
 
   private async payments(invoice: string): Promise<LinkedPayment[]> {
@@ -308,11 +330,11 @@ export class SupplierInvoiceApiService {
   }
 }
 
-function sameInvoice(doc: InvoiceDoc, request: InvoiceRequest): boolean {
+function sameReceipts(doc: InvoiceDoc, request: InvoiceRequest): boolean {
   const billed = new Set(doc.items.map((i) => i.purchase_receipt).filter(Boolean));
-  return (
-    (doc.bill_no ?? '') === request.billNo &&
-    billed.size === request.receipts.length &&
-    request.receipts.every((r) => billed.has(r))
-  );
+  return billed.size === request.receipts.length && request.receipts.every((r) => billed.has(r));
+}
+
+function sameInvoice(doc: InvoiceDoc, request: InvoiceRequest): boolean {
+  return (doc.bill_no ?? '') === request.billNo && sameReceipts(doc, request);
 }

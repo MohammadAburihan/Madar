@@ -1143,6 +1143,11 @@
         "cardTitle": "We didn't get a final answer",
         "cardMessage": "The invoice may have been recorded. Check the result instead of recording it again, so the goods aren't billed twice.",
         "planned": "Planned invoice"
+      },
+      "blocked": {
+        "title": "Record this invoice in ERPNext",
+        "sharedReceipt": "A receipt for this order also holds another order's goods. Record the supplier's invoice in ERPNext so each order is billed correctly.",
+        "charges": "These receipts carry fixed charges such as freight, which Madar can't combine into one invoice yet. Record the supplier's invoice in ERPNext."
       }
     }
   }

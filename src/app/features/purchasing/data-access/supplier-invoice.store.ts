@@ -38,6 +38,7 @@ export class SupplierInvoiceStore {
     () =>
       !!this.order() &&
       !!this.preview()?.lines.length &&
+      !this.preview()?.blocked &&
       !!this.billNo().trim() &&
       this.state() !== 'confirming',
   );

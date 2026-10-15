@@ -14,6 +14,7 @@ const PREVIEW: InvoicePreview = {
   lines: [{ code: 'POT-30', name: 'Ceramic planter', uom: 'Unit', qty: 6, rate: 45 }],
   currency: 'ILS',
   total: 270,
+  blocked: null,
 };
 
 function setup(preview: InvoicePreview = PREVIEW) {
@@ -46,6 +47,11 @@ describe('SupplierInvoiceStore', () => {
     const { store } = await loaded();
     expect(store.ready()).toBe(true);
     store.setBillNo('  ');
+    expect(store.ready()).toBe(false);
+  });
+
+  it('is never ready when the receipts must be billed in ERPNext', async () => {
+    const { store } = await loaded({ ...PREVIEW, blocked: 'sharedReceipt' });
     expect(store.ready()).toBe(false);
   });
 

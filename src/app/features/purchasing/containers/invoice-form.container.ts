@@ -58,6 +58,15 @@ import { billingCards, billingChip, invoiceFormHeading, invoiceTotals } from './
       <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
     } @else if (!form()) {
       <p class="muted" role="status">{{ txt.loading }}</p>
+    } @else if (form()!.blocked; as reason) {
+      <app-feedback-card
+        tone="warning"
+        [title]="txt.blockedTitle"
+        [message]="txt.blocked[reason]"
+      />
+      <button type="button" class="md-btn md-btn--primary" (click)="ctx.openOrder()">
+        {{ txt.viewOrder }}
+      </button>
     } @else if (!form()!.cards.length) {
       <app-feedback-card [title]="txt.nothingToBill.title" [message]="txt.nothingToBill.message" />
       <button type="button" class="md-btn md-btn--primary" (click)="ctx.openOrder()">
@@ -118,6 +127,11 @@ export class InvoiceFormContainer implements OnInit {
       noAccess: block('purchase.invoice.noAccess'),
       loadFailed: block('purchase.detail.loadFailed'),
       nothingToBill: block('purchase.invoice.nothingToBill'),
+      blockedTitle: t('purchase.invoice.blocked.title'),
+      blocked: {
+        sharedReceipt: t('purchase.invoice.blocked.sharedReceipt'),
+        charges: t('purchase.invoice.blocked.charges'),
+      },
     };
   });
 
@@ -136,6 +150,7 @@ export class InvoiceFormContainer implements OnInit {
     }
     const tr = this.ctx.i18n.tr();
     return {
+      blocked: preview.blocked,
       chip: billingChip(preview, tr),
       cards: billingCards(preview, tr),
       // Nothing is paid yet: a new invoice is outstanding in full.

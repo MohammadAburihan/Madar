@@ -46,6 +46,7 @@ const PREVIEW: InvoicePreview = {
   ],
   currency: 'ILS',
   total: 270,
+  blocked: null,
 };
 
 const INVOICE: SupplierInvoice = {

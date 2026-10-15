@@ -27,12 +27,13 @@ Split into PRs, each through the delivery loop:
 - **3c-1 — Supplier invoice** (this PR): record the supplier's invoice for the goods received and not yet billed,
   the invoice page with its payments, billing on the order page and in the workspace panel. Owner and purchasing
   officer (Accounts User or Manager in ERPNext).
-  Review pass 1 (2 medium, 3 low) fixed, except one deferred (low): when one invoice bills several receipts, ERPNext's
-  mapper keeps only the last receipt's fixed ("Actual") charges, such as freight. Madar orders carry no taxes or
-  charges yet (VAT setup is still open), so this only affects receipts with charges added in Desk.
+  Review pass 1 (2 medium, 3 low) fixed.
   Review pass 2 (3 medium, 2 low) fixed: totals use ERPNext's rounded total, "Billed" is the order's own share,
   only this order's rows are billed, the preview keeps taxes when rows are left out, and recording refuses to post
   when the receipts were billed elsewhere meanwhile.
+  Review pass 3 (1 high, 1 medium, 1 low) fixed: a leftover invoice draft is submitted, not deleted (Accounts User
+  can't delete invoices), and receipts Madar can't bill exactly (shared with another order, or several carrying fixed
+  charges) are sent to ERPNext with a message instead of being billed with a wrong total.
 - **3c-2 — Pay supplier**: the payment form, the recorded payment and its page, and "Pay supplier" on the invoice.
   Owner only.
 

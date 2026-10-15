@@ -88,6 +88,7 @@ describe('SupplierInvoiceApiService', () => {
       ],
       currency: 'ILS',
       total: 450,
+      blocked: null,
     });
     expect(listCalls[0].query.filters).toEqual([
       ['Purchase Receipt Item', 'purchase_order', '=', 'PO-2048'],
@@ -122,10 +123,11 @@ describe('SupplierInvoiceApiService', () => {
       lines: [],
       currency: '',
       total: 0,
+      blocked: null,
     });
   });
 
-  it("leaves out other orders' rows and rows of no order on a shared receipt", async () => {
+  it('sends a receipt shared with another order to ERPNext, without its other rows', async () => {
     fakeErpnext(
       { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
       {
@@ -138,16 +140,29 @@ describe('SupplierInvoiceApiService', () => {
               { ...doc.items[0], qty: 3, purchase_order: 'PO-9999' },
               { ...doc.items[0], qty: 1, purchase_order: null },
             ],
-            // 450 of goods with 15% tax.
-            grand_total: 517.5,
           };
         },
       },
     );
     const preview = await api().preview('PO-2048');
     expect(preview.lines.map((l) => l.qty)).toEqual([6]);
-    // The taxed total, scaled to the 270 of goods kept.
-    expect(preview.total).toBe(310.5);
+    expect(preview.blocked).toBe('sharedReceipt');
+  });
+
+  it('sends several receipts with fixed charges to ERPNext, which would keep only the last ones', async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }, { name: 'MAT-PRE-2' }] },
+      { [MAKE]: (body) => ({ ...mapper(body), taxes: [{ charge_type: 'Actual' }] }) },
+    );
+    expect((await api().preview('PO-2048')).blocked).toBe('charges');
+  });
+
+  it('bills one receipt with its fixed charges', async () => {
+    fakeErpnext(
+      { 'Purchase Receipt': () => [{ name: 'MAT-PRE-1' }] },
+      { [MAKE]: (body) => ({ ...mapper(body), taxes: [{ charge_type: 'Actual' }] }) },
+    );
+    expect((await api().preview('PO-2048')).blocked).toBeNull();
   });
 
   it("uses the rounded total ERPNext bases what's owed on", async () => {
@@ -211,21 +226,41 @@ describe('SupplierInvoiceApiService', () => {
     });
   });
 
-  it('rebuilds a remembered draft instead of submitting stale rows', async () => {
+  it('submits a remembered draft that still bills what was confirmed, with the latest number', async () => {
     const { postCalls } = fakeErpnext(
       {},
-      {
-        [MAKE]: mapper,
-        'frappe.client.insert': () => ({ name: 'PINV-0069' }),
-        'frappe.client.submit': () => ({ name: 'PINV-0069' }),
-      },
-      { 'Purchase Invoice/PINV-0068': { ...POSTED, docstatus: 0 } },
+      { 'frappe.client.submit': () => ({ name: 'PINV-0068' }) },
+      { 'Purchase Invoice/PINV-0068': { ...POSTED, docstatus: 0, bill_no: 'GC-OLD' } },
     );
-    expect(await api().record(request(), 'PINV-0068')).toBe('PINV-0069');
-    expect(postCalls[0]).toEqual({
-      method: 'frappe.client.delete',
-      body: { doctype: 'Purchase Invoice', name: 'PINV-0068' },
-    });
+    expect(await api().record(request(), 'PINV-0068')).toBe('PINV-0068');
+    // Accounts User can't delete invoices: the draft is submitted, never deleted and rebuilt.
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.submit']);
+    expect(postCalls[0].body['doc']).toMatchObject({ name: 'PINV-0068', bill_no: 'GC-8831' });
+  });
+
+  it("won't submit a remembered draft that no longer bills what was confirmed", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {},
+      { 'Purchase Invoice/PINV-0068': { ...POSTED, docstatus: 0, grand_total: 500 } },
+    );
+    await expect(api().record(request(), 'PINV-0068')).rejects.toBeInstanceOf(BillingChangedError);
+    expect(postCalls).toEqual([]);
+  });
+
+  it('refuses to post when one of the shown receipts was billed meanwhile', async () => {
+    fakeErpnext(
+      {},
+      {
+        [MAKE]: (body) =>
+          body['source_name'] === 'MAT-PRE-2'
+            ? throwError(() => new HttpErrorResponse({ status: 417 }))
+            : mapper(body),
+      },
+    );
+    await expect(api().record(request({ total: 270 }), null)).rejects.toBeInstanceOf(
+      BillingChangedError,
+    );
   });
 
   it('reports a remembered draft a slow attempt already posted, without posting again', async () => {

@@ -92,6 +92,8 @@ export interface InvoicePreview {
   lines: InvoiceLine[];
   currency: string;
   total: number;
+  /** Set when Madar can't bill these receipts exactly; the invoice must be recorded in ERPNext. */
+  blocked: 'sharedReceipt' | 'charges' | null;
 }
 
 export interface InvoiceRequest {
