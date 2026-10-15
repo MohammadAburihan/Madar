@@ -14,6 +14,7 @@ describe('capabilitiesFor', () => {
       orderPurchases: true,
       receiveGoods: true,
       seeCosts: true,
+      recordSupplierInvoices: true,
     });
   });
 
@@ -31,6 +32,7 @@ describe('capabilitiesFor', () => {
         orderPurchases: false,
         receiveGoods: persona === 'storeAssociate',
         seeCosts: false,
+        recordSupplierInvoices: false,
       });
     }
   });
@@ -101,6 +103,24 @@ describe('capabilitiesFor', () => {
     for (const persona of ['salesperson', 'storeAssociate', 'warehouse'] as const) {
       expect(capabilitiesFor(persona).seeCosts).toBe(false);
     }
+  });
+
+  it('lets the owner and the purchasing officer record supplier invoices, as their ERPNext roles allow', () => {
+    expect(capabilitiesFor('purchasing').recordSupplierInvoices).toBe(true);
+    for (const persona of ['salesperson', 'storeAssociate', 'warehouse'] as const) {
+      expect(capabilitiesFor(persona).recordSupplierInvoices).toBe(false);
+    }
+    expect(
+      capabilitiesFor('purchasing', ['Purchase User', 'Stock User', 'Accounts User'])
+        .recordSupplierInvoices,
+    ).toBe(true);
+    // Purchase User alone can read invoices but not create them in v16.
+    expect(capabilitiesFor('purchasing', ['Purchase User']).recordSupplierInvoices).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager']).recordSupplierInvoices).toBe(false);
+    expect(
+      capabilitiesFor('owner', ['Accounts Manager', 'Purchase Manager', 'Stock Manager'])
+        .recordSupplierInvoices,
+    ).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

@@ -30,6 +30,11 @@ import { receiptDone } from './receipt-view';
       <button type="button" class="md-btn md-btn--primary" (click)="ctx.openOrder()">
         {{ v.openOrder }}
       </button>
+      @if (ctx.session.capabilities().recordSupplierInvoices) {
+        <button type="button" class="md-btn" (click)="recordInvoice()">
+          {{ v.recordInvoice }}
+        </button>
+      }
       <button type="button" class="md-btn" (click)="ctx.router.navigate(['/purchases'])">
         {{ v.backToPurchases }}
       </button>
@@ -52,8 +57,13 @@ export class ReceiptDoneContainer implements OnInit {
       back: tr.t('sale.back'),
       openOrder: tr.t('purchase.receipt.openOrder'),
       backToPurchases: tr.t('purchase.receipt.backToPurchases'),
+      recordInvoice: tr.t('purchase.detail.recordInvoice'),
     };
   });
+
+  protected recordInvoice(): void {
+    void this.ctx.router.navigate(['/purchases/order', this.ctx.store.orderName(), 'invoice']);
+  }
 
   ngOnInit(): void {
     if (!this.ctx.store.result()) {

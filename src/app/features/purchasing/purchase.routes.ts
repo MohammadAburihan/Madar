@@ -56,6 +56,34 @@ export const purchaseRoutes: Route[] = [
     ],
   },
   {
+    path: 'purchases/order/:name/invoice',
+    loadComponent: () =>
+      import('./containers/invoice-flow.container').then((m) => m.InvoiceFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/invoice-form.container').then((m) => m.InvoiceFormContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/invoice-checking.container').then((m) => m.InvoiceCheckingContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/invoice-done.container').then((m) => m.InvoiceDoneContainer),
+      },
+    ],
+  },
+  {
+    path: 'purchases/invoice/:name',
+    loadComponent: () =>
+      import('./containers/supplier-invoice.container').then((m) => m.SupplierInvoiceContainer),
+  },
+  {
     path: 'purchases/order/:name',
     loadComponent: () =>
       import('./containers/purchase-order.container').then((m) => m.PurchaseOrderContainer),

@@ -38,6 +38,7 @@ interface OrderDoc {
     received_qty: number;
     rate: number;
     amount: number;
+    billed_amt: number;
     warehouse: string | null;
   }[];
   [key: string]: unknown;
@@ -133,6 +134,7 @@ export class PurchaseApiService {
       receivedQty: i.received_qty,
       rate: i.rate,
       amount: i.amount,
+      billedAmount: i.billed_amt ?? 0,
       warehouse: i.warehouse ?? null,
     }));
     return {

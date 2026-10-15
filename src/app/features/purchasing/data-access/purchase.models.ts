@@ -60,6 +60,8 @@ export interface OrderLineDetail {
   receivedQty: number;
   rate: number;
   amount: number;
+  /** What supplier invoices have billed for this row so far, in the order's currency. */
+  billedAmount: number;
   /** Where the order expects the goods. */
   warehouse: string | null;
 }
@@ -74,6 +76,70 @@ export interface ReceiptRequest {
   warehouse: string;
   /** Only rows receiving something; qty is in the row's unit. */
   lines: { row: string; qty: number }[];
+}
+
+export interface InvoiceLine {
+  code: string;
+  name: string;
+  uom: string;
+  qty: number;
+  rate: number;
+}
+
+/** What recording a supplier invoice now would bill: the received goods not yet invoiced. */
+export interface InvoicePreview {
+  receipts: string[];
+  lines: InvoiceLine[];
+  currency: string;
+  total: number;
+  /** Set when Madar can't bill these receipts exactly; the invoice must be recorded in ERPNext. */
+  blocked: 'sharedReceipt' | 'charges' | null;
+}
+
+export interface InvoiceRequest {
+  reference: string;
+  order: string;
+  /** The supplier's own invoice number. */
+  billNo: string;
+  receipts: string[];
+  /** The total the user was shown, which the invoice must still come to. */
+  total: number;
+}
+
+export type PaymentStatus = 'unpaid' | 'partlyPaid' | 'paid';
+
+export interface LinkedPayment {
+  name: string;
+  amount: number;
+  account: string;
+}
+
+export interface SupplierInvoice {
+  name: string;
+  billNo: string | null;
+  supplierName: string;
+  order: string | null;
+  currency: string;
+  total: number;
+  outstanding: number;
+  cancelled: boolean;
+  payments: LinkedPayment[];
+}
+
+/** One supplier invoice for an order, as listed on the order page and in the workspace. */
+export interface OrderInvoice {
+  name: string;
+  billNo: string | null;
+  currency: string;
+  total: number;
+  outstanding: number;
+}
+
+export function paymentStatus(invoice: { total: number; outstanding: number }): PaymentStatus {
+  if (invoice.outstanding <= 0.005) {
+    return 'paid';
+  }
+  return invoice.outstanding < invoice.total - 0.005 ? 'partlyPaid' : 'unpaid';
 }
 
 export interface PurchasingOverview {
