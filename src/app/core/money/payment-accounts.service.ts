@@ -8,6 +8,8 @@ export interface PaymentAccount {
   label: string;
   /** Bank modes need a reference number and date on the payment. */
   isBank: boolean;
+  /** The account's currency, when it could be read. */
+  currency?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,17 +42,21 @@ export class PaymentAccountsService {
       return [];
     }
     const accounts = await firstValueFrom(
-      this.erpnext.list<{ name: string; account_name: string }>('Account', {
-        fields: ['name', 'account_name'],
-        filters: [['name', 'in', usable.map((r) => r.account!)]],
-        limit: 0,
-      }),
+      this.erpnext.list<{ name: string; account_name: string; account_currency: string }>(
+        'Account',
+        {
+          fields: ['name', 'account_name', 'account_currency'],
+          filters: [['name', 'in', usable.map((r) => r.account!)]],
+          limit: 0,
+        },
+      ),
     ).catch(() => []);
     return usable.map((r) => ({
       mode: r.name,
       account: r.account!,
       label: accounts.find((a) => a.name === r.account)?.account_name ?? r.name,
       isBank: r.type === 'Bank',
+      currency: accounts.find((a) => a.name === r.account)?.account_currency ?? null,
     }));
   }
 }

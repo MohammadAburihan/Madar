@@ -11,20 +11,32 @@ const MODES = () => [
 ];
 
 describe('PaymentAccountsService', () => {
-  it("lists the company's modes with an account, labelled by account name", async () => {
+  it("lists the company's modes with an account, labelled by account name, with its currency", async () => {
     fakeErpnext({
       'Mode of Payment': MODES,
       Account: () => [
-        { name: 'Cash - RN', account_name: 'Main cash' },
-        { name: 'Main bank - RN', account_name: 'Main bank' },
+        { name: 'Cash - RN', account_name: 'Main cash', account_currency: 'ILS' },
+        { name: 'Main bank - RN', account_name: 'Main bank', account_currency: 'ILS' },
       ],
     });
     const accounts = TestBed.inject(PaymentAccountsService);
 
     expect(await accounts.list('Rehan Nursery', 'all')).toEqual([
-      { mode: 'Cash', account: 'Cash - RN', label: 'Main cash', isBank: false },
-      { mode: 'Credit Card', account: 'Main bank - RN', label: 'Main bank', isBank: true },
-      { mode: 'Wire Transfer', account: 'Main bank - RN', label: 'Main bank', isBank: true },
+      { mode: 'Cash', account: 'Cash - RN', label: 'Main cash', isBank: false, currency: 'ILS' },
+      {
+        mode: 'Credit Card',
+        account: 'Main bank - RN',
+        label: 'Main bank',
+        isBank: true,
+        currency: 'ILS',
+      },
+      {
+        mode: 'Wire Transfer',
+        account: 'Main bank - RN',
+        label: 'Main bank',
+        isBank: true,
+        currency: 'ILS',
+      },
     ]);
   });
 

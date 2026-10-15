@@ -32,6 +32,16 @@ export interface MoneyOverview {
 }
 
 const HISTORY_LIMIT = 50;
+// Account names are long; batches keep each GET URL well under the request-line limit.
+const ACCOUNT_BATCH = 30;
+
+function batches<T>(values: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < values.length; i += size) {
+    chunks.push(values.slice(i, i + size));
+  }
+  return chunks;
+}
 
 @Injectable({ providedIn: 'root' })
 export class MoneyApiService {
@@ -70,23 +80,28 @@ export class MoneyApiService {
     company: string,
     expenseAccounts: readonly string[],
   ): Promise<PaymentRecord[]> {
-    const entries = await firstValueFrom(
-      this.erpnext.list<{ name: string; posting_date: string; docstatus: number }>(
-        'Journal Entry',
-        {
-          fields: ['name', 'posting_date', 'docstatus'],
-          filters: [
-            ['company', '=', company],
-            ['docstatus', '<', 2],
-            ['Journal Entry Account', 'account', 'in', expenseAccounts],
-          ],
-          orderBy: 'posting_date desc, creation desc',
-          limit: HISTORY_LIMIT,
-        },
+    const found = await Promise.all(
+      batches(expenseAccounts, ACCOUNT_BATCH).map((accounts) =>
+        firstValueFrom(
+          this.erpnext.list<{ name: string; posting_date: string; docstatus: number }>(
+            'Journal Entry',
+            {
+              fields: ['name', 'posting_date', 'docstatus'],
+              filters: [
+                ['company', '=', company],
+                ['docstatus', '<', 2],
+                ['Journal Entry Account', 'account', 'in', accounts],
+              ],
+              orderBy: 'posting_date desc, creation desc',
+              limit: HISTORY_LIMIT,
+            },
+          ),
+        ),
       ),
     );
-    // One row per matching account row: an entry with two expense rows comes back twice.
-    const names = [...new Set(entries.map((e) => e.name))];
+    // Batches overlap, and an entry with two expense rows comes back once per row.
+    const entries = found.flat().sort((a, b) => b.posting_date.localeCompare(a.posting_date));
+    const names = [...new Set(entries.map((e) => e.name))].slice(0, HISTORY_LIMIT);
     if (!names.length) {
       return [];
     }
@@ -117,7 +132,7 @@ export class MoneyApiService {
     const accounts = await this.accountNames([...new Set(rows.map((r) => r.account))]);
     const name = (account: string | undefined) =>
       account ? (accounts.get(account) ?? account) : '';
-    return names.map((entryName) => {
+    const records = names.map((entryName): PaymentRecord => {
       const entry = entries.find((e) => e.name === entryName)!;
       const own = rows.filter((r) => r.parent === entryName);
       const debits = own.filter((r) => expense.has(r.account) && r.debit > 0);
@@ -133,6 +148,8 @@ export class MoneyApiService {
         receipt: files.some((f) => f.attached_to_name === entryName),
       };
     });
+    // Entries that only credit an expense account (reversals, refunds made in Desk) aren't expenses.
+    return records.filter((r) => r.amount > 0);
   }
 
   private async payments(company: string, owner: string | null): Promise<PaymentRecord[]> {

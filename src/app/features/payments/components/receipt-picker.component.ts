@@ -7,7 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 
-/** "Add receipt photo": takes a photo or picks an image, and shows the chosen file with a way to remove it. */
+/** "Add receipt photo": the phone offers the camera or the gallery; shows the chosen file with a way to remove it. */
 @Component({
   selector: 'app-receipt-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,7 +33,6 @@ import {
       #file
       type="file"
       accept="image/*"
-      capture="environment"
       [attr.aria-label]="addLabel()"
       (change)="choose($event)"
     />

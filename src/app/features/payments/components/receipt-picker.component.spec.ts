@@ -13,13 +13,13 @@ describe('ReceiptPickerComponent', () => {
     return fixture;
   };
 
-  it('offers to add a photo, from the camera or the gallery', async () => {
+  it('offers to add a photo, without forcing the camera so the gallery stays available', async () => {
     const el = (await render()).nativeElement as HTMLElement;
     const input = el.querySelector('input') as HTMLInputElement;
-    expect([input.type, input.accept, input.getAttribute('capture')]).toEqual([
+    expect([input.type, input.accept, input.hasAttribute('capture')]).toEqual([
       'file',
       'image/*',
-      'environment',
+      false,
     ]);
     expect([...el.querySelectorAll('button')].map((b) => b.textContent?.trim())).toEqual([
       'Add receipt photo · optional',

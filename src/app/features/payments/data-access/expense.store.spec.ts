@@ -10,8 +10,9 @@ import { ExpenseApiService } from './expense-api.service';
 import { ExpenseStore } from './expense.store';
 
 const ACCOUNTS = [
-  { mode: 'Cash', account: 'Cash - RN', label: 'Main cash', isBank: false },
+  { mode: 'Cash', account: 'Cash - RN', label: 'Main cash', isBank: false, currency: 'ILS' },
   { mode: 'Bank Draft', account: 'Bank - RN', label: 'Main bank', isBank: true },
+  { mode: 'Wire', account: 'USD Bank - RN', label: 'USD bank', isBank: true, currency: 'USD' },
 ];
 
 function setup(
@@ -66,6 +67,13 @@ describe('ExpenseStore', () => {
     expect(store.ready()).toBe(false);
     store.setAmount('36.50');
     expect(store.ready()).toBe(true);
+  });
+
+  it('offers only accounts in the company currency, which needs no exchange rate', async () => {
+    const { store } = setup();
+    store.start();
+    await store.load('all');
+    expect(store.accounts().map((a) => a.mode)).toEqual(['Cash', 'Bank Draft']);
   });
 
   it("records without a project when the role can't read projects", async () => {

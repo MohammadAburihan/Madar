@@ -131,7 +131,8 @@ export class ExpenseStore {
       return;
     }
     this.categories.set(categories);
-    this.accounts.set(accounts);
+    // A foreign-currency account would need an exchange rate; Madar records expenses in the company currency.
+    this.accounts.set(accounts.filter((a) => !a.currency || a.currency === business.currency));
     this.projects.set(projects);
     this.account.set(this.account() ?? accounts[0]?.mode ?? null);
     this.date.set(this.date() || toIsoDate(this.clock.now()));

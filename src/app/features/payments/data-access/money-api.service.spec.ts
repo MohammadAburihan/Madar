@@ -181,4 +181,32 @@ describe('MoneyApiService', () => {
     await TestBed.inject(MoneyApiService).overview('Rehan Nursery', 'lina@rehan.example');
     expect(listCalls.some((c) => c.doctype === 'Journal Entry')).toBe(false);
   });
+
+  it('asks for expenses in batches of categories, so no URL grows past the limit', async () => {
+    const { listCalls } = fakeErpnext({ 'Payment Entry': PAYMENTS, 'Journal Entry': () => [] });
+    const accounts = Array.from({ length: 70 }, (_, i) => `Expense ${i} - RN`);
+    await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, accounts);
+    const sizes = listCalls
+      .filter((c) => c.doctype === 'Journal Entry')
+      .map(
+        (c) =>
+          (c.query.filters!.find((f) => f[0] === 'Journal Entry Account')![3] as string[]).length,
+      );
+    expect(sizes).toEqual([30, 30, 10]);
+  });
+
+  it('leaves out entries that only credit an expense account, like Desk reversals', async () => {
+    fakeErpnext({
+      'Payment Entry': () => [],
+      'Journal Entry': () => [{ name: 'ACC-JV-0099', posting_date: '2026-10-13', docstatus: 1 }],
+      'Journal Entry Account': () => [
+        { parent: 'ACC-JV-0099', account: 'Travel Expenses - RN', debit: 0, credit: 36.5 },
+        { parent: 'ACC-JV-0099', account: 'Cash - RN', debit: 36.5, credit: 0 },
+      ],
+    });
+    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
+      'Travel Expenses - RN',
+    ]);
+    expect(payments).toEqual([]);
+  });
 });

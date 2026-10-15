@@ -29,6 +29,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (1 medium, 1 low) fixed: a task form reopened after its result was shown (browser Back) starts a new
   task instead of editing the recorded one (expense, and the receipt, supplier invoice and supplier payment forms), and
   a new expense's receipt is always attached.
+  Review pass 2 (1 medium, 3 low) fixed: the Money history asks for expenses in batches of categories, leaves out Desk
+  reversals, the form offers only company-currency accounts, and the receipt picker no longer forces the camera.
 - **4b — Supply a project.**
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
