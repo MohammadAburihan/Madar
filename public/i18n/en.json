@@ -894,7 +894,8 @@
         "message": "Check the connection and try again."
       },
       "products": "Products",
-      "services": "Services"
+      "services": "Services",
+      "forProject": "Bought for project {{project}}"
     },
     "kind": {
       "product": "Product",
@@ -1392,7 +1393,8 @@
       "loadFailed": {
         "title": "This project couldn't load",
         "message": "Check the connection and try again."
-      }
+      },
+      "supply": "Review materials and supply"
     },
     "form": {
       "newTitle": "New project",
@@ -1477,6 +1479,115 @@
       "checking": "Checking…",
       "pending": "Still not resolved. Try again in a moment."
     },
-    "noCustomer": "No customer set"
+    "noCustomer": "No customer set",
+    "supply": {
+      "title": "Materials & supply",
+      "subtitle": "{{project}} · {{name}}",
+      "plan": "Supply plan",
+      "requirementFor": "Project requirement · {{customer}}",
+      "requirementInternal": "Project requirement",
+      "rows": {
+        "need": "Project requirement",
+        "stock": "{{warehouse}} stock",
+        "atSite": "Already at site",
+        "shortfall": "Shortfall to buy",
+        "pending": "On order"
+      },
+      "units": {
+        "one": "{{count}} unit",
+        "other": "{{count}} units"
+      },
+      "available": "{{qty}} available",
+      "from": "Send available stock from",
+      "qty": "Send now *",
+      "qtyError": "Enter a quantity above 0 and up to {{max}}",
+      "sendValue": "{{units}} · {{warehouse}} to site",
+      "twoParts": {
+        "title": "Supply in two parts",
+        "message": "Move {{now}} now. Buy {{later}} more; ordered units stay pending until received."
+      },
+      "allNow": {
+        "title": "Supply now",
+        "message": "Move {{now}} to the site now."
+      },
+      "noStock": {
+        "title": "Nothing in stock to send",
+        "message": "No warehouse holds this item. Buy what is missing first."
+      },
+      "nothingNeeded": {
+        "title": "Nothing left to supply",
+        "message": "Every request for this item has been delivered."
+      },
+      "siteMissing": {
+        "title": "The project sites warehouse is missing",
+        "message": "Madar keeps site stock in a 'Project sites' warehouse and couldn't create it for your role. Ask the owner to open this once, or add it in ERPNext."
+      },
+      "note": "Supply moves stock to the project site. It does not mark materials used.",
+      "toReview": "Review delivery of {{qty}}",
+      "buy": "Buy missing {{units}}",
+      "reviewTitle": "Review site delivery",
+      "ready": "Ready to post",
+      "flow": {
+        "source": "{{warehouse}}",
+        "site": "Project site",
+        "required": "Required",
+        "requiredValue": "{{need}} · {{left}} still to buy",
+        "requiredDone": "{{need}} · covered"
+      },
+      "postsTitle": "Posts a stock transfer now",
+      "postsMessage": "Confirm adds {{qty}} to site stock and removes {{qty}} from {{warehouse}}. It records no usage.",
+      "pendingCard": "{{order}} · {{units}} · pending receipt",
+      "pendingMessage": "Ordered units do not count as available stock yet.",
+      "confirm": "Confirm delivery of {{qty}}",
+      "confirming": "Posting…",
+      "edit": "Edit supply plan",
+      "doneTitle": "Delivered to site",
+      "doneSubtitle": "{{project}} · {{entry}}",
+      "doneCard": "{{units}} delivered",
+      "doneMessage": "{{warehouse}} to the project site. Site stock is now {{site}}. Nothing is marked used.",
+      "openProject": "Open project",
+      "another": "Supply more",
+      "loadFailed": {
+        "title": "The supply plan couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "noAccess": {
+        "title": "You can't supply projects",
+        "message": "Your ERPNext role doesn't allow it. Supplying needs Projects User and a stock role."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't post this delivery",
+          "message": "ERPNext didn't allow it for your role. No stock moved."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The delivery wasn't sent. Check the connection and try again."
+        },
+        "stock": {
+          "title": "Not enough stock",
+          "message": "The warehouse no longer holds that much. Reload the plan and try again."
+        },
+        "error": {
+          "title": "The delivery wasn't posted",
+          "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "changed": {
+          "title": "An earlier delivery was already posted",
+          "message": "A delivery went through before your latest changes. Reload the plan before sending more."
+        }
+      },
+      "reload": "Reload plan",
+      "notCreated": {
+        "title": "The delivery wasn't posted",
+        "message": "ERPNext has no delivery for this request. Check the plan and confirm again."
+      },
+      "checking": {
+        "title": "Checking your delivery",
+        "cardTitle": "We didn't get a final answer",
+        "cardMessage": "The delivery may have been posted. Check the result instead of posting again, so the stock isn't moved twice.",
+        "planned": "Planned delivery"
+      }
+    }
   }
 }

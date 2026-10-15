@@ -30,6 +30,10 @@ export class PurchaseOrderStore {
   readonly suppliers = signal<SupplierOption[]>([]);
   readonly supplier = signal<string | null>(null);
   readonly lines = signal<OrderLine[]>([]);
+  /** The project the order is bought for (a project's shortfall), booked on the order and its lines. */
+  readonly project = signal<string | null>(null);
+  /** An item and quantity to add once a supplier is chosen, from "Buy missing" on a project. */
+  readonly prefill = signal<{ item: string; qty: number } | null>(null);
   readonly draft = signal<string | null>(null);
   readonly state = signal<OrderState>('idle');
   readonly failure = signal<OrderFailure | null>(null);
@@ -64,6 +68,8 @@ export class PurchaseOrderStore {
     this.reference.set(newReference('PUR'));
     this.supplier.set(null);
     this.lines.set([]);
+    this.project.set(null);
+    this.prefill.set(null);
     this.draft.set(null);
     this.state.set('idle');
     this.failure.set(null);
@@ -101,6 +107,28 @@ export class PurchaseOrderStore {
       currency: business.currency,
       date: toIsoDate(this.clock.now()),
     });
+  }
+
+  /** Books the order to a project and queues its shortfall item, as "Buy missing" on a project asks. */
+  forProject(project: string, item: string | null, qty: number | null): void {
+    this.project.set(project);
+    this.prefill.set(item && qty && qty > 0 ? { item, qty } : null);
+  }
+
+  /** Once a supplier is chosen, adds the queued item at that supplier's buying price. */
+  async applyPrefill(): Promise<void> {
+    const prefill = this.prefill();
+    if (!prefill || !this.supplier()) {
+      return;
+    }
+    const [match] = (await this.searchItems(prefill.item, 'product')).filter(
+      (i) => i.code === prefill.item,
+    );
+    // Only once: a later supplier change keeps the line the user may have edited.
+    this.prefill.set(null);
+    if (match && !this.lines().some((l) => l.item.code === match.code)) {
+      this.lines.update((lines) => [...lines, { item: match, qty: prefill.qty, rate: match.rate }]);
+    }
   }
 
   /** Adds the item at its buying price, or one more of it when it's already on the order. */
@@ -266,6 +294,7 @@ export class PurchaseOrderStore {
       currency: business.currency,
       supplier,
       scheduleDate: toIsoDate(this.clock.now()),
+      project: this.project(),
       lines: this.lines().map((l) => ({
         item: l.item.code,
         uom: l.item.uom,

@@ -69,3 +69,41 @@ export interface RequirementRequest {
   uom: string;
   qty: number;
 }
+
+/** An open material-request row a delivery can count against, oldest first. */
+export interface RequestRow {
+  request: string;
+  row: string;
+  /** Still to deliver, in the stock unit. */
+  open: number;
+}
+
+/** What one item of a project still needs, where stock is, and what is on order. */
+export interface SupplyPlan {
+  item: string;
+  itemName: string;
+  /** The stock unit everything here is counted in. */
+  uom: string;
+  /** The shared project sites warehouse. */
+  site: string;
+  need: number;
+  requestRows: RequestRow[];
+  /** The project's share of the site warehouse. */
+  atSite: number;
+  /** The company's own warehouses that hold some, most first. */
+  sources: { warehouse: string; name: string; qty: number }[];
+  /** Purchase orders for the project still waiting to be received. */
+  pendingOrders: { name: string; qty: number }[];
+}
+
+export interface SupplyRequest {
+  reference: string;
+  company: string;
+  project: string;
+  item: string;
+  uom: string;
+  qty: number;
+  from: string;
+  site: string;
+  requestRows: RequestRow[];
+}

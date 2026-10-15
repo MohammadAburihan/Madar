@@ -224,4 +224,20 @@ describe('PurchaseOrderStore', () => {
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
   });
+
+  it("books a project's shortfall: adds its item once a supplier is chosen, and the project to the order", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'POT-30', 4);
+    await store.applyPrefill();
+    expect(store.lines()).toEqual([]);
+    store.setSupplier('Green Clay');
+    await store.applyPrefill();
+    expect(store.lines()).toEqual([{ item: PLANTER, qty: 4, rate: 45 }]);
+    await store.applyPrefill();
+    expect(store.lines()).toHaveLength(1);
+    api.confirm.mockResolvedValue('PO-2049');
+    await store.confirm();
+    expect(api.confirm.mock.calls[0][0].project).toBe('PROJ-0001');
+  });
 });

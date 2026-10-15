@@ -1,6 +1,6 @@
 # Madar — project status
 
-_Last updated: 14 Oct 2026_
+_Last updated: 16 Oct 2026_
 
 ## Done (merged into `development`)
 
@@ -18,6 +18,7 @@ _Last updated: 14 Oct 2026_
 | #14 | **Supplier invoices** (step 3c-1): billing received goods with the supplier's number, the invoice page, billing on the order page and workspace |
 | #15 | **Pay suppliers** (step 3c-2): the payment form with save draft, the recorded payment and its page; step 3 (Purchase) is complete |
 | #16 | **Record expense** (step 4a): category, amount, date, account, optional project and receipt photo; expenses in the Money history |
+| #17 | **Projects** (step 4b-1): the list, creating and editing a project, its overview and material requirements; the Project manager persona |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
@@ -25,26 +26,13 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 
 - **4a — Record expense**: merged (#16).
 - **4b — Projects and supplying them**, in three PRs:
-  - **4b-1 — Projects** (this PR): the list, creating and editing a customer or internal project, and its overview
-    (budget against actual cost, next tasks, material requirements against available stock, attachments, linked
-    records), plus adding a material requirement. Owner and the new Project manager persona (Projects User or
-    Manager without a sales role).
-    Review pass 1 (2 high, 3 medium, 3 low) fixed: the Project manager persona exists; a changed requirement draft is
-    replaced, never submitted stale; editing never saves over a project that didn't load; linked amounts are in the
-    company currency and a split expense counts only its project's share; dated tasks come first; requirements count
-    in the stock unit; Projects is hidden from roles that don't run them.
-    Review pass 2 (1 high, 2 medium, 3 low) fixed: linked order and expense amounts are hidden from roles that don't
-    see costs; the project type is set only where the site has it under that name (setup names them in its language);
-    requirements count what is still to deliver and skip stopped requests; tasks are left out for roles that can't
-    read them; a slow earlier load can't fill another project's edit form; small attachments show in KB.
-    Review pass 3 (1 medium, 2 low) fixed: creating a project is safe to repeat (a reference in its notes is looked up
-    before inserting), fully delivered requirements leave the overview, and customer names are fetched in batches.
-    Review pass 4 (2 medium, 1 low) fixed: remaining needs subtract the delivered quantity in the stock unit (transfer
-    requests only), a retried save writes the latest details over the project it finds, and a rounded quantity
-    still matches its draft.
-    Review pass 5 (3 low): two fixed (the list loads once the session recovers; an unassigned task shows only its date).
-    Deferred: a project with 20 or more undated open tasks shows only those as next tasks.
-  - **4b-2 — Supply**: send available stock to the project site and buy the shortfall.
+  - **4b-1 — Projects**: merged (#17). Deferred: a project with 20 or more undated open tasks shows only those as
+    next tasks.
+  - **4b-2 — Supply** (this PR): from a requirement on the overview, plan one item (need, stock per warehouse, what
+    is already at the site and on order, the shortfall), send stock from a warehouse to the shared project-site
+    warehouse as a transfer booked to the project and linked to the open requests, and buy the shortfall through a
+    purchase order prefilled with the item and booked to the project. Owner, project manager, warehouse and store
+    associates with Projects User.
   - **4b-3 — Site use and returns**, and the desktop project workspace.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

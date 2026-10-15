@@ -19,6 +19,9 @@ Purchasing officer if they have Purchase User or Purchase Manager; otherwise Pro
 Projects Manager and no sales role; otherwise Store associate if they have both a sales and a stock role; otherwise
 Salesperson or Warehouse worker.
 
+Supplying a project reads the project, which ERPNext allows only Projects User or Manager. A store associate or
+warehouse worker who supplies projects therefore also needs **Projects User**.
+
 The purchasing officer holds **Accounts User** because ERPNext v16 lets only Accounts User/Manager create supplier
 invoices (decided 14 Oct 2026). Accounts User could also record payments in ERPNext; Madar still keeps paying suppliers
 to the Owner.

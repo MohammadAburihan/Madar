@@ -18,6 +18,7 @@ describe('capabilitiesFor', () => {
       paySuppliers: true,
       recordExpenses: true,
       manageProjects: true,
+      supplyProjects: true,
     });
   });
 
@@ -39,6 +40,7 @@ describe('capabilitiesFor', () => {
         paySuppliers: false,
         recordExpenses: false,
         manageProjects: false,
+        supplyProjects: persona === 'storeAssociate',
       });
     }
   });
@@ -158,6 +160,20 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('owner', ['Projects Manager', 'Stock Manager']).manageProjects).toBe(
       true,
     );
+  });
+
+  it('lets the roles in PERMISSIONS.md supply projects, when ERPNext lets them read projects and move stock', () => {
+    for (const persona of ['owner', 'storeAssociate', 'warehouse', 'projectManager'] as const) {
+      expect(capabilitiesFor(persona).supplyProjects).toBe(true);
+    }
+    expect(capabilitiesFor('salesperson').supplyProjects).toBe(false);
+    expect(capabilitiesFor('purchasing').supplyProjects).toBe(false);
+    expect(capabilitiesFor('projectManager', ['Projects User', 'Stock User']).supplyProjects).toBe(
+      true,
+    );
+    // A warehouse worker also needs Projects User to read the project in v16.
+    expect(capabilitiesFor('warehouse', ['Stock User']).supplyProjects).toBe(false);
+    expect(capabilitiesFor('warehouse', ['Stock User', 'Projects User']).supplyProjects).toBe(true);
   });
 
   it("doesn't let warehouse workers sell", () => {

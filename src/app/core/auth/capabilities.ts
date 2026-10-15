@@ -29,6 +29,8 @@ export interface Capabilities {
   recordExpenses: boolean;
   /** See projects, and create and edit them and their material requirements. */
   manageProjects: boolean;
+  /** Send stock to a project's site. */
+  supplyProjects: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -47,6 +49,7 @@ const SALES_ROLE: Capabilities = {
   paySuppliers: false,
   recordExpenses: false,
   manageProjects: false,
+  supplyProjects: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -66,9 +69,10 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paySuppliers: true,
     recordExpenses: true,
     manageProjects: true,
+    supplyProjects: true,
   },
   salesperson: SALES_ROLE,
-  storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true },
+  storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
   warehouse: {
     sell: false,
     sellToWalkIn: false,
@@ -85,6 +89,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paySuppliers: false,
     recordExpenses: false,
     manageProjects: false,
+    supplyProjects: true,
   },
   projectManager: {
     sell: false,
@@ -102,6 +107,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paySuppliers: false,
     recordExpenses: false,
     manageProjects: true,
+    supplyProjects: true,
   },
   purchasing: {
     sell: false,
@@ -120,6 +126,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     paySuppliers: false,
     recordExpenses: false,
     manageProjects: false,
+    supplyProjects: false,
   },
 };
 
@@ -185,6 +192,12 @@ const MANAGE_PROJECTS_NEEDS = [
   ['Stock User', 'Stock Manager', 'Purchase User', 'Purchase Manager'], // create and submit Material Request
 ];
 
+// Supplying reads the project and its requests, and creates and submits a Stock Entry (v16 permissions).
+const SUPPLY_PROJECTS_NEEDS = [
+  ['Projects User', 'Projects Manager'], // read Project
+  ['Stock User', 'Stock Manager'], // read Material Request and Bin; create and submit Stock Entry
+];
+
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
  * do the task (an owner who is only an Accounts Manager can't move stock).
@@ -216,5 +229,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     manageProjects:
       caps.manageProjects &&
       MANAGE_PROJECTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    supplyProjects:
+      caps.supplyProjects &&
+      SUPPLY_PROJECTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

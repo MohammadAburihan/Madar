@@ -368,12 +368,14 @@ export class PurchaseApiService {
       schedule_date: request.scheduleDate,
       // Purchase Order has no remarks; this field is otherwise unused (decided 14 Oct 2026).
       order_confirmation_no: request.reference,
+      ...(request.project ? { project: request.project } : {}),
       items: request.lines.map((l) => ({
         item_code: l.item,
         qty: l.qty,
         rate: l.rate,
         uom: l.uom,
         schedule_date: request.scheduleDate,
+        ...(request.project ? { project: request.project } : {}),
       })),
     };
   }

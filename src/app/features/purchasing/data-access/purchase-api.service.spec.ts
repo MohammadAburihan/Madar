@@ -385,4 +385,19 @@ describe('PurchaseApiService', () => {
       expect(await api().findReceipt('REC-ABC1234')).toEqual({ receipt: 'MAT-PRE-0001' });
     });
   });
+
+  it("books a project's order to the project, on the order and each line", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'PO-2049' }),
+        'frappe.client.submit': () => ORDER,
+      },
+    );
+    await api().confirm(request({ project: 'PROJ-0001' }), null);
+    expect(postCalls[0].body['doc']).toMatchObject({
+      project: 'PROJ-0001',
+      items: [{ item_code: 'POT-30', project: 'PROJ-0001' }],
+    });
+  });
 });

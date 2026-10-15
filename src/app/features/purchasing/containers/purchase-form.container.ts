@@ -4,9 +4,11 @@ import {
   OnInit,
   computed,
   effect,
+  inject,
   signal,
   untracked,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { parseNumber } from '../../../core/format/number';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -90,8 +92,11 @@ const SEARCH_DELAY_MS = 250;
         [options]="supplierOptions()"
         [placeholder]="txt.chooseSupplier"
         [value]="ctx.store.supplier()"
-        (valueChange)="ctx.store.setSupplier($event)"
+        (valueChange)="chooseSupplier($event)"
       />
+      @if (ctx.store.project(); as project) {
+        <p class="muted">{{ forProject(project) }}</p>
+      }
       @if (ctx.store.supplier()) {
         <app-filter-chips [label]="txt.kind" [options]="txt.kinds" [(value)]="kind" />
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
@@ -148,6 +153,7 @@ const SEARCH_DELAY_MS = 250;
 })
 export class PurchaseFormContainer implements OnInit {
   protected readonly ctx = injectPurchaseContext();
+  private readonly route = inject(ActivatedRoute);
   protected readonly String = String;
   protected readonly term = signal('');
   protected readonly kind = signal<string>('product');
@@ -238,6 +244,12 @@ export class PurchaseFormContainer implements OnInit {
       }
       store.start();
     }
+    const params = this.route.snapshot.queryParamMap;
+    const project = params.get('project');
+    if (project && store.project() !== project) {
+      // "Buy missing" on a project: book the order to it and add its shortfall once a supplier is chosen.
+      store.forProject(project, params.get('item'), Number(params.get('qty')) || null);
+    }
     void this.load();
   }
 
@@ -252,6 +264,15 @@ export class PurchaseFormContainer implements OnInit {
       decrease: t('purchase.form.decrease', { item }),
       increase: t('purchase.form.increase', { item }),
     };
+  }
+
+  protected forProject(project: string): string {
+    return this.ctx.i18n.tr().t('purchase.form.forProject', { project });
+  }
+
+  protected chooseSupplier(supplier: string | null): void {
+    this.ctx.store.setSupplier(supplier);
+    void this.ctx.store.applyPrefill().catch(() => undefined);
   }
 
   protected setRate(index: number, code: string, input: string): void {
