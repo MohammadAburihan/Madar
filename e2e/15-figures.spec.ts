@@ -167,6 +167,10 @@ test.describe('the figures on screen are ERPNext’s @desktop', () => {
       ],
       { order_by: 'creation desc', limit_page_length: 1 },
     );
+    test.skip(
+      !returned,
+      'needs a sale returned against what was owed (11-sales-returns makes one)',
+    );
     const name = String(returned['return_against']);
     const invoice = await erp(page).doc<Row>('Sales Invoice', name);
     const payments = await erp(page).list<Row>(

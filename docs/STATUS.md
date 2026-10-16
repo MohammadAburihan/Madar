@@ -149,7 +149,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   total, paid and outstanding; a quotation's total; a sales order's ordered and delivered quantities. It found one
   real bug, fixed here: an invoice page counted a credit note as money paid ("Amount paid ILS 45.00" on an unpaid,
   returned sale). Paid now leaves out credits (read from the credit notes against it), a "Credited by returns" row
-  shows them, and a sale settled by a return reads "Payment: Credit note issued".
+  shows them, and a sale settled by a return reads "Payment: Credit note issued". Review pass 1 (1 medium, 3 low)
+  fixed: credits count at their rounded total, as ERPNext reduces what is owed; a negative outstanding (refund still
+  owed) isn't called a credit settlement; an unreadable credit list fails the page instead of counting credits as
+  paid (a role's 403 still passes); the invoice-page check skips with a reason when no returned sale exists.
 - Next: the whole-branch review of the batch (Sales S2–S4, Contacts, Settings).
 
 ## End-to-end happy paths: merged (#26)

@@ -21,7 +21,8 @@ export function invoiceView(
     0,
   );
   const payment =
-    invoice.outstanding <= 0.005 && credited > 0.005
+    // Settled to the cent by a credit; a negative outstanding is a refund still owed, not a credit settlement.
+    Math.abs(invoice.outstanding) <= 0.005 && credited > 0.005
       ? 'credited'
       : paymentStatusOf(paid, invoice.total - credited);
   const count = invoice.payments.length;

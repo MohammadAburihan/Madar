@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { canReturn } from './sales-return.models';
 import { stockedItems } from './stocked-items';
@@ -57,19 +58,26 @@ export class InvoiceApiService {
         }),
       ).catch(() => []),
       firstValueFrom(
-        this.erpnext.list<{ grand_total: number; update_outstanding_for_self: number }>(
-          'Sales Invoice',
-          {
-            fields: ['grand_total', 'update_outstanding_for_self'],
-            filters: [
-              ['return_against', '=', name],
-              ['is_return', '=', 1],
-              ['docstatus', '=', 1],
-            ],
-            limit: 0,
-          },
-        ),
-      ).catch(() => []),
+        this.erpnext.list<{
+          grand_total: number;
+          rounded_total: number;
+          update_outstanding_for_self: number;
+        }>('Sales Invoice', {
+          fields: ['grand_total', 'rounded_total', 'update_outstanding_for_self'],
+          filters: [
+            ['return_against', '=', name],
+            ['is_return', '=', 1],
+            ['docstatus', '=', 1],
+          ],
+          limit: 0,
+        }),
+      ).catch((error: unknown) => {
+        // Without the credits, paid would count them as money: only a role's 403 is passed over.
+        if (ErpnextError.from(error).kind === 'forbidden') {
+          return [];
+        }
+        throw error;
+      }),
     ]);
     const payments = references.length
       ? await firstValueFrom(
@@ -110,7 +118,7 @@ export class InvoiceApiService {
       outstanding: invoice.outstanding_amount,
       credited: credits
         .filter((c) => !c.update_outstanding_for_self)
-        .reduce((sum, c) => sum + Math.abs(c.grand_total), 0),
+        .reduce((sum, c) => sum + Math.abs(invoiceTotal(c)), 0),
       delivered: invoice.docstatus === 1 && !!invoice.update_stock,
       returnable: canReturn({
         docstatus: invoice.docstatus,

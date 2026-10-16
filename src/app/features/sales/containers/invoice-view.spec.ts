@@ -113,6 +113,22 @@ describe('invoice view', () => {
     );
     expect(unpaid.chips[1]).toEqual({ label: 'Payment: Unpaid', tone: 'danger' });
     expect(unpaid.totals[1].value).toBe('ILS 0.00');
+    // Paid in full, then a return the business still owes back: paid, not settled by a credit.
+    const refundDue = visible(
+      invoiceView(
+        {
+          ...INVOICE,
+          outstanding: -80,
+          credited: 80,
+          payments: [{ name: 'P', amount: 320, account: 'Cash' }],
+        },
+        null,
+        'ILS',
+        'en',
+        en,
+      ),
+    );
+    expect(refundDue.chips[1].label).toBe('Payment: Paid');
   });
 
   it('counts only payments as paid, and shows what returns credited', () => {
