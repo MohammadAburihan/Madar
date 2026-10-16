@@ -47,3 +47,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Playwright
+e2e-report/
+e2e-results/

@@ -29,6 +29,18 @@ _Last updated: 16 Oct 2026_
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
+## End-to-end happy paths (this PR)
+
+`npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site (`ERPNEXT_DEV_URL=http://localhost:8081`,
+started by the config if no dev server is up), at phone (390 px) and desktop (1440 px) widths, one at a time in file
+order because they share the site's stock: sign-in and Arabic, the More tab and role navigation; a purchase order
+through receipt, supplier invoice and payment; a walk-in cash sale, a sale on account and its collection, adding a
+customer mid-sale; moving stock and the inventory page; an expense with a receipt photo; a project from creation
+through requirement, supply, site use and return, buying for it, the desktop workspace and editing it; reports,
+profit by month, customer and supplier statements and the PDF; the project manager's, warehouse worker's, purchasing
+officer's and store associate's homes; a whole sale and the reports in Arabic. Repeatable: purchases restock what
+sales and supply use, and new records get unique names. Not in CI, which has no ERPNext.
+
 ## Step 5 of 6 — Reports: done (#22–#25)
 
 - **5a — Reports overview**: merged (#22). Deferred (low): an exchange-rate revaluation of a foreign-currency bank
