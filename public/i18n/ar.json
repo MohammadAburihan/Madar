@@ -2264,7 +2264,137 @@
           "title": "لم يُحفظ التاريخ",
           "message": "رفضه ERPNext. أعد تحميل الأمر وحاول مرة أخرى."
         }
-      }
+      },
+      "deliverAction": "تجهيز التسليم",
+      "invoiceAction": "إنشاء فاتورة"
+    },
+    "deliver": {
+      "title": "تسليم الطلب",
+      "subtitle": "{{order}} · {{customer}}",
+      "warehouse": "المستودع",
+      "chooseWarehouse": "اختر مستودعاً",
+      "goodsMeta": "المطلوب {{ordered}} · سبق تسليم {{delivered}}",
+      "goodsDetail": "المتاح {{available}} · التسليم الآن {{now}}",
+      "serviceMeta": "المطلوب {{ordered}} · أُنجز سابقاً {{delivered}}",
+      "serviceDetail": "يُنجز الآن {{now}}",
+      "qty": "الكمية المراد تسليمها",
+      "qtyFor": "الكمية المراد تسليمها · {{code}}",
+      "workDoneFor": "العمل المنجز الآن · {{code}}",
+      "qtyError": "أدخل كمية من 0 إلى {{max}}.",
+      "noStock": "المتاح {{available}} فقط في {{warehouse}}.",
+      "reviewTitle": "قبل التأكيد",
+      "reviewGoods": "سلّم {{goods}} من {{warehouse}}.",
+      "reviewServices": "سجّل إنجاز {{services}}.",
+      "reviewNote": "يُنشئ ذلك سجل تسليم ولا يسجّل دفعة.",
+      "confirm": "تأكيد التسليم",
+      "confirming": "جارٍ التأكيد…",
+      "reload": "إعادة تحميل الأمر",
+      "noAccess": {
+        "title": "لا يمكنك تسليم الطلبات",
+        "message": "لا يسمح دورك في ERPNext بالتسليم."
+      },
+      "nothingOpen": {
+        "title": "لم يبقَ شيء للتسليم",
+        "message": "سُلّمت كل بنود هذا الأمر."
+      },
+      "notDeliverable": {
+        "title": "لا يمكن تسليم هذا الأمر",
+        "message": "الأمر مغلق أو معلّق أو غير مؤكد في ERPNext."
+      },
+      "noWarehouses": {
+        "title": "لا يوجد مستودع للتسليم منه",
+        "message": "لا يوجد في ERPNext مستودع لهذا النشاط."
+      },
+      "failed": {
+        "permission": {
+          "title": "لا يمكنك تسليم هذا الأمر",
+          "message": "لم يسمح ERPNext بذلك لدورك."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "لم يُرسل التسليم. تحقق من الاتصال وحاول مرة أخرى."
+        },
+        "changed": {
+          "title": "تغيّر الأمر",
+          "message": "تسليم سابق قائم في ERPNext. أعد تحميل الأمر لترى ما تبقى."
+        },
+        "stock": {
+          "title": "المخزون غير كافٍ",
+          "message": "الكمية في المستودع أقل مما يتطلبه هذا التسليم. راجع الكميات."
+        },
+        "error": {
+          "title": "لم يُسجَّل التسليم",
+          "message": "رفضه ERPNext. راجع التفاصيل وحاول مرة أخرى."
+        }
+      },
+      "notCreated": {
+        "title": "لم يُسجَّل التسليم",
+        "message": "لم يُرحَّل شيء. راجعه وأكّده مرة أخرى."
+      },
+      "checking": {
+        "title": "التحقق من التسليم",
+        "cardTitle": "التأكيد لم يُحسم بعد",
+        "cardMessage": "انتهت مهلة الطلب. قد يكون التسليم موجوداً بالفعل. لا تسلّمه مرة أخرى.",
+        "planned": "قيد التسليم",
+        "plannedValue": "{{units}} من {{warehouse}}"
+      },
+      "doneTitle": "تم تأكيد التسليم",
+      "doneAll": "تم التسليم · {{done}} من {{ordered}}",
+      "donePart": "تم تسليم جزء · {{done}} من {{ordered}}",
+      "doneMessage": "تم ترحيل التسليم من {{warehouse}}. تبقى الفوترة والدفع منفصلة.",
+      "reviewInvoice": "مراجعة فاتورة أمر البيع"
+    },
+    "orderInvoice": {
+      "reviewTitle": "مراجعة فاتورة أمر البيع",
+      "subtitle": "{{order}} · {{customer}}",
+      "reviewCard": "فاتورة فقط · {{total}}",
+      "goodsDelivered": "لن تتحرك البضائع المسلّمة مجدداً.",
+      "goodsLater": "لا تنقل الفاتورة المخزون: تخرج البضائع مع تسليمها.",
+      "reviewDue": "المستلم {{received}} · المتبقي {{due}}.",
+      "confirm": "تأكيد الفاتورة",
+      "confirming": "جارٍ التأكيد…",
+      "cancel": "إلغاء",
+      "reload": "المراجعة مجدداً",
+      "noAccess": {
+        "title": "لا يمكنك فوترة الطلبات",
+        "message": "لا يسمح دورك في ERPNext بفواتير المبيعات."
+      },
+      "nothing": {
+        "title": "لم يبقَ شيء للفوترة",
+        "message": "فُوترت كل بنود هذا الأمر."
+      },
+      "failed": {
+        "permission": {
+          "title": "لا يمكنك فوترة هذا الأمر",
+          "message": "لم يسمح ERPNext بذلك لدورك."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "لم تُرسل الفاتورة. تحقق من الاتصال وحاول مرة أخرى."
+        },
+        "changed": {
+          "title": "تغيّر المبلغ",
+          "message": "سيفوتر ERPNext الآن مبلغاً آخر. راجعه مجدداً قبل التأكيد."
+        },
+        "error": {
+          "title": "لم تُسجَّل الفاتورة",
+          "message": "رفضها ERPNext. راجع الأمر وحاول مرة أخرى."
+        }
+      },
+      "notCreated": {
+        "title": "لم تُسجَّل الفاتورة",
+        "message": "لم يُرحَّل شيء. راجعها وأكّدها مرة أخرى."
+      },
+      "checking": {
+        "title": "التحقق من الفاتورة",
+        "cardTitle": "التأكيد لم يُحسم بعد",
+        "cardMessage": "انتهت مهلة الطلب. قد تكون الفاتورة موجودة بالفعل. لا تنشئها مرة أخرى.",
+        "planned": "إجمالي الفاتورة"
+      },
+      "doneTitle": "تم تسجيل فاتورة أمر البيع",
+      "doneSubtitle": "{{invoice}} · {{order}}",
+      "doneCard": "{{state}} · {{total}}",
+      "doneMessage": "الفاتورة مرتبطة بأمر البيع {{order}}. المستلم {{received}}. لا يوجد تسليم مخزون ثانٍ أو دفعة."
     }
   }
 }

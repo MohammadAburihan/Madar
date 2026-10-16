@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { CUSTOMER, expectHeading, named, signIn } from './support';
+import { CUSTOMER, MAIN, choose, expectHeading, named, signIn } from './support';
 
 const TREE = { code: 'OLV-20', name: 'Olive tree · 20 L' };
 const SERVICE = { code: 'SRV-GARDEN', name: 'Garden consultation' };
@@ -65,6 +65,80 @@ test.describe.serial('ordering from a quotation @phone', () => {
     await expect(page.getByText('Delivery date saved')).toBeVisible({ timeout: 30_000 });
     await page.reload();
     await expect(page.getByLabel('Expected delivery')).toHaveValue(later);
+  });
+
+  test('delivers part of the goods', async ({ page }) => {
+    await signIn(page, 'owner');
+    await page.goto(`/sales/orders/${order}`);
+    await page.getByRole('button', { name: 'Prepare delivery' }).click();
+    await expect(page).toHaveURL(new RegExp(`/sales/orders/${order}/deliver$`));
+    await expectHeading(page, 'Deliver order');
+    await expect(page.locator('app-page-heading')).toContainText(named(order, '·', CUSTOMER));
+    await choose(page.getByLabel('Warehouse'), MAIN);
+    const tree = page.locator('app-item-card', { hasText: TREE.name });
+    await expect(tree).toContainText(named('Ordered', '2', '· Previously delivered', '0'));
+    await expect(tree).toContainText(named('Deliver now', '2'));
+    await page.getByLabel(named('Quantity to deliver')).fill('1');
+    await expect(
+      page.locator('app-feedback-card', { hasText: 'Before you confirm' }),
+    ).toContainText(named('Deliver', `1 × ${TREE.name}`, 'from', MAIN));
+    await page.getByRole('button', { name: 'Confirm delivery' }).click();
+    await expect(page).toHaveURL(/\/deliver\/done$/, { timeout: 60_000 });
+    await expectHeading(page, 'Delivery confirmed');
+    await expect(page.locator('app-feedback-card').first()).toContainText(
+      named('Partly delivered ·', '1', 'of', '3'),
+    );
+    await page.getByRole('button', { name: 'Open sales order' }).click();
+    await expect(
+      page.locator('app-status-chip', { hasText: named('Delivery', ':', 'Partly delivered') }),
+    ).toBeVisible();
+    await expect(page.locator('app-item-card', { hasText: TREE.name })).toContainText(
+      named('2', 'ordered ·', '1', 'delivered'),
+    );
+  });
+
+  test('delivers the rest with the consultation done, then invoices the order', async ({
+    page,
+  }) => {
+    await signIn(page, 'owner');
+    await page.goto(`/sales/orders/${order}/deliver`);
+    await choose(page.getByLabel('Warehouse'), MAIN);
+    await expect(page.getByLabel(named('Quantity to deliver'))).toHaveValue('1');
+    await page.getByLabel(named('Work done now ·', SERVICE.code)).fill('1');
+    await page.getByRole('button', { name: 'Confirm delivery' }).click();
+    await expect(page).toHaveURL(/\/deliver\/done$/, { timeout: 60_000 });
+    await expect(page.locator('app-feedback-card').first()).toContainText(
+      named('Delivered ·', '3', 'of', '3'),
+    );
+
+    await page.getByRole('button', { name: 'Review invoice from order' }).click();
+    await expect(page).toHaveURL(new RegExp(`/sales/orders/${order}/invoice$`));
+    await expectHeading(page, 'Review order invoice');
+    const review = page.locator('app-feedback-card').first();
+    await expect(review).toContainText(named('Invoice only ·', 'ILS 320.00'));
+    await expect(review).toContainText('Already delivered goods will not move again.');
+    await expect(review).toContainText(named('Received', '0.00', '· Due', '320.00'));
+    await page.getByRole('button', { name: 'Confirm invoice' }).click();
+    await expect(page).toHaveURL(/\/invoice\/done$/, { timeout: 60_000 });
+    await expectHeading(page, 'Order invoice recorded');
+    await expect(page.locator('app-feedback-card').first()).toContainText(
+      named('Unpaid', '·', 'ILS 320.00'),
+    );
+    await page.getByRole('button', { name: 'Open sales order' }).click();
+    for (const [kind, state] of [
+      ['Order', 'Completed'],
+      ['Delivery', 'Delivered'],
+      ['Invoice', 'Invoiced'],
+    ]) {
+      await expect(
+        page.locator('app-status-chip', { hasText: named(kind, ':', state) }),
+      ).toBeVisible();
+    }
+    await expect(page.locator('app-item-card', { hasText: SERVICE.name })).toContainText(
+      'Service work done',
+    );
+    await expect(page.getByRole('button', { name: 'Prepare delivery' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Create invoice' })).toHaveCount(0);
   });
 
   test('links the ordered quotation to its order instead of ordering again', async ({ page }) => {

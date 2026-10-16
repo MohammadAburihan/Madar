@@ -6,6 +6,8 @@ export interface SalesOrderLine {
   uom: string;
   qty: number;
   deliveredQty: number;
+  /** Stock units in one of the row's units. */
+  conversionFactor: number;
   /** Company currency. */
   rate: number;
   amount: number;
@@ -40,3 +42,36 @@ export interface OrderFromQuotationRequest {
 /** Closed, held, completed or cancelled: ERPNext refuses deliveries and date changes. */
 export const orderOpen = (order: SalesOrderDetail) =>
   order.docstatus === 1 && !['Closed', 'On Hold', 'Completed', 'Cancelled'].includes(order.status);
+
+export interface DeliveryRequest {
+  /** Madar's idempotency reference, kept in the delivery note's `utm_content`. */
+  reference: string;
+  order: string;
+  warehouse: string;
+  /** Only rows delivering something; qty is in the row's unit. */
+  lines: { row: string; qty: number }[];
+}
+
+export interface OrderInvoicePreview {
+  lines: { code: string; name: string; qty: number; amount: number; isStock: boolean }[];
+  /** Company currency, what the invoice will be owed. */
+  total: number;
+}
+
+export interface OrderInvoiceRequest {
+  /** Madar's idempotency reference, kept in the invoice's remarks. */
+  reference: string;
+  order: string;
+  /** The total the user reviewed; the invoice is refused if ERPNext would now bill another amount. */
+  total: number;
+}
+
+export interface OrderInvoiceResult {
+  name: string;
+  total: number;
+  outstanding: number;
+}
+
+// Rounded so 1 − 0.9 reads 0.1, not 0.09999999999999998.
+export const toDeliver = (line: SalesOrderLine) =>
+  Math.max(Math.round((line.qty - line.deliveredQty) * 1e6) / 1e6, 0);

@@ -54,21 +54,20 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   delivered".
 - **Sales S2 — Quotations**: merged (#33). Quotations made, confirmed or drafted, opened from Sales and shared
   as a PDF Madar builds (ERPNext's print formats can't reach the site's host name from the container).
-- **Sales S3a — Sales orders** (this PR): "Create sales order" on a confirmed, still valid quotation makes and submits
-  the order through ERPNext's own mapper, safe to repeat through an `ORD-…` reference in `utm_content` (the mapper
-  copies the quotation's, so Madar overwrites it); the quoted rates stand (no pricing rules). Its expected delivery is
-  the site's today until changed on the order page. A timeout shows "Order not yet resolved" with Check result on the
-  quotation; an ordered quotation links to its order instead. The order page (also opened from the Orders tab) shows
-  ERPNext's order, delivery and invoice states, goods as "2 ordered · 0 delivered", services as pending or done, and
-  lets selling roles move the expected delivery (every row moves, since ERPNext takes the order's date from them).
-  PERMISSIONS.md gains the row for quoting, orders, delivery and invoicing (the selling roles, as ERPNext allows).
-  e2e: quote a tree and a consultation, create the order, check its states and lines, move its delivery date, find
-  the order from the quotation and from the Orders table; the order page in Arabic. Review pass 1 (4 low) fixed: no
-  "another order" note beside the quotation's own unresolved order; orders made from a quotation are grouped by
-  name, so a many-line quotation doesn't hide older orders; a retry after the site's midnight still recognises the
-  posted order; an unreadable item list doesn't stop the order page loading.
-- Next: S3b deliver an order and invoice it, S4 returns; then Contacts and Settings. A new order without a quotation
-  has no mock and isn't planned.
+- **Sales S3a — Sales orders**: merged (#34). Orders made from confirmed quotations (`ORD-…` in `utm_content`), the
+  order page with ERPNext's order, delivery and invoice states, and a movable expected delivery.
+- **Sales S3b — Deliver and invoice an order** (this PR): "Prepare delivery" on an open order chooses the warehouse
+  holding most of its goods, shows "Ordered · Previously delivered" and "Available · Deliver now" per line, refuses
+  more than is open or in stock there, and posts a delivery note through ERPNext's mapper (`DEL-…` in
+  `utm_content`; the mapper copies the order's). Services count as delivered in ERPNext, so the form also marks their
+  work done (0 by default) and the order can complete. "Create invoice" (and "Review invoice from order" after a
+  delivery) reviews what ERPNext's mapper would bill, then posts it without moving stock (`INV-…` in remarks); a
+  different amount at confirm time asks for a new review; a draft left behind is submitted, not deleted (invoicing
+  roles can't delete Sales Invoices). New capabilities `deliverOrders` and `invoiceOrders` check the ERPNext roles
+  each needs. The mock's "Save draft" on the delivery form is left out, as on the purchase receipt.
+  e2e: deliver one of two trees, then the rest with the consultation done, invoice the order (ILS 320.00, unpaid)
+  and see it completed; the whole order, delivery and invoice in Arabic.
+- Next: S4 returns; then Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)
 

@@ -20,6 +20,8 @@ describe('capabilitiesFor', () => {
       manageProjects: true,
       supplyProjects: true,
       seeReports: true,
+      deliverOrders: true,
+      invoiceOrders: true,
     });
   });
 
@@ -43,6 +45,8 @@ describe('capabilitiesFor', () => {
         manageProjects: false,
         supplyProjects: persona === 'storeAssociate',
         seeReports: false,
+        deliverOrders: true,
+        invoiceOrders: true,
       });
     }
   });
@@ -209,5 +213,21 @@ describe('capabilitiesFor', () => {
     }
     expect(capabilitiesFor('owner', ['Sales Manager', 'Stock Manager']).seeReports).toBe(false);
     expect(capabilitiesFor('owner', ['Accounts Manager']).seeReports).toBe(true);
+  });
+
+  it('delivers and invoices orders only with the ERPNext roles those documents need', () => {
+    expect(capabilitiesFor('salesperson', ['Sales User', 'Accounts User'])).toMatchObject({
+      deliverOrders: true,
+      invoiceOrders: true,
+    });
+    expect(capabilitiesFor('owner', ['Accounts Manager'])).toMatchObject({
+      deliverOrders: false,
+      invoiceOrders: false,
+    });
+    expect(capabilitiesFor('salesperson', ['Sales User'])).toMatchObject({
+      deliverOrders: true,
+      invoiceOrders: false,
+    });
+    expect(capabilitiesFor('warehouse').deliverOrders).toBe(false);
   });
 });

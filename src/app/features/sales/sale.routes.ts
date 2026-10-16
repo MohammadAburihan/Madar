@@ -96,6 +96,60 @@ export const quotationRoutes: Route[] = [
       import('./containers/quotation.container').then((m) => m.QuotationContainer),
   },
   {
+    path: 'sales/orders/:name/deliver',
+    loadComponent: () =>
+      import('./containers/delivery-flow.container').then((m) => m.DeliveryFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/delivery-form.container').then((m) => m.DeliveryFormContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/delivery-checking.container').then(
+            (m) => m.DeliveryCheckingContainer,
+          ),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/delivery-done.container').then((m) => m.DeliveryDoneContainer),
+      },
+    ],
+  },
+  {
+    path: 'sales/orders/:name/invoice',
+    loadComponent: () =>
+      import('./containers/order-invoice-flow.container').then((m) => m.OrderInvoiceFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/order-invoice-review.container').then(
+            (m) => m.OrderInvoiceReviewContainer,
+          ),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/order-invoice-checking.container').then(
+            (m) => m.OrderInvoiceCheckingContainer,
+          ),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/order-invoice-done.container').then(
+            (m) => m.OrderInvoiceDoneContainer,
+          ),
+      },
+    ],
+  },
+  {
     path: 'sales/orders/:name',
     loadComponent: () =>
       import('./containers/sales-order.container').then((m) => m.SalesOrderContainer),
