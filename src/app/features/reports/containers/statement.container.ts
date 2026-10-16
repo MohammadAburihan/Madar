@@ -454,26 +454,27 @@ export class StatementContainer {
     this.state.set('idle');
   }
 
-  /** Redoes whichever step failed: the site's today, the supplier list, the linked party, or the statement. */
-  protected retry(): void {
+  /** Redoes every step that failed, in order: the site's today, the supplier list, the linked party, the statement. */
+  protected async retry(): Promise<void> {
     this.state.set('idle');
-    if (!this.today()) {
-      void this.clock
-        .ensure()
-        .then(() => this.today.set(this.clock.now()))
-        .catch(() => this.state.set('error'));
-      return;
-    }
-    if (this.kind() === 'supplier' && !this.suppliers().length) {
-      void this.loadSuppliers().catch(() => this.state.set('error'));
-    }
-    const linked = this.party$();
-    if (linked && !this.party()) {
-      void this.openParty(linked);
+    try {
+      if (!this.today()) {
+        await this.clock.ensure();
+        this.today.set(this.clock.now());
+      }
+      if (this.kind() === 'supplier') {
+        await this.loadSuppliers();
+      }
+      const linked = this.party$();
+      if (linked && !this.party()) {
+        await this.openParty(linked);
+      }
+    } catch {
+      this.state.set('error');
       return;
     }
     const party = this.party();
-    if (party) {
+    if (party && this.period.usable()) {
       void this.loadStatement(party.id, this.period.range());
     }
   }
