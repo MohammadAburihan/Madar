@@ -97,6 +97,9 @@ const SEARCH_DELAY_MS = 250;
       @if (ctx.store.project(); as project) {
         <p class="muted">{{ forProject(project) }}</p>
       }
+      @if (missingSupplier(); as supplier) {
+        <p class="muted" role="status">{{ supplierMissing(supplier) }}</p>
+      }
       @if (ctx.store.prefillMissing(); as item) {
         <p class="muted" role="status">{{ prefillMissing(item) }}</p>
       }
@@ -253,8 +256,13 @@ export class PurchaseFormContainer implements OnInit {
       // "Buy missing" on a project: book the order to it and add its shortfall once a supplier is chosen.
       store.forProject(project, params.get('item'), Number(params.get('qty')) || null);
     }
+    this.deepSupplier = params.get('supplier');
     void this.load();
   }
+
+  /** "Buy from" on a supplier's page: the order starts with that supplier chosen, once they have loaded. */
+  private deepSupplier: string | null = null;
+  protected readonly missingSupplier = signal<string | null>(null);
 
   protected resultCard(item: PurchaseItem) {
     return itemResult(item, this.ctx.currency(), this.ctx.i18n.tr());
@@ -273,11 +281,16 @@ export class PurchaseFormContainer implements OnInit {
     return this.ctx.i18n.tr().t('purchase.form.forProject', { project });
   }
 
+  protected supplierMissing(supplier: string): string {
+    return this.ctx.i18n.tr().t('purchase.form.supplierMissing', { supplier });
+  }
+
   protected prefillMissing(item: string): string {
     return this.ctx.i18n.tr().t('purchase.form.prefillMissing', { item });
   }
 
   protected chooseSupplier(supplier: string | null): void {
+    this.missingSupplier.set(null);
     this.ctx.store.setSupplier(supplier);
     void this.ctx.store.applyPrefill().catch(() => undefined);
   }
@@ -295,6 +308,16 @@ export class PurchaseFormContainer implements OnInit {
     } catch {
       this.loadFailed.set(true);
       return;
+    }
+    const supplier = this.deepSupplier;
+    const store = this.ctx.store;
+    if (supplier && !store.supplier()) {
+      if (store.suppliers().some((s) => s.id === supplier)) {
+        this.chooseSupplier(supplier);
+      } else {
+        // Disabled since the link was made: say so rather than open silently without them.
+        this.missingSupplier.set(supplier);
+      }
     }
     this.loaded.set(true);
   }

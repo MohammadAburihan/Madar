@@ -1,0 +1,147 @@
+import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
+import { throwError } from 'rxjs';
+import { fakeErpnext } from '../../../../testing/fake-erpnext';
+import { ContactsApiService } from './contacts-api.service';
+
+const COMPANY = { name: 'Rehan Nursery', currency: 'ILS' };
+const api = () => TestBed.inject(ContactsApiService);
+
+describe('ContactsApiService', () => {
+  it('lists customers with what each owes in the company currency', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [
+        {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          mobile_no: '059',
+          primary_address: 'Ramallah<br>',
+        },
+      ],
+      'Sales Invoice': () => [
+        {
+          customer: 'Lina Haddad',
+          party_account_currency: 'ILS',
+          conversion_rate: 1,
+          'SUM(`outstanding_amount`)': 80,
+        },
+        {
+          customer: 'Lina Haddad',
+          party_account_currency: 'USD',
+          conversion_rate: 3.7,
+          'SUM(`outstanding_amount`)': 10,
+        },
+      ],
+    });
+    expect(await api().customerList('lin', COMPANY, null)).toEqual([
+      { id: 'Lina Haddad', name: 'Lina Haddad', phone: '059', city: 'Ramallah', outstanding: 117 },
+    ]);
+    expect(listCalls[0].query.filters).toContainEqual(['name', '!=', 'Walk-in Customer']);
+  });
+
+  it('shows customers without balances to roles that can’t read invoices', async () => {
+    fakeErpnext({
+      Customer: () => [{ name: 'L', customer_name: 'L', mobile_no: null, primary_address: null }],
+      'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+    });
+    expect((await api().customerList('', COMPANY, null))[0].outstanding).toBeNull();
+  });
+
+  it('totals a customer: invoiced, paid after returns, and outstanding', async () => {
+    fakeErpnext(
+      {
+        'Sales Invoice': () => [
+          {
+            name: 'SI-2',
+            posting_date: '2026-10-12',
+            status: 'Unpaid',
+            is_return: 0,
+            base_grand_total: 100,
+            outstanding_amount: 100,
+            party_account_currency: 'ILS',
+          },
+          {
+            name: 'SI-R',
+            posting_date: '2026-10-11',
+            status: 'Return',
+            is_return: 1,
+            base_grand_total: -20,
+            outstanding_amount: 0,
+            party_account_currency: 'ILS',
+          },
+          {
+            name: 'SI-1',
+            posting_date: '2026-10-10',
+            status: 'Partly Paid',
+            is_return: 0,
+            base_grand_total: 320,
+            outstanding_amount: 100,
+            party_account_currency: 'ILS',
+          },
+        ],
+        'Payment Entry': () => [
+          { name: 'PAY-1', posting_date: '2026-10-11', base_paid_amount: 200 },
+        ],
+      },
+      {},
+      {
+        'Customer/Lina Haddad': {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          mobile_no: '059',
+        },
+      },
+    );
+    const customer = await api().customer('Lina Haddad', COMPANY, null);
+    expect(customer.totals).toEqual({ invoiced: 420, paid: 200, outstanding: 200 });
+    expect(customer.latest).toMatchObject({ name: 'SI-2', outstanding: 100 });
+    expect(customer.recent.map((r) => r.name)).toEqual(['SI-2', 'PAY-1', 'SI-1']);
+  });
+
+  it('reads a supplier’s oldest unpaid invoice and open order, and no money for roles without it', async () => {
+    const { listCalls } = fakeErpnext(
+      {
+        'Purchase Invoice': () => [
+          {
+            name: 'PINV-1',
+            base_grand_total: 270,
+            outstanding_amount: 170,
+            party_account_currency: 'ILS',
+          },
+        ],
+        'Purchase Order': () => [{ name: 'PO-2048' }],
+      },
+      {},
+      {
+        'Supplier/Green Clay': { name: 'Green Clay', supplier_name: 'Green Clay' },
+        'Purchase Order/PO-2048': {
+          items: [{ qty: 10, received_qty: 6, billed_amt: 270, rate: 45 }],
+        },
+      },
+    );
+    expect(await api().supplier('Green Clay', COMPANY, true)).toMatchObject({
+      outstanding: 170,
+      unpaid: { name: 'PINV-1', total: 270, paid: 100, remaining: 170 },
+      openOrder: { name: 'PO-2048', ordered: 10, received: 6, billed: 6 },
+    });
+    const calls = listCalls.length;
+    expect((await api().supplier('Green Clay', COMPANY, false)).outstanding).toBeNull();
+    expect(listCalls.slice(calls).map((c) => c.doctype)).toEqual(['Purchase Order']);
+  });
+
+  it('keeps a salesperson to their own sales and payments for a customer', async () => {
+    const { listCalls } = fakeErpnext(
+      {},
+      {},
+      { 'Customer/Lina Haddad': { name: 'Lina Haddad', customer_name: 'Lina Haddad' } },
+    );
+    await api().customer('Lina Haddad', COMPANY, 'lina@rehan.example');
+    for (const doctype of ['Sales Invoice', 'Payment Entry']) {
+      expect(listCalls.find((c) => c.doctype === doctype)!.query.filters).toContainEqual([
+        'owner',
+        '=',
+        'lina@rehan.example',
+      ]);
+    }
+  });
+});

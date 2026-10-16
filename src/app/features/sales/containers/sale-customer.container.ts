@@ -4,9 +4,12 @@ import {
   OnInit,
   computed,
   effect,
+  inject,
+  input,
   signal,
   untracked,
 } from '@angular/core';
+import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -92,6 +95,10 @@ const SEARCH_DELAY_MS = 250;
 })
 export class SaleCustomerContainer implements OnInit {
   protected readonly ctx = injectSaleContext();
+  /** Optional deep link from a customer's page: the sale starts with them chosen. */
+  readonly customer = input<string | undefined>();
+
+  private readonly directory = inject(CustomerDirectoryService);
   protected readonly term = signal('');
   protected readonly results = signal<CustomerOption[]>([]);
   protected readonly searching = signal(false);
@@ -136,6 +143,20 @@ export class SaleCustomerContainer implements OnInit {
       return;
     }
     void this.ctx.store.loadOptions().catch(() => undefined);
+    const id = this.customer();
+    const before = this.ctx.store.customer()?.id;
+    if (id && before !== id) {
+      void this.directory
+        .byId(id)
+        // The linked customer replaces one left from an earlier visit, not one picked while it loaded.
+        .then(
+          (found) =>
+            found &&
+            this.ctx.store.customer()?.id === before &&
+            this.ctx.store.selectCustomer(found),
+        )
+        .catch(() => undefined);
+    }
   }
 
   protected cardFor(customer: CustomerOption) {

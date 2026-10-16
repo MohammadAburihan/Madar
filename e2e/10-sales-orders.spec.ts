@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { CUSTOMER, MAIN, choose, expectHeading, named, signIn } from './support';
+import { CUSTOMER, MAIN, choose, expectHeading, named, signIn, topUp } from './support';
 
 const TREE = { code: 'OLV-20', name: 'Olive tree · 20 L' };
 const SERVICE = { code: 'SRV-GARDEN', name: 'Garden consultation' };
@@ -18,6 +18,8 @@ test.describe.serial('ordering from a quotation @phone', () => {
     page,
   }) => {
     await signIn(page, 'owner');
+    // Two trees leave Main below; earlier runs may have sold them all.
+    await topUp(page, TREE.code, MAIN, 5);
     await page.goto('/sales/quote/new');
     await page.getByLabel('Customer').fill(CUSTOMER);
     await page.locator('app-person-card').filter({ hasText: CUSTOMER }).first().click();

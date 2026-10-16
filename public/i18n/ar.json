@@ -948,7 +948,8 @@
       "products": "المنتجات",
       "services": "الخدمات",
       "forProject": "شراء للمشروع {{project}}",
-      "prefillMissing": "لا يمكن شراء {{item}}، لذلك لم يُضف. تأكد أنه صنف شراء فعّال."
+      "prefillMissing": "لا يمكن شراء {{item}}، لذلك لم يُضف. تأكد أنه صنف شراء فعّال.",
+      "supplierMissing": "لم يعد {{supplier}} مورّداً نشطاً. اختر مورّداً آخر."
     },
     "kind": {
       "product": "منتج",
@@ -2473,5 +2474,70 @@
         "message": "يقبل مدار المرتجعات فقط على المبيعات المؤكدة التي خرجت بضاعتها مع الفاتورة. استخدم ERPNext لهذا البيع."
       }
     }
+  },
+  "contacts": {
+    "title": "العملاء والمورّدون",
+    "subtitle": "جهات الاتصال · {{business}}",
+    "workspaceSubtitle": "{{business}} · {{kind}}",
+    "search": "بحث",
+    "placeholder": "البحث بالاسم أو الهاتف أو الرمز",
+    "kinds": {
+      "customers": "العملاء",
+      "suppliers": "المورّدون"
+    },
+    "loading": "جارٍ تحميل جهات الاتصال…",
+    "retry": "المحاولة مجدداً",
+    "choose": "اختر جهة اتصال لعرض تفاصيلها.",
+    "openDetail": "فتح جهة الاتصال",
+    "panelFailed": "تعذّر تحميل جهة الاتصال هذه.",
+    "error": {
+      "title": "تعذّر تحميل جهات الاتصال",
+      "message": "تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "noAccess": {
+      "title": "لا توجد جهات اتصال لدورك",
+      "message": "لا يتعامل دورك في مدار مع العملاء أو المورّدين."
+    },
+    "headers": {
+      "customer": "العميل",
+      "supplier": "المورّد",
+      "city": "المدينة",
+      "outstanding": "المتبقي"
+    },
+    "noResults": "لا توجد جهات اتصال تطابق بحثك.",
+    "empty": {
+      "customers": "لا يوجد عملاء بعد.",
+      "suppliers": "لا يوجد مورّدون بعد."
+    },
+    "outstanding": "المتبقي {{amount}}",
+    "customerSubtitle": "عميل · {{id}}",
+    "supplierSubtitle": "مورّد · {{id}}",
+    "payment": {
+      "paid": "مدفوعة",
+      "partlyPaid": "مدفوع جزئياً",
+      "creditNote": "صدر إشعار دائن",
+      "unpaid": "غير مدفوعة"
+    },
+    "invoiceTotal": "إجمالي الفواتير",
+    "amountPaid": "المبلغ المدفوع",
+    "outstandingLabel": "المتبقي",
+    "due": "المتبقي {{amount}}",
+    "latestSale": "أحدث عملية بيع · {{name}}",
+    "latestConfirmed": "{{date}} · الفاتورة مؤكدة",
+    "latestSummary": "{{name}} · الفاتورة {{invoiced}} · المدفوع {{paid}}",
+    "unpaidInvoice": "الفاتورة {{name}}: {{total}}\nالمدفوع {{paid}} · المتبقي {{remaining}}",
+    "nothingDue": "لا يوجد مبلغ مستحق لهذا المورّد.",
+    "openOrder": "أمر شراء مفتوح",
+    "openOrderProgress": "{{name}} · تم طلب {{ordered}}\nتم استلام {{received}} · فوترت {{billed}} · المتبقي {{left}}",
+    "receivePayment": "استلام دفعة",
+    "sellTo": "البيع إلى {{name}}",
+    "buyFrom": "الشراء من {{name}}",
+    "paySupplier": "دفع للمورّد",
+    "back": "رجوع",
+    "loadFailed": {
+      "title": "تعذّر تحميل جهة الاتصال هذه",
+      "message": "تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "capped": "تُعرض أول {{count}} جهة. ابحث للعثور على غيرها."
   }
 }

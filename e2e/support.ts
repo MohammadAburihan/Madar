@@ -62,3 +62,47 @@ export function named(...parts: string[]): RegExp {
   const escaped = parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(escaped.join('[\\s\u2066-\u2069]*'));
 }
+
+/**
+ * Keeps at least `atLeast` of an item in a warehouse (by its display name), receiving the shortfall through
+ * ERPNext, so tests that sell or deliver don't run the shared test site's stock dry. Needs a signed-in owner.
+ */
+export async function topUp(page: Page, item: string, warehouse: string, atLeast: number) {
+  const api = async <T>(path: string, params: Record<string, unknown>): Promise<T> => {
+    const query = new URLSearchParams(
+      Object.entries(params).map(([k, v]) => [k, JSON.stringify(v)]),
+    );
+    const response = await page.request.get(`/api/resource/${path}?${query}`);
+    expect(response.ok()).toBe(true);
+    return ((await response.json()) as { data: T }).data;
+  };
+  const [target] = await api<{ name: string; company: string }[]>('Warehouse', {
+    fields: ['name', 'company'],
+    filters: [['warehouse_name', '=', warehouse]],
+  });
+  const [bin] = await api<{ actual_qty: number }[]>('Bin', {
+    fields: ['actual_qty'],
+    filters: [
+      ['item_code', '=', item],
+      ['warehouse', '=', target.name],
+    ],
+  });
+  const short = atLeast - (bin?.actual_qty ?? 0);
+  if (short <= 0) {
+    return;
+  }
+  const post = async <T>(method: string, data: unknown): Promise<T> => {
+    const response = await page.request.post(`/api/method/${method}`, { data });
+    expect(response.ok(), await response.text()).toBe(true);
+    return ((await response.json()) as { message: T }).message;
+  };
+  const entry = await post<Record<string, unknown>>('frappe.client.insert', {
+    doc: {
+      doctype: 'Stock Entry',
+      stock_entry_type: 'Material Receipt',
+      company: target.company,
+      items: [{ item_code: item, qty: short, t_warehouse: target.name, basic_rate: 40 }],
+    },
+  });
+  await post('frappe.client.submit', { doc: entry });
+}
