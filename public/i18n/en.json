@@ -1939,5 +1939,72 @@
       "message": "Dates shown before now may still follow this device's clock; they update the next time you open the page.",
       "ok": "OK"
     }
+  },
+  "sales": {
+    "records": {
+      "subtitle": "{{business}} · All sales",
+      "search": "Search",
+      "placeholder": "Search number or customer",
+      "kinds": {
+        "invoices": "Invoices",
+        "orders": "Orders",
+        "quotes": "Quotes"
+      },
+      "draft": "Draft",
+      "return": "Return",
+      "confirmed": "Confirmed",
+      "paid": "Paid",
+      "partlyPaid": "Partially paid",
+      "unpaid": "Unpaid",
+      "goodsDelivered": "Goods delivered",
+      "invoiceOnly": "Invoice only",
+      "due": "{{amount}} due",
+      "delivered": "Delivered",
+      "partlyDelivered": "Partly delivered",
+      "deliveryPending": "Delivery pending",
+      "invoiced": "Invoiced",
+      "partlyInvoiced": "Partly invoiced",
+      "notInvoiced": "Not invoiced",
+      "draftOrder": "Draft order",
+      "confirmedOrder": "Confirmed order · {{items}}",
+      "items": {
+        "one": "1 item",
+        "other": "{{count}} items"
+      },
+      "quoteStatus": {
+        "open": "Open",
+        "ordered": "Ordered",
+        "lost": "Lost",
+        "expired": "Expired"
+      },
+      "validUntil": "Valid until {{date}}",
+      "headers": {
+        "document": "Document",
+        "customer": "Customer",
+        "status": "Status",
+        "amount": "Amount"
+      },
+      "quickSale": "Quick sale",
+      "empty": {
+        "invoices": "No invoices yet.",
+        "orders": "No sales orders yet.",
+        "quotes": "No quotations yet."
+      },
+      "noResults": "Nothing matches that search.",
+      "forbidden": "Your ERPNext role can't see these records.",
+      "loading": "Loading sales…",
+      "error": {
+        "title": "Sales couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "retry": "Try again",
+      "noAccess": {
+        "title": "Sales are for the selling roles",
+        "message": "Your role doesn't sell. Ask the owner if you need to."
+      },
+      "newest": "The {{count}} newest are shown; search to find older ones.",
+      "heading": "Sales",
+      "title": "{{name}} · {{customer}}"
+    }
   }
 }

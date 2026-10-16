@@ -2015,5 +2015,76 @@
       "message": "قد تبقى التواريخ المعروضة قبل الآن تابعة لساعة هذا الجهاز، وتتحدث عند فتح الصفحة مرة أخرى.",
       "ok": "حسناً"
     }
+  },
+  "sales": {
+    "records": {
+      "subtitle": "{{business}} · كل المبيعات",
+      "search": "بحث",
+      "placeholder": "ابحث بالرقم أو العميل",
+      "kinds": {
+        "invoices": "الفواتير",
+        "orders": "الطلبات",
+        "quotes": "عروض الأسعار"
+      },
+      "draft": "مسودة",
+      "return": "مرتجع",
+      "confirmed": "مؤكدة",
+      "paid": "مدفوعة",
+      "partlyPaid": "مدفوع جزئياً",
+      "unpaid": "غير مدفوعة",
+      "goodsDelivered": "تم تسليم البضائع",
+      "invoiceOnly": "فاتورة فقط",
+      "due": "المتبقي {{amount}}",
+      "delivered": "تم التسليم",
+      "partlyDelivered": "سُلّم جزئياً",
+      "deliveryPending": "التسليم قيد الانتظار",
+      "invoiced": "صدرت الفاتورة",
+      "partlyInvoiced": "فوترة جزئية",
+      "notInvoiced": "لم تصدر الفاتورة",
+      "draftOrder": "مسودة طلب",
+      "confirmedOrder": "الطلب مؤكد · {{items}}",
+      "items": {
+        "zero": "لا أصناف",
+        "one": "صنف واحد",
+        "two": "صنفان",
+        "few": "{{count}} أصناف",
+        "many": "{{count}} صنفاً",
+        "other": "{{count}} صنف"
+      },
+      "quoteStatus": {
+        "open": "مفتوح",
+        "ordered": "تم الطلب",
+        "lost": "مفقود",
+        "expired": "منتهي"
+      },
+      "validUntil": "صالح حتى {{date}}",
+      "headers": {
+        "document": "المستند",
+        "customer": "العميل",
+        "status": "الحالة",
+        "amount": "المبلغ"
+      },
+      "quickSale": "بيع سريع",
+      "empty": {
+        "invoices": "لا توجد فواتير بعد.",
+        "orders": "لا توجد طلبات بيع بعد.",
+        "quotes": "لا توجد عروض أسعار بعد."
+      },
+      "noResults": "لا شيء يطابق هذا البحث.",
+      "forbidden": "دورك في ERPNext لا يتيح رؤية هذه السجلات.",
+      "loading": "جارٍ تحميل المبيعات…",
+      "error": {
+        "title": "تعذّر تحميل المبيعات",
+        "message": "تحقق من الاتصال وحاول مرة أخرى."
+      },
+      "retry": "المحاولة مجدداً",
+      "noAccess": {
+        "title": "المبيعات لأدوار البيع",
+        "message": "دورك لا يشمل البيع. اسأل المالك إن احتجت ذلك."
+      },
+      "newest": "تظهر أحدث {{count}} سجلاً؛ ابحث للعثور على الأقدم.",
+      "heading": "المبيعات",
+      "title": "{{name}} · {{customer}}"
+    }
   }
 }

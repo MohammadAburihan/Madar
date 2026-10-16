@@ -32,6 +32,15 @@ _Last updated: 16 Oct 2026_
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
+## Sales, Contacts and Settings (in progress)
+
+- **Sales S1 — Sales records** (this PR): the Sales page lists invoices, orders and quotations (tabs), newest 30,
+  searchable by number or customer, worded as on the mock ("Confirmed · Partially paid / Goods delivered · ILS 200.00
+  due"); desktop shows them as a table. Invoices open their page; orders and quotes open with S2/S3. A role ERPNext
+  doesn't let read a list sees that, per tab. e2e: a walk-in sale found on Sales as paid and opened; a sale on account
+  shown unpaid with the amount due, then paid after its collection; orders and quotes tabs; the list in Arabic.
+- Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
+
 ## End-to-end happy paths: merged (#26)
 
 `npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site, through its own dev server on :4321

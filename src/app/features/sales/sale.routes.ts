@@ -62,3 +62,9 @@ export const invoiceRoute: Route = {
   loadComponent: () =>
     import('./containers/invoice-detail.container').then((m) => m.InvoiceDetailContainer),
 };
+
+export const salesRecordsRoute: Route = {
+  path: 'sales',
+  pathMatch: 'full',
+  loadComponent: () => import('./containers/sales.container').then((m) => m.SalesContainer),
+};
