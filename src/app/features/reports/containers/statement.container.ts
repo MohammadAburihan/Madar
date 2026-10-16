@@ -18,7 +18,7 @@ import {
 import { formatMoney } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
-import { NATIVE_PLATFORM } from '../../../core/platform/native-platform';
+import { FileExportService } from '../../../core/platform/file-export.service';
 import {
   SupplierDirectoryService,
   SupplierOption,
@@ -113,7 +113,7 @@ interface Party {
     <app-back-link [label]="txt.back" (back)="router.navigate(['/reports'])" />
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="subtitle()">
-        @if (statement() && canExport) {
+        @if (statement()) {
           <div class="actions">
             <button type="button" class="md-btn" [disabled]="preparing()" (click)="share()">
               {{ txt.share }}
@@ -267,9 +267,7 @@ interface Party {
             [message]="txt.pdfFailed.message"
           />
         }
-        @if (!canExport) {
-          <p class="muted">{{ txt.exportOnWeb }}</p>
-        } @else if (!desktop()) {
+        @if (!desktop()) {
           <button
             type="button"
             class="md-btn md-btn--primary"
@@ -306,8 +304,7 @@ export class StatementContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
-  /** The phone apps can't save or share files until the native share and file plugins are added. */
-  protected readonly canExport = inject(NATIVE_PLATFORM) === 'web';
+  private readonly files = inject(FileExportService);
   private readonly today = signal<Date | null>(null);
   protected readonly period = createPeriod(this.today, this.i18n.tr, this.i18n.language);
   protected readonly party = signal<Party | null>(null);
@@ -365,7 +362,6 @@ export class StatementContainer {
       shareMobile: t('statements.shareMobile'),
       download: t('statements.download'),
       preparing: t('statements.preparing'),
-      exportOnWeb: t('statements.exportOnWeb'),
       note: t('statements.note'),
       loading: t('statements.loading'),
       retry: t('reports.retry'),
@@ -497,38 +493,36 @@ export class StatementContainer {
   }
 
   protected async download(): Promise<void> {
-    const file = await this.pdfFile();
-    if (file) {
-      saveFile(file);
-    }
+    await this.export((file) => this.files.save(file));
   }
 
   protected async share(): Promise<void> {
-    const file = await this.pdfFile();
-    if (!file) {
+    await this.export((file) => this.files.share(file));
+  }
+
+  private async export(handOver: (file: File) => Promise<void>): Promise<void> {
+    // Busy until the share sheet has the file, so a second tap can't open another one.
+    if (this.preparing()) {
       return;
     }
-    // The device's share sheet where the browser offers one for files; a download otherwise.
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: file.name });
-      } catch (error) {
-        // The tap's permission may have lapsed while the PDF rendered; download instead. Cancelling is silent.
-        if ((error as Error)?.name !== 'AbortError') {
-          saveFile(file);
-        }
+    this.preparing.set(true);
+    try {
+      const file = await this.pdfFile();
+      if (file) {
+        await handOver(file);
       }
-    } else {
-      saveFile(file);
+    } catch {
+      this.pdfFailed.set(true);
+    } finally {
+      this.preparing.set(false);
     }
   }
 
   private async pdfFile(): Promise<File | null> {
     const statement = this.view() ? this.statement() : null;
-    if (!statement || this.preparing()) {
+    if (!statement) {
       return null;
     }
-    this.preparing.set(true);
     this.pdfFailed.set(false);
     try {
       const tr = this.i18n.tr();
@@ -553,8 +547,6 @@ export class StatementContainer {
     } catch {
       this.pdfFailed.set(true);
       return null;
-    } finally {
-      this.preparing.set(false);
     }
   }
 
@@ -617,13 +609,4 @@ export class StatementContainer {
       }
     }
   }
-}
-
-function saveFile(file: File): void {
-  const url = URL.createObjectURL(file);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = file.name;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
