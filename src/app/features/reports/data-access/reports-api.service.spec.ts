@@ -27,14 +27,46 @@ describe('ReportsApiService', () => {
           account_type: 'Receivable',
         },
       ],
-      'GL Entry': () => [
-        { account: 'Sales - RN', 'SUM(`debit`)': 50, 'SUM(`credit`)': 18500 },
-        { account: 'Cost of Goods Sold - RN', 'SUM(`debit`)': 9870, 'SUM(`credit`)': 0 },
-        { account: 'Rent - RN', 'SUM(`debit`)': 2310, 'SUM(`credit`)': 0 },
-        { account: 'Cash - RN', 'SUM(`debit`)': 8450, 'SUM(`credit`)': 2310 },
-        { account: 'Bank - RN', 'SUM(`debit`)': 7470, 'SUM(`credit`)': 9330 },
-        { account: 'Debtors - RN', 'SUM(`debit`)': 18450, 'SUM(`credit`)': 15920 },
-      ],
+      'GL Entry': (query) =>
+        query.groupBy !== 'account'
+          ? [
+              {
+                voucher_type: 'Payment Entry',
+                voucher_no: 'PAY-1',
+                account: 'Cash - RN',
+                'SUM(`debit`)': 8450,
+                'SUM(`credit`)': 0,
+              },
+              {
+                voucher_type: 'Journal Entry',
+                voucher_no: 'JV-1',
+                account: 'Cash - RN',
+                'SUM(`debit`)': 0,
+                'SUM(`credit`)': 2310,
+              },
+              {
+                voucher_type: 'Payment Entry',
+                voucher_no: 'PAY-2',
+                account: 'Bank - RN',
+                'SUM(`debit`)': 7470,
+                'SUM(`credit`)': 0,
+              },
+              {
+                voucher_type: 'Payment Entry',
+                voucher_no: 'PAY-3',
+                account: 'Bank - RN',
+                'SUM(`debit`)': 0,
+                'SUM(`credit`)': 9330,
+              },
+            ]
+          : [
+              { account: 'Sales - RN', 'SUM(`debit`)': 50, 'SUM(`credit`)': 18500 },
+              { account: 'Cost of Goods Sold - RN', 'SUM(`debit`)': 9870, 'SUM(`credit`)': 0 },
+              { account: 'Rent - RN', 'SUM(`debit`)': 2310, 'SUM(`credit`)': 0 },
+              { account: 'Cash - RN', 'SUM(`debit`)': 8450, 'SUM(`credit`)': 2310 },
+              { account: 'Bank - RN', 'SUM(`debit`)': 7470, 'SUM(`credit`)': 9330 },
+              { account: 'Debtors - RN', 'SUM(`debit`)': 18450, 'SUM(`credit`)': 15920 },
+            ],
     });
     const figures = await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-14' });
     expect(figures).toEqual({
@@ -83,38 +115,43 @@ describe('ReportsApiService', () => {
     expect(listCalls.filter((c) => c.doctype === 'Account').length).toBeGreaterThan(1);
   });
 
-  it('leaves transfers between own accounts out of money in and out', async () => {
+  it('leaves transfers between own accounts out of money in and out, however they were posted', async () => {
     fakeErpnext({
       Account: () => [
         { name: 'Cash - RN', account_name: 'Main cash', root_type: 'Asset', account_type: 'Cash' },
         { name: 'Bank - RN', account_name: 'Main bank', root_type: 'Asset', account_type: 'Bank' },
       ],
-      'GL Entry': () => [
-        { account: 'Cash - RN', 'SUM(`debit`)': 10500, 'SUM(`credit`)': 0 },
-        { account: 'Bank - RN', 'SUM(`debit`)': 0, 'SUM(`credit`)': 10000 },
-      ],
-      'Payment Entry': () => [
-        {
-          paid_from: 'Bank - RN',
-          paid_to: 'Cash - RN',
-          base_paid_amount: 10000,
-          base_received_amount: 10000,
-        },
-      ],
+      'GL Entry': (query) =>
+        query.groupBy === 'account'
+          ? []
+          : [
+              // A contra entry: 10,000 from the bank into cash.
+              {
+                voucher_type: 'Journal Entry',
+                voucher_no: 'JV-9',
+                account: 'Cash - RN',
+                'SUM(`debit`)': 10000,
+                'SUM(`credit`)': 0,
+              },
+              {
+                voucher_type: 'Journal Entry',
+                voucher_no: 'JV-9',
+                account: 'Bank - RN',
+                'SUM(`debit`)': 0,
+                'SUM(`credit`)': 10000,
+              },
+              // A customer paying 500 in cash.
+              {
+                voucher_type: 'Payment Entry',
+                voucher_no: 'PAY-9',
+                account: 'Cash - RN',
+                'SUM(`debit`)': 500,
+                'SUM(`credit`)': 0,
+              },
+            ],
     });
     const figures = await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' });
     expect([figures.moneyIn, figures.moneyOut]).toEqual([500, 0]);
-  });
-
-  it("fails rather than count transfers twice when payments can't be read for a reason other than permission", async () => {
-    fakeErpnext({
-      Account: () => [],
-      'GL Entry': () => [],
-      'Payment Entry': () => throwError(() => new HttpErrorResponse({ status: 500 })),
-    });
-    await expect(
-      api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' }),
-    ).rejects.toBeTruthy();
   });
 
   it('shares one chart reread between parallel months', async () => {

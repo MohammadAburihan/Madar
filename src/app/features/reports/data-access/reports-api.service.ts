@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
-import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { AccountFlow, DateRange, PeriodFigures } from './report.models';
 
 interface AccountRow {
@@ -19,64 +18,68 @@ export class ReportsApiService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly accountCache = new Map<string, Promise<AccountRow[]>>();
 
-  async figures(company: string, range: DateRange): Promise<PeriodFigures> {
+  async figures(company: string, range: DateRange, reread = false): Promise<PeriodFigures> {
     const chart = this.accounts(company);
-    const [cached, rows, transfers] = await Promise.all([
-      chart,
-      // Debits and credits are in the company currency. Opening entries and year-end closing are not activity.
+    const accounts = await chart;
+    const payment = accounts.filter((a) => a.account_type === 'Cash' || a.account_type === 'Bank');
+    // Debits and credits are in the company currency. Opening entries and year-end closing are not activity.
+    const activity: Filter[] = [
+      ['company', '=', company],
+      ['is_cancelled', '=', 0],
+      ['is_opening', '!=', 'Yes'],
+      ['voucher_type', '!=', 'Period Closing Voucher'],
+      ['posting_date', 'between', [range.from, range.to]],
+    ];
+    const [rows, vouchers] = await Promise.all([
       firstValueFrom(
         this.erpnext.list<Record<string, number | string>>('GL Entry', {
           fields: ['account', { SUM: 'debit' }, { SUM: 'credit' }],
-          filters: [
-            ['company', '=', company],
-            ['is_cancelled', '=', 0],
-            ['is_opening', '!=', 'Yes'],
-            ['voucher_type', '!=', 'Period Closing Voucher'],
-            ['posting_date', 'between', [range.from, range.to]],
-          ],
+          filters: activity,
           groupBy: 'account',
           limit: 0,
         }),
       ),
-      this.internalTransfers(company, range),
+      payment.length
+        ? firstValueFrom(
+            this.erpnext.list<Record<string, number | string>>('GL Entry', {
+              fields: [
+                'voucher_type',
+                'voucher_no',
+                'account',
+                { SUM: 'debit' },
+                { SUM: 'credit' },
+              ],
+              filters: [...activity, ['account', 'in', payment.map((a) => a.name)] as Filter],
+              groupBy: 'voucher_type, voucher_no, account',
+              limit: 0,
+            }),
+          )
+        : Promise.resolve([]),
     ]);
-    let accounts = cached;
-    if (rows.some((r) => !accounts.some((a) => a.name === r['account']))) {
+    if (!reread && rows.some((r) => !accounts.some((a) => a.name === r['account']))) {
       // An account added since the chart was read: read it again rather than leave its figures out.
-      accounts = await this.rereadAccounts(company, chart);
+      await this.rereadAccounts(company, chart);
+      return this.figures(company, range, true);
     }
     const byName = new Map(accounts.map((a) => [a.name, a]));
     let income = 0;
     let costOfGoods = 0;
     let expenses = 0;
-    const flows: AccountFlow[] = [];
     for (const row of rows) {
       const account = byName.get(String(row['account']));
-      if (!account) {
-        continue;
-      }
       const debit = Number(row['SUM(`debit`)'] ?? 0);
       const credit = Number(row['SUM(`credit`)'] ?? 0);
-      if (account.root_type === 'Income') {
+      if (account?.root_type === 'Income') {
         income += credit - debit;
-      } else if (account.root_type === 'Expense') {
+      } else if (account?.root_type === 'Expense') {
         if (account.account_type === 'Cost of Goods Sold') {
           costOfGoods += debit - credit;
         } else {
           expenses += debit - credit;
         }
-      } else if (account.account_type === 'Cash' || account.account_type === 'Bank') {
-        // Moving money between the business's own accounts brings nothing in and sends nothing out.
-        const moved = transfers.get(account.name) ?? { in: 0, out: 0 };
-        flows.push({
-          account: account.name,
-          name: account.account_name,
-          moneyIn: round(debit - moved.in),
-          moneyOut: round(credit - moved.out),
-        });
       }
     }
-    flows.sort((a, b) => a.name.localeCompare(b.name));
+    const flows = paymentFlows(vouchers, byName);
     return {
       ...range,
       income: round(income),
@@ -89,45 +92,9 @@ export class ReportsApiService {
     };
   }
 
-  /** What internal transfers moved into and out of each account in the period; none for roles that can't read them. */
-  private async internalTransfers(
-    company: string,
-    range: DateRange,
-  ): Promise<Map<string, { in: number; out: number }>> {
-    const rows = await firstValueFrom(
-      this.erpnext.list<{
-        paid_from: string;
-        paid_to: string;
-        base_paid_amount: number;
-        base_received_amount: number;
-      }>('Payment Entry', {
-        fields: ['paid_from', 'paid_to', 'base_paid_amount', 'base_received_amount'],
-        filters: [
-          ['company', '=', company],
-          ['docstatus', '=', 1],
-          ['payment_type', '=', 'Internal Transfer'],
-          ['posting_date', 'between', [range.from, range.to]],
-        ],
-        limit: 0,
-      }),
-      // Auditors may not read payments: their totals then include transfers. Other failures fail the load.
-    ).catch((error: unknown) => {
-      if (ErpnextError.from(error).kind === 'forbidden') {
-        return [];
-      }
-      throw error;
-    });
-    const moved = new Map<string, { in: number; out: number }>();
-    const add = (account: string, side: 'in' | 'out', amount: number) => {
-      const entry = moved.get(account) ?? { in: 0, out: 0 };
-      entry[side] += amount;
-      moved.set(account, entry);
-    };
-    for (const row of rows) {
-      add(row.paid_from, 'out', row.base_paid_amount);
-      add(row.paid_to, 'in', row.base_received_amount);
-    }
-    return moved;
+  /** Starts a report load from a fresh chart of accounts, so changed account types count from now on. */
+  forgetChart(company: string): void {
+    this.accountCache.delete(company);
   }
 
   /** The company's ledger accounts, read once per company and again when the ledger names one it lacks. */
@@ -168,4 +135,45 @@ export class ReportsApiService {
       }
     });
   }
+}
+
+/**
+ * Money in and out per payment account. Within one voucher, what moves from one of the business's cash or bank
+ * accounts to another (a transfer, a contra entry) nets out: only the rest came in or went out.
+ */
+function paymentFlows(
+  rows: readonly Record<string, number | string>[],
+  accounts: ReadonlyMap<string, AccountRow>,
+): AccountFlow[] {
+  const vouchers = new Map<string, { account: string; debit: number; credit: number }[]>();
+  for (const row of rows) {
+    const key = `${row['voucher_type']}|${row['voucher_no']}`;
+    const lines = vouchers.get(key) ?? [];
+    lines.push({
+      account: String(row['account']),
+      debit: Number(row['SUM(`debit`)'] ?? 0),
+      credit: Number(row['SUM(`credit`)'] ?? 0),
+    });
+    vouchers.set(key, lines);
+  }
+  const flows = new Map<string, { moneyIn: number; moneyOut: number }>();
+  for (const lines of vouchers.values()) {
+    const debits = lines.reduce((sum, l) => sum + l.debit, 0);
+    const credits = lines.reduce((sum, l) => sum + l.credit, 0);
+    const moved = Math.min(debits, credits);
+    for (const line of lines) {
+      const flow = flows.get(line.account) ?? { moneyIn: 0, moneyOut: 0 };
+      flow.moneyIn += debits ? (line.debit * (debits - moved)) / debits : 0;
+      flow.moneyOut += credits ? (line.credit * (credits - moved)) / credits : 0;
+      flows.set(line.account, flow);
+    }
+  }
+  return [...flows.entries()]
+    .map(([account, flow]) => ({
+      account,
+      name: accounts.get(account)?.account_name ?? account,
+      moneyIn: round(flow.moneyIn),
+      moneyOut: round(flow.moneyOut),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -39,6 +39,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   the custom dates are out of order; internal transfers between own accounts are left out of money in and out.
   Review pass 2 (1 medium, 2 low) fixed: a failed transfers read fails the load (only a forbidden one falls back);
   parallel months share one chart reread and a late failure can't evict a newer chart; Retry rereads the site's today.
+  Review pass 3 (1 medium, 1 low) fixed: money in and out net out every movement between own cash and bank accounts
+  within a voucher (contra journal entries as well as internal-transfer payments), and each report load starts from a
+  fresh chart of accounts. Deferred (low): an exchange-rate revaluation of a foreign-currency bank account counts as
+  money in or out.
 - **5b — Customer and supplier statements**, with Share and Download PDF.
 
 ## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)

@@ -161,6 +161,7 @@ export class ProfitMonthsContainer {
       if (!business) {
         throw new Error('No business');
       }
+      this.api.forgetChart(business.name);
       const months = await Promise.all(ranges.map((r) => this.api.figures(business.name, r)));
       if (run === this.run) {
         this.months.set(months);

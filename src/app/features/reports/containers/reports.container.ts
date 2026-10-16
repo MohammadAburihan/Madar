@@ -341,6 +341,7 @@ export class ReportsContainer {
       if (!business) {
         throw new Error('No business');
       }
+      this.api.forgetChart(business.name);
       const months = desktop ? monthsOf(range) : lastThreeMonths(range);
       const [figures, ...monthly] = await Promise.all([
         this.api.figures(business.name, range),
