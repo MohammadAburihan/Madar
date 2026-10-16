@@ -50,6 +50,15 @@ export function validRange(range: DateRange | null): range is DateRange {
 
 /** The calendar months a range touches, each clipped to the range; the most recent MONTH_LIMIT. */
 export function monthsOf(range: DateRange): DateRange[] {
+  return allMonthsOf(range).slice(-MONTH_LIMIT);
+}
+
+/** True when the range has more months than the by-month view lists. */
+export function monthsCapped(range: DateRange): boolean {
+  return allMonthsOf(range).length > MONTH_LIMIT;
+}
+
+function allMonthsOf(range: DateRange): DateRange[] {
   const months: DateRange[] = [];
   const end = parse(range.to);
   let cursor = parse(range.from);
@@ -62,7 +71,7 @@ export function monthsOf(range: DateRange): DateRange[] {
     });
     cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
   }
-  return months.slice(-MONTH_LIMIT);
+  return months;
 }
 
 /** The three calendar months ending with the period's last month, for the phone's month bars. */
@@ -209,11 +218,12 @@ export function metrics(figures: PeriodFigures, currency: string, tr: Translator
 /** Month · Sales income · Cost of goods sold · Expenses · Profit · Money in · Money out, then the total. */
 export function monthRows(
   months: readonly PeriodFigures[],
+  period: PeriodFigures,
   today: Date,
   language: Language,
   tr: Translator,
 ): TableRow[] {
-  const cells = (f: Omit<PeriodFigures, 'from' | 'to' | 'accounts'>) => [
+  const cells = (f: PeriodFigures) => [
     plain(f.income),
     plain(f.costOfGoods),
     plain(f.expenses),
@@ -221,27 +231,13 @@ export function monthRows(
     plain(f.moneyIn),
     plain(f.moneyOut),
   ];
-  const sum = (pick: (f: PeriodFigures) => number) =>
-    Math.round(months.reduce((total, f) => total + pick(f), 0) * 100) / 100;
   return [
     ...months.map((m) => ({
       id: m.from,
       cells: [monthLabel(m, today, language, tr), ...cells(m)],
     })),
-    {
-      id: 'total',
-      cells: [
-        tr.t('reports.total'),
-        ...cells({
-          income: sum((f) => f.income),
-          costOfGoods: sum((f) => f.costOfGoods),
-          expenses: sum((f) => f.expenses),
-          profit: sum((f) => f.profit),
-          moneyIn: sum((f) => f.moneyIn),
-          moneyOut: sum((f) => f.moneyOut),
-        }),
-      ],
-    },
+    // The whole period's figures, so the total matches the cards above even when months are left out.
+    { id: 'total', cells: [tr.t('reports.total'), ...cells(period)] },
   ];
 }
 

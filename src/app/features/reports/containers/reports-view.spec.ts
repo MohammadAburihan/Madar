@@ -64,6 +64,8 @@ describe('reports view', () => {
       to: '2026-08-31',
     });
     expect(view.monthsOf({ from: '2024-01-01', to: '2026-10-14' })).toHaveLength(view.MONTH_LIMIT);
+    expect(view.monthsCapped({ from: '2024-01-01', to: '2026-10-14' })).toBe(true);
+    expect(view.monthsCapped({ from: '2026-01-01', to: '2026-10-14' })).toBe(false);
   });
 
   it('labels periods and months like the mocks', () => {
@@ -118,7 +120,8 @@ describe('reports view', () => {
       hint: 'Income − cost of goods sold − expenses',
       tint: true,
     });
-    const rows = visible(view.monthRows([AUG, SEP, OCT], TODAY, 'en', en));
+    const total = month('2026-08-01', '2026-10-14', 63900, 35240, 8200, 58320, 41640);
+    const rows = visible(view.monthRows([AUG, SEP, OCT], total, TODAY, 'en', en));
     expect(rows[0].cells).toEqual([
       'August 2026',
       '21,300.00',

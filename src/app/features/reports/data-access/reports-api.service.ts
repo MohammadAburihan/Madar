@@ -19,7 +19,7 @@ export class ReportsApiService {
   private readonly accountCache = new Map<string, Promise<AccountRow[]>>();
 
   async figures(company: string, range: DateRange): Promise<PeriodFigures> {
-    const [accounts, rows] = await Promise.all([
+    const [cached, rows, transfers] = await Promise.all([
       this.accounts(company),
       // Debits and credits are in the company currency. Opening entries and year-end closing are not activity.
       firstValueFrom(
@@ -36,7 +36,14 @@ export class ReportsApiService {
           limit: 0,
         }),
       ),
+      this.internalTransfers(company, range),
     ]);
+    let accounts = cached;
+    if (rows.some((r) => !accounts.some((a) => a.name === r['account']))) {
+      // An account added since the chart was read: read it again rather than leave its figures out.
+      this.accountCache.delete(company);
+      accounts = await this.accounts(company);
+    }
     const byName = new Map(accounts.map((a) => [a.name, a]));
     let income = 0;
     let costOfGoods = 0;
@@ -58,11 +65,13 @@ export class ReportsApiService {
           expenses += debit - credit;
         }
       } else if (account.account_type === 'Cash' || account.account_type === 'Bank') {
+        // Moving money between the business's own accounts brings nothing in and sends nothing out.
+        const moved = transfers.get(account.name) ?? { in: 0, out: 0 };
         flows.push({
           account: account.name,
           name: account.account_name,
-          moneyIn: round(debit),
-          moneyOut: round(credit),
+          moneyIn: round(debit - moved.in),
+          moneyOut: round(credit - moved.out),
         });
       }
     }
@@ -79,7 +88,42 @@ export class ReportsApiService {
     };
   }
 
-  /** The company's ledger accounts, read once per company: they change rarely. */
+  /** What internal transfers moved into and out of each account in the period; none for roles that can't read them. */
+  private async internalTransfers(
+    company: string,
+    range: DateRange,
+  ): Promise<Map<string, { in: number; out: number }>> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        paid_from: string;
+        paid_to: string;
+        base_paid_amount: number;
+        base_received_amount: number;
+      }>('Payment Entry', {
+        fields: ['paid_from', 'paid_to', 'base_paid_amount', 'base_received_amount'],
+        filters: [
+          ['company', '=', company],
+          ['docstatus', '=', 1],
+          ['payment_type', '=', 'Internal Transfer'],
+          ['posting_date', 'between', [range.from, range.to]],
+        ],
+        limit: 0,
+      }),
+    ).catch(() => []);
+    const moved = new Map<string, { in: number; out: number }>();
+    const add = (account: string, side: 'in' | 'out', amount: number) => {
+      const entry = moved.get(account) ?? { in: 0, out: 0 };
+      entry[side] += amount;
+      moved.set(account, entry);
+    };
+    for (const row of rows) {
+      add(row.paid_from, 'out', row.base_paid_amount);
+      add(row.paid_to, 'in', row.base_received_amount);
+    }
+    return moved;
+  }
+
+  /** The company's ledger accounts, read once per company and again when the ledger names one it lacks. */
   private accounts(company: string): Promise<AccountRow[]> {
     let cached = this.accountCache.get(company);
     if (!cached) {

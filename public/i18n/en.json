@@ -1833,6 +1833,7 @@
       "note": "Profit is sales income minus the cost of goods sold and expenses, as posted in ERPNext."
     },
     "back": "Back",
-    "costs": "Cost of goods sold and expenses"
+    "costs": "Cost of goods sold and expenses",
+    "capped": "The table lists the last 12 months; the total covers the whole period."
   }
 }

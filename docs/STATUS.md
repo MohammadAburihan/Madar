@@ -32,8 +32,11 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   and out per cash and bank account for this month, last month, this year or custom dates, all from the posted general
   ledger in the company currency (opening entries and year-end closing left out). The phone shows the mock's cards,
   month bars and a profit-by-month page; tablet and desktop show four figures and a by-month table with a total. Owner
-  only, and only with a role that can read the ledger (Accounts User, Accounts Manager or Auditor). Money in and out
-  includes transfers between the business's own accounts. Expenses include stock adjustments, as ERPNext's P&L does.
+  only, and only with a role that can read the ledger (Accounts User, Accounts Manager or Auditor). Expenses include
+  stock adjustments, as ERPNext's P&L does.
+  Review pass 1 (2 medium, 2 low) fixed: an account added since the chart was read is read again, not left out; the
+  by-month total uses the whole period's figures and says when only the last 12 months are listed; figures hide while
+  the custom dates are out of order; internal transfers between own accounts are left out of money in and out.
 - **5b — Customer and supplier statements**, with Share and Download PDF.
 
 ## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)

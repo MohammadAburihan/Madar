@@ -32,6 +32,7 @@ import {
   metrics,
   money,
   monthRows,
+  monthsCapped,
   monthsOf,
   moneyView,
   periodOptions,
@@ -163,6 +164,9 @@ import {
             [rows]="v.monthRows"
             [ltrColumns]="[1, 2, 3, 4, 5, 6]"
           />
+          @if (v.capped) {
+            <p class="muted">{{ txt.capped }}</p>
+          }
         } @else {
           <app-profit-card
             [label]="txt.profit"
@@ -179,7 +183,7 @@ import {
           />
         }
         <p class="muted">{{ txt.note }}</p>
-      } @else {
+      } @else if (!rangeError()) {
         <p class="muted" role="status">{{ txt.loading }}</p>
       }
     }
@@ -250,6 +254,7 @@ export class ReportsContainer {
         link: t('reports.payments'),
       },
       note: t('reports.note'),
+      capped: t('reports.capped'),
       loading: t('reports.loading'),
       retry: t('reports.retry'),
       noAccess: { title: t('reports.noAccess.title'), message: t('reports.noAccess.message') },
@@ -262,7 +267,8 @@ export class ReportsContainer {
 
   protected readonly view = computed(() => {
     const figures = this.figures();
-    if (!figures || this.state() !== 'ready') {
+    // While the custom dates are out of order the last figures no longer match them.
+    if (!figures || this.state() !== 'ready' || this.rangeError()) {
       return null;
     }
     const tr = this.i18n.tr();
@@ -274,7 +280,8 @@ export class ReportsContainer {
       profitRows: profitRows(figures, currency, tr),
       money: moneyView(figures, this.months(), currency, language),
       metrics: metrics(figures, currency, tr),
-      monthRows: monthRows(this.months(), today, language, tr),
+      monthRows: monthRows(this.months(), figures, today, language, tr),
+      capped: monthsCapped(this.range()),
     };
   });
 

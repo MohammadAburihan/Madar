@@ -62,4 +62,45 @@ describe('ReportsApiService', () => {
     await api().figures('Rehan Nursery', { from: '2026-09-01', to: '2026-09-30' });
     expect(listCalls.filter((c) => c.doctype === 'Account')).toHaveLength(1);
   });
+
+  it('reads the chart again when the ledger names an account it lacks', async () => {
+    let accounts = [
+      { name: 'Sales - RN', account_name: 'Sales', root_type: 'Income', account_type: null },
+    ];
+    const { listCalls } = fakeErpnext({
+      Account: () => accounts,
+      'GL Entry': () => [{ account: 'Services - RN', 'SUM(`debit`)': 0, 'SUM(`credit`)': 500 }],
+    });
+    await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' });
+    accounts = [
+      ...accounts,
+      { name: 'Services - RN', account_name: 'Services', root_type: 'Income', account_type: null },
+    ];
+    const figures = await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' });
+    expect(figures.income).toBe(500);
+    expect(listCalls.filter((c) => c.doctype === 'Account').length).toBeGreaterThan(1);
+  });
+
+  it('leaves transfers between own accounts out of money in and out', async () => {
+    fakeErpnext({
+      Account: () => [
+        { name: 'Cash - RN', account_name: 'Main cash', root_type: 'Asset', account_type: 'Cash' },
+        { name: 'Bank - RN', account_name: 'Main bank', root_type: 'Asset', account_type: 'Bank' },
+      ],
+      'GL Entry': () => [
+        { account: 'Cash - RN', 'SUM(`debit`)': 10500, 'SUM(`credit`)': 0 },
+        { account: 'Bank - RN', 'SUM(`debit`)': 0, 'SUM(`credit`)': 10000 },
+      ],
+      'Payment Entry': () => [
+        {
+          paid_from: 'Bank - RN',
+          paid_to: 'Cash - RN',
+          base_paid_amount: 10000,
+          base_received_amount: 10000,
+        },
+      ],
+    });
+    const figures = await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' });
+    expect([figures.moneyIn, figures.moneyOut]).toEqual([500, 0]);
+  });
 });
