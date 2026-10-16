@@ -17,9 +17,13 @@ clean" never ends the loop on its own. Stop when further passes stop finding thi
    that touch the area you're changing, and build so those findings can't recur. Follow CLAUDE.md
    (container/presenter, specs for every presenter, en + ar, checked against the mocks). Check it end to end on the test site
    (`scripts/dev-test-site.sh`), never on `frontend`.
-2. **Open the PR** against `development`. Run `npm run format:check` and `npm test` before every push.
-3. **Review** with `/code-review <PR> high` (it runs in the background; wait for its notification).
-4. **Triage every finding** before fixing:
+2. **Add e2e tests** in `e2e/` for every happy path the feature adds or changes, at the widths it supports (`@phone`,
+   `@desktop`), with at least one Arabic path when it has new screens. Assert what the screen shows, not only that it
+   loads: figures and names that match what was entered or what ERPNext holds. Keep runs repeatable (unique names, no
+   stock drain). Run the whole suite (`npm run e2e`) until it passes, and fix the app when a test exposes a bug.
+3. **Open the PR** against `development`. Run `npm run format:check`, `npm test` and `npm run e2e` before every push.
+4. **Review** with `/code-review <PR> high` (it runs in the background; wait for its notification).
+5. **Triage every finding** before fixing:
    - Check it against the code and, for ERPNext behaviour, against the local v16 container. Drop the
      ones that don't hold up.
    - Rate each real one:
@@ -28,12 +32,12 @@ clean" never ends the loop on its own. Stop when further passes stop finding thi
      - **Medium:** a visible bug on a plausible path.
      - **Low:** an unlikely edge case or a brief cosmetic glitch.
      - **Nit:** style or wording.
-5. **Fix** high, medium, and cheap low findings, each with a test that fails without the fix. Commit, push,
+6. **Fix** high, medium, and cheap low findings, each with a test that fails without the fix. Commit, push,
    update `docs/STATUS.md`.
-6. **Save the lessons.** For every real finding that could recur in other code, save it to memory (below)
+7. **Save the lessons.** For every real finding that could recur in other code, save it to memory (below)
    before the next pass.
-7. **Decide** whether to run another pass (below). If yes, go to step 3. If not, merge.
-8. **Merge** once CI is green and the branch is up to date with `development`, with a merge commit
+8. **Decide** whether to run another pass (below). If yes, go to step 4. If not, merge.
+9. **Merge** once CI is green and the branch is up to date with `development`, with a merge commit
    (`gh pr merge <PR> --merge --delete-branch`), as earlier PRs were.
 
 ## Saving review lessons
@@ -82,3 +86,4 @@ Once a group of steps is merged, run one review of the whole `development` branc
 - Merging with a high finding fixed but not re-reviewed.
 - Leaving `docs/STATUS.md` describing work that's already committed.
 - Fixing a recurring kind of finding without saving the lesson, so the next feature repeats it.
+- Merging a feature without e2e tests for its happy paths, or with tests that only check a page loads.
