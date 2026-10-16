@@ -1899,5 +1899,104 @@
     "back": "رجوع",
     "costs": "تكلفة البضاعة المباعة والمصروفات",
     "capped": "يعرض الجدول آخر 12 شهراً؛ ويشمل الإجمالي الفترة كاملة."
+  },
+  "statements": {
+    "customerTitle": "كشف حساب العميل",
+    "supplierTitle": "كشف حساب المورد",
+    "customerCard": "الفواتير والدفعات والرصيد لعميل واحد",
+    "supplierCard": "فواتير المورد والدفعات والمبلغ المتبقي له",
+    "customerCardDesktop": "الفواتير والدفعات والرصيد الجاري لعميل واحد. مشاركة أو تنزيل بصيغة PDF.",
+    "supplierCardDesktop": "فواتير المورد والدفعات والمبلغ المتبقي له. مشاركة أو تنزيل بصيغة PDF.",
+    "chooseCustomerFirst": "اختر عميلاً أولاً",
+    "chooseSupplierFirst": "اختر مورداً أولاً",
+    "statements": "كشوف الحساب",
+    "customer": "العميل",
+    "supplier": "المورد",
+    "searchCustomer": "ابحث باسم العميل أو هاتفه",
+    "noCustomers": "لا يوجد عملاء مطابقون.",
+    "chooseSupplier": "اختر مورداً",
+    "change": "تغيير",
+    "partyOutstanding": "المتبقي {{amount}} · تغيير",
+    "opening": "الرصيد الافتتاحي",
+    "openingOn": "الرصيد الافتتاحي · {{date}}",
+    "invoiced": "قيمة الفواتير",
+    "paid": "المدفوع",
+    "outstanding": "المتبقي",
+    "outstandingOn": "المتبقي · {{date}}",
+    "onDate": "في {{date}}",
+    "invoiceCount": {
+      "customer": {
+        "zero": "لا فواتير بيع",
+        "one": "فاتورة بيع واحدة",
+        "two": "فاتورتا بيع",
+        "few": "{{count}} فواتير بيع",
+        "many": "{{count}} فاتورة بيع",
+        "other": "{{count}} فاتورة بيع"
+      },
+      "supplier": {
+        "zero": "لا فواتير مورد",
+        "one": "فاتورة مورد واحدة",
+        "two": "فاتورتا مورد",
+        "few": "{{count}} فواتير مورد",
+        "many": "{{count}} فاتورة مورد",
+        "other": "{{count}} فاتورة مورد"
+      }
+    },
+    "paymentCount": {
+      "zero": "لا دفعات",
+      "one": "دفعة واحدة",
+      "two": "دفعتان",
+      "few": "{{count}} دفعات",
+      "many": "{{count}} دفعة",
+      "other": "{{count}} دفعة"
+    },
+    "entries": "الحركات",
+    "entriesDesktop": "الحركات · المبالغ بعملة {{currency}}",
+    "noEntries": "لم تُصدر فواتير أو دفعات في هذه الفترة.",
+    "entry": {
+      "invoice": "فاتورة {{voucher}}",
+      "return": "مرتجع {{voucher}}",
+      "payment": "دفعة {{voucher}}",
+      "journal": "قيد يومية {{voucher}}"
+    },
+    "balanceAfter": "الرصيد {{balance}}",
+    "headers": {
+      "date": "التاريخ",
+      "document": "المستند",
+      "details": "التفاصيل",
+      "invoiced": "قيمة الفواتير",
+      "paid": "المدفوع",
+      "balance": "الرصيد"
+    },
+    "details": {
+      "salesInvoice": "فاتورة بيع",
+      "purchaseInvoice": "فاتورة مورد",
+      "return": "مرتجع",
+      "payment": "دفعة",
+      "journal": "قيد يومية",
+      "item": "{{qty}} {{item}}",
+      "itemMore": "{{qty}} {{item}} و{{more}} أخرى",
+      "for": "عن {{invoices}}"
+    },
+    "share": "مشاركة",
+    "shareMobile": "مشاركة بصيغة PDF",
+    "download": "تنزيل PDF",
+    "preparing": "جارٍ تجهيز PDF…",
+    "pdfFailed": {
+      "title": "تعذّر إنشاء ملف PDF",
+      "message": "تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "note": "تظهر الفواتير والدفعات المرحّلة فقط، ولا تشمل المسودات والسجلات الملغاة.",
+    "amountsIn": "المبالغ بعملة {{currency}}",
+    "fileName": "كشف حساب {{party}} من {{from}} إلى {{to}}",
+    "loadFailed": {
+      "title": "تعذّر تحميل كشف الحساب",
+      "message": "تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "partyMissing": {
+      "title": "لم يُعثر على العميل أو المورد",
+      "message": "اختر واحداً من القائمة."
+    },
+    "loading": "جارٍ تحميل كشف الحساب…"
   }
 }

@@ -23,6 +23,7 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { MetricCardsComponent } from '../components/metric-cards.component';
 import { MoneyCardComponent } from '../components/money-card.component';
 import { ProfitCardComponent } from '../components/profit-card.component';
+import { StatementLinksComponent } from '../components/statement-links.component';
 import { DateRange, PeriodFigures } from '../data-access/report.models';
 import { ReportsApiService } from '../data-access/reports-api.service';
 import {
@@ -54,6 +55,7 @@ import {
     PageHeadingComponent,
     ProfitCardComponent,
     SelectFieldComponent,
+    StatementLinksComponent,
     TextFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -182,6 +184,14 @@ import {
             (linkSelected)="router.navigate(['/money'])"
           />
         }
+        @if (!desktop()) {
+          <h2>{{ txt.statements }}</h2>
+        }
+        <app-statement-links
+          [links]="statementLinks()"
+          [row]="desktop()"
+          (opened)="router.navigate(['/reports', $event])"
+        />
         <p class="muted">{{ txt.note }}</p>
       } @else if (!rangeError()) {
         <p class="muted" role="status">{{ txt.loading }}</p>
@@ -255,6 +265,7 @@ export class ReportsContainer {
       },
       note: t('reports.note'),
       capped: t('reports.capped'),
+      statements: t('statements.statements'),
       loading: t('reports.loading'),
       retry: t('reports.retry'),
       noAccess: { title: t('reports.noAccess.title'), message: t('reports.noAccess.message') },
@@ -283,6 +294,21 @@ export class ReportsContainer {
       monthRows: monthRows(this.months(), figures, today, language, tr),
       capped: monthsCapped(this.range()),
     };
+  });
+
+  protected readonly statementLinks = computed(() => {
+    const { t } = this.i18n.tr();
+    const desktop = this.desktop();
+    return (['customer', 'supplier'] as const).map((id) => ({
+      id,
+      title: t(`statements.${id}Title`),
+      message: t(desktop ? `statements.${id}CardDesktop` : `statements.${id}Card`),
+      action: desktop
+        ? null
+        : t(
+            id === 'customer' ? 'statements.chooseCustomerFirst' : 'statements.chooseSupplierFirst',
+          ),
+    }));
   });
 
   constructor() {

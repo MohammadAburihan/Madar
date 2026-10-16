@@ -127,7 +127,7 @@ export interface MoneyCardText {
 
     .month {
       display: grid;
-      grid-template-columns: 36px 1fr;
+      grid-template-columns: 56px 1fr;
       gap: 8px;
       align-items: center;
     }

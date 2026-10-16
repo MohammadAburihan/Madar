@@ -98,4 +98,23 @@ describe('CustomerDirectoryService', () => {
       unpaidInvoices: 0,
     });
   });
+
+  it('finds one customer by exact id, or none', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [
+        {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          mobile_no: '059',
+          primary_address: 'Ramallah<br>',
+        },
+      ],
+    });
+    expect(await TestBed.inject(CustomerDirectoryService).byId('Lina Haddad')).toMatchObject({
+      id: 'Lina Haddad',
+      phone: '059',
+      city: 'Ramallah',
+    });
+    expect(listCalls[0].query.filters).toEqual([['name', '=', 'Lina Haddad']]);
+  });
 });

@@ -23,28 +23,21 @@ _Last updated: 16 Oct 2026_
 | #19 | **Site use and returns** (step 4b-3): materials at site, recording use, returning unused stock |
 | #20 | **Desktop project workspace** (step 4b-4): tasks table, movement ledger per item, site stock and records |
 | #21 | Step 4 batch review fixes |
+| #22 | **Reports overview** (step 5a): profit and money in and out by period and month |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
 ## In progress — step 5 of 6: Reports
 
-- **5a — Reports overview** (this PR): profit (sales income less cost of goods sold and other expenses) and money in
-  and out per cash and bank account for this month, last month, this year or custom dates, all from the posted general
-  ledger in the company currency (opening entries and year-end closing left out). The phone shows the mock's cards,
-  month bars and a profit-by-month page; tablet and desktop show four figures and a by-month table with a total. Owner
-  only, and only with a role that can read the ledger (Accounts User, Accounts Manager or Auditor). Expenses include
-  stock adjustments, as ERPNext's P&L does.
-  Review pass 1 (2 medium, 2 low) fixed: an account added since the chart was read is read again, not left out; the
-  by-month total uses the whole period's figures and says when only the last 12 months are listed; figures hide while
-  the custom dates are out of order; internal transfers between own accounts are left out of money in and out.
-  Review pass 2 (1 medium, 2 low) fixed: a failed transfers read fails the load (only a forbidden one falls back);
-  parallel months share one chart reread and a late failure can't evict a newer chart; Retry rereads the site's today.
-  Review pass 3 (1 medium, 1 low) fixed: money in and out net out every movement between own cash and bank accounts
-  within a voucher (contra journal entries as well as internal-transfer payments), and each report load starts from a
-  fresh chart of accounts. Review pass 4: 1 low, deferred with the other lows below.
-  Deferred (low): an exchange-rate revaluation of a foreign-currency bank account counts as money in or out; a hand-made
-  journal entry holding two unrelated payments (one into a bank, one out of cash) is netted as a transfer.
-- **5b — Customer and supplier statements**, with Share and Download PDF.
+- **5a — Reports overview**: merged (#22). Deferred (low): an exchange-rate revaluation of a foreign-currency bank
+  account counts as money in or out; a hand-made journal entry holding two unrelated payments is netted as a transfer.
+- **5b — Customer and supplier statements** (this PR): from the reports page, pick a customer (search) or supplier
+  (list) and a period; the statement shows the opening balance, each posted invoice, return, payment or journal entry
+  in posting order with its running balance, and the outstanding amount, from the party ledger in the company
+  currency. Invoices and supplier payments open their pages. Share and Download PDF render the statement on the ERPNext
+  server (`report_to_pdf`) in the reader's language. On the phone apps Share and Download need the native share and
+  file plugins (`@capacitor/share`, `@capacitor/filesystem`), not added yet: a dependency to decide. No mock exists for
+  the supplier statement; it follows the customer one.
 - **Known gap (all steps):** on phones the "More" tab is still a placeholder, so Money, Purchases, Contacts, Projects and
   Reports are reachable there only through links. To be built with the design's More page.
 

@@ -1835,5 +1835,92 @@
     "back": "Back",
     "costs": "Cost of goods sold and expenses",
     "capped": "The table lists the last 12 months; the total covers the whole period."
+  },
+  "statements": {
+    "customerTitle": "Customer statement",
+    "supplierTitle": "Supplier statement",
+    "customerCard": "Invoices, payments and balance for one customer",
+    "supplierCard": "Bills, payments and what you still owe a supplier",
+    "customerCardDesktop": "Invoices, payments and the running balance for one customer. Share or download as PDF.",
+    "supplierCardDesktop": "Bills, payments and what you still owe one supplier. Share or download as PDF.",
+    "chooseCustomerFirst": "Choose a customer first",
+    "chooseSupplierFirst": "Choose a supplier first",
+    "statements": "Statements",
+    "customer": "Customer",
+    "supplier": "Supplier",
+    "searchCustomer": "Search customer name or phone",
+    "noCustomers": "No customers match.",
+    "chooseSupplier": "Choose a supplier",
+    "change": "Change",
+    "partyOutstanding": "Outstanding {{amount}} · Change",
+    "opening": "Opening balance",
+    "openingOn": "Opening balance · {{date}}",
+    "invoiced": "Invoiced",
+    "paid": "Paid",
+    "outstanding": "Outstanding",
+    "outstandingOn": "Outstanding · {{date}}",
+    "onDate": "On {{date}}",
+    "invoiceCount": {
+      "customer": {
+        "one": "1 sales invoice",
+        "other": "{{count}} sales invoices"
+      },
+      "supplier": {
+        "one": "1 supplier invoice",
+        "other": "{{count}} supplier invoices"
+      }
+    },
+    "paymentCount": {
+      "one": "1 payment",
+      "other": "{{count}} payments"
+    },
+    "entries": "Entries",
+    "entriesDesktop": "Entries · amounts in {{currency}}",
+    "noEntries": "Nothing was invoiced or paid in this period.",
+    "entry": {
+      "invoice": "Invoice {{voucher}}",
+      "return": "Return {{voucher}}",
+      "payment": "Payment {{voucher}}",
+      "journal": "Journal entry {{voucher}}"
+    },
+    "balanceAfter": "Balance {{balance}}",
+    "headers": {
+      "date": "Date",
+      "document": "Document",
+      "details": "Details",
+      "invoiced": "Invoiced",
+      "paid": "Paid",
+      "balance": "Balance"
+    },
+    "details": {
+      "salesInvoice": "Sales invoice",
+      "purchaseInvoice": "Supplier invoice",
+      "return": "Return",
+      "payment": "Payment",
+      "journal": "Journal entry",
+      "item": "{{qty}} {{item}}",
+      "itemMore": "{{qty}} {{item}} and {{more}} more",
+      "for": "for {{invoices}}"
+    },
+    "share": "Share",
+    "shareMobile": "Share as PDF",
+    "download": "Download PDF",
+    "preparing": "Preparing PDF…",
+    "pdfFailed": {
+      "title": "The PDF couldn't be made",
+      "message": "Check the connection and try again."
+    },
+    "note": "Only posted invoices and payments are listed. Draft and cancelled records are not included.",
+    "amountsIn": "Amounts in {{currency}}",
+    "fileName": "{{party}} statement {{from}} to {{to}}",
+    "loadFailed": {
+      "title": "The statement couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "partyMissing": {
+      "title": "That customer or supplier wasn't found",
+      "message": "Choose one from the list."
+    },
+    "loading": "Loading statement…"
   }
 }
