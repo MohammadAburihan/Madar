@@ -121,7 +121,7 @@ const SEARCH_DELAY_MS = 250;
             [label]="lineText(line.item.name).qty"
             [decreaseLabel]="lineText(line.item.name).decrease"
             [increaseLabel]="lineText(line.item.name).increase"
-            (changed)="ctx.store.setQty(i, $event)"
+            (changed)="setQty(i, line.item.code, $event)"
           />
           <app-text-field
             [label]="lineText(line.item.name).rate"
@@ -156,12 +156,7 @@ const SEARCH_DELAY_MS = 250;
       <button
         type="button"
         class="md-btn"
-        [disabled]="
-          !ctx.store.customer() ||
-          !ctx.store.lines().length ||
-          ctx.store.busy() ||
-          ctx.store.savingDraft()
-        "
+        [disabled]="!ctx.store.complete() || ctx.store.busy() || ctx.store.savingDraft()"
         (click)="saveDraft()"
       >
         {{ ctx.store.savingDraft() ? txt.saving : txt.saveDraft }}
@@ -299,9 +294,24 @@ export class QuotationFormContainer implements OnInit {
   }
 
   protected addItem(item: CatalogItem): void {
+    // A new line starts at the listed price; a price typed for an earlier line of it doesn't carry over.
+    if (!this.ctx.store.lines().some((l) => l.item.code === item.code)) {
+      this.forgetRate(item.code);
+    }
     this.ctx.store.addItem(item);
     this.itemTerm.set('');
     this.results.set([]);
+  }
+
+  protected setQty(index: number, code: string, qty: number): void {
+    if (qty <= 0) {
+      this.forgetRate(code);
+    }
+    this.ctx.store.setQty(index, qty);
+  }
+
+  private forgetRate(code: string): void {
+    this.rateInputs.update(({ [code]: _, ...rest }) => rest);
   }
 
   protected setRate(index: number, code: string, input: string): void {

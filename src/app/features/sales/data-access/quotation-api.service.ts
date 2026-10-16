@@ -26,7 +26,8 @@ interface QuotationDoc {
     qty: number;
     uom: string;
     rate: number;
-    amount: number;
+    base_rate: number;
+    base_amount: number;
   }[];
   [key: string]: unknown;
 }
@@ -146,8 +147,9 @@ export class QuotationApiService {
         name: i.item_name,
         qty: Number(i.qty),
         uom: i.uom,
-        rate: Number(i.rate),
-        amount: Number(i.amount),
+        // Company currency, like the total: a quotation made in Desk may be in the customer's currency.
+        rate: Number(i.base_rate),
+        amount: Number(i.base_amount),
       })),
     };
   }

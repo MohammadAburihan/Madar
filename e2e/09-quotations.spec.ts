@@ -55,6 +55,13 @@ test('saves a quotation as a draft to finish later @desktop', async ({ page }) =
   await page.locator('app-person-card').filter({ hasText: CUSTOMER }).first().click();
   await page.getByLabel('Items').fill(ITEM.code);
   await page.locator('app-item-card').filter({ hasText: ITEM.code }).first().click();
+  // A price typed for a line that was then removed doesn't come back with the item.
+  const price = page.getByLabel(named('Price each', '·', ITEM.name));
+  await price.fill('50');
+  await page.getByRole('button', { name: named('One fewer', ITEM.name) }).click();
+  await page.getByLabel('Items').fill(ITEM.code);
+  await page.locator('app-item-card').filter({ hasText: ITEM.code }).first().click();
+  await expect(price).toHaveValue('45');
   await page.getByRole('button', { name: 'Save draft' }).click();
   await expect(page.getByText('Draft saved')).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('app-page-heading')).toContainText('draft');

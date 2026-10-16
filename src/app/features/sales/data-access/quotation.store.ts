@@ -42,14 +42,15 @@ export class QuotationStore {
   private readonly draftSaved = signal(false);
 
   readonly total = computed(() => quoteTotal(this.lines()));
-  readonly ready = computed(
+  /** Complete enough to save: a customer, valid lines and a valid-until date. */
+  readonly complete = computed(
     () =>
       !!this.customer() &&
       this.lines().length > 0 &&
       this.lines().every((l) => l.qty > 0 && l.rate >= 0) &&
-      /^\d{4}-\d{2}-\d{2}$/.test(this.validTill()) &&
-      this.state() !== 'confirming',
+      /^\d{4}-\d{2}-\d{2}$/.test(this.validTill()),
   );
+  readonly ready = computed(() => this.complete() && this.state() !== 'confirming');
   /** A confirmation is running or its result is still open; leaving keeps the quotation. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
 
@@ -155,7 +156,7 @@ export class QuotationStore {
 
   /** Saves the quotation as an ERPNext draft to finish later; resolves to its name, or null when it failed. */
   async saveDraft(): Promise<string | null> {
-    if (this.busy() || this.savingDraft()) {
+    if (this.busy() || this.savingDraft() || !this.complete()) {
       return null;
     }
     this.savingDraft.set(true);
@@ -183,9 +184,8 @@ export class QuotationStore {
       }
       return null;
     } finally {
-      if (current()) {
-        this.savingDraft.set(false);
-      }
+      // Always: a "changed" failure replaces the reference, and the form must not stay locked.
+      this.savingDraft.set(false);
     }
   }
 

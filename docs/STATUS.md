@@ -59,6 +59,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   shares a PDF that Madar builds in the reader's language (ERPNext's print formats fetch their styles from the site's
   host name, which a container may not reach). e2e: confirm a 2-planter quotation and see "Open · ILS 90.00" on its
   page and on Sales; share its PDF; save a draft; the whole flow in Arabic.
+  Review pass 1 (1 high, 3 medium) fixed: a "changed" failure while saving a draft no longer locks the form (the same
+  bug fixed in the purchase order form); a removed line's typed price doesn't come back when the item is re-added
+  (e2e); Save draft needs valid prices and dates, as Confirm does; quotation lines show the company currency, like
+  the total.
 - Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

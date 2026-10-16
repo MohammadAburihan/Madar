@@ -234,9 +234,8 @@ export class PurchaseOrderStore {
       }
       return null;
     } finally {
-      if (current()) {
-        this.savingDraft.set(false);
-      }
+      // Always: a "changed" failure replaces the reference, and the form must not stay locked.
+      this.savingDraft.set(false);
     }
   }
 

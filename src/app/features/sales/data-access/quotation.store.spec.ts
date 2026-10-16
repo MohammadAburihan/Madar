@@ -116,4 +116,15 @@ describe('QuotationStore', () => {
     store.start();
     expect(api.discard).toHaveBeenCalledWith('QT-LEFT');
   });
+
+  it("doesn't save a draft with an invalid price, and a failed save never leaves the form locked", async () => {
+    const { store, api } = await ready();
+    store.setRate(0, -1);
+    expect(await store.saveDraft()).toBeNull();
+    expect(api.saveDraft).not.toHaveBeenCalled();
+    store.setRate(0, 45);
+    api.saveDraft.mockRejectedValue(new PostedEarlierError('QT-1'));
+    await store.saveDraft();
+    expect([store.savingDraft(), store.failure()]).toEqual([false, 'changed']);
+  });
 });
