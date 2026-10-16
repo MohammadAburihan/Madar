@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
+import { canReturn } from './sales-return.models';
+import { stockedItems } from './stocked-items';
 
 export interface InvoiceDetail {
   name: string;
@@ -13,6 +15,8 @@ export interface InvoiceDetail {
   outstanding: number;
   /** The invoice itself moved the stock (Quick sale invoices do). */
   delivered: boolean;
+  /** A confirmed sale whose goods (if any) left with the invoice itself, so Madar can take a return against it. */
+  returnable: boolean;
   payments: { name: string; amount: number; account: string }[];
 }
 
@@ -33,6 +37,9 @@ export class InvoiceApiService {
           rounded_total: number;
           outstanding_amount: number;
           update_stock: number;
+          is_return: number;
+          is_pos?: number;
+          items?: { item_code: string }[];
         }>('Sales Invoice', name),
       ),
       firstValueFrom(
@@ -70,6 +77,12 @@ export class InvoiceApiService {
           }),
         ).catch(() => [])
       : [];
+    const goods = invoice.update_stock
+      ? new Set<string>()
+      : await stockedItems(
+          this.erpnext,
+          (invoice.items ?? []).map((i) => i.item_code),
+        ).catch(() => new Set(['?']));
     return {
       name: invoice.name,
       customer: invoice.customer,
@@ -80,6 +93,13 @@ export class InvoiceApiService {
       total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
       delivered: invoice.docstatus === 1 && !!invoice.update_stock,
+      returnable: canReturn({
+        docstatus: invoice.docstatus,
+        isReturn: !!invoice.is_return,
+        isPos: !!invoice.is_pos,
+        movesStock: !!invoice.update_stock,
+        hasGoods: goods.size > 0,
+      }),
       payments: payments.map((p) => ({
         name: p.name,
         amount: references

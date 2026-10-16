@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -47,6 +48,15 @@ import { invoiceView } from './invoice-view';
       <button type="button" class="md-btn md-btn--primary" (click)="router.navigate(['/money'])">
         {{ text().history }}
       </button>
+      @if (caps().returnSales && invoice()?.returnable) {
+        <button
+          type="button"
+          class="md-btn"
+          (click)="router.navigate(['/sales/invoices', name(), 'return'])"
+        >
+          {{ text().returnItems }}
+        </button>
+      }
       <button type="button" class="md-btn" (click)="router.navigate(['/sales'])">
         {{ text().backToSales }}
       </button>
@@ -72,7 +82,8 @@ export class InvoiceDetailContainer {
   protected readonly router = inject(Router);
   protected readonly i18n = injectI18n();
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
-  private readonly invoice = signal<InvoiceDetail | null>(null);
+  protected readonly caps = inject(SessionService).capabilities;
+  protected readonly invoice = signal<InvoiceDetail | null>(null);
   protected readonly failed = signal(false);
 
   protected readonly text = computed(() => {
@@ -81,6 +92,7 @@ export class InvoiceDetailContainer {
       back: t('sale.back'),
       history: t('invoice.history'),
       backToSales: t('invoice.backToSales'),
+      returnItems: t('sales.return.start'),
       loading: t('invoice.loading'),
       notFound: { title: t('invoice.notFound.title'), message: t('invoice.notFound.message') },
     };

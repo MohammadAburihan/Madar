@@ -22,6 +22,7 @@ describe('capabilitiesFor', () => {
       seeReports: true,
       deliverOrders: true,
       invoiceOrders: true,
+      returnSales: true,
     });
   });
 
@@ -47,6 +48,7 @@ describe('capabilitiesFor', () => {
         seeReports: false,
         deliverOrders: true,
         invoiceOrders: true,
+        returnSales: true,
       });
     }
   });
@@ -229,5 +231,11 @@ describe('capabilitiesFor', () => {
       invoiceOrders: false,
     });
     expect(capabilitiesFor('warehouse').deliverOrders).toBe(false);
+  });
+
+  it('takes returns only with the role that can post credit notes', () => {
+    expect(capabilitiesFor('salesperson', ['Sales User', 'Accounts User']).returnSales).toBe(true);
+    expect(capabilitiesFor('salesperson', ['Sales User']).returnSales).toBe(false);
+    expect(capabilitiesFor('warehouse').returnSales).toBe(false);
   });
 });

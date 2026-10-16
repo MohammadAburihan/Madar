@@ -34,6 +34,7 @@ to the Owner.
 |---|---|---|---|---|---|---|
 | Make a sale (quick sale) | ✅ | ✅ | ✅ | — | — | — |
 | Quote, take sales orders, deliver and invoice them | ✅ | ✅ | ✅ | — | — | — |
+| Take back sold items against their invoice (credit note, no cash refund) | ✅ | ✅ | ✅ | — | — | — |
 | Sell to the walk-in customer | ✅ | ✅ | ✅ | — | — | — |
 | Give a discount | ✅ any | up to 10% | up to 10% | — | — | — |
 | Change a selling price | ✅ | — | — | — | — | — |
