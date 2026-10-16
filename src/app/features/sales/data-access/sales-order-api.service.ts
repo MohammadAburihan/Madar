@@ -25,6 +25,7 @@ interface OrderItem {
   qty: number;
   delivered_qty: number;
   conversion_factor?: number;
+  delivered_by_supplier?: number;
   uom: string;
   base_rate: number;
   base_amount: number;
@@ -132,6 +133,7 @@ export class SalesOrderApiService {
         rate: Number(i.base_rate),
         amount: Number(i.base_amount),
         isStock: stock.has(i.item_code),
+        bySupplier: !!i.delivered_by_supplier,
       })),
     };
   }

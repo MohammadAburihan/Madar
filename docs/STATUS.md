@@ -72,7 +72,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   submitted stale; the recorded invoice's outstanding is converted to the company currency. Review pass 2 (2 medium, 1 low)
   fixed: a delivery is refused as "changed" when the order has less left than confirmed (delivered in Desk); a draft
   from an earlier visit that someone posted isn't taken as this invoice; nothing left to bill at confirm asks for a
-  new review.
+  new review. Review pass 3 (2 low) fixed: rows of the same item share the warehouse's stock; drop-shipped rows aren't
+  offered for delivery.
 - Next: S4 returns; then Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)

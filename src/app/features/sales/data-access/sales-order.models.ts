@@ -12,6 +12,8 @@ export interface SalesOrderLine {
   rate: number;
   amount: number;
   isStock: boolean;
+  /** Drop-shipped by the supplier: ERPNext never puts it on a delivery note. */
+  bySupplier: boolean;
 }
 
 export interface SalesOrderDetail {

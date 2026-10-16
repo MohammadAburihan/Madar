@@ -14,6 +14,7 @@ const line = {
   qty: 2,
   deliveredQty: 2,
   conversionFactor: 1,
+  bySupplier: false,
   rate: 85,
   amount: 170,
   isStock: true,

@@ -29,6 +29,7 @@ const ORDER: SalesOrderDetail = {
       qty: 3,
       deliveredQty: 1,
       conversionFactor: 1,
+      bySupplier: false,
       rate: 85,
       amount: 255,
       isStock: true,
@@ -41,6 +42,7 @@ const ORDER: SalesOrderDetail = {
       qty: 1,
       deliveredQty: 0,
       conversionFactor: 1,
+      bySupplier: false,
       rate: 150,
       amount: 150,
       isStock: false,
@@ -161,6 +163,26 @@ describe('DeliveryStore', () => {
     // Its open quantities are out of date: no second delivery until the order is reloaded.
     store.setQty('tree', '1');
     expect([store.failure(), store.ready()]).toEqual(['changed', false]);
+  });
+
+  it('shares an item’s stock across its rows and leaves drop-shipped rows out', async () => {
+    const tree = ORDER.lines[0];
+    const { store } = setup({
+      ...ORDER,
+      lines: [
+        { ...tree, qty: 15, deliveredQty: 0 },
+        { ...tree, row: 'tree-2', qty: 15, deliveredQty: 0 },
+        { ...tree, row: 'shipped', deliveredQty: 0, bySupplier: true },
+      ],
+    });
+    await store.load();
+    expect(store.openLines().map((l) => l.row)).toEqual(['tree', 'tree-2']);
+    // 24 in Main: 13 + 13 is too many together, though each row alone fits.
+    store.setQty('tree', '13');
+    store.setQty('tree-2', '13');
+    expect([store.qtyError(store.openLines()[0]), store.ready()]).toEqual(['noStock', false]);
+    store.setQty('tree-2', '11');
+    expect(store.ready()).toBe(true);
   });
 
   it('has nothing to deliver on a closed order', async () => {

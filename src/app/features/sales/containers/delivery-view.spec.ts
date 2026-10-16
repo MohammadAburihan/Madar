@@ -20,6 +20,7 @@ const TREE = {
   qty: 2,
   deliveredQty: 0,
   conversionFactor: 1,
+  bySupplier: false,
   rate: 85,
   amount: 170,
   isStock: true,

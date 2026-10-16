@@ -169,7 +169,10 @@ export class SalesOrderContainer {
       deliveryDate: order.deliveryDate ?? '',
       editable: caps.sell && orderOpen(order) && order.deliveryStatus !== 'Fully Delivered',
       date: order.date,
-      deliver: caps.deliverOrders && orderOpen(order) && order.lines.some((l) => toDeliver(l) > 0),
+      deliver:
+        caps.deliverOrders &&
+        orderOpen(order) &&
+        order.lines.some((l) => toDeliver(l) > 0 && !l.bySupplier),
       invoice:
         caps.invoiceOrders &&
         orderOpen(order) &&

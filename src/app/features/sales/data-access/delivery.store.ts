@@ -55,7 +55,9 @@ export class DeliveryStore {
   /** Rows with something still to deliver: goods, then services whose work can be marked done. */
   readonly openLines = computed(() => {
     const order = this.order();
-    return order && orderOpen(order) ? order.lines.filter((l) => toDeliver(l) > 0) : [];
+    return order && orderOpen(order)
+      ? order.lines.filter((l) => toDeliver(l) > 0 && !l.bySupplier)
+      : [];
   });
   readonly quantities = computed(() =>
     Object.fromEntries(
@@ -99,7 +101,14 @@ export class DeliveryStore {
       return 'tooMany';
     }
     const available = this.available(line);
-    return available !== null && qty > available + 1e-9 ? 'noStock' : null;
+    // Rows of the same item share the warehouse's stock.
+    const sameItem = this.openLines()
+      .filter((l) => l.code === line.code)
+      .reduce((sum, l) => sum + (this.quantities()[l.row] || 0) * l.conversionFactor, 0);
+    return available !== null &&
+      (qty > available + 1e-9 || sameItem / line.conversionFactor > available + 1e-9)
+      ? 'noStock'
+      : null;
   }
 
   start(order: string): void {
@@ -163,7 +172,7 @@ export class DeliveryStore {
     this.qtyInputs.set(
       Object.fromEntries(
         order.lines
-          .filter((l) => toDeliver(l) > 0)
+          .filter((l) => toDeliver(l) > 0 && !l.bySupplier)
           .map((l) => [l.row, l.isStock ? String(toDeliver(l)) : '0']),
       ),
     );
