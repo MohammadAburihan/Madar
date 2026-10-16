@@ -59,11 +59,9 @@ test.describe.serial('selling on account, then collecting @desktop', () => {
     await page.getByRole('button', { name: /^Confirm receipt/ }).click();
     await expect(page).toHaveURL(/\/money\/receive\/recorded$/, { timeout: 60_000 });
     await expectHeading(page, 'Collection recorded');
-    const invoice = page.getByRole('button', { name: /^View invoice/ });
-    if (await invoice.count()) {
-      await invoice.click();
-      await expect(page).toHaveURL(/\/sales\/invoices\/[^/]+$/);
-    }
+    // One invoice settled opens that invoice; several open the payment history.
+    await page.getByRole('button', { name: /^(View invoice|View payment history)/ }).click();
+    await expect(page).toHaveURL(/\/sales\/invoices\/[^/]+$|\/money$/);
   });
 });
 

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { ITEM, expectHeading, signIn } from './support';
+import { ITEM, MAIN, choose, expectHeading, signIn } from './support';
 
+// Receipts land in Stores and sales take from Main: this move keeps Main stocked for the sales that follow.
 test('moves stock between warehouses @phone', async ({ page }) => {
   await signIn(page, 'owner');
   await page.goto('/inventory/transfer');
@@ -8,7 +9,10 @@ test('moves stock between warehouses @phone', async ({ page }) => {
   await page.locator('app-search-field input').fill(ITEM.code);
   await page.locator('app-item-card').filter({ hasText: ITEM.code }).first().click();
   await expect(page.locator('app-status-chip', { hasText: 'Ready' })).toBeVisible();
-  await page.locator('app-text-field input').first().fill('1');
+  const selects = page.locator('app-select-field select');
+  await choose(selects.nth(0), 'Stores');
+  await choose(selects.nth(1), MAIN);
+  await page.locator('app-text-field input').first().fill('5');
   await page.getByRole('button', { name: 'Review transfer' }).click();
   await expect(page).toHaveURL(/\/inventory\/transfer\/review$/);
   await page.getByRole('button', { name: 'Confirm transfer' }).click();
