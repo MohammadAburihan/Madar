@@ -20,6 +20,7 @@ _Last updated: 16 Oct 2026_
 | #16 | **Record expense** (step 4a): category, amount, date, account, optional project and receipt photo; expenses in the Money history |
 | #17 | **Projects** (step 4b-1): the list, creating and editing a project, its overview and material requirements; the Project manager persona |
 | #18 | **Supply a project** (step 4b-2): plan an item, send stock to the project site, buy the shortfall booked to the project |
+| #19 | **Site use and returns** (step 4b-3): materials at site, recording use, returning unused stock |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
@@ -31,12 +32,15 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     next tasks.
   - **4b-2 — Supply**: merged (#18). Deferred (low): extra stock already at the site isn't counted against a later
     requirement's shortfall; a quantity ERPNext refuses for an item counted in whole units needs a reload.
-  - **4b-3 — Site use and returns** (this PR): the overview lists what the project holds at the site; for each item,
-    record what was used (a Material Issue from the site, booked to the project, so its cost counts as actual), then
-    return unused stock to a warehouse (a transfer booked to the project). Both are safe to repeat by reference.
-    Review pass 1 (3 low) fixed: "Returned to" counts that warehouse only; a balance load begun before the task started
-    over is dropped; a new use forgets the last one, so a later return isn't titled "Usage recorded".
-  - **4b-4 — The desktop project workspace.**
+  - **4b-3 — Site use and returns**: merged (#19).
+  - **4b-4 — The desktop project workspace** (this PR): on tablet and desktop the project page becomes the mock's
+    two-column workspace: budget, a tasks table and a movement ledger per item (stock, to site, used, returned, left,
+    on order); beside it the site stock, the project records (sales invoices and purchase orders open their page for
+    cost roles) and attachments, with a "Next: receive" hint while an order is still to arrive. "Add update" opens
+    the project form (the mock's route for it points at an unrelated frame).
+    Review pass 1 (2 medium, 1 low) fixed: the requirement rows stay on the workspace (so any item can be supplied),
+    site items beyond the five ledgers or whose read failed still show, and a failed business lookup is caught.
+    Review pass 2 (1 low) fixed: a failed site-movements read says so, with Retry.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
 (purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;
