@@ -144,12 +144,16 @@ export class SaleCustomerContainer implements OnInit {
     }
     void this.ctx.store.loadOptions().catch(() => undefined);
     const id = this.customer();
-    if (id && this.ctx.store.customer()?.id !== id) {
+    const before = this.ctx.store.customer()?.id;
+    if (id && before !== id) {
       void this.directory
         .byId(id)
-        // Not over a customer picked while it loaded.
+        // The linked customer replaces one left from an earlier visit, not one picked while it loaded.
         .then(
-          (found) => found && !this.ctx.store.customer() && this.ctx.store.selectCustomer(found),
+          (found) =>
+            found &&
+            this.ctx.store.customer()?.id === before &&
+            this.ctx.store.selectCustomer(found),
         )
         .catch(() => undefined);
     }

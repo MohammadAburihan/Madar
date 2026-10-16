@@ -107,7 +107,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   have balances; a deep-linked customer doesn't replace one picked meanwhile; "Buy from" keeps its supplier after a
   retried load. Review pass 2 (1 medium, 2 low) fixed: a contact page opened by link checks the role works with that
   kind (e2e: a salesperson can't open a supplier); a full list says only the first 30 show and search finds others;
-  switching kinds on desktop doesn't load a detail for the previous list's row.
+  switching kinds on desktop doesn't load a detail for the previous list's row. Review pass 3 (1 medium, 1 low) fixed: "Sell to"
+  replaces a customer left from an earlier visit (e2e); "Buy from" a supplier disabled meanwhile says so.
 - Next: Contacts C2 (add/edit a contact, transaction history), then Settings.
 
 ## End-to-end happy paths: merged (#26)

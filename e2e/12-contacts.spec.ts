@@ -4,6 +4,10 @@ import { CUSTOMER, SUPPLIER, expectHeading, named, signIn, toArabic } from './su
 test.describe('customers and suppliers @phone', () => {
   test('finds a customer, sees what they owe, and starts a sale with them', async ({ page }) => {
     await signIn(page, 'owner');
+    // A sale left earlier with another customer chosen must not keep them.
+    await page.goto('/sales/new');
+    await page.locator('app-search-field input').fill('Samir');
+    await page.locator('app-person-card').filter({ hasText: 'Samir' }).first().click();
     await page.goto('/contacts');
     await expectHeading(page, 'Customers & suppliers');
     // The test site has more customers than one page: the list says so.

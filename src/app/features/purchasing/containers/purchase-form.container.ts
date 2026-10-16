@@ -97,6 +97,9 @@ const SEARCH_DELAY_MS = 250;
       @if (ctx.store.project(); as project) {
         <p class="muted">{{ forProject(project) }}</p>
       }
+      @if (missingSupplier(); as supplier) {
+        <p class="muted" role="status">{{ supplierMissing(supplier) }}</p>
+      }
       @if (ctx.store.prefillMissing(); as item) {
         <p class="muted" role="status">{{ prefillMissing(item) }}</p>
       }
@@ -259,6 +262,7 @@ export class PurchaseFormContainer implements OnInit {
 
   /** "Buy from" on a supplier's page: the order starts with that supplier chosen, once they have loaded. */
   private deepSupplier: string | null = null;
+  protected readonly missingSupplier = signal<string | null>(null);
 
   protected resultCard(item: PurchaseItem) {
     return itemResult(item, this.ctx.currency(), this.ctx.i18n.tr());
@@ -275,6 +279,10 @@ export class PurchaseFormContainer implements OnInit {
 
   protected forProject(project: string): string {
     return this.ctx.i18n.tr().t('purchase.form.forProject', { project });
+  }
+
+  protected supplierMissing(supplier: string): string {
+    return this.ctx.i18n.tr().t('purchase.form.supplierMissing', { supplier });
   }
 
   protected prefillMissing(item: string): string {
@@ -302,8 +310,13 @@ export class PurchaseFormContainer implements OnInit {
     }
     const supplier = this.deepSupplier;
     const store = this.ctx.store;
-    if (supplier && !store.supplier() && store.suppliers().some((s) => s.id === supplier)) {
-      this.chooseSupplier(supplier);
+    if (supplier && !store.supplier()) {
+      if (store.suppliers().some((s) => s.id === supplier)) {
+        this.chooseSupplier(supplier);
+      } else {
+        // Disabled since the link was made: say so rather than open silently without them.
+        this.missingSupplier.set(supplier);
+      }
     }
     this.loaded.set(true);
   }
