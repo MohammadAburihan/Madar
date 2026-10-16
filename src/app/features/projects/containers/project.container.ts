@@ -181,6 +181,14 @@ const LEDGER_LIMIT = 5;
           </div>
         </div>
         <div class="side">
+          @if (balancesFailed()) {
+            <app-feedback-card
+              tone="warning"
+              [title]="txt.balancesFailed.title"
+              [message]="txt.balancesFailed.message"
+            />
+            <button type="button" class="md-btn" (click)="retryBalances()">{{ txt.retry }}</button>
+          }
           @if (snapshots().length || siteRest().items.length) {
             <h2>{{ txt.siteStock }}</h2>
             @for (snapshot of snapshots(); track snapshot.item) {
@@ -303,6 +311,8 @@ export class ProjectContainer {
   /** Site movements per item, for the desktop workspace; read once the project is in. */
   private readonly balances = signal<SiteBalance[]>([]);
   private balancesFor: ProjectDetail | null = null;
+  /** A site-movements read failed; the workspace says so rather than look like nothing was delivered. */
+  protected readonly balancesFailed = signal(false);
   protected readonly failed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   private run = 0;
@@ -338,6 +348,10 @@ export class ProjectContainer {
       ],
       siteStock: t('project.workspace.siteStock'),
       records: t('project.workspace.records'),
+      balancesFailed: {
+        title: t('project.workspace.balancesFailed.title'),
+        message: t('project.workspace.balancesFailed.message'),
+      },
       loading: t('project.loading'),
       retry: t('project.retry'),
       noAccess: { title: t('project.noAccess.title'), message: t('project.noAccess.message') },
@@ -447,6 +461,7 @@ export class ProjectContainer {
   }
 
   private async loadBalances(project: ProjectDetail): Promise<void> {
+    this.balancesFailed.set(false);
     const business = await this.business.ensure().catch(() => null);
     const items = [
       ...new Set([
@@ -454,16 +469,32 @@ export class ProjectContainer {
         ...project.siteItems.map((s) => s.item),
       ]),
     ].slice(0, LEDGER_LIMIT);
-    if (!business || !items.length) {
+    if (!business) {
+      this.balancesFailed.set(this.project() === project);
       return;
     }
+    if (!items.length) {
+      return;
+    }
+    let failed = false;
     const balances = await Promise.all(
       items.map((item) =>
-        this.siteApi.balance(project.name, item, business.name).catch(() => null),
+        this.siteApi.balance(project.name, item, business.name).catch(() => {
+          failed = true;
+          return null;
+        }),
       ),
     );
     if (this.project() === project) {
       this.balances.set(balances.filter((b): b is SiteBalance => b !== null));
+      this.balancesFailed.set(failed);
+    }
+  }
+
+  protected retryBalances(): void {
+    const project = this.project();
+    if (project) {
+      void this.loadBalances(project);
     }
   }
 

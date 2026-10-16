@@ -40,6 +40,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     the project form (the mock's route for it points at an unrelated frame).
     Review pass 1 (2 medium, 1 low) fixed: the requirement rows stay on the workspace (so any item can be supplied),
     site items beyond the five ledgers or whose read failed still show, and a failed business lookup is caught.
+    Review pass 2 (1 low) fixed: a failed site-movements read says so, with Retry.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
 (purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;

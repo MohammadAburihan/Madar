@@ -1757,6 +1757,10 @@
       "next": {
         "title": "Next: receive {{units}}",
         "message": "{{order}} brings {{units}} into stock. Deliver them to the project in a separate movement; receiving adds no site stock or consumption."
+      },
+      "balancesFailed": {
+        "title": "Site movements couldn't load",
+        "message": "The ledger and site stock are missing. Check the connection and try again."
       }
     }
   }
