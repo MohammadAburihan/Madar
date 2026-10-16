@@ -22,8 +22,8 @@ const ORDER: OrderRecord = {
   docstatus: 1,
   status: 'To Deliver and Bill',
   qty: 2,
-  delivered: 0,
-  billed: 0,
+  deliveryStatus: 'Not Delivered',
+  billingStatus: 'Not Billed',
   total: 170,
   date: '2026-10-10',
 };
@@ -54,6 +54,23 @@ describe('sales records view', () => {
     );
   });
 
+  it('says what a return did, and that a services-only order has nothing to deliver', () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, isReturn: true, outstanding: 0, total: -45 }, 'ILS', en),
+      ).message,
+    ).toBe('Return\nGoods returned · ILS -45.00');
+    expect(
+      visible(
+        view.orderCard(
+          { ...ORDER, deliveryStatus: 'Not Applicable', billingStatus: 'Fully Billed' },
+          'ILS',
+          en,
+        ),
+      ).message,
+    ).toBe('Confirmed order · 2 items\nNo goods to deliver · Invoiced');
+  });
+
   it('shows a draft invoice by its total, with nothing delivered or due yet', () => {
     expect(
       visible(
@@ -67,7 +84,13 @@ describe('sales records view', () => {
       'Confirmed order · 2 items\nDelivery pending · Not invoiced',
     );
     expect(
-      visible(view.orderCard({ ...ORDER, delivered: 100, billed: 50 }, 'ILS', en)).message,
+      visible(
+        view.orderCard(
+          { ...ORDER, deliveryStatus: 'Fully Delivered', billingStatus: 'Partly Billed' },
+          'ILS',
+          en,
+        ),
+      ).message,
     ).toBe('Confirmed order · 2 items\nDelivered · Partly invoiced');
     expect(visible(view.orderCard(ORDER, 'ILS', ar)).message).toBe(
       'الطلب مؤكد · صنفان\nالتسليم قيد الانتظار · لم تصدر الفاتورة',

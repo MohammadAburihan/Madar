@@ -19,9 +19,9 @@ export interface OrderRecord {
   docstatus: number;
   status: string;
   qty: number;
-  /** Percent delivered and invoiced, as ERPNext keeps them. */
-  delivered: number;
-  billed: number;
+  /** ERPNext's own states: delivery is "Not Applicable" for an order of services only. */
+  deliveryStatus: string;
+  billingStatus: string;
   total: number;
   date: string;
 }

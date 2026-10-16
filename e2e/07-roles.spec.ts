@@ -50,6 +50,7 @@ test('the store associate sells, and Sales shows only their own sales @phone', a
     .trim();
 
   await page.goto('/sales');
+  await expect(page.locator('app-page-heading p').first()).toContainText('Your sales');
   await page.locator('app-search-field input').fill(own);
   await expect(page.locator('app-feedback-card', { hasText: own })).toHaveCount(1);
   // The seeded first invoice belongs to someone else: a store associate doesn't see it.

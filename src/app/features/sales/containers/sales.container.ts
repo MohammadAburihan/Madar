@@ -129,6 +129,8 @@ export class SalesContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly limit = RECORDS_LIMIT;
+  /** Sales roles see only the documents they made. */
+  private readonly own = computed(() => OWN_SALES_ONLY.includes(this.session.persona()));
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly kind = signal<string>('invoices');
   protected readonly term = signal('');
@@ -140,7 +142,9 @@ export class SalesContainer {
     const { t } = this.i18n.tr();
     return {
       heading: t('sales.records.heading'),
-      subtitle: t('sales.records.subtitle', { business: this.business.active()?.name ?? '' }),
+      subtitle: t(this.own() ? 'sales.records.subtitleOwn' : 'sales.records.subtitle', {
+        business: this.business.active()?.name ?? '',
+      }),
       search: t('sales.records.search'),
       placeholder: t('sales.records.placeholder'),
       kinds: KINDS.map((k) => ({ value: k, label: t(`sales.records.kinds.${k}`) })),
@@ -204,9 +208,7 @@ export class SalesContainer {
         company: business.name,
         currency,
         term,
-        owner: OWN_SALES_ONLY.includes(this.session.persona())
-          ? (this.session.user()?.id ?? null)
-          : null,
+        owner: this.own() ? (this.session.user()?.id ?? null) : null,
       };
       const cards =
         kind === 'invoices'
@@ -231,8 +233,9 @@ export class SalesContainer {
     }
   }
 
+  /** Only a row that is itself openable: the list on screen may still be the previous tab's. */
   protected open(id: string): void {
-    if (this.kind() === 'invoices') {
+    if (this.cards().find((c) => c.id === id)?.openable) {
       void this.router.navigate(['/sales/invoices', id]);
     }
   }

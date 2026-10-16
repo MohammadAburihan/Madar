@@ -2004,7 +2004,11 @@
       },
       "newest": "The {{count}} newest are shown; search to find older ones.",
       "heading": "Sales",
-      "title": "{{name}} · {{customer}}"
+      "title": "{{name}} · {{customer}}",
+      "goodsReturned": "Goods returned",
+      "servicesOnly": "No goods to deliver",
+      "closed": "Closed",
+      "subtitleOwn": "{{business}} · Your sales"
     }
   }
 }

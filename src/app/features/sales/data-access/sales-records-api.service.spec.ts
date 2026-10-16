@@ -62,8 +62,8 @@ describe('SalesRecordsApiService', () => {
           docstatus: 1,
           status: 'To Deliver and Bill',
           total_qty: 2,
-          per_delivered: 0,
-          per_billed: 0,
+          delivery_status: 'Not Delivered',
+          billing_status: 'Not Billed',
           base_grand_total: 170,
           transaction_date: '2026-10-10',
         },
@@ -84,8 +84,7 @@ describe('SalesRecordsApiService', () => {
     expect((await api().orders(all))[0]).toMatchObject({
       name: 'SO-0187',
       qty: 2,
-      delivered: 0,
-      billed: 0,
+      deliveryStatus: 'Not Delivered',
     });
     expect((await api().quotes(all))[0]).toMatchObject({
       name: 'QT-0084',

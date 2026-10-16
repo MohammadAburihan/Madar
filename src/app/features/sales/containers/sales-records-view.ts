@@ -30,7 +30,15 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
           ? t('partlyPaid')
           : t('unpaid');
   const goods =
-    invoice.docstatus === 0 ? null : invoice.delivered ? t('goodsDelivered') : t('invoiceOnly');
+    invoice.docstatus === 0
+      ? null
+      : invoice.isReturn
+        ? invoice.delivered
+          ? t('goodsReturned')
+          : null
+        : invoice.delivered
+          ? t('goodsDelivered')
+          : t('invoiceOnly');
   const amount =
     invoice.outstanding > 0.005
       ? t('due', { amount: formatMoney(invoice.outstanding, currency) })
@@ -49,17 +57,18 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
 export function orderCard(order: OrderRecord, currency: string, tr: Translator): RecordCard {
   const t = (key: string, params?: Record<string, unknown>) => tr.t(`sales.records.${key}`, params);
   const delivery =
-    order.delivered >= 99.995
-      ? t('delivered')
-      : order.delivered > 0
-        ? t('partlyDelivered')
-        : t('deliveryPending');
+    {
+      'Fully Delivered': t('delivered'),
+      'Partly Delivered': t('partlyDelivered'),
+      'Not Applicable': t('servicesOnly'),
+      Closed: t('closed'),
+    }[order.deliveryStatus] ?? t('deliveryPending');
   const billing =
-    order.billed >= 99.995
-      ? t('invoiced')
-      : order.billed > 0
-        ? t('partlyInvoiced')
-        : t('notInvoiced');
+    {
+      'Fully Billed': t('invoiced'),
+      'Partly Billed': t('partlyInvoiced'),
+      Closed: t('closed'),
+    }[order.billingStatus] ?? t('notInvoiced');
   const items = tr.plural('sales.records.items', order.qty, { count: qty(order.qty) });
   const status = order.docstatus === 0 ? t('draftOrder') : `${delivery} · ${billing}`;
   return {

@@ -42,6 +42,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (2 medium, 1 low) fixed: salespeople and store associates see only their own sales (e2e: a store
   associate finds their sale but not someone else's); outstanding is converted only when the receivable account isn't
   in the company currency; a draft invoice shows its total, nothing delivered or due.
+  Review pass 2 (3 medium, 2 low) fixed: a return reads "Goods returned"; an invoice billing a delivery note counts as
+  delivered; orders read ERPNext's delivery and billing states (a services-only order has no goods to deliver); a row
+  opens only if it is itself openable; sales roles see "Your sales".
 - Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

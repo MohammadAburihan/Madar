@@ -53,13 +53,16 @@ export class SalesRecordsApiService {
         limit: RECORDS_LIMIT,
       }),
     );
+    const fromDeliveries = await this.billedDeliveries(
+      rows.filter((r) => r.docstatus === 1).map((r) => r.name),
+    );
     return rows.map((r) => ({
       name: r.name,
       customer: r.customer_name,
       docstatus: r.docstatus,
       isReturn: !!r.is_return,
-      // A draft has moved no stock yet, whatever it will do once confirmed.
-      delivered: r.docstatus === 1 && !!r.update_stock,
+      // A draft has moved no stock yet; a confirmed invoice did, or billed a delivery that did.
+      delivered: r.docstatus === 1 && (!!r.update_stock || fromDeliveries.has(r.name)),
       total: r.base_rounded_total || r.base_grand_total,
       // Outstanding is in the receivable account's currency: converted only when that isn't the company's.
       outstanding:
@@ -71,6 +74,24 @@ export class SalesRecordsApiService {
     }));
   }
 
+  /** The invoices that bill a delivery note: their goods left with the delivery. Empty when that can't be read. */
+  private async billedDeliveries(names: readonly string[]): Promise<Set<string>> {
+    if (!names.length) {
+      return new Set();
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Sales Invoice', {
+        fields: ['name'],
+        filters: [
+          ['name', 'in', names] as Filter,
+          ['Sales Invoice Item', 'delivery_note', 'is', 'set'],
+        ],
+        limit: 0,
+      }),
+    ).catch(() => []);
+    return new Set(rows.map((r) => r.name));
+  }
+
   async orders(q: RecordsQuery): Promise<OrderRecord[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -79,8 +100,8 @@ export class SalesRecordsApiService {
         docstatus: number;
         status: string;
         total_qty: number;
-        per_delivered: number;
-        per_billed: number;
+        delivery_status: string;
+        billing_status: string;
         base_grand_total: number;
         transaction_date: string;
       }>('Sales Order', {
@@ -90,8 +111,8 @@ export class SalesRecordsApiService {
           'docstatus',
           'status',
           'total_qty',
-          'per_delivered',
-          'per_billed',
+          'delivery_status',
+          'billing_status',
           'base_grand_total',
           'transaction_date',
         ],
@@ -107,8 +128,8 @@ export class SalesRecordsApiService {
       docstatus: r.docstatus,
       status: r.status,
       qty: r.total_qty,
-      delivered: r.per_delivered,
-      billed: r.per_billed,
+      deliveryStatus: r.delivery_status,
+      billingStatus: r.billing_status,
       total: r.base_grand_total,
       date: r.transaction_date,
     }));

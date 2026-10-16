@@ -2084,7 +2084,11 @@
       },
       "newest": "تظهر أحدث {{count}} سجلاً؛ ابحث للعثور على الأقدم.",
       "heading": "المبيعات",
-      "title": "{{name}} · {{customer}}"
+      "title": "{{name}} · {{customer}}",
+      "goodsReturned": "أُعيدت البضائع",
+      "servicesOnly": "لا بضائع للتسليم",
+      "closed": "مغلق",
+      "subtitleOwn": "{{business}} · مبيعاتك"
     }
   }
 }
