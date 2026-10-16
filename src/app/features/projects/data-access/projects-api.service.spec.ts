@@ -172,6 +172,22 @@ describe('ProjectsApiService', () => {
     expect(ledger.groupBy).toBe('item_code');
   });
 
+  it("fails the load when requirements can't be read, rather than show none; a forbidden read shows none", async () => {
+    fakeErpnext(
+      { 'Material Request': () => throwError(() => new HttpErrorResponse({ status: 500 })) },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    await expect(api().project('PROJ-0001')).rejects.toBeTruthy();
+    TestBed.resetTestingModule();
+    fakeErpnext(
+      { 'Material Request': () => throwError(() => new HttpErrorResponse({ status: 403 })) },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    expect((await api().project('PROJ-0001')).requirements).toEqual([]);
+  });
+
   it("leaves the cost and tasks out for a role that can't read them", async () => {
     fakeErpnext(
       {

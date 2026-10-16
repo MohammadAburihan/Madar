@@ -1429,6 +1429,14 @@
       "offline": {
         "title": "We couldn't confirm the save",
         "message": "Check the connection and tap Save again. Madar checks first, so the project is never created twice."
+      },
+      "unresolved": {
+        "title": "We couldn't confirm the project",
+        "message": "The answer was lost, so the project may already exist. Check before saving again. Reference {{reference}}."
+      },
+      "notCreated": {
+        "title": "The project wasn't created",
+        "message": "Nothing was saved. Check the details and save again."
       }
     },
     "saved": {

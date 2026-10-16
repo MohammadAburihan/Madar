@@ -268,6 +268,18 @@ describe('buildHomeView', () => {
     expect(view.actions.map((a) => a.id)).not.toContain('receiveGoods');
   });
 
+  it("hides Supply project from a user whose roles can't supply projects", () => {
+    for (const persona of ['owner', 'warehouse'] as const) {
+      const view = buildHomeView(
+        { ...input({ persona }), capabilities: { supplyProjects: false } },
+        realTranslator('en'),
+      );
+      expect(view.actions.map((a) => a.id).filter((id) => id.startsWith('supplyProject'))).toEqual(
+        [],
+      );
+    }
+  });
+
   it('marks overdue work and says when nothing needs attention', () => {
     const overdue = buildHomeView(
       input({ data: { invoicesDue: [{ ...DATA.invoicesDue![0], dueDate: '2026-10-01' }] } }),

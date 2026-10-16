@@ -95,11 +95,12 @@ export class ProjectsApiService {
       this.customerNames(doc.customer ? [doc.customer] : []),
       // Only Projects User reads tasks; for other roles the section is left out rather than shown empty.
       this.tasks(name).catch(() => null),
-      this.requirements(name, doc.company).catch(() => []),
+      // A role that can't read stock sees no figures; any other failure fails the load rather than look empty.
+      this.requirements(name, doc.company).catch(forbiddenAsEmpty),
       this.attachments(name).catch(() => []),
       this.linked(name).catch(() => []),
       this.actualCost(name, doc.company).catch(() => null),
-      this.siteItems(name, doc.company).catch(() => []),
+      this.siteItems(name, doc.company).catch(forbiddenAsEmpty),
     ]);
     return {
       ...summary(doc, names),
@@ -144,16 +145,10 @@ export class ProjectsApiService {
       return saved.name;
     }
     // A save whose answer was lost may have created the project: find it by its reference before inserting again.
-    const [found] = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Project', {
-        fields: ['name'],
-        filters: [['notes', 'like', `%${reference}%`]],
-        limit: 1,
-      }),
-    );
+    const found = await this.findProject(reference);
     if (found) {
       // Save the latest details over it: the user may have changed them since the first, unanswered save.
-      const current = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', found.name));
+      const current = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', found));
       const saved = await firstValueFrom(
         this.erpnext.post<ProjectDoc>('frappe.client.save', { doc: { ...current, ...fields } }),
       );
@@ -171,6 +166,18 @@ export class ProjectsApiService {
       }),
     );
     return inserted.name;
+  }
+
+  /** The project a create with this Madar reference made, if any. */
+  async findProject(reference: string): Promise<string | null> {
+    const [found] = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Project', {
+        fields: ['name'],
+        filters: [['notes', 'like', `%${reference}%`]],
+        limit: 1,
+      }),
+    );
+    return found?.name ?? null;
   }
 
   /** The shared site warehouse, or null before anything was ever delivered to a project. */
@@ -698,4 +705,11 @@ function assignees(value: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+function forbiddenAsEmpty(error: unknown): never[] {
+  if (ErpnextError.from(error).kind === 'forbidden') {
+    return [];
+  }
+  throw error;
 }
