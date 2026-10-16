@@ -132,7 +132,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   against an invoice don't count as paid; a contact or address Madar adds is made primary at once (no adopting
   someone else's on retry). Review pass 3 (3 low) fixed: refunds aren't listed as payments; same-day records keep
   the order they were made in; a supplier name already taken says so.
-- **Settings** (this PR): Settings (desktop nav, mobile More) replaces the placeholder with Connection settings as on
+- **Settings**: merged (#39). Settings (desktop nav, mobile More) replaces the placeholder with Connection settings as on
   the mock: business name, workspace address (the configured ERPNext server, or this site for the web app), currency
   with its ERPNext name, and the language; "Separate business records". Sign out (not on the mock, but nowhere else
   in Madar) ends the ERPNext session and reloads the sign-in page so nothing of the user's half-done work stays in
@@ -142,7 +142,15 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   e2e: the connection facts and language switch (phone); sign out and the next person signing in (desktop). Review
   pass 1 found only lows: the currency name now clears and ignores a late answer for another currency; a stale
   sign-out notice can't outlive the page (the shell's router-outlet makes each visit a new page).
-- Next: widen e2e coverage to check what the screens show; then the whole-branch review of the batch.
+- **E2E figures** (this PR): `e2e/15-figures.spec.ts` reads ERPNext directly (`erp()` in `e2e/support.ts`, through the
+  dev server's proxy as the signed-in owner) and checks that the screens show the same numbers: Home's confirmed sales
+  today and customer invoices due; every inventory quantity against its Bin; payment amounts on Money; each invoice's
+  due or total on Sales; a customer's and a supplier's balance on Contacts (desktop and phone); an invoice page's
+  total, paid and outstanding; a quotation's total; a sales order's ordered and delivered quantities. It found one
+  real bug, fixed here: an invoice page counted a credit note as money paid ("Amount paid ILS 45.00" on an unpaid,
+  returned sale). Paid now leaves out credits (read from the credit notes against it), a "Credited by returns" row
+  shows them, and a sale settled by a return reads "Payment: Credit note issued".
+- Next: the whole-branch review of the batch (Sales S2–S4, Contacts, Settings).
 
 ## End-to-end happy paths: merged (#26)
 

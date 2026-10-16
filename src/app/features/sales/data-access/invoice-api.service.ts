@@ -13,6 +13,8 @@ export interface InvoiceDetail {
   status: 'draft' | 'confirmed' | 'cancelled';
   total: number;
   outstanding: number;
+  /** What credit notes against it took off its outstanding: not money paid. */
+  credited: number;
   /** The invoice itself moved the stock (Quick sale invoices do). */
   delivered: boolean;
   /** A confirmed sale whose goods (if any) left with the invoice itself, so Madar can take a return against it. */
@@ -25,7 +27,7 @@ export class InvoiceApiService {
   private readonly erpnext = inject(ErpnextClient);
 
   async load(name: string): Promise<InvoiceDetail> {
-    const [invoice, references] = await Promise.all([
+    const [invoice, references, credits] = await Promise.all([
       firstValueFrom(
         this.erpnext.doc<{
           name: string;
@@ -53,6 +55,20 @@ export class InvoiceApiService {
           parent: 'Payment Entry',
           limit: 0,
         }),
+      ).catch(() => []),
+      firstValueFrom(
+        this.erpnext.list<{ grand_total: number; update_outstanding_for_self: number }>(
+          'Sales Invoice',
+          {
+            fields: ['grand_total', 'update_outstanding_for_self'],
+            filters: [
+              ['return_against', '=', name],
+              ['is_return', '=', 1],
+              ['docstatus', '=', 1],
+            ],
+            limit: 0,
+          },
+        ),
       ).catch(() => []),
     ]);
     const payments = references.length
@@ -92,6 +108,9 @@ export class InvoiceApiService {
         invoice.docstatus === 1 ? 'confirmed' : invoice.docstatus === 2 ? 'cancelled' : 'draft',
       total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
+      credited: credits
+        .filter((c) => !c.update_outstanding_for_self)
+        .reduce((sum, c) => sum + Math.abs(c.grand_total), 0),
       delivered: invoice.docstatus === 1 && !!invoice.update_stock,
       returnable: canReturn({
         docstatus: invoice.docstatus,
