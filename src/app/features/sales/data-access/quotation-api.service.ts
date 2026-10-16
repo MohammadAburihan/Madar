@@ -184,10 +184,17 @@ export class QuotationApiService {
       transaction_date: request.date,
       valid_till: request.validTill,
       utm_content: request.reference,
+      // The quoted rates and total are what the user saw: no pricing rules, default taxes or rounding.
+      ignore_pricing_rule: 1,
+      disable_rounded_total: 1,
+      taxes_and_charges: '',
+      taxes: [],
       items: request.lines.map((l) => ({
         item_code: l.item,
         qty: l.qty,
         uom: l.uom,
+        // Without a list rate ERPNext fills in the list price, even over a rate of 0.
+        price_list_rate: l.rate,
         rate: l.rate,
       })),
     };

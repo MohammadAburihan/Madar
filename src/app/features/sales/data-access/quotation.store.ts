@@ -93,8 +93,15 @@ export class QuotationStore {
     });
   }
 
-  /** Opens a saved draft quotation in the form, to change and confirm it. */
-  edit(draft: QuotationDetail): void {
+  /** Opens a saved draft quotation in the form; false while another confirmation is still open. */
+  edit(draft: QuotationDetail): boolean {
+    if (this.busy()) {
+      return false;
+    }
+    if (this.draft() === draft.name) {
+      // Left behind by a failed confirmation, and now opened on purpose: starting over must not delete it.
+      this.draftSaved.set(true);
+    }
     this.start();
     this.customer.set({ id: draft.customer, name: draft.customerName, meta: null });
     this.lines.set(
@@ -118,6 +125,7 @@ export class QuotationStore {
     // The user saved it: starting over again keeps it.
     this.draftSaved.set(true);
     this.opened = true;
+    return true;
   }
 
   /** Entering the task from elsewhere: keep a running, unresolved or unseen quotation; else start over. */

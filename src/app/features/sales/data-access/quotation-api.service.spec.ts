@@ -34,7 +34,10 @@ describe('QuotationApiService', () => {
       party_name: 'Lina Haddad',
       valid_till: '2026-10-30',
       utm_content: 'QUO-ABC1234',
-      items: [{ item_code: 'POT-30', qty: 2, rate: 45 }],
+      ignore_pricing_rule: 1,
+      disable_rounded_total: 1,
+      taxes_and_charges: '',
+      items: [{ item_code: 'POT-30', qty: 2, price_list_rate: 45, rate: 45 }],
     });
   });
 

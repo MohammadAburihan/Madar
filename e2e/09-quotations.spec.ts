@@ -75,8 +75,13 @@ test('saves a quotation as a draft to finish later @desktop', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Share quotation' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Continue editing' }).click();
   await expect(page).toHaveURL(/\/sales\/quote\/new$/);
-  await expect(page.getByLabel(named('Price each', '·', ITEM.name))).toHaveValue('45');
+  await expect(price).toHaveValue('45');
+  // Quoted free of charge: ERPNext must keep the 0, not fill in the list price.
+  await price.fill('0');
   await page.getByRole('button', { name: 'Confirm quotation' }).click();
   await expect(page).toHaveURL(new RegExp(`/sales/quotes/${draft}$`), { timeout: 60_000 });
   await expectHeading(page, 'Quotation confirmed');
+  await expect(page.locator('app-feedback-card').first()).toContainText(
+    named('Open', '·', 'ILS 0.00'),
+  );
 });

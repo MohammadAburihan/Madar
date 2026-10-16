@@ -50,6 +50,28 @@ async function ready() {
   return ctx;
 }
 
+const draftDetail = (name: string) => ({
+  name,
+  customer: 'Lina Haddad',
+  customerName: 'Lina Haddad',
+  docstatus: 0,
+  status: 'Draft',
+  date: '2026-10-16',
+  validTill: '2026-10-30',
+  total: 45,
+  lines: [
+    {
+      code: 'POT-30',
+      name: 'Ceramic planter',
+      qty: 1,
+      uom: 'Unit',
+      rate: 45,
+      amount: 45,
+      isStock: true,
+    },
+  ],
+});
+
 describe('QuotationStore', () => {
   it('quotes at the selling price, valid for two weeks from the site today, and confirms it', async () => {
     const { store, api } = await ready();
@@ -184,6 +206,28 @@ describe('QuotationStore', () => {
     ]);
     store.resume();
     expect(store.draft()).toBeNull();
+  });
+
+  it('editing keeps an open confirmation, and never deletes the left-behind draft it opens', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementation(async (_request, _draft, onInserted) => {
+      onInserted('QT-LEFT');
+      throw new UnresolvedError();
+    });
+    await store.confirm();
+    const reference = store.reference();
+    expect(store.edit(draftDetail('QT-OTHER'))).toBe(false);
+    expect([store.state(), store.reference(), store.draft()]).toEqual([
+      'unresolved',
+      reference,
+      'QT-LEFT',
+    ]);
+    api.find.mockResolvedValue('not-found');
+    await store.checkResult();
+    store.state.set('failed');
+    expect(store.edit(draftDetail('QT-LEFT'))).toBe(true);
+    expect(api.discard).not.toHaveBeenCalled();
+    expect(store.draft()).toBe('QT-LEFT');
   });
 
   it("won't quote valid until a day already past", async () => {

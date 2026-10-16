@@ -161,8 +161,9 @@ export class QuotationContainer {
       const name = this.name();
       untracked(() => {
         // The quotation this task just confirmed: show it as confirmed, once.
-        if (this.store.result() === name && !this.store.resultShown()) {
-          this.justConfirmed.set(true);
+        const confirmed = this.store.result() === name && !this.store.resultShown();
+        this.justConfirmed.set(confirmed);
+        if (confirmed) {
           this.store.resultShown.set(true);
         }
         void this.load(name);
@@ -190,6 +191,7 @@ export class QuotationContainer {
   protected edit(): void {
     const quotation = this.quotation();
     if (quotation) {
+      // While another confirmation is open, the form shows that one first.
       this.store.edit(quotation);
       void this.router.navigate(['/sales/quote/new']);
     }

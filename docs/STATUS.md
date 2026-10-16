@@ -65,7 +65,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   the total. Review pass 2 (3 medium, 3 low) fixed: only the latest draft save ends the saving state (no duplicate
   draft after a restart; also in purchase orders); a saved draft opens from Sales and "Continue editing" finishes and
   confirms it (e2e); drafts can't be shared; a failure before sending doesn't leave a confirmation stuck (also in
-  purchase orders); valid-until must be today or later.
+  purchase orders); valid-until must be today or later. Review pass 3 (2 medium, 1 low) fixed: ERPNext keeps the
+  typed rates (list rate, no pricing rules, default taxes or rounding; a free line stays at 0, e2e); "Continue
+  editing" leaves an open confirmation alone and never deletes the draft it opens; "Quotation confirmed" is shown
+  only for the quotation just confirmed.
 - Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)
