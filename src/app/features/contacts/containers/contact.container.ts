@@ -9,6 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -90,7 +91,12 @@ export class ContactContainer {
   private readonly business = inject(BusinessService);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
-  private readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  private readonly caps = this.session.capabilities;
+  /** Salespeople and store associates see their own sales only (docs/PERMISSIONS.md). */
+  private readonly owner = computed(() =>
+    OWN_SALES_ONLY.includes(this.session.persona()) ? (this.session.user()?.id ?? null) : null,
+  );
   protected readonly i18n = injectI18n();
 
   private readonly detail = signal<CustomerDetail | SupplierDetail | null>(null);
@@ -164,7 +170,7 @@ export class ContactContainer {
       }
       const detail =
         kind === 'customers'
-          ? await this.api.customer(id, business)
+          ? await this.api.customer(id, business, this.owner())
           : await this.api.supplier(id, business, this.caps().seeCosts);
       if (run === this.run) {
         this.detail.set(detail);

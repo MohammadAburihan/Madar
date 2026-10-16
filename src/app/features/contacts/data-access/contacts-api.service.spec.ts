@@ -33,7 +33,7 @@ describe('ContactsApiService', () => {
         },
       ],
     });
-    expect(await api().customerList('lin', COMPANY)).toEqual([
+    expect(await api().customerList('lin', COMPANY, null)).toEqual([
       { id: 'Lina Haddad', name: 'Lina Haddad', phone: '059', city: 'Ramallah', outstanding: 117 },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', 'Walk-in Customer']);
@@ -44,7 +44,7 @@ describe('ContactsApiService', () => {
       Customer: () => [{ name: 'L', customer_name: 'L', mobile_no: null, primary_address: null }],
       'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
     });
-    expect((await api().customerList('', COMPANY))[0].outstanding).toBeNull();
+    expect((await api().customerList('', COMPANY, null))[0].outstanding).toBeNull();
   });
 
   it('totals a customer: invoiced, paid after returns, and outstanding', async () => {
@@ -92,7 +92,7 @@ describe('ContactsApiService', () => {
         },
       },
     );
-    const customer = await api().customer('Lina Haddad', COMPANY);
+    const customer = await api().customer('Lina Haddad', COMPANY, null);
     expect(customer.totals).toEqual({ invoiced: 420, paid: 200, outstanding: 200 });
     expect(customer.latest).toMatchObject({ name: 'SI-2', outstanding: 100 });
     expect(customer.recent.map((r) => r.name)).toEqual(['SI-2', 'PAY-1', 'SI-1']);
@@ -127,5 +127,21 @@ describe('ContactsApiService', () => {
     const calls = listCalls.length;
     expect((await api().supplier('Green Clay', COMPANY, false)).outstanding).toBeNull();
     expect(listCalls.slice(calls).map((c) => c.doctype)).toEqual(['Purchase Order']);
+  });
+
+  it('keeps a salesperson to their own sales and payments for a customer', async () => {
+    const { listCalls } = fakeErpnext(
+      {},
+      {},
+      { 'Customer/Lina Haddad': { name: 'Lina Haddad', customer_name: 'Lina Haddad' } },
+    );
+    await api().customer('Lina Haddad', COMPANY, 'lina@rehan.example');
+    for (const doctype of ['Sales Invoice', 'Payment Entry']) {
+      expect(listCalls.find((c) => c.doctype === doctype)!.query.filters).toContainEqual([
+        'owner',
+        '=',
+        'lina@rehan.example',
+      ]);
+    }
   });
 });

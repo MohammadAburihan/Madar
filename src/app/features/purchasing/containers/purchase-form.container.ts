@@ -253,14 +253,12 @@ export class PurchaseFormContainer implements OnInit {
       // "Buy missing" on a project: book the order to it and add its shortfall once a supplier is chosen.
       store.forProject(project, params.get('item'), Number(params.get('qty')) || null);
     }
-    // "Buy from" on a supplier's page: the order starts with that supplier chosen.
-    const supplier = params.get('supplier');
-    void this.load().then(() => {
-      if (supplier && !store.supplier() && store.suppliers().some((s) => s.id === supplier)) {
-        this.chooseSupplier(supplier);
-      }
-    });
+    this.deepSupplier = params.get('supplier');
+    void this.load();
   }
+
+  /** "Buy from" on a supplier's page: the order starts with that supplier chosen, once they have loaded. */
+  private deepSupplier: string | null = null;
 
   protected resultCard(item: PurchaseItem) {
     return itemResult(item, this.ctx.currency(), this.ctx.i18n.tr());
@@ -301,6 +299,11 @@ export class PurchaseFormContainer implements OnInit {
     } catch {
       this.loadFailed.set(true);
       return;
+    }
+    const supplier = this.deepSupplier;
+    const store = this.ctx.store;
+    if (supplier && !store.supplier() && store.suppliers().some((s) => s.id === supplier)) {
+      this.chooseSupplier(supplier);
     }
     this.loaded.set(true);
   }

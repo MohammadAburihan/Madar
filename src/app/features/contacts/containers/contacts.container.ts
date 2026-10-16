@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -153,7 +154,12 @@ export class ContactsContainer {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   protected readonly viewport = inject(ViewportService).viewport;
-  private readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  private readonly caps = this.session.capabilities;
+  /** Salespeople and store associates see their own sales only (docs/PERMISSIONS.md). */
+  private readonly owner = computed(() =>
+    OWN_SALES_ONLY.includes(this.session.persona()) ? (this.session.user()?.id ?? null) : null,
+  );
   protected readonly i18n = injectI18n();
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
@@ -200,10 +206,13 @@ export class ContactsContainer {
     };
   });
 
-  /** Supplier money only for roles that see buying costs (docs/PERMISSIONS.md). */
-  private readonly withMoney = computed(
-    () => this.current() === 'customers' || this.caps().seeCosts,
-  );
+  /** Balances where the rows have them: supplier money is for cost roles, and invoices may be unreadable. */
+  private readonly withMoney = computed(() => {
+    const rows = this.rows();
+    return rows.length
+      ? rows[0].outstanding !== null
+      : this.current() === 'customers' || this.caps().seeCosts;
+  });
 
   protected readonly headers = computed(() => {
     const { t } = this.i18n.tr();
@@ -301,7 +310,7 @@ export class ContactsContainer {
       }
       const rows =
         kind === 'customers'
-          ? await this.api.customerList(term, business)
+          ? await this.api.customerList(term, business, this.owner())
           : await this.api.supplierList(term, business, this.caps().seeCosts);
       if (run === this.run) {
         this.rows.set(rows);
@@ -328,7 +337,7 @@ export class ContactsContainer {
       }
       const detail =
         kind === 'customers'
-          ? await this.api.customer(id, business)
+          ? await this.api.customer(id, business, this.owner())
           : await this.api.supplier(id, business, this.caps().seeCosts);
       if (run === this.detailRun) {
         this.detail.set(detail);

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ContactInfo, ContactRow, CustomerDetail, SupplierDetail } from './contacts.models';
 
 const LIST_LIMIT = 30;
@@ -39,7 +39,8 @@ export class ContactsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
   /** Customers matching the term, with what each owes across currencies, as their page totals it. */
-  async customerList(term: string, company: Company): Promise<ContactRow[]> {
+  /** `owner` limits the balances to that user's own sales (salespeople, store associates). */
+  async customerList(term: string, company: Company, owner: string | null): Promise<ContactRow[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -71,6 +72,7 @@ export class ContactsApiService {
           'customer',
           rows.map((r) => r.name),
           company,
+          owner,
         ).catch(() => null)
       : null;
     return rows.map((r) => ({
@@ -112,6 +114,7 @@ export class ContactsApiService {
             'supplier',
             rows.map((r) => r.name),
             company,
+            null,
           ).catch(() => null)
         : null;
     return rows.map((r) => ({
@@ -123,7 +126,8 @@ export class ContactsApiService {
     }));
   }
 
-  async customer(id: string, company: Company): Promise<CustomerDetail> {
+  /** `owner` limits the totals and activity to that user's own sales and payments. */
+  async customer(id: string, company: Company, owner: string | null): Promise<CustomerDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<PartyDoc>('Customer', id));
     // Roles without Sales Invoice access still see the contact itself.
     const [invoices, payments] = await Promise.all([
@@ -144,6 +148,7 @@ export class ContactsApiService {
             ['customer', '=', id],
             ['company', '=', company.name],
             ['docstatus', '=', 1],
+            ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
           ],
           orderBy: 'posting_date desc, creation desc',
         })
@@ -159,6 +164,7 @@ export class ContactsApiService {
               ['payment_type', '=', 'Receive'],
               ['company', '=', company.name],
               ['docstatus', '=', 1],
+              ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
             ],
             orderBy: 'posting_date desc, creation desc',
             limit: 5,
@@ -306,6 +312,7 @@ export class ContactsApiService {
     party: 'customer' | 'supplier',
     parties: string[],
     company: Company,
+    owner: string | null,
   ) {
     const groups = await firstValueFrom(
       this.erpnext.list<Record<string, number | string>>(doctype, {
@@ -315,6 +322,7 @@ export class ContactsApiService {
           ['company', '=', company.name],
           ['docstatus', '=', 1],
           ['outstanding_amount', '!=', 0],
+          ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
         ],
         groupBy: `${party}, party_account_currency, conversion_rate`,
         limit: 0,

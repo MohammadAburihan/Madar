@@ -102,7 +102,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   open purchase order's progress, and Buy from (opens a new order with the supplier chosen) / Pay supplier. Desktop
   is a table with a side panel (contact, what is due, actions, recent invoices and payments). e2e: find Lina, check
   her list balance matches her page, start a sale with her; open Green Clay and start an order; Arabic; desktop
-  panel.
+  panel. Review pass 1 (1 high, 1 medium, 2 low) fixed: salespeople and store associates see their own sales and
+  payments on a customer's page and in the list balances; the table has an Outstanding column only when the rows
+  have balances; a deep-linked customer doesn't replace one picked meanwhile; "Buy from" keeps its supplier after a
+  retried load.
 - Next: Contacts C2 (add/edit a contact, transaction history), then Settings.
 
 ## End-to-end happy paths: merged (#26)

@@ -147,7 +147,10 @@ export class SaleCustomerContainer implements OnInit {
     if (id && this.ctx.store.customer()?.id !== id) {
       void this.directory
         .byId(id)
-        .then((found) => found && this.ctx.store.selectCustomer(found))
+        // Not over a customer picked while it loaded.
+        .then(
+          (found) => found && !this.ctx.store.customer() && this.ctx.store.selectCustomer(found),
+        )
         .catch(() => undefined);
     }
   }
