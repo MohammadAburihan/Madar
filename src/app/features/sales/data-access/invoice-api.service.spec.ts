@@ -117,12 +117,13 @@ describe('InvoiceApiService', () => {
     expect((await api.load('SI-4')).returnable).toBe(false);
   });
 
-  it('counts credit notes at their rounded total, and fails rather than hide them', async () => {
-    fakeErpnext(
+  it('counts every credit note that settled the invoice, as the ledger records it', async () => {
+    const { listCalls } = fakeErpnext(
       {
-        'Sales Invoice': () => [
-          { grand_total: -44.97, rounded_total: -45, update_outstanding_for_self: 0 },
-          { grand_total: -10, rounded_total: 0, update_outstanding_for_self: 1 },
+        // A return made against it (45 rounded) and a credit note matched to it later (20).
+        'Payment Ledger Entry': () => [
+          { voucher_no: 'SI-RET', amount_in_account_currency: -45 },
+          { voucher_no: 'SI-CN', amount_in_account_currency: -20 },
         ],
       },
       {},
@@ -130,12 +131,15 @@ describe('InvoiceApiService', () => {
         'Sales Invoice/SI-1': {
           name: 'SI-1',
           docstatus: 1,
-          grand_total: 44.97,
-          rounded_total: 45,
-          outstanding_amount: 0,
+          grand_total: 100,
+          rounded_total: 100,
+          outstanding_amount: 35,
         },
       },
     );
-    expect((await TestBed.inject(InvoiceApiService).load('SI-1')).credited).toBe(45);
+    expect((await TestBed.inject(InvoiceApiService).load('SI-1')).credited).toBe(65);
+    expect(
+      listCalls.find((c) => c.doctype === 'Payment Ledger Entry')!.query.filters,
+    ).toContainEqual(['voucher_type', '=', 'Sales Invoice']);
   });
 });

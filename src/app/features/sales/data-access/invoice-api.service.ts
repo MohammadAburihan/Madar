@@ -57,20 +57,22 @@ export class InvoiceApiService {
           limit: 0,
         }),
       ).catch(() => []),
+      // Every credit note settling it, whether made against it or matched to it later, is a ledger entry.
       firstValueFrom(
-        this.erpnext.list<{
-          grand_total: number;
-          rounded_total: number;
-          update_outstanding_for_self: number;
-        }>('Sales Invoice', {
-          fields: ['grand_total', 'rounded_total', 'update_outstanding_for_self'],
-          filters: [
-            ['return_against', '=', name],
-            ['is_return', '=', 1],
-            ['docstatus', '=', 1],
-          ],
-          limit: 0,
-        }),
+        this.erpnext.list<{ voucher_no: string; amount_in_account_currency: number }>(
+          'Payment Ledger Entry',
+          {
+            fields: ['voucher_no', 'amount_in_account_currency'],
+            filters: [
+              ['against_voucher_type', '=', 'Sales Invoice'],
+              ['against_voucher_no', '=', name],
+              ['voucher_type', '=', 'Sales Invoice'],
+              ['voucher_no', '!=', name],
+              ['delinked', '=', 0],
+            ],
+            limit: 0,
+          },
+        ),
       ).catch((error: unknown) => {
         // Without the credits, paid would count them as money: only a role's 403 is passed over.
         if (ErpnextError.from(error).kind === 'forbidden') {
@@ -116,9 +118,10 @@ export class InvoiceApiService {
         invoice.docstatus === 1 ? 'confirmed' : invoice.docstatus === 2 ? 'cancelled' : 'draft',
       total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
-      credited: credits
-        .filter((c) => !c.update_outstanding_for_self)
-        .reduce((sum, c) => sum + Math.abs(invoiceTotal(c)), 0),
+      credited: Math.max(
+        -credits.reduce((sum, c) => sum + Number(c.amount_in_account_currency), 0),
+        0,
+      ),
       delivered: invoice.docstatus === 1 && !!invoice.update_stock,
       returnable: canReturn({
         docstatus: invoice.docstatus,

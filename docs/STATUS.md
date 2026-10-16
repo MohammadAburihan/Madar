@@ -152,7 +152,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   shows them, and a sale settled by a return reads "Payment: Credit note issued". Review pass 1 (1 medium, 3 low)
   fixed: credits count at their rounded total, as ERPNext reduces what is owed; a negative outstanding (refund still
   owed) isn't called a credit settlement; an unreadable credit list fails the page instead of counting credits as
-  paid (a role's 403 still passes); the invoice-page check skips with a reason when no returned sale exists.
+  paid (a role's 403 still passes); the invoice-page check skips with a reason when no returned sale exists. Review
+  pass 2 (1 medium) fixed: credits come from the Payment Ledger (every credit note settling the invoice, also ones
+  matched to it later), not only returns made against it.
 - Next: the whole-branch review of the batch (Sales S2–S4, Contacts, Settings).
 
 ## End-to-end happy paths: merged (#26)
