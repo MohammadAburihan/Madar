@@ -1,8 +1,9 @@
 import { Page, expect, test } from '@playwright/test';
-import { CUSTOMER, ITEM, MAIN, choose, expectHeading, named, signIn } from './support';
+import { CUSTOMER, ITEM, MAIN, choose, expectHeading, named, signIn, topUp } from './support';
 
 /** A quick sale of one planter to the customer, left unpaid; resolves to its invoice. */
 async function unpaidSale(page: Page): Promise<string> {
+  await topUp(page, ITEM.code, MAIN, 5);
   await page.goto('/sales/new');
   await page.locator('app-search-field input').fill(CUSTOMER);
   await page.locator('app-person-card').filter({ hasText: CUSTOMER }).first().click();

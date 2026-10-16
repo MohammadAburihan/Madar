@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ITEM, MAIN, choose, expectHeading, named, signIn, toArabic } from './support';
+import { ITEM, MAIN, choose, expectHeading, named, signIn, toArabic, topUp } from './support';
 
 test('sells in Arabic, right to left, from start to receipt @phone', async ({ page }) => {
   await signIn(page, 'owner');
@@ -45,6 +45,7 @@ test('lists the sales in Arabic @phone', async ({ page }) => {
 
 test('quotes in Arabic, right to left @phone', async ({ page }) => {
   await signIn(page, 'owner');
+  await topUp(page, 'POT-30', MAIN, 5);
   await page.goto('/sales/quote/new');
   await toArabic(page);
   await expectHeading(page, 'عرض سعر جديد');
@@ -93,6 +94,7 @@ test('takes a return against a paid sale in Arabic, keeping the credit for the c
   page,
 }) => {
   await signIn(page, 'owner');
+  await topUp(page, ITEM.code, MAIN, 5);
   await page.goto('/sales/new');
   await page.getByRole('button', { name: 'Walk-in customer' }).click();
   await choose(page.locator('app-select-field select').first(), MAIN);

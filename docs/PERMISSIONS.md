@@ -45,6 +45,8 @@ to the Owner.
 | See today's money summaries | ✅ | own sales | own sales | — | — | — |
 | See payment history (Money) | ✅ all | own payments | own payments | — | — | — |
 | See reports (profit, money in and out, statements; Owner only, decided 14 Oct 2026) | ✅ | — | — | — | — | — |
+| See customers and what they owe (Contacts) | ✅ | ✅ | ✅ | — | — | ✅ |
+| See suppliers (Contacts; their balances only with cost prices) | ✅ | — | ✅ | ✅ | ✅ | — |
 | Add customers | ✅ | ✅ | ✅ | — | — | ✅ |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |

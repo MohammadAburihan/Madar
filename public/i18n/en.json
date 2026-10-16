@@ -2393,5 +2393,69 @@
         "message": "Madar takes returns only against confirmed sales whose goods left with the invoice. Use ERPNext for this one."
       }
     }
+  },
+  "contacts": {
+    "title": "Customers & suppliers",
+    "subtitle": "Contacts · {{business}}",
+    "workspaceSubtitle": "{{business}} · {{kind}}",
+    "search": "Search",
+    "placeholder": "Search name, phone or code",
+    "kinds": {
+      "customers": "Customers",
+      "suppliers": "Suppliers"
+    },
+    "loading": "Loading contacts…",
+    "retry": "Try again",
+    "choose": "Choose a contact to see their details.",
+    "openDetail": "Open contact",
+    "panelFailed": "This contact couldn't load.",
+    "error": {
+      "title": "Contacts couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "No contacts for your role",
+      "message": "Your role doesn't work with customers or suppliers in Madar."
+    },
+    "headers": {
+      "customer": "Customer",
+      "supplier": "Supplier",
+      "city": "City",
+      "outstanding": "Outstanding"
+    },
+    "noResults": "No contacts match your search.",
+    "empty": {
+      "customers": "No customers yet.",
+      "suppliers": "No suppliers yet."
+    },
+    "outstanding": "Outstanding {{amount}}",
+    "customerSubtitle": "Customer · {{id}}",
+    "supplierSubtitle": "Supplier · {{id}}",
+    "payment": {
+      "paid": "Paid",
+      "partlyPaid": "Partially paid",
+      "creditNote": "Credit note issued",
+      "unpaid": "Unpaid"
+    },
+    "invoiceTotal": "Invoice total",
+    "amountPaid": "Amount paid",
+    "outstandingLabel": "Outstanding",
+    "due": "{{amount}} due",
+    "latestSale": "Latest sale · {{name}}",
+    "latestConfirmed": "{{date}} · Invoice confirmed",
+    "latestSummary": "{{name}} · {{invoiced}} invoiced · {{paid}} paid",
+    "unpaidInvoice": "Invoice {{name}}: {{total}}\nPaid {{paid}} · Remaining {{remaining}}",
+    "nothingDue": "Nothing to pay this supplier.",
+    "openOrder": "Open purchase order",
+    "openOrderProgress": "{{name}} · {{ordered}} ordered\n{{received}} received · {{billed}} billed · {{left}} outstanding",
+    "receivePayment": "Receive payment",
+    "sellTo": "Sell to {{name}}",
+    "buyFrom": "Buy from {{name}}",
+    "paySupplier": "Pay supplier",
+    "back": "Back",
+    "loadFailed": {
+      "title": "This contact couldn't load",
+      "message": "Check the connection and try again."
+    }
   }
 }

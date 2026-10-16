@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
+import { contactRoutes } from './features/contacts/contacts.routes';
 import { inventoryRoutes } from './features/inventory/inventory.routes';
 import { paymentRoutes } from './features/payments/payment.routes';
 import { projectRoutes } from './features/projects/projects.routes';
@@ -47,7 +48,7 @@ export const routes: Routes = [
       ...purchaseRoutes,
       ...projectRoutes,
       ...reportRoutes,
-      placeholder('contacts', 'nav.contacts'),
+      ...contactRoutes,
       placeholder('settings', 'nav.settings'),
       {
         path: 'more',

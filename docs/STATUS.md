@@ -74,7 +74,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   from an earlier visit that someone posted isn't taken as this invoice; nothing left to bill at confirm asks for a
   new review. Review pass 3 (2 low) fixed: rows of the same item share the warehouse's stock; drop-shipped rows aren't
   offered for delivery.
-- **Sales S4 — Returns** (this PR): "Return items" on a confirmed sale whose goods left with the invoice (quick
+- **Sales S4 — Returns**: merged (#36). "Return items" on a confirmed sale whose goods left with the invoice (quick
   sales, or services only) opens "Return from sale": each line reads "Sold · Returned" and "Return n × price", with a
   return quantity (1 of the first line suggested), the warehouse the goods came from, and a reason. The summary says
   the credit, the payment that stays and the new balance; a credit larger than what is owed stays on the customer's
@@ -94,7 +94,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   return takes its share of a fixed invoice discount and of "Actual" charges (ERPNext's mapper copies them whole), so
   the posted credit matches the preview (checked on v16). Review pass 4 (1 low-medium) fixed: a carried-over draft that an
   earlier task's slow submit posted asks for a reload instead of a second credit note.
-- Next: Contacts and Settings. A new order without a quotation has no mock and isn't planned.
+- **Contacts C1 — Lists and pages** (this PR): Contacts lists customers and suppliers (the kinds a role works
+  with; PERMISSIONS.md gains both rows), searchable by name, phone or code, each with what they owe in the company
+  currency (converted per currency and rate, as on their page). A customer's page shows how to reach them, invoice
+  total, amount paid (after returns) and outstanding, the latest sale, and Receive payment / Sell to (both open
+  with the customer chosen). A supplier's page shows the balance and oldest unpaid invoice (cost roles only), the
+  open purchase order's progress, and Buy from (opens a new order with the supplier chosen) / Pay supplier. Desktop
+  is a table with a side panel (contact, what is due, actions, recent invoices and payments). e2e: find Lina, check
+  her list balance matches her page, start a sale with her; open Green Clay and start an order; Arabic; desktop
+  panel.
+- Next: Contacts C2 (add/edit a contact, transaction history), then Settings.
 
 ## End-to-end happy paths: merged (#26)
 
