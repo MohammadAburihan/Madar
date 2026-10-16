@@ -14,7 +14,8 @@
     "docker:build": "docker buildx build --platform linux/amd64 --build-arg VERSION=$npm_package_version -t madar-web:$npm_package_version --load .",
     "cap:sync:dev": "ng build --configuration development && node scripts/sync-ios-version.mjs && cap sync",
     "android:dev": "npm run cap:sync:dev && cap run android --no-sync",
-    "ios:dev": "npm run cap:sync:dev && sh scripts/ios-dev.sh"
+    "ios:dev": "npm run cap:sync:dev && sh scripts/ios-dev.sh",
+    "e2e": "playwright test"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
@@ -47,6 +48,7 @@
     "@angular/compiler-cli": "^22.2.0",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.3",
+    "@playwright/test": "^1.64.1",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",

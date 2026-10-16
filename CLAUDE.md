@@ -38,6 +38,7 @@ npm run cap:sync      # production build copied into the android/ and ios/ proje
 npm run android:dev   # dev build on the Android emulator, talking to local ERPNext
 npm run ios:dev       # dev build on the iOS simulator, talking to local ERPNext
 npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
+npm run e2e           # Playwright happy paths (e2e/): own dev server on :4321 → seeded test site :8081; phone and desktop
 ```
 
 Runtime config: `public/config.json` (`erpnextUrl`, empty = same origin). In the Docker image it is written at
