@@ -266,7 +266,11 @@ export class ContactsContainer {
         id: detail.id,
         name: detail.name,
         lines: contactLines(detail),
-        card: view.due ? { title: view.due, message: view.latest?.summary ?? '' } : null,
+        card: view.due
+          ? { title: view.due, message: view.latest?.summary ?? '' }
+          : view.latest
+            ? { title: view.latest.title, message: view.latest.summary }
+            : null,
         actions: contactActions('customers', detail, caps, tr),
         recent: view.recent,
       };

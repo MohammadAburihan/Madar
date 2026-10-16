@@ -290,6 +290,7 @@ export class PurchaseFormContainer implements OnInit {
   }
 
   protected chooseSupplier(supplier: string | null): void {
+    this.missingSupplier.set(null);
     this.ctx.store.setSupplier(supplier);
     void this.ctx.store.applyPrefill().catch(() => undefined);
   }

@@ -76,7 +76,10 @@ export function customerView(
           { label: t('outstandingLabel'), value: money(customer.totals.outstanding), accent: true },
         ]
       : [],
-    due: customer.totals ? t('due', { amount: money(customer.totals.outstanding) }) : null,
+    due:
+      customer.totals && customer.totals.outstanding > 0.005
+        ? t('due', { amount: money(customer.totals.outstanding) })
+        : null,
     latest: customer.latest
       ? {
           title: t('latestSale', { name: customer.latest.name }),
