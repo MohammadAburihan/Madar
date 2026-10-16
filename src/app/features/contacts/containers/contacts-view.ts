@@ -6,6 +6,7 @@ import {
   ContactKind,
   ContactRow,
   CustomerDetail,
+  HistoryEntry,
   SupplierDetail,
 } from '../data-access/contacts.models';
 
@@ -132,4 +133,64 @@ export function supplierView(supplier: SupplierDetail, currency: string, tr: Tra
         }
       : null,
   };
+}
+
+const plain = (value: number) =>
+  new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+    value,
+  );
+
+/** One line of the transaction history, as on the history mock. */
+export function historyCard(
+  entry: HistoryEntry,
+  kind: ContactKind,
+  currency: string,
+  tr: Translator,
+): { title: string; message: string } {
+  const t = (key: string, params?: Record<string, unknown>) =>
+    tr.t(`contacts.history.${key}`, params);
+  const money = (value: number) => formatMoney(value, currency);
+  switch (entry.kind) {
+    case 'invoice':
+      return {
+        title: `${entry.name} · ${money(entry.amount ?? 0)}`,
+        message: `${t('invoiceState', { state: paymentState(entry.status, tr) })}\n${
+          // A credit note, not a payment, settled it: "paid" would count the credit as money received.
+          entry.status === 'Credit Note Issued'
+            ? t('dueOnly', { due: plain(entry.outstanding) })
+            : t('paidDue', {
+                paid: plain(Math.max((entry.amount ?? 0) - entry.outstanding, 0)),
+                due: plain(entry.outstanding),
+              })
+        }`,
+      };
+    case 'return':
+      return { title: `${entry.name} · ${money(entry.amount ?? 0)}`, message: t('creditNote') };
+    case 'payment':
+      return {
+        title: `${entry.name} · ${money(entry.amount ?? 0)}`,
+        message: [
+          t(kind === 'customers' ? 'customerPayment' : 'supplierPayment', {
+            account: entry.place ?? '',
+          }),
+          entry.invoices.length ? t('allocated', { invoices: entry.invoices.join(', ') }) : null,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      };
+    case 'delivery':
+      return {
+        title: `${entry.name} · ${tr.plural('contacts.history.units', entry.qty, { count: qty(entry.qty) })}`,
+        message: t(
+          kind === 'customers'
+            ? entry.status === 'Return'
+              ? 'goodsReturned'
+              : 'goodsDelivered'
+            : entry.status === 'Return'
+              ? 'goodsSentBack'
+              : 'goodsReceived',
+          { warehouse: entry.place ?? '' },
+        ),
+      };
+  }
 }

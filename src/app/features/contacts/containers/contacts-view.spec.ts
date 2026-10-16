@@ -1,6 +1,13 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactCard, contactLines, contactRow, customerView, supplierView } from './contacts-view';
+import {
+  contactCard,
+  contactLines,
+  contactRow,
+  customerView,
+  historyCard,
+  supplierView,
+} from './contacts-view';
 
 const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
 const en = realTranslator('en');
@@ -87,5 +94,93 @@ describe('contacts view', () => {
       },
     });
     expect(supplierView({ ...supplier, outstanding: null }, 'ILS', en).balance).toBeNull();
+  });
+
+  it('words the history as on the history mock', () => {
+    const base = {
+      date: '2026-10-11',
+      outstanding: 0,
+      status: '',
+      place: null,
+      invoices: [],
+      qty: 0,
+    };
+    expect(
+      visible(
+        historyCard(
+          {
+            ...base,
+            kind: 'invoice',
+            name: 'SI-1042',
+            amount: 320,
+            outstanding: 200,
+            status: 'Partly Paid',
+          },
+          'customers',
+          'ILS',
+          en,
+        ),
+      ),
+    ).toEqual({
+      title: 'SI-1042 · ILS 320.00',
+      message: 'Invoice confirmed · Partially paid\nPaid 120.00 · Due 200.00',
+    });
+    expect(
+      visible(
+        historyCard(
+          {
+            ...base,
+            kind: 'payment',
+            name: 'PAY-0154',
+            amount: 120,
+            place: 'Main cash',
+            invoices: ['SI-1042'],
+          },
+          'customers',
+          'ILS',
+          en,
+        ),
+      ),
+    ).toEqual({
+      title: 'PAY-0154 · ILS 120.00',
+      message: 'Customer payment · Main cash\nAllocated to SI-1042',
+    });
+    expect(
+      visible(
+        historyCard(
+          {
+            ...base,
+            kind: 'delivery',
+            name: 'DLV-0081',
+            amount: null,
+            place: 'Main warehouse',
+            qty: 2,
+          },
+          'customers',
+          'ILS',
+          ar,
+        ),
+      ),
+    ).toEqual({ title: 'DLV-0081 · وحدتان', message: 'تم تسليم البضائع · Main warehouse' });
+    expect(
+      visible(
+        historyCard(
+          { ...base, kind: 'delivery', name: 'PR-1', amount: null, qty: 1, place: 'Main' },
+          'suppliers',
+          'ILS',
+          en,
+        ).message,
+      ),
+    ).toBe('Goods received · Main');
+    expect(
+      visible(
+        historyCard(
+          { ...base, kind: 'invoice', name: 'SI-9', amount: 45, status: 'Credit Note Issued' },
+          'customers',
+          'ILS',
+          en,
+        ).message,
+      ),
+    ).toBe('Invoice confirmed · Credit note issued\nDue 0.00');
   });
 });

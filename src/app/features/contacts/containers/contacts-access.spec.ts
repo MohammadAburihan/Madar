@@ -1,7 +1,7 @@
 import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { realTranslator } from '../../../../testing/real-translator';
 import { CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactActions, contactKinds } from './contacts-access';
+import { contactActions, contactKinds, editableKinds } from './contacts-access';
 
 const en = realTranslator('en');
 const visible = (labels: string[]) => labels.map((l) => l.replace(/[⁨⁩]/g, ''));
@@ -62,5 +62,16 @@ describe('contacts access', () => {
       },
     ]);
     expect(contactActions('suppliers', SUPPLIER, capabilitiesFor('warehouse'), en)).toEqual([]);
+  });
+
+  it('lets each role add and edit the contacts ERPNext allows it to', () => {
+    expect(editableKinds(capabilitiesFor('owner'), 'add')).toEqual(['customers', 'suppliers']);
+    expect(editableKinds(capabilitiesFor('salesperson'), 'add')).toEqual(['customers']);
+    // Purchase User can't create suppliers in v16; Purchase Manager can edit them.
+    expect(editableKinds(capabilitiesFor('purchasing', ['Purchase User']), 'add')).toEqual([]);
+    expect(editableKinds(capabilitiesFor('purchasing', ['Purchase Manager']), 'edit')).toEqual([
+      'suppliers',
+    ]);
+    expect(editableKinds(capabilitiesFor('projectManager', ['Projects User']), 'add')).toEqual([]);
   });
 });

@@ -47,7 +47,8 @@ to the Owner.
 | See reports (profit, money in and out, statements; Owner only, decided 14 Oct 2026) | ✅ | — | — | — | — | — |
 | See customers and what they owe (Contacts) | ✅ | ✅ | ✅ | — | — | ✅ |
 | See suppliers (Contacts; their balances only with cost prices) | ✅ | — | ✅ | ✅ | ✅ | — |
-| Add customers | ✅ | ✅ | ✅ | — | — | ✅ |
+| Add customers and edit their contact details | ✅ | ✅ | ✅ | — | — | ✅ |
+| Add or edit suppliers (ERPNext needs Purchase Master Manager to add, Purchase Manager to edit) | ✅ | — | — | — | ✅ | — |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |
 | Record supplier invoices | ✅ | — | — | — | ✅ | — |

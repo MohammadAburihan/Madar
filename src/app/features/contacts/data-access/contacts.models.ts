@@ -34,3 +34,28 @@ export interface SupplierDetail extends ContactInfo {
   /** The newest order still to receive or bill. */
   openOrder: { name: string; ordered: number; received: number; billed: number } | null;
 }
+
+export interface ContactFormValue {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+}
+
+export interface HistoryEntry {
+  kind: 'invoice' | 'return' | 'payment' | 'delivery';
+  name: string;
+  date: string;
+  /** Company currency; null for deliveries, or where the role may not see money. */
+  amount: number | null;
+  /** Invoices: what is still owed. Company currency. */
+  outstanding: number;
+  /** Invoices: ERPNext's status. */
+  status: string;
+  /** Payments: the account it went to or came from; deliveries: the warehouse. */
+  place: string | null;
+  /** Payments: the invoices it settled. */
+  invoices: string[];
+  /** Deliveries: how many units left or arrived. */
+  qty: number;
+}

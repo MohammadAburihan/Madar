@@ -23,6 +23,9 @@ describe('capabilitiesFor', () => {
       deliverOrders: true,
       invoiceOrders: true,
       returnSales: true,
+      editCustomers: true,
+      addSuppliers: true,
+      editSuppliers: true,
     });
   });
 
@@ -49,6 +52,9 @@ describe('capabilitiesFor', () => {
         deliverOrders: true,
         invoiceOrders: true,
         returnSales: true,
+        editCustomers: true,
+        addSuppliers: false,
+        editSuppliers: false,
       });
     }
   });

@@ -94,7 +94,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   return takes its share of a fixed invoice discount and of "Actual" charges (ERPNext's mapper copies them whole), so
   the posted credit matches the preview (checked on v16). Review pass 4 (1 low-medium) fixed: a carried-over draft that an
   earlier task's slow submit posted asks for a reload instead of a second credit note.
-- **Contacts C1 — Lists and pages** (this PR): Contacts lists customers and suppliers (the kinds a role works
+- **Contacts C1 — Lists and pages**: merged (#37). Contacts lists customers and suppliers (the kinds a role works
   with; PERMISSIONS.md gains both rows), searchable by name, phone or code, each with what they owe in the company
   currency (converted per currency and rate, as on their page). A customer's page shows how to reach them, invoice
   total, amount paid (after returns) and outstanding, the latest sale, and Receive payment / Sell to (both open
@@ -112,7 +112,19 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   pass 4 (3 low): the missing-supplier note clears once another is chosen; a settled customer's desktop card shows the
   latest sale, not "ILS 0.00 due". Deferred (low): "Sell to" a customer deleted or disabled since their page opened
   starts the sale without them and says nothing.
-- Next: Contacts C2 (add/edit a contact, transaction history), then Settings.
+- **Contacts C2 — Contact form and history** (this PR): "Add customer or supplier" (phone) / "+ Add contact"
+  (desktop) opens Add contact: type (the kinds the role may add), Name *, Phone, Email (checked, but optional: many
+  ERPNext contacts have none, unlike the mock's "Email *"), Address; ERPNext's quick entry makes the primary contact
+  and address, and a `CON-…` reference in the party's details makes a lost create checkable. Edit contact / Edit
+  supplier writes the name onto the party and phone, email and address onto its primary Contact and Address (made
+  when missing), then saves the party read afresh so its shown details refresh. New capabilities `editCustomers`
+  (Sales User), `addSuppliers` (Purchase Master Manager) and `editSuppliers` (Purchase Manager too); PERMISSIONS.md
+  rows updated. View transactions lists a customer's invoices, returns, payments (account, invoices settled) and
+  deliveries, or a supplier's (receipts only without cost access), newest first, searchable, own sales only for sales
+  roles; invoices open their page. The mock's "More options" is left out.
+  e2e: add a customer (name and email checks), edit phone and address, find them in the list, empty history; Lina's
+  history opens an invoice; add a supplier on desktop; a salesperson may add customers only (Arabic).
+- Next: Settings.
 
 ## End-to-end happy paths: merged (#26)
 
