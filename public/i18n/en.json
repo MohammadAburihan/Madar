@@ -2505,6 +2505,10 @@
         "error": {
           "title": "The contact wasn't saved",
           "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "duplicate": {
+          "title": "That name is already used",
+          "message": "ERPNext already has a contact with this name. Use a different name, for example with the city."
         }
       }
     },

@@ -363,6 +363,7 @@ export class ContactsApiService {
                   'party_account_currency',
                   'return_against',
                   'update_outstanding_for_self',
+                  'creation',
                 ],
                 filters: scope(customer ? 'customer' : 'supplier'),
                 ...recent,
@@ -378,9 +379,22 @@ export class ContactsApiService {
               base_paid_amount: number;
               paid_to: string;
               paid_from: string;
+              creation?: string;
             }>('Payment Entry', {
-              fields: ['name', 'posting_date', 'base_paid_amount', 'paid_to', 'paid_from'],
-              filters: [['party_type', '=', customer ? 'Customer' : 'Supplier'], ...scope('party')],
+              fields: [
+                'name',
+                'posting_date',
+                'base_paid_amount',
+                'paid_to',
+                'paid_from',
+                'creation',
+              ],
+              // Money received from customers or paid to suppliers; refunds the other way aren't these.
+              filters: [
+                ['party_type', '=', customer ? 'Customer' : 'Supplier'],
+                ['payment_type', '=', customer ? 'Receive' : 'Pay'],
+                ...scope('party'),
+              ],
               ...recent,
             }),
           ).catch(forbiddenAsNone)
@@ -392,8 +406,9 @@ export class ContactsApiService {
           total_qty: number;
           set_warehouse: string | null;
           is_return: number;
+          creation?: string;
         }>(customer ? 'Delivery Note' : 'Purchase Receipt', {
-          fields: ['name', 'posting_date', 'total_qty', 'set_warehouse', 'is_return'],
+          fields: ['name', 'posting_date', 'total_qty', 'set_warehouse', 'is_return', 'creation'],
           filters: scope(customer ? 'customer' : 'supplier'),
           ...recent,
         }),
@@ -473,7 +488,17 @@ export class ContactsApiService {
         qty: Math.abs(Number(d.total_qty)),
       })),
     ];
-    return entries.sort((a, b) => b.date.localeCompare(a.date));
+    // Same-day records in the order they were made, newest first, across all kinds.
+    const made = new Map<string, string>([
+      ...invoices.map((r) => [String(r['name']), String(r['creation'] ?? '')] as const),
+      ...payments.map((p) => [p.name, p.creation ?? ''] as const),
+      ...deliveries.map((d) => [d.name, d.creation ?? ''] as const),
+    ]);
+    return entries.sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) ||
+        (made.get(b.name) ?? '').localeCompare(made.get(a.name) ?? ''),
+    );
   }
 
   /** The contact's display name, for pages that only have its id. */

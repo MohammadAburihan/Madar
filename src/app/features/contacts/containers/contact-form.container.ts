@@ -169,7 +169,7 @@ export class ContactFormContainer {
   protected readonly loadFailed = signal(false);
   protected readonly saving = signal(false);
   protected readonly showErrors = signal(false);
-  protected readonly failed = signal<'permission' | 'offline' | 'error' | null>(null);
+  protected readonly failed = signal<'permission' | 'offline' | 'duplicate' | 'error' | null>(null);
   /** A create whose answer was lost: it may exist, so the user checks before saving again. */
   protected readonly unresolved = signal(false);
   protected readonly checking = signal(false);
@@ -233,6 +233,7 @@ export class ContactFormContainer {
       failed: {
         permission: block('contacts.form.failed.permission'),
         offline: block('contacts.form.failed.offline'),
+        duplicate: block('contacts.form.failed.duplicate'),
         error: block('contacts.form.failed.error'),
       },
     };
@@ -319,13 +320,15 @@ export class ContactFormContainer {
         // ERPNext may still be creating it: check by reference first, so it isn't created twice.
         this.unresolved.set(true);
       } else {
-        const kindOf = ErpnextError.from(error).kind;
+        const erpnextError = ErpnextError.from(error);
         this.failed.set(
-          kindOf === 'forbidden'
+          erpnextError.kind === 'forbidden'
             ? 'permission'
-            : error instanceof UnresolvedError || kindOf === 'offline'
+            : error instanceof UnresolvedError || erpnextError.kind === 'offline'
               ? 'offline'
-              : 'error',
+              : erpnextError.excType === 'DuplicateEntryError'
+                ? 'duplicate'
+                : 'error',
         );
       }
     } finally {

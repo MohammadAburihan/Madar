@@ -130,7 +130,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   without a header warehouse read without one. Review pass 2 (2 medium, 2 low) fixed: history swallows only a role's 403, so a lost
   connection shows the load error, not an empty history; the own-sales filter applies to customers only; credit notes
   against an invoice don't count as paid; a contact or address Madar adds is made primary at once (no adopting
-  someone else's on retry).
+  someone else's on retry). Review pass 3 (3 low) fixed: refunds aren't listed as payments; same-day records keep
+  the order they were made in; a supplier name already taken says so.
 - Next: Settings.
 
 ## End-to-end happy paths: merged (#26)
