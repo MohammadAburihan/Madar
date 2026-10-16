@@ -15,6 +15,7 @@ const INVOICE: InvoiceDetail = {
   total: 320,
   outstanding: 80,
   delivered: true,
+  returnable: true,
   payments: [
     { name: 'PAY-0154', amount: 120, account: 'Main cash' },
     { name: 'PAY-0156', amount: 120, account: 'Main cash' },

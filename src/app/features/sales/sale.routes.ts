@@ -96,6 +96,29 @@ export const quotationRoutes: Route[] = [
       import('./containers/quotation.container').then((m) => m.QuotationContainer),
   },
   {
+    path: 'sales/invoices/:name/return',
+    loadComponent: () =>
+      import('./containers/return-flow.container').then((m) => m.ReturnFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/return-form.container').then((m) => m.ReturnFormContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/return-checking.container').then((m) => m.ReturnCheckingContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/return-done.container').then((m) => m.ReturnDoneContainer),
+      },
+    ],
+  },
+  {
     path: 'sales/orders/:name/deliver',
     loadComponent: () =>
       import('./containers/delivery-flow.container').then((m) => m.DeliveryFlowContainer),

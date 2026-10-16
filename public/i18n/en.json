@@ -2315,6 +2315,77 @@
       "doneSubtitle": "{{invoice}} · {{order}}",
       "doneCard": "{{state}} · {{total}}",
       "doneMessage": "Invoice linked to {{order}}. Received {{received}}. No second stock delivery or payment."
+    },
+    "return": {
+      "start": "Return items",
+      "title": "Return from sale",
+      "subtitle": "Original invoice {{invoice}} · {{customer}}",
+      "lineMeta": "Sold {{sold}} · Returned {{returned}}",
+      "lineDetail": "Return {{qty}} × {{rate}}",
+      "qty": "Return quantity",
+      "qtyFor": "Return quantity · {{code}}",
+      "qtyError": "Enter a quantity from 0 to {{max}}.",
+      "warehouse": "Return to warehouse",
+      "reason": "Reason",
+      "summaryTitle": "Return summary",
+      "summaryGoods": "Credit {{credit}} and return {{goods}} to stock.",
+      "summaryCredit": "Credit {{credit}}.",
+      "summaryPaid": "Original payment stays {{paid}}.",
+      "summaryDue": "New outstanding balance: {{due}}.",
+      "summaryCustomerCredit": "The credit is more than is owed, so it stays on the customer's account.",
+      "noRefund": "No cash refund in this return. Any refund is a separate payment action.",
+      "confirm": "Confirm return",
+      "confirming": "Confirming…",
+      "reload": "Reload the invoice",
+      "viewSale": "View original sale",
+      "noAccess": {
+        "title": "You can't take returns",
+        "message": "Your role doesn't allow credit notes in ERPNext."
+      },
+      "loadFailed": {
+        "title": "The sale couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "nothing": {
+        "title": "Nothing left to return",
+        "message": "Every item on this invoice is returned already."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't take this return",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The return wasn't sent. Check the connection and try again."
+        },
+        "changed": {
+          "title": "The invoice changed",
+          "message": "Items were returned elsewhere since. Reload the invoice to see what is left."
+        },
+        "error": {
+          "title": "The return wasn't recorded",
+          "message": "ERPNext rejected it. Check the details and try again."
+        }
+      },
+      "notCreated": {
+        "title": "The return wasn't recorded",
+        "message": "Nothing was posted. Check it and confirm again."
+      },
+      "checking": {
+        "title": "Checking your return",
+        "cardTitle": "Confirmation not yet resolved",
+        "cardMessage": "The request timed out. The return may already exist. Don't return it again.",
+        "planned": "Credit"
+      },
+      "doneTitle": "Sales return posted",
+      "doneSubtitle": "{{invoice}} · {{customer}}",
+      "doneCard": "Credit posted · {{credit}}",
+      "doneGoods": "{{goods}} returned to {{warehouse}}.",
+      "donePaid": "Original paid {{paid}}.",
+      "doneDue": "Due reduced {{before}} → {{after}}.",
+      "doneCustomerCredit": "The credit stays on the customer's account.",
+      "doneNoRefund": "No cash refund."
     }
   }
 }

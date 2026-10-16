@@ -88,3 +88,35 @@ test('reads a sales order in Arabic, right to left @phone', async ({ page }) => 
   await expect(page.locator('app-status-chip').first()).toContainText(named('الطلب', ':'));
   await expect(page.getByLabel('التسليم المتوقع')).toBeVisible();
 });
+
+test('takes a return against a paid sale in Arabic, keeping the credit for the customer @phone', async ({
+  page,
+}) => {
+  await signIn(page, 'owner');
+  await page.goto('/sales/new');
+  await page.getByRole('button', { name: 'Walk-in customer' }).click();
+  await choose(page.locator('app-select-field select').first(), MAIN);
+  await page.locator('app-search-field input').fill(ITEM.code);
+  await page
+    .getByRole('button', { name: named('Add', ITEM.name) })
+    .first()
+    .click();
+  await page.getByRole('button', { name: /^Review basket/ }).click();
+  await page.getByRole('button', { name: 'Continue to payment' }).click();
+  await page.getByRole('button', { name: /^Confirm sale/ }).click();
+  await expect(page).toHaveURL(/\/sales\/new\/receipt$/, { timeout: 60_000 });
+  const subtitle = await page.locator('app-page-heading p').first().innerText();
+  const invoice = subtitle.split(' · ')[0].replace(/[⁦-⁩]/g, '').trim();
+
+  await page.goto(`/sales/invoices/${invoice}/return`);
+  await toArabic(page);
+  await expectHeading(page, 'إرجاع من عملية بيع');
+  await expect(page.getByLabel('كمية الإرجاع')).toHaveValue('1');
+  await expect(page.locator('app-feedback-card', { hasText: 'ملخص الإرجاع' })).toContainText(
+    'يبقى رصيداً في حساب العميل',
+  );
+  await page.getByRole('button', { name: 'تأكيد الإرجاع' }).click();
+  await expect(page).toHaveURL(/\/return\/done$/, { timeout: 60_000 });
+  await expectHeading(page, 'تم ترحيل مرتجع البيع');
+  await expect(page.locator('app-feedback-card').first()).toContainText('لا يوجد رد نقدي');
+});

@@ -37,6 +37,8 @@ export interface Capabilities {
   deliverOrders: boolean;
   /** Invoice what a sales order still has to bill. */
   invoiceOrders: boolean;
+  /** Take back sold items against their invoice with a credit note. */
+  returnSales: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -59,6 +61,7 @@ const SALES_ROLE: Capabilities = {
   seeReports: false,
   deliverOrders: true,
   invoiceOrders: true,
+  returnSales: true,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -82,6 +85,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeReports: true,
     deliverOrders: true,
     invoiceOrders: true,
+    returnSales: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -105,6 +109,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeReports: false,
     deliverOrders: false,
     invoiceOrders: false,
+    returnSales: false,
   },
   projectManager: {
     sell: false,
@@ -126,6 +131,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeReports: false,
     deliverOrders: false,
     invoiceOrders: false,
+    returnSales: false,
   },
   purchasing: {
     sell: false,
@@ -148,6 +154,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     seeReports: false,
     deliverOrders: false,
     invoiceOrders: false,
+    returnSales: false,
   },
 };
 
@@ -248,6 +255,19 @@ const INVOICE_ORDERS_NEEDS = [
   ['Accounts User', 'Accounts Manager'], // create and submit Sales Invoice
 ];
 
+// A return reads the invoice and the warehouses, and creates and submits a credit note (v16 permissions).
+const RETURN_SALES_NEEDS = [
+  ['Accounts User', 'Accounts Manager'], // read, create and submit Sales Invoice
+  [
+    'Stock User',
+    'Item Manager',
+    'Sales User',
+    'Purchase User',
+    'Accounts User',
+    'Manufacturing User',
+  ], // read Warehouse
+];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -294,5 +314,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     invoiceOrders:
       caps.invoiceOrders &&
       INVOICE_ORDERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    returnSales:
+      caps.returnSales &&
+      RETURN_SALES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

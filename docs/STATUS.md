@@ -56,7 +56,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   as a PDF Madar builds (ERPNext's print formats can't reach the site's host name from the container).
 - **Sales S3a — Sales orders**: merged (#34). Orders made from confirmed quotations (`ORD-…` in `utm_content`), the
   order page with ERPNext's order, delivery and invoice states, and a movable expected delivery.
-- **Sales S3b — Deliver and invoice an order** (this PR): "Prepare delivery" on an open order chooses the warehouse
+- **Sales S3b — Deliver and invoice an order**: merged (#35). "Prepare delivery" on an open order chooses the warehouse
   holding most of its goods, shows "Ordered · Previously delivered" and "Available · Deliver now" per line, refuses
   more than is open or in stock there, and posts a delivery note through ERPNext's mapper (`DEL-…` in
   `utm_content`; the mapper copies the order's). Services count as delivered in ERPNext, so the form also marks their
@@ -74,7 +74,19 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   from an earlier visit that someone posted isn't taken as this invoice; nothing left to bill at confirm asks for a
   new review. Review pass 3 (2 low) fixed: rows of the same item share the warehouse's stock; drop-shipped rows aren't
   offered for delivery.
-- Next: S4 returns; then Contacts and Settings. A new order without a quotation has no mock and isn't planned.
+- **Sales S4 — Returns** (this PR): "Return items" on a confirmed sale whose goods left with the invoice (quick
+  sales, or services only) opens "Return from sale": each line reads "Sold · Returned" and "Return n × price", with a
+  return quantity (1 of the first line suggested), the warehouse the goods came from, and a reason. The summary says
+  the credit, the payment that stays and the new balance; a credit larger than what is owed stays on the customer's
+  account (ERPNext keeps it on the note), and no cash is refunded. The credit note comes from ERPNext's return
+  mapper (`RET-…` and the reason in remarks), credits the original invoice, and is refused as "changed" when
+  something was returned elsewhere meanwhile; a draft left behind is rebuilt in place (selling roles can't delete
+  Sales Invoices). New capability `returnSales`; PERMISSIONS.md gains its row. Invoices billed from orders (goods
+  left with a delivery note) don't offer returns yet: those need a delivery return too. The mock's "Save draft" is
+  left out, as on the other confirmations.
+  e2e: return an unpaid planter sale (credit ILS 45.00, due 45.00 → 0.00), then nothing is left and Sales reads
+  "Credit note issued"; a paid walk-in sale returned in Arabic keeps the credit for the customer.
+- Next: Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)
 
