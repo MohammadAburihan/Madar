@@ -168,7 +168,8 @@ export class ProjectFormContainer {
   private readonly customersApi = inject(CustomerDirectoryService);
   private readonly router = inject(Router);
   private readonly viewport = inject(ViewportService).viewport;
-  protected readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  protected readonly caps = this.session.capabilities;
   protected readonly i18n = injectI18n();
 
   protected readonly title = signal('');
@@ -187,6 +188,8 @@ export class ProjectFormContainer {
   protected readonly pending = signal(false);
   protected readonly notCreated = signal(false);
   private readonly reference = newReference('PRJ');
+  /** The project a lost create turned out to have made; later saves update it instead of creating another. */
+  private created: string | null = null;
   protected readonly loadFailed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
@@ -306,17 +309,21 @@ export class ProjectFormContainer {
           budget: this.budgetValue(),
           plannedDate: this.plannedDate() || null,
         },
-        this.name() ?? null,
+        this.name() ?? this.created,
         this.reference,
       );
       void this.router.navigate(['/projects', saved, 'saved'], { replaceUrl: true });
     } catch (error) {
-      const lost = error instanceof UnresolvedError || ErpnextError.from(error).kind === 'offline';
-      if (lost && !this.name()) {
+      // Only a lost insert may have created it; other failures happened before anything was sent.
+      if (error instanceof UnresolvedError && !this.name() && !this.created) {
         // ERPNext may still be creating it: check by reference first, so it isn't created twice.
         this.unresolved.set(true);
       } else {
-        this.failed.set(lost ? 'offline' : 'error');
+        this.failed.set(
+          error instanceof UnresolvedError || ErpnextError.from(error).kind === 'offline'
+            ? 'offline'
+            : 'error',
+        );
       }
     } finally {
       this.saving.set(false);
@@ -331,13 +338,20 @@ export class ProjectFormContainer {
     this.pending.set(false);
     try {
       const found = await this.api.findProject(this.reference);
+      this.unresolved.set(false);
       if (found) {
-        void this.router.navigate(['/projects', found, 'saved'], { replaceUrl: true });
+        // Edits made while waiting are saved over it, as saving again would have.
+        this.created = found;
+        this.checking.set(false);
+        await this.save();
         return;
       }
-      this.unresolved.set(false);
       this.notCreated.set(true);
-    } catch {
+    } catch (error) {
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        // 403 is also how an expired session answers; that one goes back to sign-in.
+        void this.session.checkExpired();
+      }
       this.pending.set(true);
     } finally {
       this.checking.set(false);
@@ -361,7 +375,7 @@ export class ProjectFormContainer {
     this.loading.set(true);
     this.loadFailed.set(false);
     try {
-      const project = await this.api.project(name);
+      const project = await this.api.projectBasics(name);
       // Moving from one project's edit page to another's reuses this form: a slow earlier load must not win.
       if (run !== this.loadRun) {
         return;

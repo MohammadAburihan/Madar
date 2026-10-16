@@ -30,7 +30,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 Batch review of step 4 (2 medium, 5 low): fixed that a failed requirements or site-stock read no longer shows an empty
 project (only a role that can't read stock sees none), a timed-out project create asks to check its result before
 saving again, the ledger signs a return from the site as −, Home's supply action follows the supply capability, and
-opening the supply plan without access creates no warehouse. Deferred (low): a requirement draft whose submit failed is
+opening the supply plan without access creates no warehouse. Its review (1 medium, 3 low) fixed that the edit form,
+saved page and requirement form read only the project record, so a stock failure can't block them; a check that finds
+the lost project saves the latest edits over it; an expired session during the check goes back to sign-in; and only a
+lost insert (not a failure before it) asks for a check. Deferred (low): a requirement draft whose submit failed is
 not deleted when the user leaves; Money doesn't say when the expense list failed to load.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

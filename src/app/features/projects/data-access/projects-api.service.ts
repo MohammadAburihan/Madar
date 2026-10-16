@@ -89,6 +89,19 @@ export class ProjectsApiService {
     return rows.map((r) => summary(r, names));
   }
 
+  /** The project record alone, for pages that need its details but not its stock, tasks or records. */
+  async projectBasics(
+    name: string,
+  ): Promise<ProjectSummary & { budget: number; plannedDate: string | null }> {
+    const doc = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', name));
+    const names = await this.customerNames(doc.customer ? [doc.customer] : []);
+    return {
+      ...summary(doc, names),
+      budget: doc.estimated_costing ?? 0,
+      plannedDate: doc.expected_start_date,
+    };
+  }
+
   async project(name: string): Promise<ProjectDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', name));
     const [names, tasks, requirements, attachments, linked, actual, siteItems] = await Promise.all([
