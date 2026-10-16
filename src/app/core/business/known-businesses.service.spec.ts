@@ -29,7 +29,12 @@ describe('KnownBusinessesService', () => {
   it('reads what an earlier visit saved, ignoring anything malformed', () => {
     localStorage.setItem(
       'madar.businesses',
-      JSON.stringify([{ address: 'https://issam.example.com' }, { nope: 1 }]),
+      JSON.stringify([
+        { address: 'https://issam.example.com' },
+        { nope: 1 },
+        { address: 'padel' },
+        { address: 'javascript:alert(1)' },
+      ]),
     );
     expect(TestBed.inject(KnownBusinessesService).businesses()).toEqual([
       { address: 'https://issam.example.com' },

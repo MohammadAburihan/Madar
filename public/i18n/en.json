@@ -2591,6 +2591,10 @@
       "invalid": "Enter an address like padel.example.com.",
       "current": "That is this business's own address.",
       "known": "That business is already saved."
+    },
+    "nativeOnly": {
+      "title": "Other businesses open in the browser",
+      "message": "In the app, this business is the one it was set up for. Open another business's Madar address in a browser."
     }
   }
 }

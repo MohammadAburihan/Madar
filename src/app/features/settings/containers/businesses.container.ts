@@ -6,6 +6,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { KnownBusinessesService } from '../../../core/business/known-businesses.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { NATIVE_PLATFORM } from '../../../core/platform/native-platform';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -43,51 +44,61 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
     <app-back-link [label]="txt.back" (back)="router.navigate(['/settings'])" />
     <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
     <app-feedback-card [title]="txt.current.title" [message]="txt.current.message" />
-    @for (business of known.businesses(); track business.address) {
-      <section class="business" [attr.aria-label]="business.address">
-        <app-feedback-card
-          tone="tint"
-          [title]="host(business.address)"
-          [message]="business.address"
-        />
-        <button
-          type="button"
-          class="md-btn md-btn--primary"
-          [disabled]="openTasks.any()"
-          (click)="open(business.address)"
-        >
-          {{ txt.open(host(business.address)) }}
-        </button>
-        <button type="button" class="md-btn" (click)="known.remove(business.address)">
-          {{ txt.remove(host(business.address)) }}
-        </button>
-      </section>
-    }
-    @if (openTasks.any() && known.businesses().length) {
+    @if (native) {
       <app-feedback-card
         tone="warning"
-        [title]="txt.openTask.title"
-        [message]="txt.openTask.message"
+        [title]="txt.nativeOnly.title"
+        [message]="txt.nativeOnly.message"
       />
-    }
-    @if (adding()) {
-      <app-text-field
-        [label]="txt.address"
-        type="text"
-        inputmode="url"
-        autocomplete="url"
-        [ltr]="true"
-        [hint]="txt.hint"
-        [error]="addError() ? txt.errors[addError()!] : null"
-        [value]="address()"
-        (valueChange)="address.set($event); addError.set(null)"
-      />
-      <button type="button" class="md-btn md-btn--primary" (click)="save()">{{ txt.save }}</button>
-      <button type="button" class="md-btn" (click)="adding.set(false)">{{ txt.cancel }}</button>
     } @else {
-      <button type="button" class="md-btn" (click)="adding.set(true)">{{ txt.add }}</button>
+      @for (business of known.businesses(); track business.address) {
+        <section class="business" [attr.aria-label]="business.address">
+          <app-feedback-card
+            tone="tint"
+            [title]="host(business.address)"
+            [message]="business.address"
+          />
+          <button
+            type="button"
+            class="md-btn md-btn--primary"
+            [disabled]="openTasks.any()"
+            (click)="open(business.address)"
+          >
+            {{ txt.open(host(business.address)) }}
+          </button>
+          <button type="button" class="md-btn" (click)="known.remove(business.address)">
+            {{ txt.remove(host(business.address)) }}
+          </button>
+        </section>
+      }
+      @if (openTasks.any() && known.businesses().length) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.openTask.title"
+          [message]="txt.openTask.message"
+        />
+      }
+      @if (adding()) {
+        <app-text-field
+          [label]="txt.address"
+          type="text"
+          inputmode="url"
+          autocomplete="url"
+          [ltr]="true"
+          [hint]="txt.hint"
+          [error]="addError() ? txt.errors[addError()!] : null"
+          [value]="address()"
+          (valueChange)="address.set($event); addError.set(null)"
+        />
+        <button type="button" class="md-btn md-btn--primary" (click)="save()">
+          {{ txt.save }}
+        </button>
+        <button type="button" class="md-btn" (click)="adding.set(false)">{{ txt.cancel }}</button>
+      } @else {
+        <button type="button" class="md-btn" (click)="adding.set(true)">{{ txt.add }}</button>
+      }
+      <p class="muted">{{ txt.note }}</p>
     }
-    <p class="muted">{{ txt.note }}</p>
   `,
 })
 export class BusinessesContainer {
@@ -96,6 +107,8 @@ export class BusinessesContainer {
   private readonly document = inject(DOCUMENT);
   protected readonly known = inject(KnownBusinessesService);
   protected readonly openTasks = inject(OpenTasksService);
+  /** The apps reach their own server; opening another business's web address there isn't connecting to it. */
+  protected readonly native = inject(NATIVE_PLATFORM) !== 'web';
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
@@ -128,6 +141,7 @@ export class BusinessesContainer {
       cancel: t('businesses.cancel'),
       note: t('businesses.note'),
       openTask: block('settings.openTask'),
+      nativeOnly: block('businesses.nativeOnly'),
       errors: {
         invalid: t('businesses.errors.invalid'),
         current: t('businesses.errors.current'),

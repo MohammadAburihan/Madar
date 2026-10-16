@@ -60,8 +60,13 @@ export class KnownBusinessesService {
   private read(): KnownBusiness[] {
     try {
       const value: unknown = JSON.parse(localStorage.getItem(KEY) ?? '[]');
+      // Only what add() would have saved: anything else could break the page or open a script URL.
       return Array.isArray(value)
-        ? value.filter((b): b is KnownBusiness => typeof b?.address === 'string')
+        ? value.filter(
+            (b): b is KnownBusiness =>
+              typeof b?.address === 'string' &&
+              KnownBusinessesService.origin(b.address) === b.address,
+          )
         : [];
     } catch {
       return [];
