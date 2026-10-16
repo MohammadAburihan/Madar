@@ -105,11 +105,14 @@ describe('InvoiceApiService', () => {
           items: [{ item_code: 'SRV-GARDEN' }],
         },
         'Sales Invoice/SI-3': { name: 'SI-3', docstatus: 1, update_stock: 1, is_return: 1 },
+        'Sales Invoice/SI-4': { name: 'SI-4', docstatus: 1, update_stock: 1, is_pos: 1 },
       },
     );
     const api = TestBed.inject(InvoiceApiService);
     expect((await api.load('SI-1')).returnable).toBe(false);
     expect((await api.load('SI-2')).returnable).toBe(true);
     expect((await api.load('SI-3')).returnable).toBe(false);
+    // A POS sale's return would refund its payment, which Madar's returns never do.
+    expect((await api.load('SI-4')).returnable).toBe(false);
   });
 });

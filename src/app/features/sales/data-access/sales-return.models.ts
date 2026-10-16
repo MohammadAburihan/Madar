@@ -19,6 +19,8 @@ export interface ReturnSource {
   customerName: string;
   /** The sale moved the stock itself (quick sale), so the return brings it back. */
   movesStock: boolean;
+  /** Madar can take a return against it (see `canReturn`). */
+  returnable: boolean;
   /** Company currency. */
   total: number;
   outstanding: number;
@@ -53,3 +55,19 @@ export interface ReturnResult {
 
 export const creditFor = (lines: readonly ReturnLine[], quantities: Record<string, number>) =>
   Math.round(lines.reduce((sum, l) => sum + (quantities[l.row] || 0) * l.rate, 0) * 100) / 100;
+
+/**
+ * A confirmed sale, not itself a return or a POS sale (whose return would refund its payment), whose goods (if any)
+ * left with the invoice: goods delivered by a delivery note come back through one, which Madar doesn't do yet.
+ */
+export const canReturn = (invoice: {
+  docstatus: number;
+  isReturn: boolean;
+  isPos: boolean;
+  movesStock: boolean;
+  hasGoods: boolean;
+}) =>
+  invoice.docstatus === 1 &&
+  !invoice.isReturn &&
+  !invoice.isPos &&
+  (invoice.movesStock || !invoice.hasGoods);

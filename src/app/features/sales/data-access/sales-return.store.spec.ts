@@ -12,6 +12,7 @@ const SOURCE: ReturnSource = {
   invoice: 'SI-1042',
   customerName: 'Lina Haddad',
   movesStock: true,
+  returnable: true,
   total: 320,
   outstanding: 200,
   paid: 120,
@@ -153,5 +154,16 @@ describe('SalesReturnStore', () => {
     api.confirm.mockResolvedValue(RESULT);
     await store.confirm();
     expect(api.confirm.mock.calls[0][0].warehouse).toBeNull();
+  });
+
+  it('takes an empty row as nothing returned, and nothing at all against a sale Madar can’t return', async () => {
+    const { store, api } = setup();
+    await store.load();
+    store.setQty('tree', '');
+    expect([store.qtyOk(store.openLines()[0]), store.ready()]).toEqual([true, false]);
+    store.start('SI-9');
+    api.source.mockResolvedValue({ ...SOURCE, returnable: false });
+    await store.load();
+    expect(store.ready()).toBe(false);
   });
 });

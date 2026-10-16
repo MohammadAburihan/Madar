@@ -62,6 +62,7 @@ describe('SalesReturnApiService', () => {
     );
     expect(await api().source('SI-1042', 'ILS')).toMatchObject({
       movesStock: true,
+      returnable: true,
       total: 320,
       outstanding: 200,
       paid: 35,

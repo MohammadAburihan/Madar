@@ -57,6 +57,15 @@ import { returnHeading, returnLineCard, returnQtyLabel, returnSummary } from './
       <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
     } @else if (!ctx.store.source()) {
       <p class="muted" role="status">{{ txt.loading }}</p>
+    } @else if (!ctx.store.source()!.returnable) {
+      <app-feedback-card
+        tone="warning"
+        [title]="txt.notReturnable.title"
+        [message]="txt.notReturnable.message"
+      />
+      <button type="button" class="md-btn md-btn--primary" (click)="ctx.openInvoice()">
+        {{ txt.viewSale }}
+      </button>
     } @else if (!ctx.store.openLines().length) {
       <app-feedback-card tone="tint" [title]="txt.nothing.title" [message]="txt.nothing.message" />
       <button type="button" class="md-btn md-btn--primary" (click)="ctx.openInvoice()">
@@ -148,6 +157,7 @@ export class ReturnFormContainer implements OnInit {
       noAccess: block('sales.return.noAccess'),
       loadFailed: block('sales.return.loadFailed'),
       nothing: block('sales.return.nothing'),
+      notReturnable: block('sales.return.notReturnable'),
       noWarehouses: block('sales.deliver.noWarehouses'),
     };
   });

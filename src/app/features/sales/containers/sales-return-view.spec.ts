@@ -21,6 +21,7 @@ const SOURCE: ReturnSource = {
   invoice: 'SI-1042',
   customerName: 'Lina Haddad',
   movesStock: true,
+  returnable: true,
   total: 320,
   outstanding: 200,
   paid: 120,

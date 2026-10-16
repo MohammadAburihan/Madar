@@ -56,7 +56,11 @@ export class SalesReturnStore {
   readonly openLines = computed(() => this.source()?.lines.filter((l) => l.returnable > 0) ?? []);
   readonly quantities = computed(() =>
     Object.fromEntries(
-      this.openLines().map((l) => [l.row, parseNumber(this.qtyInputs()[l.row] ?? '')]),
+      // A row left empty isn't returned.
+      this.openLines().map((l) => {
+        const input = (this.qtyInputs()[l.row] ?? '').trim();
+        return [l.row, input ? parseNumber(input) : 0];
+      }),
     ),
   );
   readonly credit = computed(() => creditFor(this.openLines(), this.quantities()));
@@ -69,7 +73,7 @@ export class SalesReturnStore {
   readonly needsWarehouse = computed(() => !!this.source()?.movesStock);
   readonly ready = computed(
     () =>
-      !!this.source() &&
+      !!this.source()?.returnable &&
       (!this.needsWarehouse() || this.warehouse() !== null) &&
       this.qtyValid() &&
       this.returningNow() > 0 &&

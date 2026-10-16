@@ -2387,7 +2387,11 @@
       "doneCustomerCredit": "The credit stays on the customer's account.",
       "doneNoRefund": "No cash refund.",
       "asSold": "Where each item was sold from",
-      "doneGoodsAsSold": "{{goods}} returned to where they were sold from."
+      "doneGoodsAsSold": "{{goods}} returned to where they were sold from.",
+      "notReturnable": {
+        "title": "This sale can't be returned here",
+        "message": "Madar takes returns only against confirmed sales whose goods left with the invoice. Use ERPNext for this one."
+      }
     }
   }
 }
