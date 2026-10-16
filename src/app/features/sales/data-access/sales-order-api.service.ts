@@ -7,6 +7,7 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
   DeliveryRequest,
   OrderFromQuotationRequest,
@@ -76,6 +77,13 @@ interface InvoiceDoc {
 const MAKE_SALES_ORDER = 'erpnext.selling.doctype.quotation.quotation.make_sales_order';
 const MAKE_DELIVERY_NOTE = 'erpnext.selling.doctype.sales_order.sales_order.make_delivery_note';
 const MAKE_SALES_INVOICE = 'erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice';
+
+/** Thrown when the order has less left to deliver than the user confirmed (delivered in Desk meanwhile). */
+export class DeliveryChangedError extends Error {
+  constructor() {
+    super('The order has less left to deliver');
+  }
+}
 
 /** Thrown when ERPNext would now invoice another amount than the user reviewed (billed in Desk meanwhile). */
 export class InvoiceChangedError extends Error {
@@ -286,8 +294,15 @@ export class SalesOrderApiService {
     }
     const template = await firstValueFrom(
       this.erpnext.post<DeliveryDoc>(MAKE_DELIVERY_NOTE, { source_name: request.order }),
-    );
+    ).catch((error: unknown) => {
+      throw ErpnextError.from(error).status === 417 ? new DeliveryChangedError() : error;
+    });
     const qty = new Map(request.lines.map((l) => [l.row, l.qty]));
+    // Delivered in Desk since the form loaded: every confirmed row must still have that much left.
+    const left = new Map(template.items.map((i) => [i.so_detail, Number(i.qty)]));
+    if (request.lines.some((l) => (left.get(l.row) ?? 0) < l.qty - 1e-9)) {
+      throw new DeliveryChangedError();
+    }
     const doc = {
       ...template,
       set_warehouse: request.warehouse,
@@ -370,16 +385,23 @@ export class SalesOrderApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<OrderInvoiceResult> {
-    const current = draft
+    const remembered = draft
       ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
       : null;
-    if (current?.docstatus === 1) {
-      return invoiceResult(current, request.currency);
+    // Posted with this task's reference, it is this request's result; posted otherwise (in Desk, after an
+    // earlier visit), it is someone else's invoice and the rest is billed anew.
+    const ours = remembered && String(remembered['remarks'] ?? '').includes(request.reference);
+    if (remembered?.docstatus === 1 && ours) {
+      return invoiceResult(remembered, request.currency);
     }
+    const current = remembered?.docstatus === 0 ? remembered : null;
     try {
       const template = await firstValueFrom(
         this.erpnext.post<InvoiceDoc>(MAKE_SALES_INVOICE, { source_name: request.order }),
-      );
+      ).catch((error: unknown) => {
+        // Everything was billed since the review: the review must reload to say so.
+        throw ErpnextError.from(error).status === 417 ? new InvoiceChangedError() : error;
+      });
       // Billed in Desk since the review, or prices changed: the user must see the new amount first.
       if (Math.abs(owed(template) - request.total) > 0.005) {
         throw new InvoiceChangedError();

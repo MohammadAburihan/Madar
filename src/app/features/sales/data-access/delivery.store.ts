@@ -11,7 +11,7 @@ import {
   WarehouseDirectoryService,
   WarehouseOption,
 } from '../../../core/stock/warehouse-directory.service';
-import { SalesOrderApiService } from './sales-order-api.service';
+import { DeliveryChangedError, SalesOrderApiService } from './sales-order-api.service';
 import {
   DeliveryRequest,
   SalesOrderDetail,
@@ -249,8 +249,8 @@ export class DeliveryStore {
       this.state.set('unresolved');
       return;
     }
-    if (error instanceof PostedEarlierError) {
-      // The earlier delivery stands in ERPNext; the order has moved on, so its quantities must be reloaded.
+    if (error instanceof PostedEarlierError || error instanceof DeliveryChangedError) {
+      // An earlier delivery stands, or the order was delivered elsewhere: its quantities must be reloaded.
       this.draft.set(null);
       this.reference.set(newReference('DEL'));
       this.failure.set('changed');

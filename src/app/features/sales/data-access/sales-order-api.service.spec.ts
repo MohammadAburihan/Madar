@@ -3,7 +3,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
-import { InvoiceChangedError, SalesOrderApiService } from './sales-order-api.service';
+import {
+  DeliveryChangedError,
+  InvoiceChangedError,
+  SalesOrderApiService,
+} from './sales-order-api.service';
 
 const MAKE = 'erpnext.selling.doctype.quotation.quotation.make_sales_order';
 const MAKE_INVOICE = 'erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice';
@@ -321,5 +325,61 @@ describe('SalesOrderApiService', () => {
     ]);
     expect(postCalls[1].body['doc']).toMatchObject({ name: 'SI-1', modified: 'm', creation: 'c' });
     expect(postCalls[1].body['doc']).not.toHaveProperty('__islocal');
+  });
+
+  it('refuses a delivery when the order has less left than confirmed, posting nothing', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        'erpnext.selling.doctype.sales_order.sales_order.make_delivery_note': () => ({
+          items: [{ item_code: 'OLV-20', qty: 1, so_detail: 'tree' }],
+        }),
+      },
+    );
+    const delivery = {
+      reference: 'DEL-1',
+      order: 'SO-1',
+      warehouse: 'Main',
+      lines: [{ row: 'tree', qty: 2 }],
+    };
+    await expect(api().deliver(delivery, null)).rejects.toBeInstanceOf(DeliveryChangedError);
+    await expect(
+      api().deliver({ ...delivery, lines: [{ row: 'visit', qty: 1 }] }, null),
+    ).rejects.toBeInstanceOf(DeliveryChangedError);
+    expect(postCalls.map((c) => c.method)).not.toContain('frappe.client.insert');
+  });
+
+  it('bills anew when the remembered draft was posted by someone else', async () => {
+    const posted = {
+      name: 'SI-OLD',
+      docstatus: 1,
+      remarks: 'Madar order invoice INV-OLD',
+      items: [],
+    };
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        [MAKE_INVOICE]: () => ({ base_grand_total: 150, base_rounded_total: 150, items: [] }),
+        'frappe.client.insert': () => ({ name: 'SI-2' }),
+        'frappe.client.submit': () => ({
+          name: 'SI-2',
+          base_grand_total: 150,
+          base_rounded_total: 150,
+        }),
+      },
+      { 'Sales Invoice/SI-OLD': posted },
+    );
+    const request = { reference: 'INV-NEW', order: 'SO-1', currency: 'ILS', total: 150 };
+    expect((await api().invoice(request, 'SI-OLD')).name).toBe('SI-2');
+    expect(postCalls.map((c) => c.method)).toContain('frappe.client.insert');
+  });
+
+  it('asks for a new review when everything was billed since', async () => {
+    const request = { reference: 'INV-NEW', order: 'SO-1', currency: 'ILS', total: 150 };
+    fakeErpnext(
+      {},
+      { [MAKE_INVOICE]: () => throwError(() => new HttpErrorResponse({ status: 417 })) },
+    );
+    await expect(api().invoice(request, null)).rejects.toBeInstanceOf(InvoiceChangedError);
   });
 });
