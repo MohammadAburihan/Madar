@@ -501,23 +501,28 @@ export class StatementContainer {
   }
 
   private async export(handOver: (file: File) => Promise<void>): Promise<void> {
-    const file = await this.pdfFile();
-    if (!file) {
+    // Busy until the share sheet has the file, so a second tap can't open another one.
+    if (this.preparing()) {
       return;
     }
+    this.preparing.set(true);
     try {
-      await handOver(file);
+      const file = await this.pdfFile();
+      if (file) {
+        await handOver(file);
+      }
     } catch {
       this.pdfFailed.set(true);
+    } finally {
+      this.preparing.set(false);
     }
   }
 
   private async pdfFile(): Promise<File | null> {
     const statement = this.view() ? this.statement() : null;
-    if (!statement || this.preparing()) {
+    if (!statement) {
       return null;
     }
-    this.preparing.set(true);
     this.pdfFailed.set(false);
     try {
       const tr = this.i18n.tr();
@@ -542,8 +547,6 @@ export class StatementContainer {
     } catch {
       this.pdfFailed.set(true);
       return null;
-    } finally {
-      this.preparing.set(false);
     }
   }
 

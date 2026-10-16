@@ -61,8 +61,10 @@ payments and expenses now interleave by when they were entered.
   (list) and a period; the statement shows the opening balance, each posted invoice, return, payment or journal entry
   in posting order with its running balance, and the outstanding amount, from the party ledger in the company
   currency. Invoices and supplier payments open their pages. Share and Download PDF render the statement on the ERPNext
-  server (`report_to_pdf`) in the reader's language. In the phone apps (#31) both write the PDF to the app's cache and
-  open the native share sheet (`@capacitor/share`, `@capacitor/filesystem`), whose "Save to Files" keeps a copy. No mock exists for
+  server (`report_to_pdf`) in the reader's language. In the phone apps (#30) both write the PDF to the app's cache and
+  open the native share sheet (`@capacitor/share`, `@capacitor/filesystem`): on iOS "Save to Files" keeps a copy; on
+  Android the user picks Drive or a files app from the chooser. Deferred (low): saving straight to the phone's
+  Documents folder on Android (needs storage permission on Android 10 and older). No mock exists for
   the supplier statement; it follows the customer one.
   Review pass 1 (1 medium, 2 low) fixed: a share the browser refuses after the PDF renders falls back to a download;
   Retry redoes whichever step failed (the date, the supplier list, the linked party); a fully paid invoice (POS, "is
