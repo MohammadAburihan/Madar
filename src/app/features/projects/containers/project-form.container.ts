@@ -343,6 +343,11 @@ export class ProjectFormContainer {
         // Edits made while waiting are saved over it, as saving again would have.
         this.created = found;
         this.checking.set(false);
+        if (!this.ready()) {
+          // The edits since can't be saved as they stand; the project exists with the details first sent.
+          void this.router.navigate(['/projects', found, 'saved'], { replaceUrl: true });
+          return;
+        }
         await this.save();
         return;
       }
