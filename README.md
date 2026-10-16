@@ -118,6 +118,23 @@ docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<versi
 | `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
 | `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
 
+### One business per deployment
+
+Each business has its own Madar web address and its own ERPNext stack: separate containers, database and ports.
+Run one madar-web container per business, each pointing at its own ERPNext:
+
+```sh
+# Rehan Nursery: its ERPNext stack's frontend is reachable as rehan-erpnext:8080
+docker run -d --name madar-rehan -p 8091:80 -e ERPNEXT_UPSTREAM=http://rehan-erpnext:8080 \
+  --network rehan_network madar-web:<version>
+# Padel Works: a second, separate stack
+docker run -d --name madar-padel -p 8092:80 -e ERPNEXT_UPSTREAM=http://padel-erpnext:8080 \
+  --network padel_network madar-web:<version>
+```
+
+Each container's address (behind its own domain on the server) is that business's Madar. Users switch business by
+opening the other address; "Your businesses" in Settings remembers the addresses on their device.
+
 Health check: `GET /healthz`. The deployed version is served at `/version.txt`.
 
 ## Continuous integration

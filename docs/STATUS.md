@@ -158,7 +158,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Note" Journal Entry in the ledger, so those count too (bank journals stay money). Pass 4 (2 low): the row reads "Credited by
   credit notes" (journals entered by hand count too). Deferred (low, from before): on an invoice in another currency
   than its receivable account, total and outstanding are in different currencies.
-- **Batch review fixes** (this PR), from one review of everything merged since #32 (3 medium, 1 low):
+- **Batch review fixes**: merged (#41), from one review of everything merged since #32 (3 medium, 1 low):
   - An invoice billed from an order reads "Goods delivered" (Sales list and its page) once the order's goods left on
     a delivery note made from the order. ERPNext links the two only through the order rows (e2e).
   - The return form's "Original payment" uses the same ledger credits as the invoice page (shared `creditsAgainst`),
@@ -171,7 +171,15 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     and never over a customer picked meanwhile. Not changed: confirmations kept in a page's own state
     (project requirement, contact create) are lost when that page is left anyway, so sign out can't make it worse.
     Deferred (low, as before): an order's invoice reads "Goods delivered" once any of its order rows delivered.
-- Next: decide the business-connection flow (Settings' "Add another business"); then step 6.
+- **One business per address** (this PR): decided 16 Oct 2026, each business gets its own Madar web address with its
+  own ERPNext backend and database on their own containers and ports (CLAUDE.md, overview §12, README "One business
+  per deployment"). Settings' "Add another business" opens **Your businesses** (`/businesses`, also the shell's
+  business switcher): the current business with the user's role and currency, then other businesses' addresses
+  saved on this device (`KnownBusinessesService`, per origin), each with Open (blocked while a confirmation is open,
+  as signing out is) and Remove, and "Add business connection" (a domain address; this business's own and repeats are
+  refused). Business names of other addresses can't be read across origins, so they show as their host.
+  e2e: save an address, see it after a reload, remove it in Arabic.
+- Next: how the native apps connect to a business (open); then step 6.
 
 ## End-to-end happy paths: merged (#26)
 

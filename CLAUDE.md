@@ -180,6 +180,10 @@ Defer the rest to the PR description or `docs/STATUS.md`.
 - Each release produces a new Docker image of the web frontend that runs on an AWS server.
 - ERPNext runs on the same AWS server as Docker containers (official Frappe/ERPNext Docker setup).
 - Each business is a separate ERPNext installation (site). Never mix data across businesses.
+- Decided (16 Oct 2026): each business gets its own Madar web address, with its own ERPNext backend and database
+  running in its own containers on their own ports. One madar-web container serves one business; its
+  `ERPNEXT_UPSTREAM` points at that business's ERPNext. Switching business means opening the other business's Madar
+  address. "Your businesses" (`/businesses`) keeps the user's other addresses on the device, per origin.
 
 ### Local ERPNext
 
@@ -227,5 +231,5 @@ Madar role and `capabilitiesFor` (`core/auth/capabilities.ts`) holds the finer r
 
 ## Not decided yet
 
-ERPNext version for production, authentication, container registry, AWS server and domain setup, and
-deployment automation (CD; CI is in place). Ask before choosing any of these; don't assume. See section 12 of the overview.
+ERPNext version for production, authentication, container registry, AWS server and domain setup, how the native
+apps connect to a business (the web side is decided above), and deployment automation (CD; CI is in place). Ask before choosing any of these; don't assume. See section 12 of the overview.

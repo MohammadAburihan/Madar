@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { RuntimeConfigService } from '../../../core/config/runtime-config';
@@ -56,6 +57,9 @@ import { connectionFields } from './settings-view';
       (valueChange)="useLanguage($event)"
     />
     <app-feedback-card [title]="txt.separate.title" [message]="txt.separate.message" />
+    <button type="button" class="md-btn" (click)="router.navigate(['/businesses'])">
+      {{ txt.addBusiness }}
+    </button>
     @if (signOutFailed(); as reason) {
       <app-feedback-card
         tone="danger"
@@ -86,6 +90,7 @@ export class SettingsContainer {
   private readonly session = inject(SessionService);
   private readonly config = inject(RuntimeConfigService);
   private readonly document = inject(DOCUMENT);
+  protected readonly router = inject(Router);
   protected readonly openTasks = inject(OpenTasksService);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
@@ -110,6 +115,7 @@ export class SettingsContainer {
         { value: 'ar', label: 'العربية' },
       ],
       separate: block('settings.separate'),
+      addBusiness: t('settings.addBusiness'),
       openTask: block('settings.openTask'),
       signOut: t('settings.signOut'),
       signingOut: t('settings.signingOut'),
