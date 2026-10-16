@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -199,14 +200,20 @@ export class SalesContainer {
       const tr = this.i18n.tr();
       const language = this.i18n.language();
       const currency = business.currency;
+      const query = {
+        company: business.name,
+        currency,
+        term,
+        owner: OWN_SALES_ONLY.includes(this.session.persona())
+          ? (this.session.user()?.id ?? null)
+          : null,
+      };
       const cards =
         kind === 'invoices'
-          ? (await this.api.invoices(business.name, term)).map((r) => invoiceCard(r, currency, tr))
+          ? (await this.api.invoices(query)).map((r) => invoiceCard(r, currency, tr))
           : kind === 'orders'
-            ? (await this.api.orders(business.name, term)).map((r) => orderCard(r, currency, tr))
-            : (await this.api.quotes(business.name, term)).map((r) =>
-                quoteCard(r, currency, language, tr),
-              );
+            ? (await this.api.orders(query)).map((r) => orderCard(r, currency, tr))
+            : (await this.api.quotes(query)).map((r) => quoteCard(r, currency, language, tr));
       if (run === this.run) {
         this.cards.set(cards);
         this.state.set('ready');

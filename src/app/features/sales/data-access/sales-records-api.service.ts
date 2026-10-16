@@ -6,12 +6,20 @@ import { InvoiceRecord, OrderRecord, QuoteRecord } from './sales-records.models'
 /** The newest records each list shows; searching narrows them. */
 export const RECORDS_LIMIT = 30;
 
+export interface RecordsQuery {
+  company: string;
+  currency: string;
+  term: string;
+  /** Sales roles see only the documents they made (OWN_SALES_ONLY); null for everyone's. */
+  owner: string | null;
+}
+
 /** The sales records lists: invoices, orders and quotations, newest first. */
 @Injectable({ providedIn: 'root' })
 export class SalesRecordsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async invoices(company: string, term: string): Promise<InvoiceRecord[]> {
+  async invoices(q: RecordsQuery): Promise<InvoiceRecord[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -23,6 +31,7 @@ export class SalesRecordsApiService {
         base_rounded_total: number;
         outstanding_amount: number;
         conversion_rate: number;
+        party_account_currency: string | null;
         posting_date: string;
       }>('Sales Invoice', {
         fields: [
@@ -35,13 +44,11 @@ export class SalesRecordsApiService {
           'base_rounded_total',
           'outstanding_amount',
           'conversion_rate',
+          'party_account_currency',
           'posting_date',
         ],
-        filters: [
-          ['company', '=', company],
-          ['docstatus', '<', 2],
-        ],
-        orFilters: search(term, 'customer_name'),
+        filters: scope(q),
+        orFilters: search(q.term, 'customer_name'),
         orderBy: 'posting_date desc, creation desc',
         limit: RECORDS_LIMIT,
       }),
@@ -51,15 +58,20 @@ export class SalesRecordsApiService {
       customer: r.customer_name,
       docstatus: r.docstatus,
       isReturn: !!r.is_return,
-      delivered: !!r.update_stock,
+      // A draft has moved no stock yet, whatever it will do once confirmed.
+      delivered: r.docstatus === 1 && !!r.update_stock,
       total: r.base_rounded_total || r.base_grand_total,
-      // Outstanding is in the invoice's currency; the list shows the company's.
-      outstanding: r.outstanding_amount * (r.conversion_rate || 1),
+      // Outstanding is in the receivable account's currency: converted only when that isn't the company's.
+      outstanding:
+        r.docstatus === 1
+          ? r.outstanding_amount *
+            (r.party_account_currency === q.currency ? 1 : r.conversion_rate || 1)
+          : 0,
       date: r.posting_date,
     }));
   }
 
-  async orders(company: string, term: string): Promise<OrderRecord[]> {
+  async orders(q: RecordsQuery): Promise<OrderRecord[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -83,11 +95,8 @@ export class SalesRecordsApiService {
           'base_grand_total',
           'transaction_date',
         ],
-        filters: [
-          ['company', '=', company],
-          ['docstatus', '<', 2],
-        ],
-        orFilters: search(term, 'customer_name'),
+        filters: scope(q),
+        orFilters: search(q.term, 'customer_name'),
         orderBy: 'transaction_date desc, creation desc',
         limit: RECORDS_LIMIT,
       }),
@@ -105,7 +114,7 @@ export class SalesRecordsApiService {
     }));
   }
 
-  async quotes(company: string, term: string): Promise<QuoteRecord[]> {
+  async quotes(q: RecordsQuery): Promise<QuoteRecord[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -125,11 +134,8 @@ export class SalesRecordsApiService {
           'valid_till',
           'transaction_date',
         ],
-        filters: [
-          ['company', '=', company],
-          ['docstatus', '<', 2],
-        ],
-        orFilters: search(term, 'customer_name'),
+        filters: scope(q),
+        orFilters: search(q.term, 'customer_name'),
         orderBy: 'transaction_date desc, creation desc',
         limit: RECORDS_LIMIT,
       }),
@@ -144,6 +150,14 @@ export class SalesRecordsApiService {
       date: r.transaction_date,
     }));
   }
+}
+
+function scope(q: RecordsQuery): Filter[] {
+  return [
+    ['company', '=', q.company],
+    ['docstatus', '<', 2],
+    ...(q.owner ? ([['owner', '=', q.owner]] as Filter[]) : []),
+  ];
 }
 
 /** Matches the document number or the customer's name. */

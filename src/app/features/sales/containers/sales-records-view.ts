@@ -29,7 +29,8 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
         : invoice.outstanding < invoice.total - 0.005
           ? t('partlyPaid')
           : t('unpaid');
-  const goods = invoice.delivered ? t('goodsDelivered') : t('invoiceOnly');
+  const goods =
+    invoice.docstatus === 0 ? null : invoice.delivered ? t('goodsDelivered') : t('invoiceOnly');
   const amount =
     invoice.outstanding > 0.005
       ? t('due', { amount: formatMoney(invoice.outstanding, currency) })
@@ -38,9 +39,9 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
   return {
     id: invoice.name,
     title: t('title', { name: invoice.name, customer: invoice.customer }),
-    message: `${status}\n${goods} · ${amount}`,
+    message: `${status}\n${[goods, amount].filter(Boolean).join(' · ')}`,
     openable: true,
-    cells: [invoice.name, invoice.customer, `${status} · ${goods}`, amount],
+    cells: [invoice.name, invoice.customer, [status, goods].filter(Boolean).join(' · '), amount],
   };
 }
 

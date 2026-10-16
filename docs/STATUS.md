@@ -39,6 +39,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   due"); desktop shows them as a table. Invoices open their page; orders and quotes open with S2/S3. A role ERPNext
   doesn't let read a list sees that, per tab. e2e: a walk-in sale found on Sales as paid and opened; a sale on account
   shown unpaid with the amount due, then paid after its collection; orders and quotes tabs; the list in Arabic.
+  Review pass 1 (2 medium, 1 low) fixed: salespeople and store associates see only their own sales (e2e: a store
+  associate finds their sale but not someone else's); outstanding is converted only when the receivable account isn't
+  in the company currency; a draft invoice shows its total, nothing delivered or due.
 - Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

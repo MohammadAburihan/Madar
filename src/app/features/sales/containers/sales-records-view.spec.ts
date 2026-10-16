@@ -54,6 +54,14 @@ describe('sales records view', () => {
     );
   });
 
+  it('shows a draft invoice by its total, with nothing delivered or due yet', () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, docstatus: 0, outstanding: 0, delivered: false }, 'ILS', en),
+      ).message,
+    ).toBe('Draft\nILS 320.00');
+  });
+
   it('describes an order by what is delivered and invoiced', () => {
     expect(visible(view.orderCard(ORDER, 'ILS', en)).message).toBe(
       'Confirmed order · 2 items\nDelivery pending · Not invoiced',
