@@ -106,3 +106,33 @@ export async function topUp(page: Page, item: string, warehouse: string, atLeast
   });
   await post('frappe.client.submit', { doc: entry });
 }
+
+/** ERPNext read straight through the dev server's proxy, as the signed-in user: the truth a screen must show. */
+export function erp(page: Page) {
+  const get = async <T>(path: string, params: Record<string, unknown>): Promise<T> => {
+    const query = new URLSearchParams(
+      Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)]),
+    );
+    const response = await page.request.get(`${path}?${query}`);
+    expect(response.ok(), await response.text()).toBe(true);
+    return ((await response.json()) as { data: T }).data;
+  };
+  return {
+    list: <T>(doctype: string, fields: string[], filters: unknown[] = [], extra = {}) =>
+      get<T[]>(`/api/resource/${encodeURIComponent(doctype)}`, {
+        fields,
+        filters,
+        limit_page_length: 0,
+        ...extra,
+      }),
+    doc: <T>(doctype: string, name: string) =>
+      get<T>(`/api/resource/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`, {}),
+  };
+}
+
+/** "ILS 1,234.50", as Madar writes company-currency amounts. */
+export const ils = (amount: number) =>
+  `ILS ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** A cell or label's text without the bidi isolates the app wraps around names. */
+export const plain = (text: string) => text.replace(/[⁦-⁩]/g, '').trim();

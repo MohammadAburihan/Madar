@@ -44,6 +44,7 @@ describe('InvoiceApiService', () => {
       outstanding: 80,
       delivered: true,
       returnable: true,
+      credited: 0,
       payments: [
         { name: 'PAY-0154', amount: 120, account: 'Main cash' },
         { name: 'PAY-0156', amount: 120, account: 'Main cash' },
@@ -114,5 +115,34 @@ describe('InvoiceApiService', () => {
     expect((await api.load('SI-3')).returnable).toBe(false);
     // A POS sale's return would refund its payment, which Madar's returns never do.
     expect((await api.load('SI-4')).returnable).toBe(false);
+  });
+
+  it('counts every credit note that settled the invoice, as the ledger records it', async () => {
+    fakeErpnext(
+      {
+        // A return made against it (45), a credit note matched to it later (a "Credit Note" journal, 20),
+        // and a bank journal that paid 10 (money, not credit).
+        'Payment Ledger Entry': () => [
+          { voucher_type: 'Sales Invoice', voucher_no: 'SI-RET', amount_in_account_currency: -45 },
+          { voucher_type: 'Journal Entry', voucher_no: 'JV-CN', amount_in_account_currency: -20 },
+          { voucher_type: 'Journal Entry', voucher_no: 'JV-BANK', amount_in_account_currency: -10 },
+        ],
+        'Journal Entry': (query) =>
+          ((query.filters?.[0]?.[2] as string[]) ?? []).includes('JV-CN')
+            ? [{ name: 'JV-CN' }]
+            : [],
+      },
+      {},
+      {
+        'Sales Invoice/SI-1': {
+          name: 'SI-1',
+          docstatus: 1,
+          grand_total: 100,
+          rounded_total: 100,
+          outstanding_amount: 25,
+        },
+      },
+    );
+    expect((await TestBed.inject(InvoiceApiService).load('SI-1')).credited).toBe(65);
   });
 });

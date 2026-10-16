@@ -16,6 +16,7 @@ const INVOICE: InvoiceDetail = {
   outstanding: 80,
   delivered: true,
   returnable: true,
+  credited: 0,
   payments: [
     { name: 'PAY-0154', amount: 120, account: 'Main cash' },
     { name: 'PAY-0156', amount: 120, account: 'Main cash' },
@@ -86,8 +87,62 @@ describe('invoice view', () => {
     );
     expect(cancelled.chips).toEqual([{ label: 'Invoice: Cancelled', tone: 'danger' }]);
     expect(
-      visible(invoiceView({ ...INVOICE, outstanding: 0 }, null, 'ILS', 'en', en)).chips[1],
+      visible(
+        invoiceView(
+          {
+            ...INVOICE,
+            outstanding: 0,
+            payments: [{ name: 'PAY-1', amount: 320, account: 'Main cash' }],
+          },
+          null,
+          'ILS',
+          'en',
+          en,
+        ),
+      ).chips[1],
     ).toEqual({ label: 'Payment: Paid', tone: 'tint' });
+    // A return took 30 off an unpaid 320: still unpaid, nothing received.
+    const unpaid = visible(
+      invoiceView(
+        { ...INVOICE, outstanding: 290, credited: 30, payments: [] },
+        null,
+        'ILS',
+        'en',
+        en,
+      ),
+    );
+    expect(unpaid.chips[1]).toEqual({ label: 'Payment: Unpaid', tone: 'danger' });
+    expect(unpaid.totals[1].value).toBe('ILS 0.00');
+    // Paid in full, then a return the business still owes back: paid, not settled by a credit.
+    const refundDue = visible(
+      invoiceView(
+        {
+          ...INVOICE,
+          outstanding: -80,
+          credited: 80,
+          payments: [{ name: 'P', amount: 320, account: 'Cash' }],
+        },
+        null,
+        'ILS',
+        'en',
+        en,
+      ),
+    );
+    expect(refundDue.chips[1].label).toBe('Payment: Paid');
+  });
+
+  it('counts only payments as paid, and shows what returns credited', () => {
+    // 240 paid, then a return credited the last 80: settled, but not all by money.
+    const view = visible(
+      invoiceView({ ...INVOICE, outstanding: 0, credited: 80 }, null, 'ILS', 'en', en),
+    );
+    expect(view.chips[1]).toEqual({ label: 'Payment: Credit note issued', tone: 'tint' });
+    expect(view.totals.map((r) => [r.label, r.value])).toEqual([
+      ['Invoice total', 'ILS 320.00'],
+      ['Amount paid', 'ILS 240.00'],
+      ['Credited by credit notes', 'ILS 80.00'],
+      ['Outstanding', 'ILS 0.00'],
+    ]);
   });
 
   it('uses the Arabic wording and dual form', () => {

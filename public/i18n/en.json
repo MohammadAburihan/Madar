@@ -617,7 +617,8 @@
     "payment": {
       "paid": "Payment: Paid",
       "partial": "Payment: Partially paid",
-      "unpaid": "Payment: Unpaid"
+      "unpaid": "Payment: Unpaid",
+      "credited": "Payment: Credit note issued"
     },
     "goods": "Goods: Delivered",
     "payments": {
@@ -637,7 +638,8 @@
     "noPayments": "No payments yet",
     "receivedBoth": "Both received in {{accounts}}.",
     "receivedAll": "All received in {{accounts}}.",
-    "loading": "Loading invoice…"
+    "loading": "Loading invoice…",
+    "credited": "Credited by credit notes"
   },
   "inventory": {
     "title": "Inventory",

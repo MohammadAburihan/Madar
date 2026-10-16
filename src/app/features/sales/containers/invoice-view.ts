@@ -14,8 +14,17 @@ export function invoiceView(
   tr: Translator,
 ) {
   const money = (amount: number) => formatMoney(amount, currency);
-  const paid = invoice.total - invoice.outstanding;
-  const payment = paymentStatusOf(paid, invoice.total);
+  // Credit notes lower the outstanding too, but pay nothing: they aren't counted as paid.
+  const credited = invoice.credited;
+  const paid = Math.max(
+    Math.round((invoice.total - invoice.outstanding - credited) * 100) / 100,
+    0,
+  );
+  const payment =
+    // Settled to the cent by a credit; a negative outstanding is a refund still owed, not a credit settlement.
+    Math.abs(invoice.outstanding) <= 0.005 && credited > 0.005
+      ? 'credited'
+      : paymentStatusOf(paid, invoice.total - credited);
   const count = invoice.payments.length;
   const accounts = [...new Set(invoice.payments.map((p) => p.account))];
   const chips: { label: string; tone: Tone }[] = [
@@ -27,7 +36,12 @@ export function invoiceView(
   if (invoice.status === 'confirmed') {
     chips.push({
       label: tr.t(`invoice.payment.${payment}`),
-      tone: payment === 'paid' ? 'tint' : payment === 'partial' ? 'warning' : 'danger',
+      tone:
+        payment === 'paid' || payment === 'credited'
+          ? 'tint'
+          : payment === 'partial'
+            ? 'warning'
+            : 'danger',
     });
   }
   if (invoice.delivered) {
@@ -58,6 +72,7 @@ export function invoiceView(
     totals: [
       { label: tr.t('sale.review.invoiceTotal'), value: money(invoice.total) },
       { label: tr.t('sale.review.amountPaid'), value: money(paid) },
+      ...(credited > 0.005 ? [{ label: tr.t('invoice.credited'), value: money(credited) }] : []),
       { label: tr.t('sale.review.outstanding'), value: money(invoice.outstanding) },
     ],
     payments: {
