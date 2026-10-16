@@ -13,6 +13,7 @@ const PAYMENTS = () => [
     paid_amount: 120,
     docstatus: 1,
     posting_date: '2026-10-11',
+    creation: '2026-10-11 09:00:00',
   },
   {
     name: 'PAY-0155',
@@ -23,6 +24,7 @@ const PAYMENTS = () => [
     paid_amount: 100,
     docstatus: 0,
     posting_date: '2026-10-12',
+    creation: '2026-10-12 09:00:00',
   },
 ];
 
@@ -68,6 +70,7 @@ describe('MoneyApiService', () => {
         amount: 120,
         status: 'confirmed',
         postingDate: '2026-10-11',
+        created: '2026-10-11 09:00:00',
         invoices: ['SI-1042'],
       },
       {
@@ -78,6 +81,7 @@ describe('MoneyApiService', () => {
         amount: 100,
         status: 'draft',
         postingDate: '2026-10-12',
+        created: '2026-10-12 09:00:00',
         invoices: ['PINV-0068'],
       },
     ]);
@@ -140,8 +144,18 @@ describe('MoneyApiService', () => {
     const { listCalls } = fakeErpnext({
       'Payment Entry': PAYMENTS,
       'Journal Entry': () => [
-        { name: 'ACC-JV-0091', posting_date: '2026-10-13', docstatus: 1 },
-        { name: 'ACC-JV-0091', posting_date: '2026-10-13', docstatus: 1 },
+        {
+          name: 'ACC-JV-0091',
+          posting_date: '2026-10-13',
+          creation: '2026-10-13 08:00:00',
+          docstatus: 1,
+        },
+        {
+          name: 'ACC-JV-0091',
+          posting_date: '2026-10-13',
+          creation: '2026-10-13 08:00:00',
+          docstatus: 1,
+        },
       ],
       'Journal Entry Account': () => [
         { parent: 'ACC-JV-0091', account: 'Travel Expenses - RN', debit: 36.5, credit: 0 },
@@ -164,6 +178,7 @@ describe('MoneyApiService', () => {
       amount: 36.5,
       status: 'confirmed',
       postingDate: '2026-10-13',
+      created: '2026-10-13 08:00:00',
       invoices: [],
       receipt: false,
     });
@@ -174,6 +189,46 @@ describe('MoneyApiService', () => {
       'in',
       ['Travel Expenses - RN'],
     ]);
+  });
+
+  it("orders a day's payments and expenses by when they were entered, so a fresh expense isn't buried", async () => {
+    fakeErpnext({
+      'Payment Entry': () => [
+        {
+          name: 'PAY-2',
+          payment_type: 'Receive',
+          party_name: 'A',
+          paid_to: 'Cash - RN',
+          paid_from: 'Debtors - RN',
+          paid_amount: 5,
+          docstatus: 1,
+          posting_date: '2026-10-16',
+          creation: '2026-10-16 09:00:00',
+        },
+        {
+          name: 'PAY-1',
+          payment_type: 'Receive',
+          party_name: 'B',
+          paid_to: 'Cash - RN',
+          paid_from: 'Debtors - RN',
+          paid_amount: 5,
+          docstatus: 1,
+          posting_date: '2026-10-16',
+          creation: '2026-10-16 08:00:00',
+        },
+      ],
+      'Journal Entry': () => [
+        { name: 'JV-1', posting_date: '2026-10-16', creation: '2026-10-16 10:00:00', docstatus: 1 },
+      ],
+      'Journal Entry Account': () => [
+        { parent: 'JV-1', account: 'Travel Expenses - RN', debit: 18.25, credit: 0 },
+        { parent: 'JV-1', account: 'Cash - RN', debit: 0, credit: 18.25 },
+      ],
+    });
+    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
+      'Travel Expenses - RN',
+    ]);
+    expect(payments.map((p) => p.name)).toEqual(['JV-1', 'PAY-2', 'PAY-1']);
   });
 
   it('leaves expenses out for roles that pass no categories', async () => {

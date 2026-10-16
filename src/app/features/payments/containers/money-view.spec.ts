@@ -14,6 +14,7 @@ const PAYMENT: PaymentRecord = {
   amount: 120,
   status: 'confirmed',
   postingDate: '2026-10-11',
+  created: '2026-10-11 09:41:00',
   invoices: ['SI-1042'],
 };
 
@@ -81,6 +82,7 @@ describe('money view', () => {
       amount: 36.5,
       status: 'confirmed',
       postingDate: '2026-10-11',
+      created: '2026-10-11 10:00:00',
       invoices: [],
       receipt: false,
     };
