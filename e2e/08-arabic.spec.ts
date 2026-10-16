@@ -28,3 +28,17 @@ test('reads the reports in Arabic @desktop', async ({ page }) => {
   await expectHeading(page, 'التقارير');
   await expect(page.locator('app-metric-cards')).toContainText('الربح');
 });
+
+test('lists the sales in Arabic @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  await page.goto('/sales');
+  await toArabic(page);
+  await expectHeading(page, 'المبيعات');
+  await expect(page.getByRole('radio', { name: 'الفواتير' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await expect(page.locator('app-feedback-card').first()).toContainText('مؤكدة');
+  await page.getByRole('radio', { name: 'الطلبات' }).click();
+  await expect(page.locator('app-feedback-card').first()).toContainText('طلب');
+});

@@ -32,6 +32,26 @@ _Last updated: 16 Oct 2026_
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
+## Sales, Contacts and Settings (in progress)
+
+- **Sales S1 — Sales records** (this PR): the Sales page lists invoices, orders and quotations (tabs), newest 30,
+  searchable by number or customer, worded as on the mock ("Confirmed · Partially paid / Goods delivered · ILS 200.00
+  due"); desktop shows them as a table. Invoices open their page; orders and quotes open with S2/S3. A role ERPNext
+  doesn't let read a list sees that, per tab. e2e: a walk-in sale found on Sales as paid and opened; a sale on account
+  shown unpaid with the amount due, then paid after its collection; orders and quotes tabs; the list in Arabic.
+  Review pass 1 (2 medium, 1 low) fixed: salespeople and store associates see only their own sales (e2e: a store
+  associate finds their sale but not someone else's); outstanding is converted only when the receivable account isn't
+  in the company currency; a draft invoice shows its total, nothing delivered or due.
+  Review pass 2 (3 medium, 2 low) fixed: a return reads "Goods returned"; an invoice billing a delivery note counts as
+  delivered; orders read ERPNext's delivery and billing states (a services-only order has no goods to deliver); a row
+  opens only if it is itself openable; sales roles see "Your sales". Review pass 3 (1 medium, 2 low) fixed: an invoice
+  delivered later by a delivery note made from it counts as delivered; closed and held orders say so; the "newest 30"
+  hint shows only once the tab has loaded. Review pass 4 (1 medium, 1 low) fixed: payment wording follows ERPNext's
+  invoice status, so an invoice settled by a credit note reads "Credit note issued", not paid; orders and quotations
+  show the rounded total, as invoices do. Review pass 5 (2 low): an unreadable delivery lookup leaves the goods wording
+  out; deferred: an invoice partly delivered by a delivery note made from it reads "Goods delivered".
+- Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
+
 ## End-to-end happy paths: merged (#26)
 
 `npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site, through its own dev server on :4321

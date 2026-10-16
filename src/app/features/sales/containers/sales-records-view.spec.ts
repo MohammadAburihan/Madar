@@ -1,0 +1,135 @@
+import { realTranslator } from '../../../../testing/real-translator';
+import { InvoiceRecord, OrderRecord } from '../data-access/sales-records.models';
+import * as view from './sales-records-view';
+
+const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
+const en = realTranslator('en');
+const ar = realTranslator('ar');
+
+const INVOICE: InvoiceRecord = {
+  name: 'SI-1042',
+  customer: 'Lina Haddad',
+  docstatus: 1,
+  status: 'Partly Paid',
+  isReturn: false,
+  delivered: true,
+  total: 320,
+  outstanding: 200,
+  date: '2026-10-11',
+};
+const ORDER: OrderRecord = {
+  name: 'SO-0187',
+  customer: 'Samir Nasser',
+  docstatus: 1,
+  status: 'To Deliver and Bill',
+  qty: 2,
+  deliveryStatus: 'Not Delivered',
+  billingStatus: 'Not Billed',
+  total: 170,
+  date: '2026-10-10',
+};
+
+describe('sales records view', () => {
+  it('describes an invoice like the sales records mock', () => {
+    expect(visible(view.invoiceCard(INVOICE, 'ILS', en))).toEqual({
+      id: 'SI-1042',
+      title: 'SI-1042 · Lina Haddad',
+      message: 'Confirmed · Partially paid\nGoods delivered · ILS 200.00 due',
+      openable: true,
+      cells: [
+        'SI-1042',
+        'Lina Haddad',
+        'Confirmed · Partially paid · Goods delivered',
+        'ILS 200.00 due',
+      ],
+    });
+    expect(
+      visible(view.invoiceCard({ ...INVOICE, status: 'Paid', outstanding: 0 }, 'ILS', en)).message,
+    ).toBe('Confirmed · Paid\nGoods delivered · ILS 320.00');
+    expect(
+      visible(
+        view.invoiceCard(
+          { ...INVOICE, status: 'Unpaid', outstanding: 320, delivered: false },
+          'ILS',
+          en,
+        ),
+      ).message,
+    ).toBe('Confirmed · Unpaid\nInvoice only · ILS 320.00 due');
+    expect(visible(view.invoiceCard(INVOICE, 'ILS', ar)).message).toBe(
+      'مؤكدة · مدفوع جزئياً\nتم تسليم البضائع · المتبقي ILS 200.00',
+    );
+  });
+
+  it('says what a return did, and that a services-only order has nothing to deliver', () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, isReturn: true, outstanding: 0, total: -45 }, 'ILS', en),
+      ).message,
+    ).toBe('Return\nGoods returned · ILS -45.00');
+    expect(
+      visible(
+        view.orderCard(
+          { ...ORDER, deliveryStatus: 'Not Applicable', billingStatus: 'Fully Billed' },
+          'ILS',
+          en,
+        ),
+      ).message,
+    ).toBe('Confirmed order · 2 items\nNo goods to deliver · Invoiced');
+    expect(visible(view.orderCard({ ...ORDER, status: 'Closed' }, 'ILS', en)).message).toBe(
+      'Confirmed order · 2 items\nClosed',
+    );
+  });
+
+  it("doesn't call an invoice paid when a credit note settled it", () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, status: 'Credit Note Issued', outstanding: 0 }, 'ILS', en),
+      ).message,
+    ).toBe('Confirmed · Credit note issued\nGoods delivered · ILS 320.00');
+  });
+
+  it('shows a draft invoice by its total, with nothing delivered or due yet', () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, docstatus: 0, outstanding: 0, delivered: false }, 'ILS', en),
+      ).message,
+    ).toBe('Draft\nILS 320.00');
+  });
+
+  it('describes an order by what is delivered and invoiced', () => {
+    expect(visible(view.orderCard(ORDER, 'ILS', en)).message).toBe(
+      'Confirmed order · 2 items\nDelivery pending · Not invoiced',
+    );
+    expect(
+      visible(
+        view.orderCard(
+          { ...ORDER, deliveryStatus: 'Fully Delivered', billingStatus: 'Partly Billed' },
+          'ILS',
+          en,
+        ),
+      ).message,
+    ).toBe('Confirmed order · 2 items\nDelivered · Partly invoiced');
+    expect(visible(view.orderCard(ORDER, 'ILS', ar)).message).toBe(
+      'الطلب مؤكد · صنفان\nالتسليم قيد الانتظار · لم تصدر الفاتورة',
+    );
+  });
+
+  it('describes a quotation with its validity', () => {
+    const quote = {
+      name: 'QT-0084',
+      customer: 'Lina Haddad',
+      docstatus: 0,
+      status: 'Draft',
+      total: 320,
+      validTill: '2026-10-25',
+      date: '2026-10-11',
+    };
+    expect(visible(view.quoteCard(quote, 'ILS', 'en', en)).message).toBe(
+      'Draft · ILS 320.00\nValid until 25 Oct 2026',
+    );
+    expect(
+      visible(view.quoteCard({ ...quote, docstatus: 1, status: 'Ordered' }, 'ILS', 'en', en))
+        .message,
+    ).toContain('Ordered');
+  });
+});

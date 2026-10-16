@@ -21,9 +21,43 @@ test('sells to a walk-in customer for cash and shows the receipt @phone', async 
   await expect(page).toHaveURL(/\/sales\/new\/receipt$/, { timeout: 60_000 });
   await expectHeading(page, 'Sale confirmed');
   await expect(page.locator('app-status-chip', { hasText: 'Payment: Paid' })).toBeVisible();
+  const subtitle = await page.locator('app-page-heading p').first().innerText();
+  const invoice = subtitle
+    .split(' · ')[0]
+    .replace(/[\u2066-\u2069]/g, '')
+    .trim();
+
+  // The sale is on the Sales page, as it was made: paid, delivered, for the planter's price.
+  await page.getByRole('link', { name: 'Sales' }).click();
+  await expectHeading(page, 'Sales');
+  await page.locator('app-search-field input').fill(invoice);
+  const card = page.locator('app-feedback-card', { hasText: invoice });
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText(named('Walk-in', 'Customer'));
+  await expect(card).toContainText('Confirmed · Paid');
+  await expect(card).toContainText('Goods delivered');
+  await expect(card).toContainText('ILS 45.00');
+  await card.click();
+  await expect(page).toHaveURL(new RegExp(`/sales/invoices/${invoice}$`));
+});
+
+test('lists sales orders and quotations on the sales workspace @desktop', async ({ page }) => {
+  await signIn(page, 'owner');
+  await page.goto('/sales');
+  await expect(page.locator('app-data-table tbody tr').first()).toContainText('SINV');
+  await page.getByRole('radio', { name: 'Orders' }).click();
+  await expect(page.locator('app-data-table tbody tr').first()).toContainText('ORD');
+  await page.getByRole('radio', { name: 'Quotes' }).click();
+  await expect(page.locator('app-data-table')).toBeVisible();
+  await page.getByRole('button', { name: 'Quick sale' }).click();
+  await expect(page).toHaveURL(/\/sales\/new$/);
 });
 
 test.describe.serial('selling on account, then collecting @desktop', () => {
+  let invoice = '';
+  const row = (page: import('@playwright/test').Page) =>
+    page.locator('app-data-table tbody tr').filter({ hasText: invoice });
+
   test('sells to a named customer, unpaid', async ({ page }) => {
     await signIn(page, 'owner');
     await page.goto('/sales/new');
@@ -45,6 +79,18 @@ test.describe.serial('selling on account, then collecting @desktop', () => {
     await page.getByRole('button', { name: /^Confirm sale/ }).click();
     await expect(page).toHaveURL(/\/sales\/new\/receipt$/, { timeout: 60_000 });
     await expectHeading(page, 'Sale confirmed');
+    const subtitle = await page.locator('app-page-heading p').first().innerText();
+    invoice = subtitle
+      .split(' · ')[0]
+      .replace(/[\u2066-\u2069]/g, '')
+      .trim();
+
+    // On the Sales workspace it reads as owed in full.
+    await page.goto('/sales');
+    await page.locator('app-search-field input').fill(invoice);
+    await expect(row(page)).toContainText(CUSTOMER);
+    await expect(row(page)).toContainText('Confirmed · Unpaid');
+    await expect(row(page)).toContainText(named('ILS 45.00', 'due'));
   });
 
   test("collects the customer's payment", async ({ page }) => {
@@ -59,9 +105,15 @@ test.describe.serial('selling on account, then collecting @desktop', () => {
     await page.getByRole('button', { name: /^Confirm receipt/ }).click();
     await expect(page).toHaveURL(/\/money\/receive\/recorded$/, { timeout: 60_000 });
     await expectHeading(page, 'Collection recorded');
+
     // One invoice settled opens that invoice; several open the payment history.
     await page.getByRole('button', { name: /^(View invoice|View payment history)/ }).click();
     await expect(page).toHaveURL(/\/sales\/invoices\/[^/]+$|\/money$/);
+
+    // The collection settled the invoice: Sales now reads it as paid.
+    await page.goto('/sales');
+    await page.locator('app-search-field input').fill(invoice);
+    await expect(row(page)).toContainText('Confirmed · Paid');
   });
 });
 
