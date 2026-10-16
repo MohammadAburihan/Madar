@@ -70,14 +70,18 @@ export function orderCard(order: OrderRecord, currency: string, tr: Translator):
       Closed: t('closed'),
     }[order.billingStatus] ?? t('notInvoiced');
   const items = tr.plural('sales.records.items', order.qty, { count: qty(order.qty) });
-  const status = order.docstatus === 0 ? t('draftOrder') : `${delivery} · ${billing}`;
+  // Closing or holding an order changes only its status, not its delivery and billing states.
+  const stopped =
+    order.status === 'Closed' ? t('closed') : order.status === 'On Hold' ? t('onHold') : null;
+  const progress = stopped ?? `${delivery} · ${billing}`;
+  const status = order.docstatus === 0 ? t('draftOrder') : progress;
   return {
     id: order.name,
     title: t('title', { name: order.name, customer: order.customer }),
     message:
       order.docstatus === 0
         ? `${t('draftOrder')} · ${formatMoney(order.total, currency)}`
-        : `${t('confirmedOrder', { items })}\n${delivery} · ${billing}`,
+        : `${t('confirmedOrder', { items })}\n${progress}`,
     openable: false,
     cells: [order.name, order.customer, status, formatMoney(order.total, currency)],
   };

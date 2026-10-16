@@ -69,6 +69,9 @@ describe('sales records view', () => {
         ),
       ).message,
     ).toBe('Confirmed order · 2 items\nNo goods to deliver · Invoiced');
+    expect(visible(view.orderCard({ ...ORDER, status: 'Closed' }, 'ILS', en)).message).toBe(
+      'Confirmed order · 2 items\nClosed',
+    );
   });
 
   it('shows a draft invoice by its total, with nothing delivered or due yet', () => {

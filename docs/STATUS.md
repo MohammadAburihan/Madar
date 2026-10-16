@@ -44,7 +44,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   in the company currency; a draft invoice shows its total, nothing delivered or due.
   Review pass 2 (3 medium, 2 low) fixed: a return reads "Goods returned"; an invoice billing a delivery note counts as
   delivered; orders read ERPNext's delivery and billing states (a services-only order has no goods to deliver); a row
-  opens only if it is itself openable; sales roles see "Your sales".
+  opens only if it is itself openable; sales roles see "Your sales". Review pass 3 (1 medium, 2 low) fixed: an invoice
+  delivered later by a delivery note made from it counts as delivered; closed and held orders say so; the "newest 30"
+  hint shows only once the tab has loaded.
 - Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

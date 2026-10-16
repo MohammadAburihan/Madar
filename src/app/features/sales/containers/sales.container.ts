@@ -108,7 +108,7 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ emptyText() }}</p>
         }
       }
-      @if (cards().length >= limit) {
+      @if (state() === 'ready' && cards().length >= limit) {
         <p class="muted">{{ txt.newest }}</p>
       }
       @if (!desktop()) {

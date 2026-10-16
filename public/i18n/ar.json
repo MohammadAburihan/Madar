@@ -2088,7 +2088,8 @@
       "goodsReturned": "أُعيدت البضائع",
       "servicesOnly": "لا بضائع للتسليم",
       "closed": "مغلق",
-      "subtitleOwn": "{{business}} · مبيعاتك"
+      "subtitleOwn": "{{business}} · مبيعاتك",
+      "onHold": "معلّق"
     }
   }
 }

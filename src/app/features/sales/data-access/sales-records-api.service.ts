@@ -74,22 +74,27 @@ export class SalesRecordsApiService {
     }));
   }
 
-  /** The invoices that bill a delivery note: their goods left with the delivery. Empty when that can't be read. */
+  /**
+   * The invoices whose goods left with a delivery: one the invoice bills, or one made from it afterwards (which
+   * records the delivered quantity on the invoice's rows). Empty when that can't be read.
+   */
   private async billedDeliveries(names: readonly string[]): Promise<Set<string>> {
     if (!names.length) {
       return new Set();
     }
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Sales Invoice', {
-        fields: ['name'],
-        filters: [
-          ['name', 'in', names] as Filter,
-          ['Sales Invoice Item', 'delivery_note', 'is', 'set'],
-        ],
-        limit: 0,
-      }),
-    ).catch(() => []);
-    return new Set(rows.map((r) => r.name));
+    const find = (filter: Filter) =>
+      firstValueFrom(
+        this.erpnext.list<{ name: string }>('Sales Invoice', {
+          fields: ['name'],
+          filters: [['name', 'in', names] as Filter, filter],
+          limit: 0,
+        }),
+      ).catch(() => []);
+    const [billed, deliveredAfter] = await Promise.all([
+      find(['Sales Invoice Item', 'delivery_note', 'is', 'set']),
+      find(['Sales Invoice Item', 'delivered_qty', '>', 0]),
+    ]);
+    return new Set([...billed, ...deliveredAfter].map((r) => r.name));
   }
 
   async orders(q: RecordsQuery): Promise<OrderRecord[]> {
