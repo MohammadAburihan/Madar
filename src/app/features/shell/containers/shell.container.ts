@@ -51,18 +51,19 @@ import { buildShellView } from './shell-view';
           (switchBusiness)="openBusinesses()"
         />
       }
-      @if (clock.unknownZone() || clock.recovered()) {
-        <div class="clock">
+      <div class="clock" role="status" aria-live="polite">
+        @if (clock.unknownZone() || clock.recovered()) {
           <app-feedback-card
             tone="warning"
+            [quiet]="true"
             [title]="clockText().title"
             [message]="clockText().message"
           />
           <button type="button" class="md-btn" (click)="clockAction()">
             {{ clockText().action }}
           </button>
-        </div>
-      }
+        }
+      </div>
       <router-outlet />
     </main>
     @if (viewport() === 'mobile') {
@@ -95,6 +96,10 @@ import { buildShellView } from './shell-view';
 
     .bar {
       padding: 16px 20px 0;
+    }
+
+    .clock:empty {
+      display: none;
     }
 
     .clock {
@@ -145,16 +150,19 @@ export class ShellContainer implements OnInit {
     return {
       title: t(`clock.${state}.title`),
       message: t(`clock.${state}.message`),
-      action: t(state === 'unknown' ? 'clock.unknown.retry' : 'clock.recovered.reload'),
+      action: t(state === 'unknown' ? 'clock.unknown.retry' : 'clock.recovered.ok'),
     };
   });
 
-  /** Try reading the zone again; once read, a full reload works the page's dates out again in it. */
+  /**
+   * Try reading the zone again; once read, OK. No reload: it would lose a task's in-memory reference, and a task
+   * left unresolved could then be posted twice.
+   */
   protected clockAction(): void {
     if (this.clock.unknownZone()) {
       void this.clock.retry();
     } else {
-      window.location.reload();
+      this.clock.dismissRecovered();
     }
   }
 

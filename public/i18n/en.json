@@ -1935,8 +1935,8 @@
     },
     "recovered": {
       "title": "The business's time zone is read",
-      "message": "Reload so this page's dates follow it.",
-      "reload": "Reload"
+      "message": "Dates shown before now may still follow this device's clock; they update the next time you open the page.",
+      "ok": "OK"
     }
   }
 }

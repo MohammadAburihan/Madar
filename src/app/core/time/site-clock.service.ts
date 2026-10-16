@@ -30,8 +30,13 @@ export class SiteClockService {
   readonly timeZone = this.zone.asReadonly();
   /** The site's time zone couldn't be read, so "today" and due dates follow this device's clock. */
   readonly unknownZone = this.failed.asReadonly();
-  /** Read on a retry: the open page may still show dates from the device's clock until it reloads. */
+  /** Read after a failure, while dates on screen may still come from the device's clock. */
   readonly recovered = this.recoveredZone.asReadonly();
+
+  /** The user has seen that earlier dates may still follow the device. */
+  dismissRecovered(): void {
+    this.recoveredZone.set(false);
+  }
 
   ensure(): Promise<void> {
     return this.zone() ? Promise.resolve() : this.loadZone();
