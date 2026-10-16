@@ -10,6 +10,7 @@ const INVOICE: InvoiceRecord = {
   name: 'SI-1042',
   customer: 'Lina Haddad',
   docstatus: 1,
+  status: 'Partly Paid',
   isReturn: false,
   delivered: true,
   total: 320,
@@ -42,12 +43,17 @@ describe('sales records view', () => {
         'ILS 200.00 due',
       ],
     });
-    expect(visible(view.invoiceCard({ ...INVOICE, outstanding: 0 }, 'ILS', en)).message).toBe(
-      'Confirmed · Paid\nGoods delivered · ILS 320.00',
-    );
     expect(
-      visible(view.invoiceCard({ ...INVOICE, outstanding: 320, delivered: false }, 'ILS', en))
-        .message,
+      visible(view.invoiceCard({ ...INVOICE, status: 'Paid', outstanding: 0 }, 'ILS', en)).message,
+    ).toBe('Confirmed · Paid\nGoods delivered · ILS 320.00');
+    expect(
+      visible(
+        view.invoiceCard(
+          { ...INVOICE, status: 'Unpaid', outstanding: 320, delivered: false },
+          'ILS',
+          en,
+        ),
+      ).message,
     ).toBe('Confirmed · Unpaid\nInvoice only · ILS 320.00 due');
     expect(visible(view.invoiceCard(INVOICE, 'ILS', ar)).message).toBe(
       'مؤكدة · مدفوع جزئياً\nتم تسليم البضائع · المتبقي ILS 200.00',
@@ -72,6 +78,14 @@ describe('sales records view', () => {
     expect(visible(view.orderCard({ ...ORDER, status: 'Closed' }, 'ILS', en)).message).toBe(
       'Confirmed order · 2 items\nClosed',
     );
+  });
+
+  it("doesn't call an invoice paid when a credit note settled it", () => {
+    expect(
+      visible(
+        view.invoiceCard({ ...INVOICE, status: 'Credit Note Issued', outstanding: 0 }, 'ILS', en),
+      ).message,
+    ).toBe('Confirmed · Credit note issued\nGoods delivered · ILS 320.00');
   });
 
   it('shows a draft invoice by its total, with nothing delivered or due yet', () => {

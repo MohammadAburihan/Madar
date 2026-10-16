@@ -46,7 +46,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   delivered; orders read ERPNext's delivery and billing states (a services-only order has no goods to deliver); a row
   opens only if it is itself openable; sales roles see "Your sales". Review pass 3 (1 medium, 2 low) fixed: an invoice
   delivered later by a delivery note made from it counts as delivered; closed and held orders say so; the "newest 30"
-  hint shows only once the tab has loaded.
+  hint shows only once the tab has loaded. Review pass 4 (1 medium, 1 low) fixed: payment wording follows ERPNext's
+  invoice status, so an invoice settled by a credit note reads "Credit note issued", not paid; orders and quotations
+  show the rounded total, as invoices do.
 - Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

@@ -4,6 +4,8 @@ export interface InvoiceRecord {
   name: string;
   customer: string;
   docstatus: number;
+  /** ERPNext's invoice status ("Paid", "Credit Note Issued", …): a credit lowers outstanding as a payment does. */
+  status: string;
   isReturn: boolean;
   /** Stock left with the invoice itself (a quick sale), rather than through a delivery. */
   delivered: boolean;

@@ -25,6 +25,7 @@ export class SalesRecordsApiService {
         name: string;
         customer_name: string;
         docstatus: number;
+        status: string;
         is_return: number;
         update_stock: number;
         base_grand_total: number;
@@ -38,6 +39,7 @@ export class SalesRecordsApiService {
           'name',
           'customer_name',
           'docstatus',
+          'status',
           'is_return',
           'update_stock',
           'base_grand_total',
@@ -60,6 +62,7 @@ export class SalesRecordsApiService {
       name: r.name,
       customer: r.customer_name,
       docstatus: r.docstatus,
+      status: r.status,
       isReturn: !!r.is_return,
       // A draft has moved no stock yet; a confirmed invoice did, or billed a delivery that did.
       delivered: r.docstatus === 1 && (!!r.update_stock || fromDeliveries.has(r.name)),
@@ -108,6 +111,7 @@ export class SalesRecordsApiService {
         delivery_status: string;
         billing_status: string;
         base_grand_total: number;
+        base_rounded_total: number;
         transaction_date: string;
       }>('Sales Order', {
         fields: [
@@ -119,6 +123,7 @@ export class SalesRecordsApiService {
           'delivery_status',
           'billing_status',
           'base_grand_total',
+          'base_rounded_total',
           'transaction_date',
         ],
         filters: scope(q),
@@ -135,7 +140,7 @@ export class SalesRecordsApiService {
       qty: r.total_qty,
       deliveryStatus: r.delivery_status,
       billingStatus: r.billing_status,
-      total: r.base_grand_total,
+      total: r.base_rounded_total || r.base_grand_total,
       date: r.transaction_date,
     }));
   }
@@ -148,6 +153,7 @@ export class SalesRecordsApiService {
         docstatus: number;
         status: string;
         base_grand_total: number;
+        base_rounded_total: number;
         valid_till: string | null;
         transaction_date: string;
       }>('Quotation', {
@@ -157,6 +163,7 @@ export class SalesRecordsApiService {
           'docstatus',
           'status',
           'base_grand_total',
+          'base_rounded_total',
           'valid_till',
           'transaction_date',
         ],
@@ -171,7 +178,7 @@ export class SalesRecordsApiService {
       customer: r.customer_name,
       docstatus: r.docstatus,
       status: r.status,
-      total: r.base_grand_total,
+      total: r.base_rounded_total || r.base_grand_total,
       validTill: r.valid_till,
       date: r.transaction_date,
     }));

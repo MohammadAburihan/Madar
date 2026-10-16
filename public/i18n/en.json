@@ -2009,7 +2009,8 @@
       "servicesOnly": "No goods to deliver",
       "closed": "Closed",
       "subtitleOwn": "{{business}} · Your sales",
-      "onHold": "On hold"
+      "onHold": "On hold",
+      "creditNote": "Credit note issued"
     }
   }
 }

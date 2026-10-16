@@ -2089,7 +2089,8 @@
       "servicesOnly": "لا بضائع للتسليم",
       "closed": "مغلق",
       "subtitleOwn": "{{business}} · مبيعاتك",
-      "onHold": "معلّق"
+      "onHold": "معلّق",
+      "creditNote": "صدر إشعار دائن"
     }
   }
 }

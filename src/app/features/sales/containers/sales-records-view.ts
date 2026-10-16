@@ -21,14 +21,7 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
   const t = (key: string, params?: Record<string, unknown>) => tr.t(`sales.records.${key}`, params);
   const state =
     invoice.docstatus === 0 ? t('draft') : invoice.isReturn ? t('return') : t('confirmed');
-  const payment =
-    invoice.docstatus === 0 || invoice.isReturn
-      ? null
-      : invoice.outstanding <= 0.005
-        ? t('paid')
-        : invoice.outstanding < invoice.total - 0.005
-          ? t('partlyPaid')
-          : t('unpaid');
+  const payment = invoice.docstatus === 0 || invoice.isReturn ? null : paymentState(invoice, t);
   const goods =
     invoice.docstatus === 0
       ? null
@@ -51,6 +44,27 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
     openable: true,
     cells: [invoice.name, invoice.customer, [status, goods].filter(Boolean).join(' · '), amount],
   };
+}
+
+/** ERPNext's own state where it says more than the outstanding amount can (a credit note isn't a payment). */
+function paymentState(invoice: InvoiceRecord, t: (key: string) => string): string {
+  if (invoice.status === 'Credit Note Issued') {
+    return t('creditNote');
+  }
+  if (invoice.status.startsWith('Partly Paid')) {
+    return t('partlyPaid');
+  }
+  if (invoice.status === 'Paid') {
+    return t('paid');
+  }
+  if (invoice.status.startsWith('Unpaid') || invoice.status.startsWith('Overdue')) {
+    return t('unpaid');
+  }
+  return invoice.outstanding <= 0.005
+    ? t('paid')
+    : invoice.outstanding < invoice.total - 0.005
+      ? t('partlyPaid')
+      : t('unpaid');
 }
 
 /** "Confirmed order · 2 items" / "Delivery pending · Not invoiced". */
