@@ -25,6 +25,12 @@ describe('Shared presenters', () => {
     await fixture.whenStable();
     expect(host.getAttribute('role')).toBe('status');
     expect(host.getAttribute('aria-live')).toBe('polite');
+
+    fixture.componentRef.setInput('tone', 'warning');
+    fixture.componentRef.setInput('quiet', true);
+    await fixture.whenStable();
+    expect(host.getAttribute('role')).toBeNull();
+    expect(host.getAttribute('aria-live')).toBeNull();
   });
 
   it('BusinessBar shows the business and emits switchBusiness', async () => {
