@@ -639,7 +639,7 @@
     "receivedBoth": "Both received in {{accounts}}.",
     "receivedAll": "All received in {{accounts}}.",
     "loading": "Loading invoice…",
-    "credited": "Credited by returns"
+    "credited": "Credited by credit notes"
   },
   "inventory": {
     "title": "Inventory",

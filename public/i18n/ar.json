@@ -687,7 +687,7 @@
     "receivedBoth": "تم استلامهما في {{accounts}}.",
     "receivedAll": "تم استلامها جميعاً في {{accounts}}.",
     "loading": "جارٍ تحميل الفاتورة…",
-    "credited": "إشعارات دائنة للمرتجعات"
+    "credited": "إشعارات دائنة"
   },
   "inventory": {
     "title": "المخزون",

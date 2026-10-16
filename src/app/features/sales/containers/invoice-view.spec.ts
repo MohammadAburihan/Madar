@@ -140,7 +140,7 @@ describe('invoice view', () => {
     expect(view.totals.map((r) => [r.label, r.value])).toEqual([
       ['Invoice total', 'ILS 320.00'],
       ['Amount paid', 'ILS 240.00'],
-      ['Credited by returns', 'ILS 80.00'],
+      ['Credited by credit notes', 'ILS 80.00'],
       ['Outstanding', 'ILS 0.00'],
     ]);
   });
