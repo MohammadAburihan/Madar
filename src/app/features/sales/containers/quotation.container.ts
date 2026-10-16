@@ -70,7 +70,7 @@ import { quotationHtml, quotationSummary } from './quotation-view';
         >
           {{ ordering() ? txt.creatingOrder : txt.createOrder }}
         </button>
-        @if (orderStore.busy() && !ordering()) {
+        @if (orderStore.busy() && orderStore.quotation() !== v.name) {
           <p class="muted">{{ txt.otherOrder }}</p>
         }
       }

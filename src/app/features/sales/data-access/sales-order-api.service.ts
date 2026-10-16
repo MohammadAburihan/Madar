@@ -51,10 +51,11 @@ export class SalesOrderApiService {
   async order(name: string): Promise<SalesOrderDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<OrderDoc>('Sales Order', name));
     const items = doc.items ?? [];
+    // Unreadable items read as goods: their counts are still right, only a service's wording would be.
     const stock = await stockedItems(
       this.erpnext,
       items.map((i) => i.item_code),
-    );
+    ).catch(() => new Set(items.map((i) => i.item_code)));
     return {
       name: doc.name,
       customer: doc.customer,
@@ -91,8 +92,10 @@ export class SalesOrderApiService {
           ['Sales Order Item', 'prevdoc_docname', '=', quotation],
           ['docstatus', '=', 1],
         ],
+        // One row per matching item otherwise, which would crowd older orders out.
+        groupBy: 'name',
         orderBy: 'creation desc',
-        limit: 5,
+        limit: 20,
       }),
     );
     return [...new Set(rows.map((r) => r.name))];
@@ -188,9 +191,7 @@ export class SalesOrderApiService {
   }
 }
 
+/** Nothing the user chooses goes into the order; a retry after midnight only moves "today". */
 function sameOrder(doc: OrderDoc, request: OrderFromQuotationRequest): boolean {
-  return (
-    doc.delivery_date === request.deliveryDate &&
-    (doc.items ?? []).some((i) => i.prevdoc_docname === request.quotation)
-  );
+  return (doc.items ?? []).some((i) => i.prevdoc_docname === request.quotation);
 }

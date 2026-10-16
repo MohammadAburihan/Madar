@@ -47,8 +47,12 @@ describe('SalesOrderApiService', () => {
     };
     fakeErpnext({}, {}, { 'Sales Order/SO-1': posted });
     expect(await api().fromQuotation(request, 'SO-1')).toBe('SO-1');
+    // Retried after the site's midnight: still this order.
+    expect(await api().fromQuotation({ ...request, deliveryDate: '2026-10-17' }, 'SO-1')).toBe(
+      'SO-1',
+    );
     await expect(
-      api().fromQuotation({ ...request, deliveryDate: '2026-10-17' }, 'SO-1'),
+      api().fromQuotation({ ...request, quotation: 'QT-0090' }, 'SO-1'),
     ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
@@ -138,6 +142,20 @@ describe('SalesOrderApiService', () => {
       [85, true],
       [150, false],
     ]);
+  });
+
+  it('still shows the order when the item list can’t be read, every line counted as goods', async () => {
+    fakeErpnext(
+      { Item: () => throwError(() => new HttpErrorResponse({ status: 403 })) },
+      {},
+      {
+        'Sales Order/SO-1': {
+          name: 'SO-1',
+          items: [{ name: 'a', item_code: 'SRV-GARDEN', qty: 1, delivered_qty: 0 }],
+        },
+      },
+    );
+    expect((await api().order('SO-1')).lines[0].isStock).toBe(true);
   });
 
   it('moves every row’s expected delivery, since ERPNext takes the order’s date from them', async () => {
