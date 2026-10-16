@@ -81,7 +81,7 @@ export class ProjectSavedContainer {
       untracked(
         () =>
           void this.api
-            .project(name)
+            .projectBasics(name)
             .then((p) => this.projectTitle.set(p.title))
             .catch(() => undefined),
       );

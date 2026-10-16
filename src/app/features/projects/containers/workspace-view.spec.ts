@@ -64,7 +64,7 @@ describe('workspace view', () => {
       ['In your warehouses', '8', 'Available'],
       ['Transfer to site', '+8', 'Posted'],
       ['Consumed on site', '−5', 'Used'],
-      ['Returned from site', '+2', 'Posted'],
+      ['Returned from site', '−2', 'Posted'],
       ['Remaining at site', '1', 'Available'],
       ['PO-2049 shortfall', '+4', 'Pending receipt'],
     ]);

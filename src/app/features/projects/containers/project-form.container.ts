@@ -126,14 +126,36 @@ const SEARCH_DELAY_MS = 250;
           [message]="txt.failed[f].message"
         />
       }
-      <button
-        type="button"
-        class="md-btn md-btn--primary"
-        [disabled]="!ready() || saving()"
-        (click)="save()"
-      >
-        {{ saving() ? txt.saving : txt.save }}
-      </button>
+      @if (unresolved()) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.unresolved.title"
+          [message]="txt.unresolved.message"
+        />
+        @if (pending()) {
+          <p class="muted" role="status">{{ txt.pending }}</p>
+        }
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="checking()"
+          (click)="check()"
+        >
+          {{ checking() ? txt.checking : txt.check }}
+        </button>
+      } @else {
+        @if (notCreated()) {
+          <app-feedback-card [title]="txt.notCreated.title" [message]="txt.notCreated.message" />
+        }
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="!ready() || saving()"
+          (click)="save()"
+        >
+          {{ saving() ? txt.saving : txt.save }}
+        </button>
+      }
     }
   `,
 })
@@ -146,7 +168,8 @@ export class ProjectFormContainer {
   private readonly customersApi = inject(CustomerDirectoryService);
   private readonly router = inject(Router);
   private readonly viewport = inject(ViewportService).viewport;
-  protected readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  protected readonly caps = this.session.capabilities;
   protected readonly i18n = injectI18n();
 
   protected readonly title = signal('');
@@ -159,7 +182,14 @@ export class ProjectFormContainer {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly failed = signal<'offline' | 'error' | null>(null);
+  /** A create whose answer was lost: it may exist, so the user checks before saving again. */
+  protected readonly unresolved = signal(false);
+  protected readonly checking = signal(false);
+  protected readonly pending = signal(false);
+  protected readonly notCreated = signal(false);
   private readonly reference = newReference('PRJ');
+  /** The project a lost create turned out to have made; later saves update it instead of creating another. */
+  private created: string | null = null;
   protected readonly loadFailed = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
@@ -195,6 +225,17 @@ export class ProjectFormContainer {
         title: t('project.overview.loadFailed.title'),
         message: t('project.overview.loadFailed.message'),
       },
+      unresolved: {
+        title: t('project.form.unresolved.title'),
+        message: t('project.form.unresolved.message', { reference: this.reference }),
+      },
+      notCreated: {
+        title: t('project.form.notCreated.title'),
+        message: t('project.form.notCreated.message'),
+      },
+      check: t('sale.checking.check'),
+      checking: t('sale.checking.checkingNow'),
+      pending: t('sale.checking.pending'),
       failed: {
         error: { title: t('project.form.failed.title'), message: t('project.form.failed.message') },
         offline: {
@@ -242,11 +283,18 @@ export class ProjectFormContainer {
 
   protected async save(): Promise<void> {
     // Set before the first await: a double tap must not create the project twice.
-    if (!this.ready() || this.saving() || this.loading() || this.loadFailed()) {
+    if (
+      !this.ready() ||
+      this.saving() ||
+      this.loading() ||
+      this.loadFailed() ||
+      this.unresolved()
+    ) {
       return;
     }
     this.saving.set(true);
     this.failed.set(null);
+    this.notCreated.set(false);
     try {
       const business = await this.business.ensure();
       if (!business) {
@@ -261,19 +309,57 @@ export class ProjectFormContainer {
           budget: this.budgetValue(),
           plannedDate: this.plannedDate() || null,
         },
-        this.name() ?? null,
+        this.name() ?? this.created,
         this.reference,
       );
       void this.router.navigate(['/projects', saved, 'saved'], { replaceUrl: true });
     } catch (error) {
-      // Lost answers keep the reference, so saving again finds the project instead of creating a second one.
-      this.failed.set(
-        error instanceof UnresolvedError || ErpnextError.from(error).kind === 'offline'
-          ? 'offline'
-          : 'error',
-      );
+      // Only a lost insert may have created it; other failures happened before anything was sent.
+      if (error instanceof UnresolvedError && !this.name() && !this.created) {
+        // ERPNext may still be creating it: check by reference first, so it isn't created twice.
+        this.unresolved.set(true);
+      } else {
+        this.failed.set(
+          error instanceof UnresolvedError || ErpnextError.from(error).kind === 'offline'
+            ? 'offline'
+            : 'error',
+        );
+      }
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  protected async check(): Promise<void> {
+    if (this.checking()) {
+      return;
+    }
+    this.checking.set(true);
+    this.pending.set(false);
+    try {
+      const found = await this.api.findProject(this.reference);
+      this.unresolved.set(false);
+      if (found) {
+        // Edits made while waiting are saved over it, as saving again would have.
+        this.created = found;
+        this.checking.set(false);
+        if (!this.ready()) {
+          // The edits since can't be saved as they stand; the project exists with the details first sent.
+          void this.router.navigate(['/projects', found, 'saved'], { replaceUrl: true });
+          return;
+        }
+        await this.save();
+        return;
+      }
+      this.notCreated.set(true);
+    } catch (error) {
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        // 403 is also how an expired session answers; that one goes back to sign-in.
+        void this.session.checkExpired();
+      }
+      this.pending.set(true);
+    } finally {
+      this.checking.set(false);
     }
   }
 
@@ -294,7 +380,7 @@ export class ProjectFormContainer {
     this.loading.set(true);
     this.loadFailed.set(false);
     try {
-      const project = await this.api.project(name);
+      const project = await this.api.projectBasics(name);
       // Moving from one project's edit page to another's reuses this form: a slow earlier load must not win.
       if (run !== this.loadRun) {
         return;

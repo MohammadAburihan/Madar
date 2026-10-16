@@ -200,7 +200,8 @@ export class SupplyPlanContainer implements OnInit {
       // The delivery was posted and shown (here by Back): this visit is a new delivery.
       store.start(store.project() ?? '', store.item() ?? '');
     }
-    if (!store.plan() && !store.siteMissing()) {
+    // Loading may create the site warehouse, so only for roles that can supply.
+    if (!store.plan() && !store.siteMissing() && this.ctx.session.capabilities().supplyProjects) {
       void this.load();
     }
   }

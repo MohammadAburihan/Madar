@@ -69,7 +69,7 @@ export function ledgerRows(balance: SiteBalance, tr: Translator): TableRow[] {
   if (balance.returned) {
     rows.push({
       id: 'returned',
-      cells: [t('returned'), signed(balance.returned, '+'), t('posted')],
+      cells: [t('returned'), signed(balance.returned, '−'), t('posted')],
     });
   }
   rows.push({ id: 'site', cells: [t('atSite'), qty(balance.atSite), t('available')] });

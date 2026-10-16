@@ -12,7 +12,12 @@ export interface HomeViewInput {
   capabilities?: Partial<
     Pick<
       Capabilities,
-      'transferStock' | 'orderPurchases' | 'receiveGoods' | 'paySuppliers' | 'recordExpenses'
+      | 'transferStock'
+      | 'orderPurchases'
+      | 'receiveGoods'
+      | 'paySuppliers'
+      | 'recordExpenses'
+      | 'supplyProjects'
     >
   >;
   firstName: string;
@@ -298,6 +303,9 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
       .filter((id) => id !== 'receiveGoods' || (input.capabilities?.receiveGoods ?? true))
       .filter((id) => id !== 'paySupplier' || (input.capabilities?.paySuppliers ?? true))
       .filter((id) => id !== 'recordExpense' || (input.capabilities?.recordExpenses ?? true))
+      .filter(
+        (id) => !id.startsWith('supplyProject') || (input.capabilities?.supplyProjects ?? true),
+      )
       .map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
     actionColumns: persona === 'owner' ? 3 : 2,
     cards: cards.slice(0, MOBILE_CARD_LIMIT),
