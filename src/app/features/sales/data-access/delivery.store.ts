@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
   PostedEarlierError,
@@ -91,7 +92,12 @@ export class DeliveryStore {
   /** A confirmation is running or its result is still open; leaving keeps the delivery. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
 
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
+
   /** Why the row's quantity can't be delivered, or null when it can. */
+
   qtyError(line: SalesOrderLine): 'invalid' | 'tooMany' | 'noStock' | null {
     const qty = this.quantities()[line.row];
     if (!Number.isFinite(qty) || qty < 0) {

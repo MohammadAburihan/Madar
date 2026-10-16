@@ -9,6 +9,7 @@ import {
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { ReturnRequest, ReturnResult, ReturnSource, canReturn } from './sales-return.models';
+import { creditsAgainst } from './credits';
 import { stockedItems } from './stocked-items';
 
 interface InvoiceRow {
@@ -74,25 +75,10 @@ export class SalesReturnApiService {
         }
         throw error;
       }),
-      firstValueFrom(
-        this.erpnext.list<{ base_grand_total: number; update_outstanding_for_self: number }>(
-          'Sales Invoice',
-          {
-            fields: ['base_grand_total', 'update_outstanding_for_self'],
-            filters: [
-              ['return_against', '=', invoice],
-              ['is_return', '=', 1],
-              ['docstatus', '=', 1],
-            ],
-            limit: 0,
-          },
-        ),
-      ),
+      creditsAgainst(this.erpnext, invoice),
     ]);
-    // Earlier returns that reduced this invoice's outstanding aren't payments.
-    const credited = credits
-      .filter((c) => !c.update_outstanding_for_self)
-      .reduce((sum, c) => sum + Math.abs(Number(c.base_grand_total)), 0);
+    // Earlier credits that reduced this invoice's outstanding aren't payments (the invoice page counts the same).
+    const credited = credits.company;
     const outstanding = outstandingIn(doc, currency);
     // Taxes and rounding scale every row alike, so a row's credit is its net amount in the same proportion.
     const net = Number(doc.base_net_total) || 0;

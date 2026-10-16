@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
   PostedEarlierError,
@@ -80,6 +81,10 @@ export class ReceiptStore {
   );
   /** A confirmation is running or its result is still open; leaving keeps the receipt. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
 
   start(order: string): void {
     const draft = this.draft();

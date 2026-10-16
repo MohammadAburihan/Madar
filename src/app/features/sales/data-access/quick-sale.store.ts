@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -46,6 +47,13 @@ export class QuickSaleStore {
   readonly account = signal<PaymentAccount | null>(null);
   readonly draft = signal<string | null>(null);
   readonly state = signal<ConfirmState>('idle');
+  private readonly openConfirmation = computed(() =>
+    ['confirming', 'unresolved', 'checking'].includes(this.state()),
+  );
+
+  constructor() {
+    inject(OpenTasksService).register(this.openConfirmation);
+  }
   readonly failure = signal<ConfirmFailure | null>(null);
   readonly result = signal<SaleResult | null>(null);
   /** Lines as confirmed, so the receipt stays correct after the basket is cleared for the next sale. */

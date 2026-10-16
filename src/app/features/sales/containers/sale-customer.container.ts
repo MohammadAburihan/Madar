@@ -9,6 +9,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { BusinessService } from '../../../core/business/business.service';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
@@ -53,6 +54,13 @@ const SEARCH_DELAY_MS = 250;
         [message]="text().noAccess.message"
       />
     } @else {
+      @if (linkedMissing()) {
+        <app-feedback-card
+          tone="warning"
+          [title]="text().linkedMissing.title"
+          [message]="text().linkedMissing.message"
+        />
+      }
       <app-search-field
         [label]="text().search"
         [placeholder]="text().placeholder"
@@ -99,6 +107,8 @@ export class SaleCustomerContainer implements OnInit {
   readonly customer = input<string | undefined>();
 
   private readonly directory = inject(CustomerDirectoryService);
+  private readonly business = inject(BusinessService);
+  protected readonly linkedMissing = signal(false);
   protected readonly term = signal('');
   protected readonly results = signal<CustomerOption[]>([]);
   protected readonly searching = signal(false);
@@ -116,6 +126,10 @@ export class SaleCustomerContainer implements OnInit {
       add: t('sale.customer.add'),
       note: t('sale.customer.note'),
       noResults: t('sale.customer.noResults', { term: this.term().trim() }),
+      linkedMissing: {
+        title: t('sale.customer.linkedMissing.title'),
+        message: t('sale.customer.linkedMissing.message'),
+      },
       noAccess: { title: t('sale.noAccess.title'), message: t('sale.noAccess.message') },
     };
   });
@@ -145,16 +159,24 @@ export class SaleCustomerContainer implements OnInit {
     void this.ctx.store.loadOptions().catch(() => undefined);
     const id = this.customer();
     const before = this.ctx.store.customer()?.id;
+    this.linkedMissing.set(false);
     if (id && before !== id) {
-      void this.directory
-        .byId(id)
+      void this.business
+        .ensure()
+        .then((business) => (business ? this.directory.byId(id, business) : undefined))
         // The linked customer replaces one left from an earlier visit, not one picked while it loaded.
-        .then(
-          (found) =>
-            found &&
-            this.ctx.store.customer()?.id === before &&
-            this.ctx.store.selectCustomer(found),
-        )
+        .then((found) => {
+          // No business loaded isn't the customer's fault, and a choice made meanwhile stands.
+          if (found === undefined || this.ctx.store.customer()?.id !== before) {
+            return;
+          }
+          if (found) {
+            this.ctx.store.selectCustomer(found);
+          } else {
+            // Deleted or disabled since their page was opened: say so rather than start without them.
+            this.linkedMissing.set(true);
+          }
+        })
         .catch(() => undefined);
     }
   }

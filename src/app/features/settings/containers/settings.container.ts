@@ -13,6 +13,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { RuntimeConfigService } from '../../../core/config/runtime-config';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { Language } from '../../../core/i18n/language.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -62,7 +63,19 @@ import { connectionFields } from './settings-view';
         [message]="txt.signOutFailed[reason].message"
       />
     }
-    <button type="button" class="md-btn" [disabled]="signingOut()" (click)="signOut()">
+    @if (openTasks.any()) {
+      <app-feedback-card
+        tone="warning"
+        [title]="txt.openTask.title"
+        [message]="txt.openTask.message"
+      />
+    }
+    <button
+      type="button"
+      class="md-btn"
+      [disabled]="signingOut() || openTasks.any()"
+      (click)="signOut()"
+    >
       {{ signingOut() ? txt.signingOut : txt.signOut }}
     </button>
   `,
@@ -73,6 +86,7 @@ export class SettingsContainer {
   private readonly session = inject(SessionService);
   private readonly config = inject(RuntimeConfigService);
   private readonly document = inject(DOCUMENT);
+  protected readonly openTasks = inject(OpenTasksService);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
@@ -96,6 +110,7 @@ export class SettingsContainer {
         { value: 'ar', label: 'العربية' },
       ],
       separate: block('settings.separate'),
+      openTask: block('settings.openTask'),
       signOut: t('settings.signOut'),
       signingOut: t('settings.signingOut'),
       signOutFailed: {
@@ -146,7 +161,8 @@ export class SettingsContainer {
   }
 
   protected async signOut(): Promise<void> {
-    if (this.signingOut()) {
+    // Signing out reloads the app: an open confirmation's reference would be lost, and redoing it could post twice.
+    if (this.signingOut() || this.openTasks.any()) {
       return;
     }
     this.signingOut.set(true);
