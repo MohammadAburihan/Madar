@@ -158,6 +158,9 @@ describe('DeliveryStore', () => {
     await store.confirm();
     expect([store.failure(), store.draft()]).toEqual(['changed', null]);
     expect(store.reference()).not.toBe(reference);
+    // Its open quantities are out of date: no second delivery until the order is reloaded.
+    store.setQty('tree', '1');
+    expect([store.failure(), store.ready()]).toEqual(['changed', false]);
   });
 
   it('has nothing to deliver on a closed order', async () => {

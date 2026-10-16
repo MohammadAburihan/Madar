@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
+import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
 import { OrderInvoiceStore } from './order-invoice.store';
 import { InvoiceChangedError, SalesOrderApiService } from './sales-order-api.service';
@@ -18,7 +19,15 @@ function setup() {
     invoice: vi.fn(),
     findInvoice: vi.fn(),
   };
-  TestBed.configureTestingModule({ providers: [{ provide: SalesOrderApiService, useValue: api }] });
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: SalesOrderApiService, useValue: api },
+      {
+        provide: BusinessService,
+        useValue: { ensure: () => Promise.resolve({ name: 'RN', currency: 'ILS' }) },
+      },
+    ],
+  });
   const store = TestBed.inject(OrderInvoiceStore);
   store.start('SO-1');
   return { store, api };
@@ -33,7 +42,11 @@ describe('OrderInvoiceStore', () => {
     void store.confirm();
     await first;
     expect(api.invoice).toHaveBeenCalledTimes(1);
-    expect(api.invoice.mock.calls[0][0]).toMatchObject({ order: 'SO-1', total: 170 });
+    expect(api.invoice.mock.calls[0][0]).toMatchObject({
+      order: 'SO-1',
+      currency: 'ILS',
+      total: 170,
+    });
     expect([store.state(), store.result()]).toEqual(['confirmed', INVOICE]);
   });
 
@@ -44,7 +57,7 @@ describe('OrderInvoiceStore', () => {
     expect([store.preview(), store.failure()]).toEqual([null, 'nothing']);
   });
 
-  it('keeps a left-behind draft for the same order, since invoicing roles can’t delete it', async () => {
+  it('remembers a left-behind draft per order, since invoicing roles can’t delete it', async () => {
     const { store, api } = setup();
     await store.load();
     api.invoice.mockImplementation(async (_request, _draft, onInserted) => {
@@ -56,6 +69,8 @@ describe('OrderInvoiceStore', () => {
     expect(store.draft()).toBe('SI-LEFT');
     store.start('SO-2');
     expect(store.draft()).toBeNull();
+    store.start('SO-1');
+    expect(store.draft()).toBe('SI-LEFT');
   });
 
   it('asks for a new review when the amount changed, and checks an unresolved one only once it gave up', async () => {

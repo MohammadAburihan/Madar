@@ -82,6 +82,8 @@ export class DeliveryStore {
       !!this.warehouse() &&
       this.qtyValid() &&
       this.deliveringNow() > 0 &&
+      // An earlier delivery went through: the order must be reloaded before anything else is delivered.
+      this.failure() !== 'changed' &&
       this.state() !== 'confirming',
   );
   /** A confirmation is running or its result is still open; leaving keeps the delivery. */
@@ -269,7 +271,8 @@ export class DeliveryStore {
   }
 
   private clearFailure(): void {
-    if (this.state() === 'failed') {
+    // "Changed" stays until the order is reloaded: its open quantities are out of date.
+    if (this.state() === 'failed' && this.failure() !== 'changed') {
       this.state.set('idle');
       this.failure.set(null);
     }

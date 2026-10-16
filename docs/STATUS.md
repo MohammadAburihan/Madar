@@ -66,7 +66,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   roles can't delete Sales Invoices). New capabilities `deliverOrders` and `invoiceOrders` check the ERPNext roles
   each needs. The mock's "Save draft" on the delivery form is left out, as on the purchase receipt.
   e2e: deliver one of two trees, then the rest with the consultation done, invoice the order (ILS 320.00, unpaid)
-  and see it completed; the whole order, delivery and invoice in Arabic.
+  and see it completed; the whole order, delivery and invoice in Arabic. Review pass 1 (1 high, 3 medium) fixed: after an
+  earlier delivery turns out posted, Confirm stays off until the order is reloaded; a left-behind invoice draft is
+  remembered per order and rebuilt in place from what is left to bill (re-checked against the review), never
+  submitted stale; the recorded invoice's outstanding is converted to the company currency.
 - Next: S4 returns; then Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)

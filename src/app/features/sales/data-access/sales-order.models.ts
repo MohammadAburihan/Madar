@@ -62,6 +62,8 @@ export interface OrderInvoiceRequest {
   /** Madar's idempotency reference, kept in the invoice's remarks. */
   reference: string;
   order: string;
+  /** The company currency, which the result's amounts are given in. */
+  currency: string;
   /** The total the user reviewed; the invoice is refused if ERPNext would now bill another amount. */
   total: number;
 }

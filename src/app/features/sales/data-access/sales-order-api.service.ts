@@ -363,7 +363,7 @@ export class SalesOrderApiService {
 
   /**
    * Invoices what the order still has to bill, without moving stock. A timeout throws UnresolvedError; callers
-   * look it up with findInvoice(). A remembered draft is submitted, not rebuilt: invoicing roles can't delete it.
+   * look it up with findInvoice().
    */
   async invoice(
     request: OrderInvoiceRequest,
@@ -374,36 +374,46 @@ export class SalesOrderApiService {
       ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
       : null;
     if (current?.docstatus === 1) {
-      return invoiceResult(current);
+      return invoiceResult(current, request.currency);
     }
     try {
+      const template = await firstValueFrom(
+        this.erpnext.post<InvoiceDoc>(MAKE_SALES_INVOICE, { source_name: request.order }),
+      );
+      // Billed in Desk since the review, or prices changed: the user must see the new amount first.
+      if (Math.abs(owed(template) - request.total) > 0.005) {
+        throw new InvoiceChangedError();
+      }
+      const fields = {
+        ...Object.fromEntries(Object.entries(template).filter(([key]) => !key.startsWith('__'))),
+        // The goods leave through delivery notes; the invoice moves no stock.
+        update_stock: 0,
+        remarks: `Madar order invoice ${request.reference}`,
+      };
       let doc: InvoiceDoc;
       if (current) {
-        doc = current;
-      } else {
-        const template = await firstValueFrom(
-          this.erpnext.post<InvoiceDoc>(MAKE_SALES_INVOICE, { source_name: request.order }),
-        );
-        // Billed in Desk since the review, or prices changed: the user must see the new amount first.
-        if (Math.abs(owed(template) - request.total) > 0.005) {
-          throw new InvoiceChangedError();
-        }
+        // Invoicing roles can't delete the draft a failed try left: it is rebuilt in place from what is left to bill.
         doc = await confirmRequest(
-          this.erpnext.post<InvoiceDoc>('frappe.client.insert', {
+          this.erpnext.post<InvoiceDoc>('frappe.client.save', {
             doc: {
-              ...template,
-              // The goods leave through delivery notes; the invoice moves no stock.
-              update_stock: 0,
-              remarks: `Madar order invoice ${request.reference}`,
+              ...fields,
+              name: current.name,
+              modified: current['modified'],
+              creation: current['creation'],
+              owner: current['owner'],
             },
           }),
+        );
+      } else {
+        doc = await confirmRequest(
+          this.erpnext.post<InvoiceDoc>('frappe.client.insert', { doc: fields }),
         );
         onInserted(doc.name);
       }
       const submitted = await confirmRequest(
         this.erpnext.post<InvoiceDoc>('frappe.client.submit', { doc }),
       );
-      return invoiceResult(submitted);
+      return invoiceResult(submitted, request.currency);
     } catch (error) {
       throw error instanceof InvoiceChangedError ? error : unresolvedOr(error);
     }
@@ -412,6 +422,7 @@ export class SalesOrderApiService {
   /** Looks an invoice up by its Madar reference after an unresolved confirmation. */
   async findInvoice(
     reference: string,
+    currency: string,
   ): Promise<{ invoice: OrderInvoiceResult } | 'not-found' | { draft: string }> {
     const [row] = await firstValueFrom(
       this.erpnext.list<{
@@ -420,6 +431,8 @@ export class SalesOrderApiService {
         base_grand_total: number;
         base_rounded_total: number;
         outstanding_amount: number;
+        conversion_rate: number;
+        party_account_currency: string | null;
       }>('Sales Invoice', {
         fields: [
           'name',
@@ -427,6 +440,8 @@ export class SalesOrderApiService {
           'base_grand_total',
           'base_rounded_total',
           'outstanding_amount',
+          'conversion_rate',
+          'party_account_currency',
         ],
         filters: [
           ['remarks', 'like', `%${reference}%`],
@@ -439,18 +454,30 @@ export class SalesOrderApiService {
     if (!row) {
       return 'not-found';
     }
-    return row.docstatus === 0 ? { draft: row.name } : { invoice: invoiceResult(row) };
+    return row.docstatus === 0 ? { draft: row.name } : { invoice: invoiceResult(row, currency) };
   }
 }
 
-function invoiceResult(doc: {
-  name: string;
-  base_grand_total: number;
-  base_rounded_total: number;
-  outstanding_amount?: number;
-}): OrderInvoiceResult {
+/** Both amounts in the company currency: the outstanding is the receivable's, which may be the customer's currency. */
+function invoiceResult(
+  doc: {
+    name: string;
+    base_grand_total: number;
+    base_rounded_total: number;
+    outstanding_amount?: number;
+    conversion_rate?: number;
+    party_account_currency?: string | null;
+  },
+  currency: string,
+): OrderInvoiceResult {
   const total = owed(doc);
-  return { name: doc.name, total, outstanding: Number(doc.outstanding_amount ?? total) };
+  const rate = doc.party_account_currency === currency ? 1 : Number(doc.conversion_rate) || 1;
+  return {
+    name: doc.name,
+    total,
+    outstanding:
+      doc.outstanding_amount === undefined ? total : Number(doc.outstanding_amount) * rate,
+  };
 }
 
 function sameDelivery(doc: DeliveryDoc, request: DeliveryRequest): boolean {

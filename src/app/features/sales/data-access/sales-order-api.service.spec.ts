@@ -262,7 +262,9 @@ describe('SalesOrderApiService', () => {
       total: 320,
       lines: [{ name: 'Olive tree', amount: 170, isStock: true }],
     });
-    expect(await api().invoice({ reference: 'INV-1', order: 'SO-1', total: 320 }, null)).toEqual({
+    expect(
+      await api().invoice({ reference: 'INV-1', order: 'SO-1', currency: 'ILS', total: 320 }, null),
+    ).toEqual({
       name: 'SI-1',
       total: 320,
       outstanding: 320,
@@ -272,27 +274,52 @@ describe('SalesOrderApiService', () => {
       remarks: 'Madar order invoice INV-1',
     });
     await expect(
-      api().invoice({ reference: 'INV-2', order: 'SO-1', total: 170 }, null),
+      api().invoice({ reference: 'INV-2', order: 'SO-1', currency: 'ILS', total: 170 }, null),
     ).rejects.toBeInstanceOf(InvoiceChangedError);
   });
 
-  it('submits a remembered invoice draft instead of deleting it', async () => {
-    const draft = { name: 'SI-1', docstatus: 0, items: [] };
+  it('rebuilds a remembered invoice draft in place instead of deleting it, and converts the outstanding', async () => {
+    const draft = {
+      name: 'SI-1',
+      docstatus: 0,
+      modified: 'm',
+      creation: 'c',
+      owner: 'lina',
+      items: [],
+    };
     const { postCalls } = fakeErpnext(
       {},
       {
+        [MAKE_INVOICE]: () => ({
+          __islocal: 1,
+          base_grand_total: 370,
+          base_rounded_total: 370,
+          items: [],
+        }),
+        'frappe.client.save': (body) => body['doc'],
         'frappe.client.submit': () => ({
           name: 'SI-1',
-          base_grand_total: 320,
-          base_rounded_total: 320,
-          outstanding_amount: 320,
+          base_grand_total: 370,
+          base_rounded_total: 370,
+          outstanding_amount: 100,
+          conversion_rate: 3.7,
+          party_account_currency: 'USD',
         }),
       },
       { 'Sales Invoice/SI-1': draft },
     );
     expect(
-      (await api().invoice({ reference: 'INV-1', order: 'SO-1', total: 320 }, 'SI-1')).name,
-    ).toBe('SI-1');
-    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.submit']);
+      await api().invoice(
+        { reference: 'INV-1', order: 'SO-1', currency: 'ILS', total: 370 },
+        'SI-1',
+      ),
+    ).toEqual({ name: 'SI-1', total: 370, outstanding: 370 });
+    expect(postCalls.map((c) => c.method)).toEqual([
+      MAKE_INVOICE,
+      'frappe.client.save',
+      'frappe.client.submit',
+    ]);
+    expect(postCalls[1].body['doc']).toMatchObject({ name: 'SI-1', modified: 'm', creation: 'c' });
+    expect(postCalls[1].body['doc']).not.toHaveProperty('__islocal');
   });
 });
