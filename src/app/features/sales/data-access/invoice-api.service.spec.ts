@@ -118,13 +118,19 @@ describe('InvoiceApiService', () => {
   });
 
   it('counts every credit note that settled the invoice, as the ledger records it', async () => {
-    const { listCalls } = fakeErpnext(
+    fakeErpnext(
       {
-        // A return made against it (45 rounded) and a credit note matched to it later (20).
+        // A return made against it (45), a credit note matched to it later (a "Credit Note" journal, 20),
+        // and a bank journal that paid 10 (money, not credit).
         'Payment Ledger Entry': () => [
-          { voucher_no: 'SI-RET', amount_in_account_currency: -45 },
-          { voucher_no: 'SI-CN', amount_in_account_currency: -20 },
+          { voucher_type: 'Sales Invoice', voucher_no: 'SI-RET', amount_in_account_currency: -45 },
+          { voucher_type: 'Journal Entry', voucher_no: 'JV-CN', amount_in_account_currency: -20 },
+          { voucher_type: 'Journal Entry', voucher_no: 'JV-BANK', amount_in_account_currency: -10 },
         ],
+        'Journal Entry': (query) =>
+          ((query.filters?.[0]?.[2] as string[]) ?? []).includes('JV-CN')
+            ? [{ name: 'JV-CN' }]
+            : [],
       },
       {},
       {
@@ -133,13 +139,10 @@ describe('InvoiceApiService', () => {
           docstatus: 1,
           grand_total: 100,
           rounded_total: 100,
-          outstanding_amount: 35,
+          outstanding_amount: 25,
         },
       },
     );
     expect((await TestBed.inject(InvoiceApiService).load('SI-1')).credited).toBe(65);
-    expect(
-      listCalls.find((c) => c.doctype === 'Payment Ledger Entry')!.query.filters,
-    ).toContainEqual(['voucher_type', '=', 'Sales Invoice']);
   });
 });

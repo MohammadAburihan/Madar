@@ -154,7 +154,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   owed) isn't called a credit settlement; an unreadable credit list fails the page instead of counting credits as
   paid (a role's 403 still passes); the invoice-page check skips with a reason when no returned sale exists. Review
   pass 2 (1 medium) fixed: credits come from the Payment Ledger (every credit note settling the invoice, also ones
-  matched to it later), not only returns made against it.
+  matched to it later), not only returns made against it. Pass 3 (1 medium): a credit note matched later is a "Credit
+  Note" Journal Entry in the ledger, so those count too (bank journals stay money).
 - Next: the whole-branch review of the batch (Sales S2–S4, Contacts, Settings).
 
 ## End-to-end happy paths: merged (#26)
