@@ -43,7 +43,11 @@ export const routes: Routes = [
       placeholder('sales', 'nav.sales'),
       placeholder('contacts', 'nav.contacts'),
       placeholder('settings', 'nav.settings'),
-      placeholder('more', 'nav.more'),
+      {
+        path: 'more',
+        loadComponent: () =>
+          import('./features/shell/containers/more.container').then((m) => m.MoreContainer),
+      },
       placeholder('new', 'nav.new'),
       placeholder('drafts', 'nav.drafts'),
       placeholder('businesses', 'nav.activeBusiness'),

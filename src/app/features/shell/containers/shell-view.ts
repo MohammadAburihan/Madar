@@ -73,7 +73,15 @@ const MOBILE_NAV: NavDefinition[] = [
     id: 'more',
     icon: LucideMenu,
     route: '/more',
-    also: ['/money', '/purchases', '/contacts', '/projects', '/reports', '/settings'],
+    also: [
+      '/money',
+      '/purchases',
+      '/contacts',
+      '/projects',
+      '/reports',
+      '/settings',
+      '/businesses',
+    ],
   },
 ];
 
@@ -123,5 +131,33 @@ export function buildShellView(input: ShellViewInput, { t }: Translator): ShellV
       .join(''),
     desktopNav: labelled(DESKTOP_NAV),
     mobileNav: labelled(MOBILE_NAV),
+  };
+}
+
+export interface MoreView {
+  title: string;
+  subtitle: string;
+  items: NavItem[];
+}
+
+/** The phone's More page: every destination the role has that the tab bar doesn't hold, then Switch business. */
+export function buildMoreView(input: ShellViewInput, tr: Translator): MoreView {
+  const shell = buildShellView(input, tr);
+  const inTabs = new Set(shell.mobileNav.map((item) => item.route));
+  return {
+    title: tr.t('nav.more'),
+    subtitle: tr.t('more.subtitle', {
+      business: input.businessName,
+      role: tr.t(`home.role.${input.persona}`),
+    }),
+    items: [
+      ...shell.desktopNav.filter((item) => !inTabs.has(item.route)),
+      {
+        id: 'businesses',
+        icon: LucideHouse,
+        route: '/businesses',
+        label: tr.t('more.switchBusiness'),
+      },
+    ],
   };
 }
