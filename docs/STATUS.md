@@ -46,6 +46,8 @@ Review pass 1 (1 medium, 1 low) fixed: the suite runs its own dev server on :432
 reuses one (a server already on :4200 may proxy to `frontend`); the collection test requires its follow-up button.
 Found while looping, fixed in #27: the Project sites warehouse was offered to sell from, receive into and move
 through; only the project flows (supply, use, return) touch it now. The inventory page still shows its balances.
+Review pass 1 (1 medium, 1 low) fixed: a move's "Company total" reads the same before and after (both leave the site
+warehouse out); a stray doc comment removed.
 
 ## Step 5 of 6 — Reports: done (#22–#25)
 

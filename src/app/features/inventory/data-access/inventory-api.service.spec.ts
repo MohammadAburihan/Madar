@@ -193,6 +193,31 @@ describe('InventoryApiService', () => {
     expect(movements.every((m) => m.lines.length === 2)).toBe(true);
   });
 
+  it('totals a move without the project sites, as the move screen does', async () => {
+    const SITES = 'Project sites - RN';
+    fakeErpnext(
+      {
+        Warehouse: () => [...WAREHOUSES(), { name: SITES, warehouse_name: 'Project sites' }],
+        Bin: bins([
+          { item: 'OLV-20', warehouse: MAIN, qty: 8 },
+          { item: 'OLV-20', warehouse: SHOP, qty: 2 },
+          { item: 'OLV-20', warehouse: SITES, qty: 5 },
+        ]),
+        Item: ITEMS,
+      },
+      {
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'MAT-STE-1' }),
+        'frappe.client.submit': () => ENTRY,
+      },
+    );
+    const api = TestBed.inject(InventoryApiService);
+    expect((await api.movableWarehouses('Rehan Nursery')).map((w) => w.name)).toEqual([
+      'Garden shop',
+      'Main warehouse',
+    ]);
+    expect((await api.transfer(request(), null)).totalQty).toBe(10);
+  });
+
   it("returns unknown balances when they can't be read back after posting", async () => {
     fakeErpnext(
       {

@@ -29,7 +29,7 @@ const RESULT: TransferResult = {
 
 function setup() {
   const api = {
-    warehouses: vi.fn().mockResolvedValue([
+    movableWarehouses: vi.fn().mockResolvedValue([
       { id: STORES, name: 'Stores' },
       { id: MAIN, name: 'Main warehouse' },
       { id: SHOP, name: 'Garden shop' },
@@ -342,15 +342,5 @@ describe('TransferStore', () => {
     expect(await store.checkResult()).toBe('pending');
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
-  });
-
-  it('leaves the project sites out of a plain move: only project supply and returns move that stock', async () => {
-    const { store, api } = setup();
-    api.warehouses.mockResolvedValue([
-      { id: MAIN, name: 'Main warehouse' },
-      { id: 'Project sites - RN', name: 'Project sites' },
-    ]);
-    await store.loadWarehouses();
-    expect(store.warehouses().map((w) => w.name)).toEqual(['Main warehouse']);
   });
 });

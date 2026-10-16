@@ -42,8 +42,6 @@ interface ProjectDoc {
   [key: string]: unknown;
 }
 
-/** The shared warehouse that holds every project's site stock; each project's share comes from the ledger. */
-
 /** The project sites warehouse doesn't exist yet, and this role can't create it (Item Manager can). */
 export class SiteWarehouseMissingError extends Error {
   constructor() {

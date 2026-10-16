@@ -1,5 +1,4 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { BusinessService } from '../../../core/business/business.service';
 import {
   PostedEarlierError,
@@ -93,10 +92,7 @@ export class TransferStore {
   async loadWarehouses(): Promise<void> {
     const business = await this.business.ensure();
     if (business) {
-      // Project site stock is the projects'; only their flows move it.
-      this.warehouses.set(
-        (await this.api.warehouses(business.name)).filter((w) => w.name !== SITE_WAREHOUSE_NAME),
-      );
+      this.warehouses.set(await this.api.movableWarehouses(business.name));
     }
   }
 
