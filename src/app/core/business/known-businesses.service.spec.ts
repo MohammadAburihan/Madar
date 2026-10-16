@@ -18,6 +18,7 @@ describe('KnownBusinessesService', () => {
     expect(known.add('https://padel.example.com')).toBe('known');
     expect(known.add('not an address')).toBe('invalid');
     expect(known.add('rehan.example.com')).toBe('current');
+    expect(known.add('http://rehan.example.com')).toBe('current');
     expect(known.businesses()).toEqual([{ address: 'https://padel.example.com' }]);
     expect(JSON.parse(localStorage.getItem('madar.businesses')!)).toEqual([
       { address: 'https://padel.example.com' },

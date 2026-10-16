@@ -93,7 +93,7 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
         <button type="button" class="md-btn md-btn--primary" (click)="save()">
           {{ txt.save }}
         </button>
-        <button type="button" class="md-btn" (click)="adding.set(false)">{{ txt.cancel }}</button>
+        <button type="button" class="md-btn" (click)="cancel()">{{ txt.cancel }}</button>
       } @else {
         <button type="button" class="md-btn" (click)="adding.set(true)">{{ txt.add }}</button>
       }
@@ -166,6 +166,12 @@ export class BusinessesContainer {
     } else {
       this.addError.set(result);
     }
+  }
+
+  protected cancel(): void {
+    this.adding.set(false);
+    this.address.set('');
+    this.addError.set(null);
   }
 
   /** Each business is its own Madar: switching opens its address (and its own sign-in). */

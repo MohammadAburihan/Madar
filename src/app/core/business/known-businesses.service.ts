@@ -39,7 +39,8 @@ export class KnownBusinessesService {
   /** Saves the address; 'invalid', 'current' (this business) or 'known' when it isn't added. */
   add(value: string): 'added' | 'invalid' | 'current' | 'known' {
     const address = KnownBusinessesService.origin(value);
-    if (address === this.current) {
+    // The same host is this business, whichever scheme was typed.
+    if (address && new URL(address).host === new URL(this.current, 'https://x').host) {
       return 'current';
     }
     // A business's address is a domain name, not a bare host like "localhost".
@@ -74,7 +75,11 @@ export class KnownBusinessesService {
   }
 
   private write(businesses: KnownBusiness[]): void {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(businesses));
+    } catch {
+      // Storage refused (private browsing, full): the list still works for this visit.
+    }
     this.saved.set(businesses);
-    localStorage.setItem(KEY, JSON.stringify(businesses));
   }
 }

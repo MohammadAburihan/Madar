@@ -180,7 +180,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   refused). Business names of other addresses can't be read across origins, so they show as their host.
   e2e: save an address, see it after a reload, remove it in Arabic. Review pass 1 (1 medium, 1 low) fixed: saved addresses are re-checked
   when read, so a bad or script entry can't break the page or be opened; in the native apps the page says other
-  businesses open in a browser (the apps' connection flow is still open).
+  businesses open in a browser (the apps' connection flow is still open). Pass 2 (lows): Cancel clears the form; this
+  business's own host is refused whatever scheme is typed; a refused storage write keeps the list for the visit.
 - Next: how the native apps connect to a business (open); then step 6.
 
 ## End-to-end happy paths: merged (#26)
