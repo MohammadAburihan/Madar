@@ -167,6 +167,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     every task store registers its `busy`): the reload would lose its reference.
   - "Sell to" from a customer's page fills in their balance, refuses a disabled customer, and says so when the
     customer is gone.
+  - Review pass 1 (lows): order rows are read in batches of 100; "Sell to" says nothing when no business is loaded
+    and never over a customer picked meanwhile. Not changed: confirmations kept in a page's own state
+    (project requirement, contact create) are lost when that page is left anyway, so sign out can't make it worse.
+    Deferred (low, as before): an order's invoice reads "Goods delivered" once any of its order rows delivered.
 - Next: decide the business-connection flow (Settings' "Add another business"); then step 6.
 
 ## End-to-end happy paths: merged (#26)

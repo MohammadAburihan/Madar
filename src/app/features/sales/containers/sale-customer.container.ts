@@ -163,14 +163,18 @@ export class SaleCustomerContainer implements OnInit {
     if (id && before !== id) {
       void this.business
         .ensure()
-        .then((business) => (business ? this.directory.byId(id, business) : null))
+        .then((business) => (business ? this.directory.byId(id, business) : undefined))
         // The linked customer replaces one left from an earlier visit, not one picked while it loaded.
         .then((found) => {
-          if (!found) {
+          // No business loaded isn't the customer's fault, and a choice made meanwhile stands.
+          if (found === undefined || this.ctx.store.customer()?.id !== before) {
+            return;
+          }
+          if (found) {
+            this.ctx.store.selectCustomer(found);
+          } else {
             // Deleted or disabled since their page was opened: say so rather than start without them.
             this.linkedMissing.set(true);
-          } else if (this.ctx.store.customer()?.id === before) {
-            this.ctx.store.selectCustomer(found);
           }
         })
         .catch(() => undefined);

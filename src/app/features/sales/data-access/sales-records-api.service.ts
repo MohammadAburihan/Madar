@@ -132,17 +132,27 @@ export class SalesRecordsApiService {
     if (!orderRows.length) {
       return [];
     }
-    const delivered = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Sales Order Item', {
-        fields: ['name'],
-        filters: [
-          ['name', 'in', orderRows],
-          ['delivered_qty', '>', 0],
-        ],
-        parent: 'Sales Order',
-        limit: 0,
-      }),
+    // In batches, to keep each GET URL short.
+    const batches = Array.from({ length: Math.ceil(orderRows.length / 100) }, (_, i) =>
+      orderRows.slice(i * 100, i * 100 + 100),
     );
+    const delivered = (
+      await Promise.all(
+        batches.map((batch) =>
+          firstValueFrom(
+            this.erpnext.list<{ name: string }>('Sales Order Item', {
+              fields: ['name'],
+              filters: [
+                ['name', 'in', batch],
+                ['delivered_qty', '>', 0],
+              ],
+              parent: 'Sales Order',
+              limit: 0,
+            }),
+          ),
+        ),
+      )
+    ).flat();
     const done = new Set(delivered.map((d) => d.name));
     return [...new Set(rows.filter((r) => done.has(r.so_detail)).map((r) => r.name))];
   }
