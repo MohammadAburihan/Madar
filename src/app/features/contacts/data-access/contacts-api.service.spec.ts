@@ -238,4 +238,42 @@ describe('ContactsApiService', () => {
     const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
     expect(history.map((e) => e.name)).toEqual(['DN-1']);
   });
+
+  it('fails the history on a lost connection rather than showing it empty', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 0 })),
+    });
+    await expect(
+      api().history('customers', 'Lina Haddad', COMPANY, null, true),
+    ).rejects.toBeTruthy();
+  });
+
+  it('takes credit notes off what an invoice shows as paid', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => [
+        {
+          name: 'SI-1',
+          posting_date: '2026-10-10',
+          status: 'Paid',
+          is_return: 0,
+          base_grand_total: 100,
+          outstanding_amount: 0,
+          party_account_currency: 'ILS',
+        },
+        {
+          name: 'SI-R',
+          posting_date: '2026-10-11',
+          status: 'Return',
+          is_return: 1,
+          base_grand_total: -30,
+          outstanding_amount: 0,
+          return_against: 'SI-1',
+          update_outstanding_for_self: 0,
+          party_account_currency: 'ILS',
+        },
+      ],
+    });
+    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    expect(history.find((e) => e.name === 'SI-1')!.credited).toBe(30);
+  });
 });

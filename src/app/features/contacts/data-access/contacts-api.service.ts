@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
   ContactInfo,
   ContactKind,
@@ -39,6 +40,14 @@ const lines = (address: string | null | undefined) =>
 const inCompany = (amount: unknown, row: Record<string, unknown>, currency: string) =>
   Number(amount ?? 0) *
   (row['party_account_currency'] === currency ? 1 : Number(row['conversion_rate']) || 1);
+
+/** A role that may not read one kind of record still sees the rest; other failures stay failures. */
+const forbiddenAsNone = (error: unknown): never[] => {
+  if (ErpnextError.from(error).kind === 'forbidden') {
+    return [];
+  }
+  throw error;
+};
 
 const owed = (row: Record<string, unknown>) =>
   Number(row['base_rounded_total']) || Number(row['base_grand_total']) || 0;
@@ -352,12 +361,14 @@ export class ContactsApiService {
                   'outstanding_amount',
                   'conversion_rate',
                   'party_account_currency',
+                  'return_against',
+                  'update_outstanding_for_self',
                 ],
                 filters: scope(customer ? 'customer' : 'supplier'),
                 ...recent,
               },
             ),
-          ).catch(() => [])
+          ).catch(forbiddenAsNone)
         : Promise.resolve([]),
       withMoney
         ? firstValueFrom(
@@ -372,7 +383,7 @@ export class ContactsApiService {
               filters: [['party_type', '=', customer ? 'Customer' : 'Supplier'], ...scope('party')],
               ...recent,
             }),
-          ).catch(() => [])
+          ).catch(forbiddenAsNone)
         : Promise.resolve([]),
       firstValueFrom(
         this.erpnext.list<{
@@ -386,7 +397,7 @@ export class ContactsApiService {
           filters: scope(customer ? 'customer' : 'supplier'),
           ...recent,
         }),
-      ).catch(() => []),
+      ).catch(forbiddenAsNone),
     ]);
     const [allocations, accounts, warehouses] = await Promise.all([
       payments.length
@@ -400,7 +411,7 @@ export class ContactsApiService {
                 limit: 0,
               },
             ),
-          ).catch(() => [])
+          ).catch(forbiddenAsNone)
         : Promise.resolve([]),
       this.names(
         'Account',
@@ -413,6 +424,12 @@ export class ContactsApiService {
         deliveries.map((d) => d.set_warehouse ?? ''),
       ),
     ]);
+    // Credit notes that reduced an invoice's balance aren't payments against it.
+    const credited = new Map<string, number>();
+    for (const r of invoices.filter((r) => r['is_return'] && !r['update_outstanding_for_self'])) {
+      const against = String(r['return_against'] ?? '');
+      credited.set(against, (credited.get(against) ?? 0) + Math.abs(owed(r)));
+    }
     const entries: HistoryEntry[] = [
       ...invoices.map((r) => ({
         kind: r['is_return'] ? ('return' as const) : ('invoice' as const),
@@ -420,6 +437,7 @@ export class ContactsApiService {
         date: String(r['posting_date']),
         amount: Math.abs(owed(r)),
         outstanding: inCompany(r['outstanding_amount'], r, company.currency),
+        credited: credited.get(String(r['name'])) ?? 0,
         status: String(r['status']),
         place: null,
         invoices: [],
@@ -433,6 +451,7 @@ export class ContactsApiService {
           date: p.posting_date,
           amount: Number(p.base_paid_amount),
           outstanding: 0,
+          credited: 0,
           status: '',
           place: accounts.get(account) ?? account,
           invoices: [
@@ -447,6 +466,7 @@ export class ContactsApiService {
         date: d.posting_date,
         amount: null,
         outstanding: 0,
+        credited: 0,
         status: d.is_return ? 'Return' : '',
         place: d.set_warehouse ? (warehouses.get(d.set_warehouse) ?? d.set_warehouse) : null,
         invoices: [],

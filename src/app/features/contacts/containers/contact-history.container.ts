@@ -114,7 +114,9 @@ export class ContactHistoryContainer {
   );
   /** Salespeople and store associates see their own sales only (docs/PERMISSIONS.md). */
   private readonly owner = computed(() =>
-    OWN_SALES_ONLY.includes(this.session.persona()) ? (this.session.user()?.id ?? null) : null,
+    this.contactKind() === 'customers' && OWN_SALES_ONLY.includes(this.session.persona())
+      ? (this.session.user()?.id ?? null)
+      : null,
   );
   /** A supplier's money only for cost roles; a customer's for everyone who sees customers. */
   private readonly withMoney = computed(

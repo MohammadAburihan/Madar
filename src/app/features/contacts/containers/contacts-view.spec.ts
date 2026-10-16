@@ -100,6 +100,7 @@ describe('contacts view', () => {
     const base = {
       date: '2026-10-11',
       outstanding: 0,
+      credited: 0,
       status: '',
       place: null,
       invoices: [],
@@ -189,6 +190,25 @@ describe('contacts view', () => {
           en,
         ).message,
       ),
-    ).toBe('Invoice confirmed · Credit note issued\nDue 0.00');
+    ).toBe('Invoice confirmed · Credit note issued\nPaid 45.00 · Due 0.00');
+    // A credit note took 30 off: only the rest was paid.
+    expect(
+      visible(
+        historyCard(
+          {
+            ...base,
+            kind: 'invoice',
+            name: 'SI-8',
+            amount: 100,
+            outstanding: 0,
+            credited: 30,
+            status: 'Paid',
+          },
+          'customers',
+          'ILS',
+          en,
+        ).message,
+      ),
+    ).toBe('Invoice confirmed · Paid\nPaid 70.00 · Due 0.00');
   });
 });

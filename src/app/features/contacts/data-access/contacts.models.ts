@@ -50,6 +50,8 @@ export interface HistoryEntry {
   amount: number | null;
   /** Invoices: what is still owed. Company currency. */
   outstanding: number;
+  /** Invoices: what credit notes took off it, which isn't money paid. Company currency. */
+  credited: number;
   /** Invoices: ERPNext's status. */
   status: string;
   /** Payments: the account it went to or came from; deliveries: the warehouse. */

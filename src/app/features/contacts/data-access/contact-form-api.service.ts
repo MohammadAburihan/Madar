@@ -122,10 +122,7 @@ export class ContactFormApiService {
     const phone = value.phone.trim();
     const email = value.email.trim();
     const address = value.address.trim();
-    // A retry after a failed party save finds the contact and address the first try made.
-    let contactName =
-      (doc[`${party.prefix}_primary_contact`] as string | null | undefined) ??
-      (await this.linked('Contact', party.doctype, id));
+    let contactName = doc[`${party.prefix}_primary_contact`] as string | null | undefined;
     if (contactName) {
       const contact = await firstValueFrom(this.erpnext.doc<ContactDoc>('Contact', contactName));
       await firstValueFrom(
@@ -156,10 +153,10 @@ export class ContactFormApiService {
         }),
       );
       contactName = created.name;
+      // Made primary at once, so a retry after a failed party save edits it instead of adding another.
+      await this.makePrimary(party.doctype, id, `${party.prefix}_primary_contact`, contactName);
     }
-    let addressName =
-      (doc[`${party.prefix}_primary_address`] as string | null | undefined) ??
-      (await this.linked('Address', party.doctype, id));
+    let addressName = doc[`${party.prefix}_primary_address`] as string | null | undefined;
     if (addressName && !address) {
       // Cleared: the party no longer shows an address; the Address record itself stays for past documents.
       addressName = null;
@@ -187,6 +184,7 @@ export class ContactFormApiService {
         }),
       );
       addressName = created.name;
+      await this.makePrimary(party.doctype, id, `${party.prefix}_primary_address`, addressName);
     }
     // Saving a contact can touch its party, so the party is read again before its own save.
     const latest = await firstValueFrom(this.erpnext.doc<PartyDoc>(party.doctype, id));
@@ -205,24 +203,10 @@ export class ContactFormApiService {
     );
   }
 
-  /** A Contact or Address already linked to the party (left by an earlier, failed edit), if any. */
-  private async linked(
-    doctype: 'Contact' | 'Address',
-    partyDoctype: string,
-    id: string,
-  ): Promise<string | null> {
-    const [row] = await firstValueFrom(
-      this.erpnext.list<{ name: string }>(doctype, {
-        fields: ['name'],
-        filters: [
-          ['Dynamic Link', 'link_doctype', '=', partyDoctype],
-          ['Dynamic Link', 'link_name', '=', id],
-        ],
-        orderBy: 'creation desc',
-        limit: 1,
-      }),
+  private async makePrimary(doctype: string, id: string, field: string, value: string) {
+    await firstValueFrom(
+      this.erpnext.post('frappe.client.set_value', { doctype, name: id, fieldname: field, value }),
     );
-    return row?.name ?? null;
   }
 }
 

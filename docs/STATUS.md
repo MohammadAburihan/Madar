@@ -127,7 +127,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   (3 medium, 2 low) fixed: history still shows deliveries when invoices or payments can't be read; clearing the
   address takes it off the contact (e2e); the contact type locks once a create is sent, so checking and saving again
   stay with it; a retry after a failed edit reuses the contact and address the first try linked; deliveries
-  without a header warehouse read without one.
+  without a header warehouse read without one. Review pass 2 (2 medium, 2 low) fixed: history swallows only a role's 403, so a lost
+  connection shows the load error, not an empty history; the own-sales filter applies to customers only; credit notes
+  against an invoice don't count as paid; a contact or address Madar adds is made primary at once (no adopting
+  someone else's on retry).
 - Next: Settings.
 
 ## End-to-end happy paths: merged (#26)

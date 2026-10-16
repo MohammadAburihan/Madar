@@ -154,15 +154,11 @@ export function historyCard(
     case 'invoice':
       return {
         title: `${entry.name} · ${money(entry.amount ?? 0)}`,
-        message: `${t('invoiceState', { state: paymentState(entry.status, tr) })}\n${
-          // A credit note, not a payment, settled it: "paid" would count the credit as money received.
-          entry.status === 'Credit Note Issued'
-            ? t('dueOnly', { due: plain(entry.outstanding) })
-            : t('paidDue', {
-                paid: plain(Math.max((entry.amount ?? 0) - entry.outstanding, 0)),
-                due: plain(entry.outstanding),
-              })
-        }`,
+        message: `${t('invoiceState', { state: paymentState(entry.status, tr) })}\n${t('paidDue', {
+          // What credit notes took off isn't money received.
+          paid: plain(Math.max((entry.amount ?? 0) - entry.outstanding - entry.credited, 0)),
+          due: plain(entry.outstanding),
+        })}`,
       };
     case 'return':
       return { title: `${entry.name} · ${money(entry.amount ?? 0)}`, message: t('creditNote') };
