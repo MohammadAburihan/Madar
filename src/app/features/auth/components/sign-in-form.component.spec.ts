@@ -9,6 +9,7 @@ const LABELS = {
   submit: 'Sign in',
   submitting: 'Signing in…',
   forgot: 'Forgot password?',
+  changeBusiness: 'Change business',
   footer: 'Connected to rehan.example.com',
 };
 
@@ -63,5 +64,16 @@ describe('SignInFormComponent', () => {
     fixture.nativeElement.querySelector('button[type=button]').click();
 
     expect(emitted).toEqual(['lina@rehan.example']);
+  });
+
+  it('asks to change business from the Change business button', async () => {
+    const fixture = await render();
+    let asked = 0;
+    fixture.componentInstance.changeBusiness.subscribe(() => asked++);
+    const button = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (b: HTMLButtonElement) => b.textContent?.trim() === 'Change business',
+    ) as HTMLButtonElement;
+    button.click();
+    expect(asked).toBe(1);
   });
 });

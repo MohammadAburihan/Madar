@@ -17,6 +17,12 @@ export const CUSTOMER = 'Lina Haddad';
 export const MAIN = 'Main warehouse';
 
 export async function signIn(page: Page, user: keyof typeof USERS = 'owner'): Promise<void> {
+  // Connected to this business already, as after "Connect your business" (e2e/17-connect covers that screen).
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('madar.connection')) {
+      localStorage.setItem('madar.connection', location.origin);
+    }
+  });
   await page.goto('/sign-in');
   await page.getByLabel(/Email/).fill(USERS[user]);
   await page.getByLabel(/Password/).fill(PASSWORD);

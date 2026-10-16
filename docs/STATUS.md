@@ -171,7 +171,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     and never over a customer picked meanwhile. Not changed: confirmations kept in a page's own state
     (project requirement, contact create) are lost when that page is left anyway, so sign out can't make it worse.
     Deferred (low, as before): an order's invoice reads "Goods delivered" once any of its order rows delivered.
-- **One business per address** (this PR): decided 16 Oct 2026, each business gets its own Madar web address with its
+- **One business per address**: merged (#42). decided 16 Oct 2026, each business gets its own Madar web address with its
   own ERPNext backend and database on their own containers and ports (CLAUDE.md, overview §12, README "One business
   per deployment"). Settings' "Add another business" opens **Your businesses** (`/businesses`, also the shell's
   business switcher): the current business with the user's role and currency, then other businesses' addresses
@@ -182,7 +182,17 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   when read, so a bad or script entry can't break the page or be opened; in the native apps the page says other
   businesses open in a browser (the apps' connection flow is still open). Pass 2 (lows): Cancel clears the form; this
   business's own host is refused whatever scheme is typed; a refused storage write keeps the list for the visit.
-- Next: how the native apps connect to a business (open); then step 6.
+- **Connect your business** (this PR): decided 16 Oct 2026, on the web and in the apps the user types the business's
+  Madar address first (`/connect`, as on the mock). The web confirms it is this site's address, or goes to the other
+  business's address (which confirms itself there); the apps check a Madar answers (`/api/method/ping`), keep the
+  address and send their requests to it (the business's Madar proxies `/api` to its ERPNext). Until connected, every
+  page leads to `/connect`; sign-in has "Change business" back to it, and "Connected to …". Release builds take only
+  https domain addresses; dev builds also localhost and IPs. "Your businesses" in the apps now connects to the chosen
+  address. "Use invitation" is left out (invitations belong to the open onboarding decision). Madar has no sign-up
+  page, so the button is on sign-in. CLAUDE.md and the delivering-features skill now require every screen change to
+  be made in `docs/Madar.pen` too; this PR's are (sign-in, connect, connection settings, Your businesses, en and ar).
+  e2e: connect, a wrong address, sign-in's Change business and back, signing in; Arabic, and remembered next visit.
+- Next: step 6.
 
 ## End-to-end happy paths: merged (#26)
 

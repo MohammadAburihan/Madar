@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { ConnectionService } from '../../../core/business/connection.service';
 import { KnownBusinessesService } from '../../../core/business/known-businesses.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
-import { NATIVE_PLATFORM } from '../../../core/platform/native-platform';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -44,61 +44,56 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
     <app-back-link [label]="txt.back" (back)="router.navigate(['/settings'])" />
     <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
     <app-feedback-card [title]="txt.current.title" [message]="txt.current.message" />
-    @if (native) {
+    @for (business of known.businesses(); track business.address) {
+      <section class="business" [attr.aria-label]="business.address">
+        <app-feedback-card
+          tone="tint"
+          [title]="host(business.address)"
+          [message]="business.address"
+        />
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="openTasks.any()"
+          (click)="open(business.address)"
+        >
+          {{ txt.open(host(business.address)) }}
+        </button>
+        @if (openFailed() === business.address) {
+          <p class="muted" role="alert">{{ txt.openFailed }}</p>
+        }
+        <button type="button" class="md-btn" (click)="known.remove(business.address)">
+          {{ txt.remove(host(business.address)) }}
+        </button>
+      </section>
+    }
+    @if (openTasks.any() && known.businesses().length) {
       <app-feedback-card
         tone="warning"
-        [title]="txt.nativeOnly.title"
-        [message]="txt.nativeOnly.message"
+        [title]="txt.openTask.title"
+        [message]="txt.openTask.message"
       />
-    } @else {
-      @for (business of known.businesses(); track business.address) {
-        <section class="business" [attr.aria-label]="business.address">
-          <app-feedback-card
-            tone="tint"
-            [title]="host(business.address)"
-            [message]="business.address"
-          />
-          <button
-            type="button"
-            class="md-btn md-btn--primary"
-            [disabled]="openTasks.any()"
-            (click)="open(business.address)"
-          >
-            {{ txt.open(host(business.address)) }}
-          </button>
-          <button type="button" class="md-btn" (click)="known.remove(business.address)">
-            {{ txt.remove(host(business.address)) }}
-          </button>
-        </section>
-      }
-      @if (openTasks.any() && known.businesses().length) {
-        <app-feedback-card
-          tone="warning"
-          [title]="txt.openTask.title"
-          [message]="txt.openTask.message"
-        />
-      }
-      @if (adding()) {
-        <app-text-field
-          [label]="txt.address"
-          type="text"
-          inputmode="url"
-          autocomplete="url"
-          [ltr]="true"
-          [hint]="txt.hint"
-          [error]="addError() ? txt.errors[addError()!] : null"
-          [value]="address()"
-          (valueChange)="address.set($event); addError.set(null)"
-        />
-        <button type="button" class="md-btn md-btn--primary" (click)="save()">
-          {{ txt.save }}
-        </button>
-        <button type="button" class="md-btn" (click)="cancel()">{{ txt.cancel }}</button>
-      } @else {
-        <button type="button" class="md-btn" (click)="adding.set(true)">{{ txt.add }}</button>
-      }
-      <p class="muted">{{ txt.note }}</p>
     }
+    @if (adding()) {
+      <app-text-field
+        [label]="txt.address"
+        type="text"
+        inputmode="url"
+        autocomplete="url"
+        [ltr]="true"
+        [hint]="txt.hint"
+        [error]="addError() ? txt.errors[addError()!] : null"
+        [value]="address()"
+        (valueChange)="address.set($event); addError.set(null)"
+      />
+      <button type="button" class="md-btn md-btn--primary" (click)="save()">
+        {{ txt.save }}
+      </button>
+      <button type="button" class="md-btn" (click)="cancel()">{{ txt.cancel }}</button>
+    } @else {
+      <button type="button" class="md-btn" (click)="adding.set(true)">{{ txt.add }}</button>
+    }
+    <p class="muted">{{ txt.note }}</p>
   `,
 })
 export class BusinessesContainer {
@@ -107,8 +102,8 @@ export class BusinessesContainer {
   private readonly document = inject(DOCUMENT);
   protected readonly known = inject(KnownBusinessesService);
   protected readonly openTasks = inject(OpenTasksService);
-  /** The apps reach their own server; opening another business's web address there isn't connecting to it. */
-  protected readonly native = inject(NATIVE_PLATFORM) !== 'web';
+  private readonly connection = inject(ConnectionService);
+  protected readonly openFailed = signal<string | null>(null);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
@@ -141,7 +136,7 @@ export class BusinessesContainer {
       cancel: t('businesses.cancel'),
       note: t('businesses.note'),
       openTask: block('settings.openTask'),
-      nativeOnly: block('businesses.nativeOnly'),
+      openFailed: t('connect.errors.unreachable'),
       errors: {
         invalid: t('businesses.errors.invalid'),
         current: t('businesses.errors.current'),
@@ -174,11 +169,21 @@ export class BusinessesContainer {
     this.addError.set(null);
   }
 
-  /** Each business is its own Madar: switching opens its address (and its own sign-in). */
-  protected open(address: string): void {
+  /** Each business is its own Madar: the web opens its address; the apps connect to it and start over there. */
+  protected async open(address: string): Promise<void> {
     // Leaving reloads the app: an open confirmation's reference would be lost.
-    if (!this.openTasks.any()) {
+    if (this.openTasks.any()) {
+      return;
+    }
+    this.openFailed.set(null);
+    if (!this.connection.native) {
       this.document.location.assign(address);
+      return;
+    }
+    if ((await this.connection.connect(address)) === 'connected') {
+      this.document.location.assign('/sign-in');
+    } else {
+      this.openFailed.set(address);
     }
   }
 }

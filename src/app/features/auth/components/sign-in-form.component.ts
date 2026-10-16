@@ -21,6 +21,7 @@ export interface SignInLabels {
   submit: string;
   submitting: string;
   forgot: string;
+  changeBusiness: string;
   footer: string;
 }
 
@@ -65,6 +66,9 @@ export interface SignInLabels {
         (click)="forgotPassword.emit(form.controls.email.value.trim())"
       >
         {{ labels().forgot }}
+      </button>
+      <button type="button" class="md-btn" (click)="changeBusiness.emit()">
+        {{ labels().changeBusiness }}
       </button>
     </form>
     <p class="muted footer">{{ labels().footer }}</p>
@@ -131,6 +135,8 @@ export class SignInFormComponent {
   readonly notice = input<SignInMessage | null>(null);
   readonly signIn = output<SignInCredentials>();
   readonly forgotPassword = output<string>();
+  /** Back to the screen that asks for the business address. */
+  readonly changeBusiness = output<void>();
 
   protected readonly form = inject(NonNullableFormBuilder).group({ email: [''], password: [''] });
 

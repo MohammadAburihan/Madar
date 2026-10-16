@@ -23,6 +23,11 @@ const placeholder = (path: string, titleKey: string) => ({
 
 export const routes: Routes = [
   {
+    path: 'connect',
+    loadComponent: () =>
+      import('./features/auth/containers/connect.container').then((m) => m.ConnectContainer),
+  },
+  {
     path: 'sign-in',
     canMatch: [signedOutGuard],
     loadComponent: () =>

@@ -17,9 +17,16 @@ export class RuntimeConfigService {
   private readonly nativeUrls = inject(NATIVE_ERPNEXT_URLS);
   private readonly config = signal<RuntimeConfig>(DEFAULT_CONFIG);
 
-  // Native apps have no same-origin proxy, so they fall back to the build's per-platform default.
+  // Native apps have no same-origin proxy: they use the business address the user connected to, or in dev
+  // builds the per-platform default. A business's Madar address proxies /api to its ERPNext. Connecting
+  // reloads the app, so reading the stored address once is enough.
   readonly erpnextUrl = computed(() =>
-    normalizeUrl(this.config().erpnextUrl || this.nativeUrls[this.platform] || ''),
+    normalizeUrl(
+      this.config().erpnextUrl ||
+        (this.platform === 'web'
+          ? ''
+          : localStorage.getItem('madar.connection') || this.nativeUrls[this.platform] || ''),
+    ),
   );
   /** Host of the configured ERPNext, or null when requests go to the same origin. */
   readonly erpnextHost = computed(() => {

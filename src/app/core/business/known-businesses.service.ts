@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { ConnectionService } from './connection.service';
 
 /** Another business's Madar address, saved on this device. */
 export interface KnownBusiness {
@@ -18,22 +19,13 @@ export class KnownBusinessesService {
   private readonly document = inject(DOCUMENT);
   private readonly saved = signal<KnownBusiness[]>(this.read());
 
-  /** This Madar's own address. */
-  readonly current = this.document.location.origin;
+  /** This business's address: this site on the web, the connected address in the apps. */
+  readonly current = inject(ConnectionService).address() ?? this.document.location.origin;
   readonly businesses = computed(() => this.saved().filter((b) => b.address !== this.current));
 
   /** The address as an origin, or null when it isn't an http(s) address. */
   static origin(value: string): string | null {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return null;
-    }
-    try {
-      const url = new URL(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
-      return /^https?:$/.test(url.protocol) ? url.origin : null;
-    } catch {
-      return null;
-    }
+    return ConnectionService.origin(value);
   }
 
   /** Saves the address; 'invalid', 'current' (this business) or 'known' when it isn't added. */
