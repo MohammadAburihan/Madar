@@ -33,6 +33,10 @@ export interface Capabilities {
   supplyProjects: boolean;
   /** Profit, money in and out, and statements (docs/PERMISSIONS.md: owner only). */
   seeReports: boolean;
+  /** Deliver a sales order's goods and mark its service work done. */
+  deliverOrders: boolean;
+  /** Invoice what a sales order still has to bill. */
+  invoiceOrders: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -53,6 +57,8 @@ const SALES_ROLE: Capabilities = {
   manageProjects: false,
   supplyProjects: false,
   seeReports: false,
+  deliverOrders: true,
+  invoiceOrders: true,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -74,6 +80,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageProjects: true,
     supplyProjects: true,
     seeReports: true,
+    deliverOrders: true,
+    invoiceOrders: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -95,6 +103,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageProjects: false,
     supplyProjects: true,
     seeReports: false,
+    deliverOrders: false,
+    invoiceOrders: false,
   },
   projectManager: {
     sell: false,
@@ -114,6 +124,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageProjects: true,
     supplyProjects: true,
     seeReports: false,
+    deliverOrders: false,
+    invoiceOrders: false,
   },
   purchasing: {
     sell: false,
@@ -134,6 +146,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageProjects: false,
     supplyProjects: false,
     seeReports: false,
+    deliverOrders: false,
+    invoiceOrders: false,
   },
 };
 
@@ -206,6 +220,34 @@ const SUPPLY_PROJECTS_NEEDS = [
   ['Stock User', 'Accounts Manager'], // read Stock Ledger Entry (the project's site stock); Stock Manager can't
 ];
 
+// Delivering reads the order, warehouses and their stock, and creates and submits a Delivery Note (v16 permissions).
+const DELIVER_ORDERS_NEEDS = [
+  ['Sales User', 'Sales Manager', 'Accounts User', 'Stock User', 'Maintenance User'], // read Sales Order
+  ['Sales User', 'Stock User', 'Stock Manager', 'Delivery User', 'Delivery Manager'], // create and submit Delivery Note
+  [
+    'Stock User',
+    'Stock Manager',
+    'Sales User',
+    'Sales Manager',
+    'Purchase User',
+    'Purchase Manager',
+  ], // read Bin
+  [
+    'Stock User',
+    'Item Manager',
+    'Sales User',
+    'Purchase User',
+    'Accounts User',
+    'Manufacturing User',
+  ], // read Warehouse
+];
+
+// Invoicing an order reads it and creates and submits a Sales Invoice (v16 permissions).
+const INVOICE_ORDERS_NEEDS = [
+  ['Sales User', 'Sales Manager', 'Accounts User', 'Stock User', 'Maintenance User'], // read Sales Order
+  ['Accounts User', 'Accounts Manager'], // create and submit Sales Invoice
+];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -246,5 +288,11 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     seeReports:
       caps.seeReports &&
       SEE_REPORTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    deliverOrders:
+      caps.deliverOrders &&
+      DELIVER_ORDERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    invoiceOrders:
+      caps.invoiceOrders &&
+      INVOICE_ORDERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

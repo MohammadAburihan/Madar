@@ -3,9 +3,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
-import { SalesOrderApiService } from './sales-order-api.service';
+import {
+  DeliveryChangedError,
+  InvoiceChangedError,
+  SalesOrderApiService,
+} from './sales-order-api.service';
 
 const MAKE = 'erpnext.selling.doctype.quotation.quotation.make_sales_order';
+const MAKE_INVOICE = 'erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice';
 const request = { reference: 'ORD-ABC1234', quotation: 'QT-0084', deliveryDate: '2026-10-16' };
 const template = () => ({
   doctype: 'Sales Order',
@@ -178,5 +183,203 @@ describe('SalesOrderApiService', () => {
       delivery_date: '2026-10-20',
       items: [{ delivery_date: '2026-10-20' }, { delivery_date: '2026-10-20' }],
     });
+  });
+
+  it('delivers only the chosen rows from the chosen warehouse, with its own reference', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        'erpnext.selling.doctype.sales_order.sales_order.make_delivery_note': () => ({
+          doctype: 'Delivery Note',
+          utm_content: 'ORD-ABC1234',
+          items: [
+            { item_code: 'OLV-20', qty: 2, so_detail: 'tree', warehouse: 'Stores' },
+            { item_code: 'SRV-GARDEN', qty: 1, so_detail: 'visit' },
+          ],
+        }),
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'DN-1' }),
+        'frappe.client.submit': () => ({ name: 'DN-1' }),
+      },
+    );
+    const delivery = {
+      reference: 'DEL-ABC1234',
+      order: 'SO-1',
+      warehouse: 'Main',
+      lines: [{ row: 'tree', qty: 1 }],
+    };
+    expect(await api().deliver(delivery, null)).toBe('DN-1');
+    expect(postCalls[1].body['doc']).toMatchObject({
+      utm_content: 'DEL-ABC1234',
+      set_warehouse: 'Main',
+      items: [{ item_code: 'OLV-20', qty: 1, warehouse: 'Main' }],
+    });
+    expect((postCalls[1].body['doc'] as { items: unknown[] }).items).toHaveLength(1);
+  });
+
+  it('takes a posted delivery as the result only when its rows match', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Delivery Note/DN-1': {
+          name: 'DN-1',
+          docstatus: 1,
+          set_warehouse: 'Main',
+          items: [{ so_detail: 'tree', qty: 1, warehouse: 'Main' }],
+        },
+      },
+    );
+    const delivery = {
+      reference: 'DEL-1',
+      order: 'SO-1',
+      warehouse: 'Main',
+      lines: [{ row: 'tree', qty: 1 }],
+    };
+    expect(await api().deliver(delivery, 'DN-1')).toBe('DN-1');
+    await expect(
+      api().deliver({ ...delivery, lines: [{ row: 'tree', qty: 2 }] }, 'DN-1'),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
+  });
+
+  it('invoices the order without moving stock, refusing an amount other than the one reviewed', async () => {
+    const template = () => ({
+      doctype: 'Sales Invoice',
+      update_stock: 1,
+      base_grand_total: 319.99,
+      base_rounded_total: 320,
+      items: [{ item_code: 'OLV-20', item_name: 'Olive tree', qty: 2, base_amount: 170 }],
+    });
+    const { postCalls } = fakeErpnext(
+      { Item: () => [{ name: 'OLV-20' }] },
+      {
+        [MAKE_INVOICE]: template,
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'SI-1' }),
+        'frappe.client.submit': () => ({
+          name: 'SI-1',
+          base_grand_total: 319.99,
+          base_rounded_total: 320,
+          outstanding_amount: 320,
+        }),
+      },
+    );
+    expect(await api().invoicePreview('SO-1')).toMatchObject({
+      total: 320,
+      lines: [{ name: 'Olive tree', amount: 170, isStock: true }],
+    });
+    expect(
+      await api().invoice({ reference: 'INV-1', order: 'SO-1', currency: 'ILS', total: 320 }, null),
+    ).toEqual({
+      name: 'SI-1',
+      total: 320,
+      outstanding: 320,
+    });
+    expect(postCalls[2].body['doc']).toMatchObject({
+      update_stock: 0,
+      remarks: 'Madar order invoice INV-1',
+    });
+    await expect(
+      api().invoice({ reference: 'INV-2', order: 'SO-1', currency: 'ILS', total: 170 }, null),
+    ).rejects.toBeInstanceOf(InvoiceChangedError);
+  });
+
+  it('rebuilds a remembered invoice draft in place instead of deleting it, and converts the outstanding', async () => {
+    const draft = {
+      name: 'SI-1',
+      docstatus: 0,
+      modified: 'm',
+      creation: 'c',
+      owner: 'lina',
+      items: [],
+    };
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        [MAKE_INVOICE]: () => ({
+          __islocal: 1,
+          base_grand_total: 370,
+          base_rounded_total: 370,
+          items: [],
+        }),
+        'frappe.client.save': (body) => body['doc'],
+        'frappe.client.submit': () => ({
+          name: 'SI-1',
+          base_grand_total: 370,
+          base_rounded_total: 370,
+          outstanding_amount: 100,
+          conversion_rate: 3.7,
+          party_account_currency: 'USD',
+        }),
+      },
+      { 'Sales Invoice/SI-1': draft },
+    );
+    expect(
+      await api().invoice(
+        { reference: 'INV-1', order: 'SO-1', currency: 'ILS', total: 370 },
+        'SI-1',
+      ),
+    ).toEqual({ name: 'SI-1', total: 370, outstanding: 370 });
+    expect(postCalls.map((c) => c.method)).toEqual([
+      MAKE_INVOICE,
+      'frappe.client.save',
+      'frappe.client.submit',
+    ]);
+    expect(postCalls[1].body['doc']).toMatchObject({ name: 'SI-1', modified: 'm', creation: 'c' });
+    expect(postCalls[1].body['doc']).not.toHaveProperty('__islocal');
+  });
+
+  it('refuses a delivery when the order has less left than confirmed, posting nothing', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        'erpnext.selling.doctype.sales_order.sales_order.make_delivery_note': () => ({
+          items: [{ item_code: 'OLV-20', qty: 1, so_detail: 'tree' }],
+        }),
+      },
+    );
+    const delivery = {
+      reference: 'DEL-1',
+      order: 'SO-1',
+      warehouse: 'Main',
+      lines: [{ row: 'tree', qty: 2 }],
+    };
+    await expect(api().deliver(delivery, null)).rejects.toBeInstanceOf(DeliveryChangedError);
+    await expect(
+      api().deliver({ ...delivery, lines: [{ row: 'visit', qty: 1 }] }, null),
+    ).rejects.toBeInstanceOf(DeliveryChangedError);
+    expect(postCalls.map((c) => c.method)).not.toContain('frappe.client.insert');
+  });
+
+  it('bills anew when the remembered draft was posted by someone else', async () => {
+    const posted = {
+      name: 'SI-OLD',
+      docstatus: 1,
+      remarks: 'Madar order invoice INV-OLD',
+      items: [],
+    };
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        [MAKE_INVOICE]: () => ({ base_grand_total: 150, base_rounded_total: 150, items: [] }),
+        'frappe.client.insert': () => ({ name: 'SI-2' }),
+        'frappe.client.submit': () => ({
+          name: 'SI-2',
+          base_grand_total: 150,
+          base_rounded_total: 150,
+        }),
+      },
+      { 'Sales Invoice/SI-OLD': posted },
+    );
+    const request = { reference: 'INV-NEW', order: 'SO-1', currency: 'ILS', total: 150 };
+    expect((await api().invoice(request, 'SI-OLD')).name).toBe('SI-2');
+    expect(postCalls.map((c) => c.method)).toContain('frappe.client.insert');
+  });
+
+  it('asks for a new review when everything was billed since', async () => {
+    const request = { reference: 'INV-NEW', order: 'SO-1', currency: 'ILS', total: 150 };
+    fakeErpnext(
+      {},
+      { [MAKE_INVOICE]: () => throwError(() => new HttpErrorResponse({ status: 417 })) },
+    );
+    await expect(api().invoice(request, null)).rejects.toBeInstanceOf(InvoiceChangedError);
   });
 });

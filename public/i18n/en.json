@@ -2184,7 +2184,137 @@
           "title": "The date wasn't saved",
           "message": "ERPNext rejected it. Reload the order and try again."
         }
-      }
+      },
+      "deliverAction": "Prepare delivery",
+      "invoiceAction": "Create invoice"
+    },
+    "deliver": {
+      "title": "Deliver order",
+      "subtitle": "{{order}} · {{customer}}",
+      "warehouse": "Warehouse",
+      "chooseWarehouse": "Choose a warehouse",
+      "goodsMeta": "Ordered {{ordered}} · Previously delivered {{delivered}}",
+      "goodsDetail": "Available {{available}} · Deliver now {{now}}",
+      "serviceMeta": "Ordered {{ordered}} · Done before {{delivered}}",
+      "serviceDetail": "Done now {{now}}",
+      "qty": "Quantity to deliver",
+      "qtyFor": "Quantity to deliver · {{code}}",
+      "workDoneFor": "Work done now · {{code}}",
+      "qtyError": "Enter a quantity from 0 to {{max}}.",
+      "noStock": "Only {{available}} in {{warehouse}}.",
+      "reviewTitle": "Before you confirm",
+      "reviewGoods": "Deliver {{goods}} from {{warehouse}}.",
+      "reviewServices": "Mark {{services}} as done.",
+      "reviewNote": "This creates a delivery record; it does not record payment.",
+      "confirm": "Confirm delivery",
+      "confirming": "Confirming…",
+      "reload": "Reload the order",
+      "noAccess": {
+        "title": "You can't deliver orders",
+        "message": "Your role doesn't allow deliveries in ERPNext."
+      },
+      "nothingOpen": {
+        "title": "Nothing left to deliver",
+        "message": "Every line of this order is delivered."
+      },
+      "notDeliverable": {
+        "title": "This order can't be delivered",
+        "message": "It is closed, on hold or not confirmed in ERPNext."
+      },
+      "noWarehouses": {
+        "title": "No warehouse to deliver from",
+        "message": "ERPNext has no warehouse for this business."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't deliver this order",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The delivery wasn't sent. Check the connection and try again."
+        },
+        "changed": {
+          "title": "The order moved on",
+          "message": "An earlier delivery stands in ERPNext. Reload the order to see what is left."
+        },
+        "stock": {
+          "title": "Not enough stock",
+          "message": "ERPNext has less in the warehouse than this delivery takes. Check the quantities."
+        },
+        "error": {
+          "title": "The delivery wasn't recorded",
+          "message": "ERPNext rejected it. Check the details and try again."
+        }
+      },
+      "notCreated": {
+        "title": "The delivery wasn't recorded",
+        "message": "Nothing was posted. Check it and confirm again."
+      },
+      "checking": {
+        "title": "Checking your delivery",
+        "cardTitle": "Confirmation not yet resolved",
+        "cardMessage": "The request timed out. The delivery may already exist. Don't deliver it again.",
+        "planned": "Delivering",
+        "plannedValue": "{{units}} from {{warehouse}}"
+      },
+      "doneTitle": "Delivery confirmed",
+      "doneAll": "Delivered · {{done}} of {{ordered}}",
+      "donePart": "Partly delivered · {{done}} of {{ordered}}",
+      "doneMessage": "{{warehouse}} delivery posted. Invoicing and payment remain separate.",
+      "reviewInvoice": "Review invoice from order"
+    },
+    "orderInvoice": {
+      "reviewTitle": "Review order invoice",
+      "subtitle": "{{order}} · {{customer}}",
+      "reviewCard": "Invoice only · {{total}}",
+      "goodsDelivered": "Already delivered goods will not move again.",
+      "goodsLater": "It moves no stock: goods leave with their delivery.",
+      "reviewDue": "Received {{received}} · Due {{due}}.",
+      "confirm": "Confirm invoice",
+      "confirming": "Confirming…",
+      "cancel": "Cancel",
+      "reload": "Review again",
+      "noAccess": {
+        "title": "You can't invoice orders",
+        "message": "Your role doesn't allow sales invoices in ERPNext."
+      },
+      "nothing": {
+        "title": "Nothing left to invoice",
+        "message": "Every line of this order is invoiced."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't invoice this order",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The invoice wasn't sent. Check the connection and try again."
+        },
+        "changed": {
+          "title": "The amount changed",
+          "message": "ERPNext would now bill another amount. Review it again before confirming."
+        },
+        "error": {
+          "title": "The invoice wasn't recorded",
+          "message": "ERPNext rejected it. Check the order and try again."
+        }
+      },
+      "notCreated": {
+        "title": "The invoice wasn't recorded",
+        "message": "Nothing was posted. Check it and confirm again."
+      },
+      "checking": {
+        "title": "Checking your invoice",
+        "cardTitle": "Confirmation not yet resolved",
+        "cardMessage": "The request timed out. The invoice may already exist. Don't create it again.",
+        "planned": "Invoice total"
+      },
+      "doneTitle": "Order invoice recorded",
+      "doneSubtitle": "{{invoice}} · {{order}}",
+      "doneCard": "{{state}} · {{total}}",
+      "doneMessage": "Invoice linked to {{order}}. Received {{received}}. No second stock delivery or payment."
     }
   }
 }

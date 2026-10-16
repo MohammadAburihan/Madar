@@ -56,6 +56,24 @@ test('quotes in Arabic, right to left @phone', async ({ page }) => {
   await page.getByRole('button', { name: 'تأكيد عرض السعر' }).click();
   await expect(page).toHaveURL(/\/sales\/quotes\/[^/]+$/, { timeout: 60_000 });
   await expectHeading(page, 'تم تأكيد عرض السعر');
+
+  // The same quotation ordered, delivered and invoiced, all in Arabic.
+  await page.getByRole('button', { name: 'إنشاء أمر بيع' }).click();
+  await expect(page).toHaveURL(/\/sales\/orders\/[^/]+$/, { timeout: 60_000 });
+  await expectHeading(page, /أمر البيع/);
+  await page.getByRole('button', { name: 'تجهيز التسليم' }).click();
+  await expectHeading(page, 'تسليم الطلب');
+  await expect(page.getByText('قبل التأكيد')).toBeVisible();
+  await page.getByRole('button', { name: 'تأكيد التسليم' }).click();
+  await expect(page).toHaveURL(/\/deliver\/done$/, { timeout: 60_000 });
+  await expectHeading(page, 'تم تأكيد التسليم');
+  await page.getByRole('button', { name: 'مراجعة فاتورة أمر البيع' }).click();
+  await expectHeading(page, 'مراجعة فاتورة أمر البيع');
+  await expect(page.locator('app-feedback-card').first()).toContainText('فاتورة فقط');
+  await page.getByRole('button', { name: 'تأكيد الفاتورة' }).click();
+  await expect(page).toHaveURL(/\/invoice\/done$/, { timeout: 60_000 });
+  await expectHeading(page, 'تم تسجيل فاتورة أمر البيع');
+  await expect(page.locator('app-feedback-card').first()).toContainText('غير مدفوع');
 });
 
 test('reads a sales order in Arabic, right to left @phone', async ({ page }) => {
