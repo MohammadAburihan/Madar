@@ -2,10 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
-import { ContactInfo, ContactRow, CustomerDetail, SupplierDetail } from './contacts.models';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import {
+  ContactInfo,
+  ContactKind,
+  ContactRow,
+  CustomerDetail,
+  HistoryEntry,
+  SupplierDetail,
+} from './contacts.models';
 
 /** Lists show this many rows; the screen says so when there may be more. */
 export const LIST_LIMIT = 30;
+/** History shows each kind's newest this many. */
+export const HISTORY_LIMIT = 50;
 
 interface PartyDoc {
   name: string;
@@ -30,6 +40,14 @@ const lines = (address: string | null | undefined) =>
 const inCompany = (amount: unknown, row: Record<string, unknown>, currency: string) =>
   Number(amount ?? 0) *
   (row['party_account_currency'] === currency ? 1 : Number(row['conversion_rate']) || 1);
+
+/** A role that may not read one kind of record still sees the rest; other failures stay failures. */
+const forbiddenAsNone = (error: unknown): never[] => {
+  if (ErpnextError.from(error).kind === 'forbidden') {
+    return [];
+  }
+  throw error;
+};
 
 const owed = (row: Record<string, unknown>) =>
   Number(row['base_rounded_total']) || Number(row['base_grand_total']) || 0;
@@ -305,6 +323,206 @@ export class ContactsApiService {
       received: sum((i) => Number(i.received_qty)),
       billed: sum((i) => (Number(i.rate) ? Number(i.billed_amt) / Number(i.rate) : 0)),
     };
+  }
+
+  /**
+   * The contact's invoices, returns, payments and deliveries, newest first (each kind its newest 50).
+   * `owner` keeps sales roles to their own; `withMoney` false leaves a supplier's money out (non-cost roles).
+   */
+  async history(
+    kind: ContactKind,
+    id: string,
+    company: Company,
+    owner: string | null,
+    withMoney: boolean,
+  ): Promise<HistoryEntry[]> {
+    const customer = kind === 'customers';
+    const scope = (party: string): Filter[] => [
+      [party, '=', id],
+      ['company', '=', company.name],
+      ['docstatus', '=', 1],
+      ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
+    ];
+    const recent = { orderBy: 'posting_date desc, creation desc', limit: HISTORY_LIMIT };
+    const [invoices, payments, deliveries] = await Promise.all([
+      withMoney
+        ? // A role that can't read invoices or payments still sees the rest of the history.
+          firstValueFrom(
+            this.erpnext.list<Record<string, unknown>>(
+              customer ? 'Sales Invoice' : 'Purchase Invoice',
+              {
+                fields: [
+                  'name',
+                  'posting_date',
+                  'status',
+                  'is_return',
+                  'base_grand_total',
+                  'base_rounded_total',
+                  'outstanding_amount',
+                  'conversion_rate',
+                  'party_account_currency',
+                  'return_against',
+                  'update_outstanding_for_self',
+                  'creation',
+                ],
+                filters: scope(customer ? 'customer' : 'supplier'),
+                ...recent,
+              },
+            ),
+          ).catch(forbiddenAsNone)
+        : Promise.resolve([]),
+      withMoney
+        ? firstValueFrom(
+            this.erpnext.list<{
+              name: string;
+              posting_date: string;
+              base_paid_amount: number;
+              paid_to: string;
+              paid_from: string;
+              creation?: string;
+            }>('Payment Entry', {
+              fields: [
+                'name',
+                'posting_date',
+                'base_paid_amount',
+                'paid_to',
+                'paid_from',
+                'creation',
+              ],
+              // Money received from customers or paid to suppliers; refunds the other way aren't these.
+              filters: [
+                ['party_type', '=', customer ? 'Customer' : 'Supplier'],
+                ['payment_type', '=', customer ? 'Receive' : 'Pay'],
+                ...scope('party'),
+              ],
+              ...recent,
+            }),
+          ).catch(forbiddenAsNone)
+        : Promise.resolve([]),
+      firstValueFrom(
+        this.erpnext.list<{
+          name: string;
+          posting_date: string;
+          total_qty: number;
+          set_warehouse: string | null;
+          is_return: number;
+          creation?: string;
+        }>(customer ? 'Delivery Note' : 'Purchase Receipt', {
+          fields: ['name', 'posting_date', 'total_qty', 'set_warehouse', 'is_return', 'creation'],
+          filters: scope(customer ? 'customer' : 'supplier'),
+          ...recent,
+        }),
+      ).catch(forbiddenAsNone),
+    ]);
+    const [allocations, accounts, warehouses] = await Promise.all([
+      payments.length
+        ? firstValueFrom(
+            this.erpnext.list<{ parent: string; reference_name: string }>(
+              'Payment Entry Reference',
+              {
+                fields: ['parent', 'reference_name'],
+                filters: [['parent', 'in', payments.map((p) => p.name)]],
+                parent: 'Payment Entry',
+                limit: 0,
+              },
+            ),
+          ).catch(forbiddenAsNone)
+        : Promise.resolve([]),
+      this.names(
+        'Account',
+        'account_name',
+        payments.map((p) => (customer ? p.paid_to : p.paid_from)),
+      ),
+      this.names(
+        'Warehouse',
+        'warehouse_name',
+        deliveries.map((d) => d.set_warehouse ?? ''),
+      ),
+    ]);
+    // Credit notes that reduced an invoice's balance aren't payments against it.
+    const credited = new Map<string, number>();
+    for (const r of invoices.filter((r) => r['is_return'] && !r['update_outstanding_for_self'])) {
+      const against = String(r['return_against'] ?? '');
+      credited.set(against, (credited.get(against) ?? 0) + Math.abs(owed(r)));
+    }
+    const entries: HistoryEntry[] = [
+      ...invoices.map((r) => ({
+        kind: r['is_return'] ? ('return' as const) : ('invoice' as const),
+        name: String(r['name']),
+        date: String(r['posting_date']),
+        amount: Math.abs(owed(r)),
+        outstanding: inCompany(r['outstanding_amount'], r, company.currency),
+        credited: credited.get(String(r['name'])) ?? 0,
+        status: String(r['status']),
+        place: null,
+        invoices: [],
+        qty: 0,
+      })),
+      ...payments.map((p) => {
+        const account = customer ? p.paid_to : p.paid_from;
+        return {
+          kind: 'payment' as const,
+          name: p.name,
+          date: p.posting_date,
+          amount: Number(p.base_paid_amount),
+          outstanding: 0,
+          credited: 0,
+          status: '',
+          place: accounts.get(account) ?? account,
+          invoices: [
+            ...new Set(allocations.filter((a) => a.parent === p.name).map((a) => a.reference_name)),
+          ],
+          qty: 0,
+        };
+      }),
+      ...deliveries.map((d) => ({
+        kind: 'delivery' as const,
+        name: d.name,
+        date: d.posting_date,
+        amount: null,
+        outstanding: 0,
+        credited: 0,
+        status: d.is_return ? 'Return' : '',
+        place: d.set_warehouse ? (warehouses.get(d.set_warehouse) ?? d.set_warehouse) : null,
+        invoices: [],
+        qty: Math.abs(Number(d.total_qty)),
+      })),
+    ];
+    // Same-day records in the order they were made, newest first, across all kinds.
+    const made = new Map<string, string>([
+      ...invoices.map((r) => [String(r['name']), String(r['creation'] ?? '')] as const),
+      ...payments.map((p) => [p.name, p.creation ?? ''] as const),
+      ...deliveries.map((d) => [d.name, d.creation ?? ''] as const),
+    ]);
+    return entries.sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) ||
+        (made.get(b.name) ?? '').localeCompare(made.get(a.name) ?? ''),
+    );
+  }
+
+  /** The contact's display name, for pages that only have its id. */
+  async displayName(kind: ContactKind, id: string): Promise<string> {
+    const customer = kind === 'customers';
+    const field = customer ? 'customer_name' : 'supplier_name';
+    const names = await this.names(customer ? 'Customer' : 'Supplier', field, [id]);
+    return names.get(id) ?? id;
+  }
+
+  /** Display names for linked records; an unreadable lookup leaves the ids. */
+  private async names(doctype: string, field: string, ids: string[]): Promise<Map<string, string>> {
+    const unique = [...new Set(ids.filter(Boolean))];
+    if (!unique.length) {
+      return new Map();
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<Record<string, string>>(doctype, {
+        fields: ['name', field],
+        filters: [['name', 'in', unique]],
+        limit: 0,
+      }),
+    ).catch(() => []);
+    return new Map(rows.map((r) => [r['name'], r[field]]));
   }
 
   /** Outstanding per party in the company currency: each is kept in its party's account currency. */

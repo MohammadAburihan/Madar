@@ -39,6 +39,12 @@ export interface Capabilities {
   invoiceOrders: boolean;
   /** Take back sold items against their invoice with a credit note. */
   returnSales: boolean;
+  /** Add customers and edit their contact details. */
+  editCustomers: boolean;
+  /** Add suppliers. */
+  addSuppliers: boolean;
+  /** Edit suppliers' contact details. */
+  editSuppliers: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -62,6 +68,9 @@ const SALES_ROLE: Capabilities = {
   deliverOrders: true,
   invoiceOrders: true,
   returnSales: true,
+  editCustomers: true,
+  addSuppliers: false,
+  editSuppliers: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -86,6 +95,9 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     deliverOrders: true,
     invoiceOrders: true,
     returnSales: true,
+    editCustomers: true,
+    addSuppliers: true,
+    editSuppliers: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -110,6 +122,9 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     deliverOrders: false,
     invoiceOrders: false,
     returnSales: false,
+    editCustomers: false,
+    addSuppliers: false,
+    editSuppliers: false,
   },
   projectManager: {
     sell: false,
@@ -132,6 +147,9 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     deliverOrders: false,
     invoiceOrders: false,
     returnSales: false,
+    editCustomers: true,
+    addSuppliers: false,
+    editSuppliers: false,
   },
   purchasing: {
     sell: false,
@@ -155,6 +173,9 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     deliverOrders: false,
     invoiceOrders: false,
     returnSales: false,
+    editCustomers: false,
+    addSuppliers: true,
+    editSuppliers: true,
   },
 };
 
@@ -268,6 +289,12 @@ const RETURN_SALES_NEEDS = [
   ], // read Warehouse
 ];
 
+// Customers are created and edited by sales roles, with their Contact and Address (v16 permissions).
+const EDIT_CUSTOMERS_NEEDS = [['Sales User', 'Sales Master Manager']];
+// Only Purchase Master Manager may create suppliers in v16; Purchase Manager may edit them.
+const ADD_SUPPLIERS_NEEDS = [['Purchase Master Manager']];
+const EDIT_SUPPLIERS_NEEDS = [['Purchase Manager', 'Purchase Master Manager']];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -317,5 +344,14 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     returnSales:
       caps.returnSales &&
       RETURN_SALES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    editCustomers:
+      caps.editCustomers &&
+      EDIT_CUSTOMERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    addSuppliers:
+      caps.addSuppliers &&
+      ADD_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    editSuppliers:
+      caps.editSuppliers &&
+      EDIT_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

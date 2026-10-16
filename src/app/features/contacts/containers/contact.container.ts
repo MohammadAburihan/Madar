@@ -21,7 +21,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ContactsApiService } from '../data-access/contacts-api.service';
 import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactActions, contactKinds } from './contacts-access';
+import { contactActions, contactKinds, editableKinds } from './contacts-access';
 import { contactLines, contactSubtitle, customerView, supplierView } from './contacts-view';
 
 /** One customer or supplier: how to reach them, what they owe or are owed, and what to do next. */
@@ -77,6 +77,14 @@ import { contactLines, contactSubtitle, customerView, supplierView } from './con
           {{ action.label }}
         </button>
       }
+      <button type="button" class="md-btn" (click)="router.navigate([...base(), 'history'])">
+        {{ txt.history }}
+      </button>
+      @if (editable()) {
+        <button type="button" class="md-btn" (click)="router.navigate([...base(), 'edit'])">
+          {{ contactKind() === 'customers' ? txt.editCustomer : txt.editSupplier }}
+        </button>
+      }
     } @else if (failed()) {
       <app-page-heading [title]="txt.pageTitle" [subtitle]="id()" />
       <app-feedback-card
@@ -119,6 +127,14 @@ export class ContactContainer {
     contactKinds(this.caps()).includes(this.contactKind()),
   );
 
+  protected readonly editable = computed(() =>
+    editableKinds(this.caps(), 'edit').includes(this.contactKind()),
+  );
+
+  protected base(): string[] {
+    return ['/contacts', this.contactKind(), this.id()];
+  }
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -127,6 +143,9 @@ export class ContactContainer {
       loading: t('contacts.loading'),
       retry: t('contacts.retry'),
       noAccess: { title: t('contacts.noAccess.title'), message: t('contacts.noAccess.message') },
+      history: t('contacts.viewTransactions'),
+      editCustomer: t('contacts.editContact'),
+      editSupplier: t('contacts.editSupplier'),
       loadFailed: {
         title: t('contacts.loadFailed.title'),
         message: t('contacts.loadFailed.message'),

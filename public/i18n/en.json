@@ -2458,6 +2458,86 @@
       "title": "This contact couldn't load",
       "message": "Check the connection and try again."
     },
-    "capped": "Showing the first {{count}}. Search to find others."
+    "capped": "Showing the first {{count}}. Search to find others.",
+    "add": "Add customer or supplier",
+    "addDesktop": "+ Add contact",
+    "viewTransactions": "View transactions",
+    "editContact": "Edit contact",
+    "editSupplier": "Edit supplier",
+    "form": {
+      "newTitle": "Add contact",
+      "editTitle": "Edit contact",
+      "newSubtitle": "Create a customer or supplier.",
+      "type": "Contact type",
+      "types": {
+        "customers": "Customer",
+        "suppliers": "Supplier"
+      },
+      "name": "Name *",
+      "nameError": "Enter a name.",
+      "phone": "Phone",
+      "email": "Email",
+      "emailError": "Enter an email like name@example.com.",
+      "address": "Address",
+      "save": "Save contact",
+      "saving": "Saving…",
+      "noAccess": {
+        "title": "You can't add or edit these contacts",
+        "message": "ERPNext doesn't allow it for your role."
+      },
+      "notCreated": {
+        "title": "The contact wasn't created",
+        "message": "Nothing was saved. Check the details and save again."
+      },
+      "unresolved": {
+        "title": "Saving not yet resolved",
+        "message": "The request timed out. The contact may already exist. Check before saving again (reference {{reference}})."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't save this contact",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The contact wasn't saved. Check the connection and try again."
+        },
+        "error": {
+          "title": "The contact wasn't saved",
+          "message": "ERPNext rejected it. Check the details and try again."
+        },
+        "duplicate": {
+          "title": "That name is already used",
+          "message": "ERPNext already has a contact with this name. Use a different name, for example with the city."
+        }
+      }
+    },
+    "history": {
+      "title": "Transaction history",
+      "subtitle": "{{contact}} · {{business}}",
+      "placeholder": "Search by document number",
+      "empty": "No transactions yet.",
+      "noResults": "No transactions match your search.",
+      "capped": "Showing the newest {{count}} of each kind.",
+      "loadFailed": {
+        "title": "The history couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "invoiceState": "Invoice confirmed · {{state}}",
+      "paidDue": "Paid {{paid}} · Due {{due}}",
+      "creditNote": "Credit note",
+      "customerPayment": "Customer payment · {{account}}",
+      "supplierPayment": "Supplier payment · {{account}}",
+      "allocated": "Allocated to {{invoices}}",
+      "units": {
+        "one": "{{count}} unit",
+        "other": "{{count}} units"
+      },
+      "goodsDelivered": "Goods delivered",
+      "goodsReturned": "Goods returned",
+      "goodsReceived": "Goods received",
+      "goodsSentBack": "Goods sent back",
+      "dueOnly": "Due {{due}}"
+    }
   }
 }

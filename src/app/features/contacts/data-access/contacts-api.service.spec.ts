@@ -144,4 +144,136 @@ describe('ContactsApiService', () => {
       ]);
     }
   });
+
+  it('gathers a customer’s history newest first, scoped to the owner, with payments’ invoices and accounts', async () => {
+    const { listCalls } = fakeErpnext({
+      'Sales Invoice': () => [
+        {
+          name: 'SI-1',
+          posting_date: '2026-10-10',
+          status: 'Partly Paid',
+          is_return: 0,
+          base_grand_total: 320,
+          outstanding_amount: 200,
+          party_account_currency: 'ILS',
+        },
+      ],
+      'Payment Entry': () => [
+        {
+          name: 'PAY-1',
+          posting_date: '2026-10-12',
+          base_paid_amount: 120,
+          paid_to: 'Cash - RN',
+          paid_from: 'Debtors - RN',
+        },
+      ],
+      'Delivery Note': () => [
+        {
+          name: 'DN-1',
+          posting_date: '2026-10-11',
+          total_qty: 2,
+          set_warehouse: 'Main - RN',
+          is_return: 0,
+        },
+      ],
+      'Payment Entry Reference': () => [
+        { parent: 'PAY-1', reference_name: 'SI-1' },
+        { parent: 'PAY-1', reference_name: 'SI-1' },
+      ],
+      Account: () => [{ name: 'Cash - RN', account_name: 'Main cash' }],
+      Warehouse: () => [{ name: 'Main - RN', warehouse_name: 'Main warehouse' }],
+    });
+    const history = await api().history(
+      'customers',
+      'Lina Haddad',
+      COMPANY,
+      'lina@rehan.example',
+      true,
+    );
+    expect(history.map((e) => [e.kind, e.name])).toEqual([
+      ['payment', 'PAY-1'],
+      ['delivery', 'DN-1'],
+      ['invoice', 'SI-1'],
+    ]);
+    expect(history[0]).toMatchObject({ place: 'Main cash', invoices: ['SI-1'] });
+    expect(history[1]).toMatchObject({ place: 'Main warehouse', qty: 2 });
+    expect(listCalls.find((c) => c.doctype === 'Sales Invoice')!.query.filters).toContainEqual([
+      'owner',
+      '=',
+      'lina@rehan.example',
+    ]);
+  });
+
+  it('shows a supplier’s receipts only, without money, to roles that can’t see costs', async () => {
+    const { listCalls } = fakeErpnext({
+      'Purchase Receipt': () => [
+        {
+          name: 'PR-1',
+          posting_date: '2026-10-11',
+          total_qty: 6,
+          set_warehouse: null,
+          is_return: 0,
+        },
+      ],
+    });
+    const history = await api().history('suppliers', 'Green Clay', COMPANY, null, false);
+    expect(history.map((e) => e.kind)).toEqual(['delivery']);
+    expect(listCalls.map((c) => c.doctype)).toEqual(['Purchase Receipt']);
+  });
+
+  it('still shows the deliveries when invoices and payments can’t be read', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+      'Payment Entry': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+      'Delivery Note': () => [
+        {
+          name: 'DN-1',
+          posting_date: '2026-10-11',
+          total_qty: 2,
+          set_warehouse: null,
+          is_return: 0,
+        },
+      ],
+    });
+    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    expect(history.map((e) => e.name)).toEqual(['DN-1']);
+  });
+
+  it('fails the history on a lost connection rather than showing it empty', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 0 })),
+    });
+    await expect(
+      api().history('customers', 'Lina Haddad', COMPANY, null, true),
+    ).rejects.toBeTruthy();
+  });
+
+  it('takes credit notes off what an invoice shows as paid', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => [
+        {
+          name: 'SI-1',
+          posting_date: '2026-10-10',
+          status: 'Paid',
+          is_return: 0,
+          base_grand_total: 100,
+          outstanding_amount: 0,
+          party_account_currency: 'ILS',
+        },
+        {
+          name: 'SI-R',
+          posting_date: '2026-10-11',
+          status: 'Return',
+          is_return: 1,
+          base_grand_total: -30,
+          outstanding_amount: 0,
+          return_against: 'SI-1',
+          update_outstanding_for_self: 0,
+          party_account_currency: 'ILS',
+        },
+      ],
+    });
+    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    expect(history.find((e) => e.name === 'SI-1')!.credited).toBe(30);
+  });
 });

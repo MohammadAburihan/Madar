@@ -27,7 +27,7 @@ import {
   CustomerDetail,
   SupplierDetail,
 } from '../data-access/contacts.models';
-import { contactActions, contactKinds } from './contacts-access';
+import { contactActions, contactKinds, editableKinds } from './contacts-access';
 import { contactCard, contactLines, contactRow, customerView, supplierView } from './contacts-view';
 
 const SEARCH_DELAY_MS = 250;
@@ -64,7 +64,13 @@ const SEARCH_DELAY_MS = 250;
   template: `
     @let txt = text();
     @if (desktop()) {
-      <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="txt.workspaceSubtitle" />
+      <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="txt.workspaceSubtitle">
+        @if (canAdd()) {
+          <button type="button" class="md-btn md-btn--primary" (click)="add()">
+            {{ txt.addDesktop }}
+          </button>
+        }
+      </app-page-heading>
     }
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     @if (!desktop()) {
@@ -148,6 +154,11 @@ const SEARCH_DELAY_MS = 250;
       @if (state() === 'ready' && capped()) {
         <p class="muted">{{ txt.capped }}</p>
       }
+      @if (!desktop() && canAdd()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="add()">
+          {{ txt.add }}
+        </button>
+      }
     }
   `,
 })
@@ -207,6 +218,8 @@ export class ContactsContainer {
       openDetail: t('contacts.openDetail'),
       panelFailed: t('contacts.panelFailed'),
       capped: t('contacts.capped', { count: LIST_LIMIT }),
+      add: t('contacts.add'),
+      addDesktop: t('contacts.addDesktop'),
       error: { title: t('contacts.error.title'), message: t('contacts.error.message') },
       noAccess: { title: t('contacts.noAccess.title'), message: t('contacts.noAccess.message') },
     };
@@ -362,6 +375,12 @@ export class ContactsContainer {
         this.panelFailed.set(true);
       }
     }
+  }
+
+  protected readonly canAdd = computed(() => editableKinds(this.caps(), 'add').length > 0);
+
+  protected add(): void {
+    void this.router.navigate(['/contacts/new'], { queryParams: { type: this.current() } });
   }
 
   protected openDetail(id: string): void {

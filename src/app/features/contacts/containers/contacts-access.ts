@@ -77,3 +77,13 @@ export function contactActions(
       : []),
   ];
 }
+
+/** The kinds the role may add, or edit (ERPNext lets more roles edit suppliers than create them). */
+export function editableKinds(caps: Capabilities, action: 'add' | 'edit'): ContactKind[] {
+  return [
+    ...(caps.editCustomers ? (['customers'] as const) : []),
+    ...((action === 'add' ? caps.addSuppliers : caps.editSuppliers)
+      ? (['suppliers'] as const)
+      : []),
+  ];
+}
