@@ -27,7 +27,15 @@ export interface QuotationDetail {
   validTill: string | null;
   /** Company currency, rounded as ERPNext owes it. */
   total: number;
-  lines: { code: string; name: string; qty: number; uom: string; rate: number; amount: number }[];
+  lines: {
+    code: string;
+    name: string;
+    qty: number;
+    uom: string;
+    rate: number;
+    amount: number;
+    isStock: boolean;
+  }[];
 }
 
 export const quoteTotal = (lines: readonly QuoteLine[]) =>

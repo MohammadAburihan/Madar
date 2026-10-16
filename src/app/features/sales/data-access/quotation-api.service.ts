@@ -133,6 +133,20 @@ export class QuotationApiService {
 
   async quotation(name: string): Promise<QuotationDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<QuotationDoc>('Quotation', name));
+    const codes = [...new Set((doc.items ?? []).map((i) => i.item_code))];
+    const stocked = codes.length
+      ? await firstValueFrom(
+          this.erpnext.list<{ name: string }>('Item', {
+            fields: ['name'],
+            filters: [
+              ['name', 'in', codes],
+              ['is_stock_item', '=', 1],
+            ],
+            limit: 0,
+          }),
+        ).catch(() => [])
+      : [];
+    const stock = new Set(stocked.map((i) => i.name));
     return {
       name: doc.name,
       customer: doc.party_name,
@@ -150,6 +164,7 @@ export class QuotationApiService {
         // Company currency, like the total: a quotation made in Desk may be in the customer's currency.
         rate: Number(i.base_rate),
         amount: Number(i.base_amount),
+        isStock: stock.has(i.item_code),
       })),
     };
   }

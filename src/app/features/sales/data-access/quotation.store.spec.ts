@@ -127,4 +127,68 @@ describe('QuotationStore', () => {
     await store.saveDraft();
     expect([store.savingDraft(), store.failure()]).toEqual([false, 'changed']);
   });
+
+  it("a slow save from before a fresh start doesn't unlock the new task's save", async () => {
+    const { store, api } = await ready();
+    let finishFirst: (name: string) => void = () => undefined;
+    api.saveDraft.mockReturnValueOnce(new Promise((resolve) => (finishFirst = resolve)));
+    const first = store.saveDraft();
+    store.start();
+    await new Promise((resolve) => setTimeout(resolve));
+    store.setCustomer({ id: 'Lina Haddad', name: 'Lina Haddad', meta: null });
+    store.addItem(PLANTER);
+    api.saveDraft.mockReturnValueOnce(new Promise(() => undefined));
+    void store.saveDraft();
+    finishFirst('QT-OLD');
+    await first;
+    expect(store.savingDraft()).toBe(true);
+  });
+
+  it('turns a failure before anything was sent into a failure, not an endless confirmation', async () => {
+    const { store } = await ready();
+    TestBed.inject(BusinessService).ensure = () =>
+      Promise.reject(new HttpErrorResponse({ status: 0 }));
+    await store.confirm();
+    expect([store.state(), store.failure()]).toEqual(['failed', 'offline']);
+  });
+
+  it('opens a saved draft for editing and keeps it through the form opening', async () => {
+    const { store } = setup();
+    store.edit({
+      name: 'QT-DRAFT',
+      customer: 'Lina Haddad',
+      customerName: 'Lina Haddad',
+      docstatus: 0,
+      status: 'Draft',
+      date: '2026-10-16',
+      validTill: '2026-10-30',
+      total: 90,
+      lines: [
+        {
+          code: 'POT-30',
+          name: 'Ceramic planter',
+          qty: 2,
+          uom: 'Unit',
+          rate: 45,
+          amount: 90,
+          isStock: true,
+        },
+      ],
+    });
+    store.resume();
+    expect([store.draft(), store.customer()?.id, store.lines().length, store.validTill()]).toEqual([
+      'QT-DRAFT',
+      'Lina Haddad',
+      1,
+      '2026-10-30',
+    ]);
+    store.resume();
+    expect(store.draft()).toBeNull();
+  });
+
+  it("won't quote valid until a day already past", async () => {
+    const { store } = await ready();
+    store.setValidTill('2026-10-15');
+    expect([store.validDate(), store.ready()]).toEqual([false, false]);
+  });
 });

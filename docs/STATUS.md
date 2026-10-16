@@ -62,7 +62,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (1 high, 3 medium) fixed: a "changed" failure while saving a draft no longer locks the form (the same
   bug fixed in the purchase order form); a removed line's typed price doesn't come back when the item is re-added
   (e2e); Save draft needs valid prices and dates, as Confirm does; quotation lines show the company currency, like
-  the total.
+  the total. Review pass 2 (3 medium, 3 low) fixed: only the latest draft save ends the saving state (no duplicate
+  draft after a restart; also in purchase orders); a saved draft opens from Sales and "Continue editing" finishes and
+  confirms it (e2e); drafts can't be shared; a failure before sending doesn't leave a confirmation stuck (also in
+  purchase orders); valid-until must be today or later.
 - Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

@@ -2087,7 +2087,9 @@
         "amount": "Amount",
         "total": "Total {{amount}}",
         "note": "Prices as quoted. A quotation is not an invoice."
-      }
+      },
+      "edit": "Continue editing",
+      "dateError": "Choose today or a later date."
     }
   }
 }

@@ -16,7 +16,15 @@ const QUOTE: QuotationDetail = {
   validTill: '2026-10-25',
   total: 320,
   lines: [
-    { code: 'OLV-20', name: 'Olive tree', qty: 2, uom: 'Unit', rate: 85, amount: 170 },
+    {
+      code: 'OLV-20',
+      name: 'Olive tree',
+      qty: 2,
+      uom: 'Unit',
+      rate: 85,
+      amount: 170,
+      isStock: true,
+    },
     {
       code: 'SRV-GARDEN',
       name: 'Garden consultation',
@@ -24,6 +32,7 @@ const QUOTE: QuotationDetail = {
       uom: 'Visit',
       rate: 150,
       amount: 150,
+      isStock: false,
     },
   ],
 };

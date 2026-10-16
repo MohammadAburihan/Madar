@@ -58,9 +58,17 @@ import { quotationHtml, quotationSummary } from './quotation-view';
           [message]="txt.pdfFailed.message"
         />
       }
-      <button type="button" class="md-btn" [disabled]="sharing()" (click)="share(v.name)">
-        {{ sharing() ? txt.preparing : txt.share }}
-      </button>
+      @if (v.draft) {
+        @if (caps().sell) {
+          <button type="button" class="md-btn md-btn--primary" (click)="edit()">
+            {{ txt.edit }}
+          </button>
+        }
+      } @else {
+        <button type="button" class="md-btn" [disabled]="sharing()" (click)="share(v.name)">
+          {{ sharing() ? txt.preparing : txt.share }}
+        </button>
+      }
       <button type="button" class="md-btn" (click)="router.navigate(['/sales'])">
         {{ txt.backToSales }}
       </button>
@@ -103,6 +111,7 @@ export class QuotationContainer {
       back: t('sales.quote.back'),
       title: t('sales.quote.pageTitle'),
       share: t('sales.quote.share'),
+      edit: t('sales.quote.edit'),
       preparing: t('statements.preparing'),
       backToSales: t('sales.quote.backToSales'),
       loading: t('sales.records.loading'),
@@ -128,6 +137,8 @@ export class QuotationContainer {
     const currency = this.business.active()?.currency ?? '';
     return {
       name: quotation.name,
+      // A draft isn't sent to customers: it can be finished, not shared.
+      draft: quotation.docstatus === 0,
       title: tr.t(this.justConfirmed() ? 'sales.quote.confirmedTitle' : 'sales.quote.pageTitle'),
       subtitle: tr.t('sales.quote.pageSubtitle', {
         name: quotation.name,
@@ -173,6 +184,14 @@ export class QuotationContainer {
       if (run === this.run) {
         this.failed.set(true);
       }
+    }
+  }
+
+  protected edit(): void {
+    const quotation = this.quotation();
+    if (quotation) {
+      this.store.edit(quotation);
+      void this.router.navigate(['/sales/quote/new']);
     }
   }
 

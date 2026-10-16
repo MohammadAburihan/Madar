@@ -137,6 +137,7 @@ const SEARCH_DELAY_MS = 250;
       <app-text-field
         [label]="txt.validTill"
         type="date"
+        [error]="ctx.store.validTill() && !ctx.store.validDate() ? txt.dateError : null"
         [value]="ctx.store.validTill()"
         (valueChange)="ctx.store.setValidTill($event)"
       />
@@ -193,6 +194,7 @@ export class QuotationFormContainer implements OnInit {
       items: t('sales.quote.items'),
       searchItems: t('sales.quote.searchItems'),
       validTill: t('sales.quote.validTill'),
+      dateError: t('sales.quote.dateError'),
       note: t('sales.quote.note'),
       confirm: t('sales.quote.confirm'),
       confirming: t('sales.quote.confirming'),

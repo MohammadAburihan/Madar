@@ -64,5 +64,19 @@ test('saves a quotation as a draft to finish later @desktop', async ({ page }) =
   await expect(price).toHaveValue('45');
   await page.getByRole('button', { name: 'Save draft' }).click();
   await expect(page.getByText('Draft saved')).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('app-page-heading')).toContainText('draft');
+  const heading = await page.locator('app-page-heading p').first().innerText();
+  const draft = heading.match(/SAL-QTN-[\d-]+/)![0];
+
+  // Later: the draft opens from Sales, is finished in the form and confirmed. A draft isn't shared.
+  await page.goto('/sales');
+  await page.getByRole('radio', { name: 'Quotes' }).click();
+  await page.locator('app-search-field input').fill(draft);
+  await page.locator('app-data-table tbody tr').filter({ hasText: draft }).click();
+  await expect(page.getByRole('button', { name: 'Share quotation' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue editing' }).click();
+  await expect(page).toHaveURL(/\/sales\/quote\/new$/);
+  await expect(page.getByLabel(named('Price each', '·', ITEM.name))).toHaveValue('45');
+  await page.getByRole('button', { name: 'Confirm quotation' }).click();
+  await expect(page).toHaveURL(new RegExp(`/sales/quotes/${draft}$`), { timeout: 60_000 });
+  await expectHeading(page, 'Quotation confirmed');
 });

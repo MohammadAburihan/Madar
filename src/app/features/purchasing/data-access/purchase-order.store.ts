@@ -44,6 +44,8 @@ export class PurchaseOrderStore {
   /** The order page has shown the result; until then, returning to the task must show it. */
   readonly resultShown = signal(false);
   readonly savingDraft = signal(false);
+  /** Each save's turn: only the latest one, in this task, may end the saving state. */
+  private saveRun = 0;
   /** The draft was saved on purpose, so starting over must keep it. */
   private readonly draftSaved = signal(false);
 
@@ -78,6 +80,7 @@ export class PurchaseOrderStore {
     this.failure.set(null);
     this.result.set(null);
     this.resultShown.set(false);
+    this.saveRun++;
     this.savingDraft.set(false);
     this.draftSaved.set(false);
   }
@@ -182,7 +185,14 @@ export class PurchaseOrderStore {
     }
     this.state.set('confirming');
     this.failure.set(null);
-    const request = await this.request();
+    let request: Awaited<ReturnType<typeof this.request>>;
+    try {
+      request = await this.request();
+    } catch (error) {
+      // Nothing was sent yet: a failure here must not leave the task "confirming".
+      this.fail(error);
+      return;
+    }
     if (!request) {
       this.state.set('idle');
       return;
@@ -211,6 +221,7 @@ export class PurchaseOrderStore {
     }
     this.savingDraft.set(true);
     this.failure.set(null);
+    const run = ++this.saveRun;
     const reference = this.reference();
     const current = () => this.reference() === reference;
     try {
@@ -234,8 +245,10 @@ export class PurchaseOrderStore {
       }
       return null;
     } finally {
-      // Always: a "changed" failure replaces the reference, and the form must not stay locked.
-      this.savingDraft.set(false);
+      // By turn, not by reference: a "changed" failure replaces the reference, yet this save is still the latest.
+      if (run === this.saveRun) {
+        this.savingDraft.set(false);
+      }
     }
   }
 

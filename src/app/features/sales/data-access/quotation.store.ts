@@ -9,7 +9,7 @@ import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { QuotationApiService } from './quotation-api.service';
-import { QuoteLine, QuotationRequest, quoteTotal } from './quotation.models';
+import { QuoteLine, QuotationDetail, QuotationRequest, quoteTotal } from './quotation.models';
 import { CatalogItem } from './sale.models';
 
 export type QuoteState = 'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
@@ -30,6 +30,8 @@ export class QuotationStore {
   readonly lines = signal<QuoteLine[]>([]);
   /** ISO date; set from the site's today when the task starts. */
   readonly validTill = signal('');
+  /** The site's today, the earliest a quotation can be valid until. */
+  readonly today = signal('');
   readonly draft = signal<string | null>(null);
   readonly state = signal<QuoteState>('idle');
   readonly failure = signal<QuoteFailure | null>(null);
@@ -38,6 +40,10 @@ export class QuotationStore {
   /** The quotation page has shown the result; until then, returning to the task must show it. */
   readonly resultShown = signal(false);
   readonly savingDraft = signal(false);
+  /** Each save's turn: only the latest one, in this task, may end the saving state. */
+  private saveRun = 0;
+  /** A draft was just opened for editing: the form's fresh visit must keep it, once. */
+  private opened = false;
   /** The draft was saved on purpose, so starting over must keep it. */
   private readonly draftSaved = signal(false);
 
@@ -48,7 +54,11 @@ export class QuotationStore {
       !!this.customer() &&
       this.lines().length > 0 &&
       this.lines().every((l) => l.qty > 0 && l.rate >= 0) &&
-      /^\d{4}-\d{2}-\d{2}$/.test(this.validTill()),
+      this.validDate(),
+  );
+  /** ERPNext refuses a valid-until date before the quotation's own date. */
+  readonly validDate = computed(
+    () => /^\d{4}-\d{2}-\d{2}$/.test(this.validTill()) && this.validTill() >= this.today(),
   );
   readonly ready = computed(() => this.complete() && this.state() !== 'confirming');
   /** A confirmation is running or its result is still open; leaving keeps the quotation. */
@@ -69,11 +79,13 @@ export class QuotationStore {
     this.failure.set(null);
     this.result.set(null);
     this.resultShown.set(false);
+    this.saveRun++;
     this.savingDraft.set(false);
     this.draftSaved.set(false);
     void this.clock.ensure().then(() => {
+      const today = this.clock.now();
+      this.today.set(toIsoDate(today));
       if (!this.validTill()) {
-        const today = this.clock.now();
         this.validTill.set(
           toIsoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + VALID_DAYS)),
         );
@@ -81,9 +93,38 @@ export class QuotationStore {
     });
   }
 
+  /** Opens a saved draft quotation in the form, to change and confirm it. */
+  edit(draft: QuotationDetail): void {
+    this.start();
+    this.customer.set({ id: draft.customer, name: draft.customerName, meta: null });
+    this.lines.set(
+      draft.lines.map((l) => ({
+        item: {
+          code: l.code,
+          name: l.name,
+          uom: l.uom,
+          isStock: l.isStock,
+          price: l.rate,
+          stock: {},
+        },
+        qty: l.qty,
+        rate: l.rate,
+      })),
+    );
+    if (draft.validTill) {
+      this.validTill.set(draft.validTill);
+    }
+    this.draft.set(draft.name);
+    // The user saved it: starting over again keeps it.
+    this.draftSaved.set(true);
+    this.opened = true;
+  }
+
   /** Entering the task from elsewhere: keep a running, unresolved or unseen quotation; else start over. */
   resume(): void {
-    const keep = this.busy() || (this.state() === 'confirmed' && !this.resultShown());
+    const keep =
+      this.opened || this.busy() || (this.state() === 'confirmed' && !this.resultShown());
+    this.opened = false;
     if (!keep) {
       this.start();
     }
@@ -132,7 +173,14 @@ export class QuotationStore {
     }
     this.state.set('confirming');
     this.failure.set(null);
-    const request = await this.request();
+    let request: Awaited<ReturnType<typeof this.request>>;
+    try {
+      request = await this.request();
+    } catch (error) {
+      // Nothing was sent yet: a failure here must not leave the task "confirming".
+      this.fail(error);
+      return;
+    }
     if (!request) {
       this.state.set('idle');
       return;
@@ -161,6 +209,7 @@ export class QuotationStore {
     }
     this.savingDraft.set(true);
     this.failure.set(null);
+    const run = ++this.saveRun;
     const reference = this.reference();
     const current = () => this.reference() === reference;
     try {
@@ -184,8 +233,10 @@ export class QuotationStore {
       }
       return null;
     } finally {
-      // Always: a "changed" failure replaces the reference, and the form must not stay locked.
-      this.savingDraft.set(false);
+      // By turn, not by reference: a "changed" failure replaces the reference, yet this save is still the latest.
+      if (run === this.saveRun) {
+        this.savingDraft.set(false);
+      }
     }
   }
 
