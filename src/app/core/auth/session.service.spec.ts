@@ -58,6 +58,17 @@ describe('SessionService', () => {
     expect(session.persona()).toBe('salesperson');
   });
 
+  it('signs out through ERPNext, and stays signed in when that fails', async () => {
+    const { session, http } = setup();
+    const failing = session.signOut();
+    http.expectOne('/api/method/logout').flush(null, { status: 0, statusText: 'Unknown Error' });
+    await expect(failing).rejects.toBeTruthy();
+    const signingOut = session.signOut();
+    http.expectOne('/api/method/logout').flush({});
+    await signingOut;
+    expect([session.status(), session.user()]).toEqual(['signed-out', null]);
+  });
+
   it('treats a guest session as signed out and remembers it', async () => {
     const { session, http } = setup();
 

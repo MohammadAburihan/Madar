@@ -112,7 +112,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   pass 4 (3 low): the missing-supplier note clears once another is chosen; a settled customer's desktop card shows the
   latest sale, not "ILS 0.00 due". Deferred (low): "Sell to" a customer deleted or disabled since their page opened
   starts the sale without them and says nothing.
-- **Contacts C2 — Contact form and history** (this PR): "Add customer or supplier" (phone) / "+ Add contact"
+- **Contacts C2 — Contact form and history**: merged (#38). "Add customer or supplier" (phone) / "+ Add contact"
   (desktop) opens Add contact: type (the kinds the role may add), Name *, Phone, Email (checked, but optional: many
   ERPNext contacts have none, unlike the mock's "Email *"), Address; ERPNext's quick entry makes the primary contact
   and address, and a `CON-…` reference in the party's details makes a lost create checkable. Edit contact / Edit
@@ -132,7 +132,15 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   against an invoice don't count as paid; a contact or address Madar adds is made primary at once (no adopting
   someone else's on retry). Review pass 3 (3 low) fixed: refunds aren't listed as payments; same-day records keep
   the order they were made in; a supplier name already taken says so.
-- Next: Settings.
+- **Settings** (this PR): Settings (desktop nav, mobile More) replaces the placeholder with Connection settings as on
+  the mock: business name, workspace address (the configured ERPNext server, or this site for the web app), currency
+  with its ERPNext name, and the language; "Separate business records". Sign out (not on the mock, but nowhere else
+  in Madar) ends the ERPNext session and reloads the sign-in page so nothing of the user's half-done work stays in
+  memory for the next person. Not built: "Save connection settings" (nothing on the page is editable yet) and "Add
+  another business" / Connect business: connecting to another workspace address is the business-connection flow,
+  which depends on the open authentication and multi-site decisions (overview section 12).
+  e2e: the connection facts and language switch (phone); sign out and the next person signing in (desktop).
+- Next: widen e2e coverage to check what the screens show; then the whole-branch review of the batch.
 
 ## End-to-end happy paths: merged (#26)
 

@@ -60,6 +60,13 @@ export class SessionService {
     await this.loadUser(id);
   }
 
+  /** Ends the ERPNext session. A failure leaves the user signed in, so the caller can say so. */
+  async signOut(): Promise<void> {
+    await firstValueFrom(this.erpnext.post('logout', {}));
+    this.currentUser.set(null);
+    this.currentStatus.set('signed-out');
+  }
+
   /**
    * ERPNext answers the same way whether or not the account exists, so only connection and
    * server failures are reported.

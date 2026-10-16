@@ -2539,5 +2539,29 @@
       "goodsSentBack": "Goods sent back",
       "dueOnly": "Due {{due}}"
     }
+  },
+  "settings": {
+    "title": "Connection settings",
+    "subtitle": "{{business}} · {{role}}",
+    "businessName": "Business name",
+    "address": "Workspace address",
+    "currency": "Currency",
+    "language": "Language",
+    "separate": {
+      "title": "Separate business records",
+      "message": "Connecting another business never combines balances or copies transactions."
+    },
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "signOutFailed": {
+      "offline": {
+        "title": "No connection",
+        "message": "You're still signed in. Check the connection and try again."
+      },
+      "error": {
+        "title": "You weren't signed out",
+        "message": "ERPNext didn't end the session. Try again."
+      }
+    }
   }
 }
