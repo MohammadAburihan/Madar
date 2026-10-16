@@ -38,6 +38,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
     on order); beside it the site stock, the project records (sales invoices and purchase orders open their page for
     cost roles) and attachments, with a "Next: receive" hint while an order is still to arrive. "Add update" opens
     the project form (the mock's route for it points at an unrelated frame).
+    Review pass 1 (2 medium, 1 low) fixed: the requirement rows stay on the workspace (so any item can be supplied),
+    site items beyond the five ledgers or whose read failed still show, and a failed business lookup is caught.
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
 (purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;

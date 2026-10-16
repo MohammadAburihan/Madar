@@ -149,6 +149,13 @@ const LEDGER_LIMIT = 5;
               [empty]="txt.noTasks"
             />
           }
+          <app-project-section
+            [heading]="txt.requirements"
+            [rows]="v.requirements"
+            [empty]="txt.noRequirements"
+            [rowsInteractive]="caps().supplyProjects"
+            (rowSelected)="supply(v.requirementItems[$event])"
+          />
           @for (ledger of ledgers(); track ledger.item) {
             <section class="ledger">
               <h2>{{ ledger.title }}</h2>
@@ -159,14 +166,6 @@ const LEDGER_LIMIT = 5;
                 [ltrColumns]="[1]"
               />
             </section>
-          } @empty {
-            <app-project-section
-              [heading]="txt.requirements"
-              [rows]="v.requirements"
-              [empty]="txt.noRequirements"
-              [rowsInteractive]="caps().supplyProjects"
-              (rowSelected)="supply(v.requirementItems[$event])"
-            />
           }
           <div class="actions">
             @if (caps().supplyProjects && v.nextItem) {
@@ -182,7 +181,7 @@ const LEDGER_LIMIT = 5;
           </div>
         </div>
         <div class="side">
-          @if (snapshots().length) {
+          @if (snapshots().length || siteRest().items.length) {
             <h2>{{ txt.siteStock }}</h2>
             @for (snapshot of snapshots(); track snapshot.item) {
               <app-totals-card
@@ -196,6 +195,15 @@ const LEDGER_LIMIT = 5;
                   {{ txt.site }}
                 </button>
               }
+            }
+            @if (siteRest().items.length) {
+              <app-project-section
+                [heading]="txt.site"
+                [rows]="siteRest().rows"
+                [empty]="''"
+                [rowsInteractive]="caps().supplyProjects"
+                (rowSelected)="openSite(siteRest().items[$event])"
+              />
             }
           }
           <app-record-links
@@ -392,6 +400,15 @@ export class ProjectContainer {
       .map((b) => ({ item: b.item, ...siteSnapshot(b, tr) }));
   });
 
+  /** Site items without a snapshot card (beyond the ledger limit, or whose read failed), as plain rows. */
+  protected readonly siteRest = computed(() => {
+    const project = this.project();
+    const shown = new Set(this.snapshots().map((s) => s.item));
+    const rest = (project?.siteItems ?? []).filter((s) => !shown.has(s.item));
+    const tr = this.i18n.tr();
+    return { items: rest.map((s) => s.item), rows: rest.map((s) => siteRow(s, tr)) };
+  });
+
   protected readonly next = computed(() => nextHint(this.balances(), this.i18n.tr()));
 
   constructor() {
@@ -430,7 +447,7 @@ export class ProjectContainer {
   }
 
   private async loadBalances(project: ProjectDetail): Promise<void> {
-    const business = await this.business.ensure();
+    const business = await this.business.ensure().catch(() => null);
     const items = [
       ...new Set([
         ...project.requirements.map((r) => r.item),
