@@ -93,7 +93,7 @@ const SEARCH_DELAY_MS = 250;
           [label]="txt.heading"
           [headers]="txt.headers"
           [rows]="rows()"
-          [interactive]="kind() !== 'orders'"
+          [interactive]="true"
           [empty]="emptyText()"
           [ltrColumns]="[0, 3]"
           (opened)="open($event)"
@@ -244,7 +244,12 @@ export class SalesContainer {
   protected open(id: string): void {
     const card = this.cards().find((c) => c.id === id);
     if (card?.openable) {
-      void this.router.navigate([card.kind === 'quotes' ? '/sales/quotes' : '/sales/invoices', id]);
+      const base = {
+        quotes: '/sales/quotes',
+        orders: '/sales/orders',
+        invoices: '/sales/invoices',
+      };
+      void this.router.navigate([base[card.kind], id]);
     }
   }
 

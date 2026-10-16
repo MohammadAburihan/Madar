@@ -95,4 +95,9 @@ export const quotationRoutes: Route[] = [
     loadComponent: () =>
       import('./containers/quotation.container').then((m) => m.QuotationContainer),
   },
+  {
+    path: 'sales/orders/:name',
+    loadComponent: () =>
+      import('./containers/sales-order.container').then((m) => m.SalesOrderContainer),
+  },
 ];

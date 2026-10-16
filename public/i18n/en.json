@@ -2089,7 +2089,102 @@
         "note": "Prices as quoted. A quotation is not an invoice."
       },
       "edit": "Continue editing",
-      "dateError": "Choose today or a later date."
+      "dateError": "Choose today or a later date.",
+      "createOrder": "Create sales order",
+      "creatingOrder": "Creating order…",
+      "otherOrder": "Another sales order is still being checked. Finish that one first.",
+      "openOrder": "Open sales order",
+      "openNamedOrder": "Open sales order {{name}}",
+      "order": {
+        "unresolved": {
+          "title": "Order not yet resolved",
+          "message": "The request timed out. The order may already exist. Check the result before creating it again."
+        },
+        "notMade": {
+          "title": "The order wasn't created",
+          "message": "Nothing was made. You can create it again."
+        },
+        "failed": {
+          "permission": {
+            "title": "You can't create sales orders",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The order wasn't sent. Check the connection and try again."
+          },
+          "changed": {
+            "title": "An order was already made",
+            "message": "It stands in ERPNext. Creating again makes a second order."
+          },
+          "error": {
+            "title": "The order wasn't created",
+            "message": "ERPNext rejected it. The quotation may have expired or been ordered already."
+          }
+        }
+      }
+    },
+    "order": {
+      "pageTitle": "Sales order",
+      "title": "Sales order {{name}}",
+      "fromQuotation": "{{customer}} · From {{quotation}}",
+      "chip": "{{kind}}: {{state}}",
+      "kind": {
+        "order": "Order",
+        "delivery": "Delivery",
+        "invoice": "Invoice"
+      },
+      "order": {
+        "confirmed": "Confirmed",
+        "draft": "Draft",
+        "closed": "Closed",
+        "onHold": "On hold",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "delivery": {
+        "pending": "Pending",
+        "partly": "Partly delivered",
+        "delivered": "Delivered",
+        "notNeeded": "Not needed",
+        "closed": "Closed"
+      },
+      "invoice": {
+        "notIssued": "Not issued",
+        "partly": "Partly invoiced",
+        "invoiced": "Invoiced",
+        "closed": "Closed"
+      },
+      "goodsProgress": "{{ordered}} ordered · {{delivered}} delivered",
+      "servicePending": "Service work pending",
+      "serviceDone": "Service work done",
+      "expected": "Expected delivery",
+      "dateError": "Choose the order date or a later date.",
+      "saveDate": "Save delivery date",
+      "savingDate": "Saving…",
+      "note": "Order, delivery, invoice and payment are separate records.",
+      "loadFailed": {
+        "title": "The sales order couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "date": {
+        "saved": {
+          "title": "Delivery date saved",
+          "message": "The order now expects delivery on the new date."
+        },
+        "permission": {
+          "title": "You can't change this order",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The date wasn't saved. Check the connection and try again."
+        },
+        "error": {
+          "title": "The date wasn't saved",
+          "message": "ERPNext rejected it. Reload the order and try again."
+        }
+      }
     }
   }
 }

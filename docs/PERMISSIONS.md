@@ -33,6 +33,7 @@ to the Owner.
 | Action | Owner | Salesperson | Store associate | Warehouse worker | Purchasing officer | Project manager |
 |---|---|---|---|---|---|---|
 | Make a sale (quick sale) | ✅ | ✅ | ✅ | — | — | — |
+| Quote, take sales orders, deliver and invoice them | ✅ | ✅ | ✅ | — | — | — |
 | Sell to the walk-in customer | ✅ | ✅ | ✅ | — | — | — |
 | Give a discount | ✅ any | up to 10% | up to 10% | — | — | — |
 | Change a selling price | ✅ | — | — | — | — | — |
