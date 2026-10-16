@@ -39,6 +39,7 @@ describe('SiteClockService', () => {
     );
     await clock.ensure();
     expect([clock.unknownZone(), clock.timeZone()]).toEqual([true, null]);
+    clock.now();
     fail = false;
     await clock.retry();
     expect([clock.unknownZone(), clock.timeZone(), clock.recovered()]).toEqual([
@@ -46,5 +47,16 @@ describe('SiteClockService', () => {
       'Asia/Hebron',
       true,
     ]);
+  });
+
+  it("doesn't ask for a reload when no date was worked out from the device meanwhile", async () => {
+    let fail = true;
+    const clock = setup(() =>
+      fail ? throwError(() => new Error('offline')) : of({ time_zone: 'Asia/Hebron' }),
+    );
+    await clock.ensure();
+    fail = false;
+    await clock.ensure();
+    expect([clock.unknownZone(), clock.recovered()]).toEqual([false, false]);
   });
 });

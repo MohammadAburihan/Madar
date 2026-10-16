@@ -51,25 +51,16 @@ import { buildShellView } from './shell-view';
           (switchBusiness)="openBusinesses()"
         />
       }
-      @if (clock.unknownZone()) {
+      @if (clock.unknownZone() || clock.recovered()) {
         <div class="clock">
           <app-feedback-card
             tone="warning"
             [title]="clockText().title"
             [message]="clockText().message"
           />
-          <button type="button" class="md-btn" (click)="clock.retry()">
-            {{ clockText().retry }}
+          <button type="button" class="md-btn" (click)="clockAction()">
+            {{ clockText().action }}
           </button>
-        </div>
-      } @else if (clock.recovered()) {
-        <div class="clock">
-          <app-feedback-card
-            tone="warning"
-            [title]="clockText().recoveredTitle"
-            [message]="clockText().recoveredMessage"
-          />
-          <button type="button" class="md-btn" (click)="reload()">{{ clockText().reload }}</button>
         </div>
       }
       <router-outlet />
@@ -150,19 +141,21 @@ export class ShellContainer implements OnInit {
 
   protected readonly clockText = computed(() => {
     const { t } = this.tr();
+    const state = this.clock.unknownZone() ? 'unknown' : 'recovered';
     return {
-      title: t('clock.unknown.title'),
-      message: t('clock.unknown.message'),
-      retry: t('clock.unknown.retry'),
-      recoveredTitle: t('clock.recovered.title'),
-      recoveredMessage: t('clock.recovered.message'),
-      reload: t('clock.recovered.reload'),
+      title: t(`clock.${state}.title`),
+      message: t(`clock.${state}.message`),
+      action: t(state === 'unknown' ? 'clock.unknown.retry' : 'clock.recovered.reload'),
     };
   });
 
-  /** A full reload, so every date on the page is worked out again in the business's time zone. */
-  protected reload(): void {
-    window.location.reload();
+  /** Try reading the zone again; once read, a full reload works the page's dates out again in it. */
+  protected clockAction(): void {
+    if (this.clock.unknownZone()) {
+      void this.clock.retry();
+    } else {
+      window.location.reload();
+    }
   }
 
   ngOnInit(): void {

@@ -13,11 +13,13 @@ export class SiteClockService {
   private readonly zone = signal<string | null>(null);
   private readonly failed = signal(false);
   private readonly recoveredZone = signal(false);
+  /** A date was worked out from the device's clock while the zone was unknown. */
+  private usedDeviceClock = false;
   private readonly loadZone = shareInFlight(() =>
     firstValueFrom(this.erpnext.get<{ time_zone: string }>('frappe.client.get_time_zone'))
       .then(({ time_zone }) => {
-        // Read after a failure: dates already worked out on the open page still follow the device.
-        this.recoveredZone.set(this.failed() && !!time_zone);
+        // Read after a failure: only dates already worked out from the device's clock need a reload.
+        this.recoveredZone.set(this.failed() && !!time_zone && this.usedDeviceClock);
         this.zone.set(time_zone || null);
         this.failed.set(!time_zone);
       })
@@ -42,7 +44,12 @@ export class SiteClockService {
 
   /** The site's current wall-clock time, as a local Date with the same fields. */
   now(instant = new Date()): Date {
-    return wallClock(instant, this.zone());
+    const zone = this.zone();
+    if (!zone && this.failed()) {
+      // A plain field: now() is read inside computed signals, which mustn't write signals.
+      this.usedDeviceClock = true;
+    }
+    return wallClock(instant, zone);
   }
 }
 
