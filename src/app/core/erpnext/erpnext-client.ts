@@ -56,6 +56,13 @@ export class ErpnextClient {
       );
   }
 
+  /** Calls a method that answers with a file (a PDF) rather than JSON. */
+  postForBlob(method: string, body: Record<string, unknown>): Observable<Blob> {
+    return this.http
+      .post(this.url(method), body, { withCredentials: true, responseType: 'blob' })
+      .pipe(catchError((error) => throwError(() => ErpnextError.from(error))));
+  }
+
   /** Uploads a file and attaches it to a document (Frappe's `upload_file`); resolves to the File record. */
   upload(
     file: Blob,

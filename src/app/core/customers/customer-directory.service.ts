@@ -74,6 +74,32 @@ export class CustomerDirectoryService {
     }));
   }
 
+  /** One customer by exact id, for a page opened on a known customer; null when there is none. */
+  async byId(id: string): Promise<CustomerOption | null> {
+    const [row] = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        customer_name: string;
+        mobile_no: string | null;
+        primary_address: string | null;
+      }>('Customer', {
+        fields: ['name', 'customer_name', 'mobile_no', 'primary_address'],
+        filters: [['name', '=', id]],
+        limit: 1,
+      }),
+    );
+    return row
+      ? {
+          id: row.name,
+          name: row.customer_name,
+          phone: row.mobile_no,
+          city: firstAddressLine(row.primary_address),
+          outstanding: 0,
+          unpaidInvoices: 0,
+        }
+      : null;
+  }
+
   async create(customer: NewCustomer, country: string): Promise<CustomerOption> {
     // ERPNext creates the primary contact and address from these quick-entry fields.
     const doc = await firstValueFrom(

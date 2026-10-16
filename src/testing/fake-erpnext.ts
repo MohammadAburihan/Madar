@@ -27,6 +27,7 @@ export function fakeErpnext(
       const result = posts[method]?.(body);
       return result instanceof Observable ? result : of(result);
     },
+    postForBlob: (method: string, body: Record<string, unknown>) => client.post(method, body),
     listAll: (doctype: string, query: ListQuery) => firstValueFrom(client.list(doctype, query)),
     count: (doctype: string, filters: unknown[] = []) => {
       countCalls.push({ doctype, filters });

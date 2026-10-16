@@ -11,4 +11,16 @@ export const reportRoutes: Route[] = [
     loadComponent: () =>
       import('./containers/profit-months.container').then((m) => m.ProfitMonthsContainer),
   },
+  {
+    path: 'reports/customer',
+    data: { kind: 'customer' },
+    loadComponent: () =>
+      import('./containers/statement.container').then((m) => m.StatementContainer),
+  },
+  {
+    path: 'reports/supplier',
+    data: { kind: 'supplier' },
+    loadComponent: () =>
+      import('./containers/statement.container').then((m) => m.StatementContainer),
+  },
 ];
