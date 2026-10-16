@@ -2010,7 +2010,84 @@
       "closed": "Closed",
       "subtitleOwn": "{{business}} · Your sales",
       "onHold": "On hold",
-      "creditNote": "Credit note issued"
+      "creditNote": "Credit note issued",
+      "newQuotation": "Create quotation"
+    },
+    "quote": {
+      "back": "Back",
+      "title": "New quotation",
+      "subtitleDraft": "{{customer}} · {{draft}} draft",
+      "noCustomer": "Choose a customer",
+      "customer": "Customer",
+      "searchCustomer": "Search customer name or phone",
+      "change": "Change",
+      "items": "Items",
+      "searchItems": "Search name, code or barcode",
+      "qty": "Quantity of {{item}}",
+      "decrease": "One fewer {{item}}",
+      "increase": "One more {{item}}",
+      "rate": "Price each · {{item}}",
+      "validTill": "Valid until",
+      "total": "Quoted total {{amount}}",
+      "note": "A quotation does not move stock or record payment.",
+      "confirm": "Confirm quotation",
+      "confirming": "Confirming…",
+      "saveDraft": "Save draft",
+      "saving": "Saving…",
+      "draftSaved": {
+        "title": "Draft saved",
+        "message": "{{draft}} is saved in ERPNext. Confirm it when the customer agrees."
+      },
+      "notCreated": {
+        "title": "The quotation wasn't created",
+        "message": "Nothing was confirmed. Check it and confirm again."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't confirm quotations",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The quotation wasn't sent. Check the connection and try again."
+        },
+        "changed": {
+          "title": "An earlier version was confirmed",
+          "message": "It stands in ERPNext. Confirming again makes a new quotation."
+        },
+        "error": {
+          "title": "The quotation wasn't confirmed",
+          "message": "ERPNext rejected it. Check the details and try again."
+        }
+      },
+      "checking": {
+        "title": "Checking your quotation",
+        "cardTitle": "Confirmation not yet resolved",
+        "cardMessage": "The request timed out. The quotation may already exist. Don't create it again.",
+        "planned": "Quoted total"
+      },
+      "pageTitle": "Quotation",
+      "confirmedTitle": "Quotation confirmed",
+      "pageSubtitle": "{{name}} · {{customer}}",
+      "cardTitle": "{{state}} · {{total}}",
+      "cardMessage": "{{items}}. No stock movement, invoice or payment.",
+      "share": "Share quotation",
+      "backToSales": "Back to sales",
+      "loadFailed": {
+        "title": "The quotation couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "pdf": {
+        "title": "Quotation {{name}}",
+        "for": "For {{customer}}",
+        "validUntil": "Valid until {{date}}",
+        "item": "Item",
+        "qty": "Qty",
+        "rate": "Price",
+        "amount": "Amount",
+        "total": "Total {{amount}}",
+        "note": "Prices as quoted. A quotation is not an invoice."
+      }
     }
   }
 }

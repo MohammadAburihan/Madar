@@ -50,7 +50,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   invoice status, so an invoice settled by a credit note reads "Credit note issued", not paid; orders and quotations
   show the rounded total, as invoices do. Review pass 5 (2 low): an unreadable delivery lookup leaves the goods wording
   out; deferred: an invoice partly delivered by a delivery note made from it reads "Goods delivered".
-- Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
+- **Sales S1**: merged (#32). Deferred (low): an invoice partly delivered by a delivery note made from it reads "Goods
+  delivered".
+- **Sales S2 — Quotations** (this PR): Create quotation (from Sales) picks a customer, items at their selling price
+  (editable only for roles that may change prices), quantities and a valid-until date (two weeks from the site's
+  today), then confirms it or saves a draft; safe to repeat through a `QUO-…` reference in the quotation's hidden
+  `utm_content`. The quotation page (also opened from the Quotes tab) shows its state, lines, total and validity, and
+  shares a PDF that Madar builds in the reader's language (ERPNext's print formats fetch their styles from the site's
+  host name, which a container may not reach). e2e: confirm a 2-planter quotation and see "Open · ILS 90.00" on its
+  page and on Sales; share its PDF; save a draft; the whole flow in Arabic.
+- Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)
 

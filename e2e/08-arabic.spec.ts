@@ -42,3 +42,18 @@ test('lists the sales in Arabic @phone', async ({ page }) => {
   await page.getByRole('radio', { name: 'الطلبات' }).click();
   await expect(page.locator('app-feedback-card').first()).toContainText('طلب');
 });
+
+test('quotes in Arabic, right to left @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  await page.goto('/sales/quote/new');
+  await toArabic(page);
+  await expectHeading(page, 'عرض سعر جديد');
+  await page.getByLabel('العميل').fill('Lina');
+  await page.locator('app-person-card').first().click();
+  await page.getByLabel('الأصناف').fill('POT-30');
+  await page.locator('app-item-card').filter({ hasText: 'POT-30' }).first().click();
+  await expect(page.getByText(/إجمالي عرض السعر/)).toBeVisible();
+  await page.getByRole('button', { name: 'تأكيد عرض السعر' }).click();
+  await expect(page).toHaveURL(/\/sales\/quotes\/[^/]+$/, { timeout: 60_000 });
+  await expectHeading(page, 'تم تأكيد عرض السعر');
+});

@@ -33,6 +33,7 @@ describe('sales records view', () => {
   it('describes an invoice like the sales records mock', () => {
     expect(visible(view.invoiceCard(INVOICE, 'ILS', en))).toEqual({
       id: 'SI-1042',
+      kind: 'invoices',
       title: 'SI-1042 · Lina Haddad',
       message: 'Confirmed · Partially paid\nGoods delivered · ILS 200.00 due',
       openable: true,

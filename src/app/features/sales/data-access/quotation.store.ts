@@ -1,0 +1,280 @@
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { BusinessService } from '../../../core/business/business.service';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { toIsoDate } from '../../../core/format/format';
+import { SiteClockService } from '../../../core/time/site-clock.service';
+import { QuotationApiService } from './quotation-api.service';
+import { QuoteLine, QuotationRequest, quoteTotal } from './quotation.models';
+import { CatalogItem } from './sale.models';
+
+export type QuoteState = 'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
+export type QuoteFailure = 'permission' | 'offline' | 'changed' | 'error';
+
+/** How long a new quotation stays valid, unless changed. */
+const VALID_DAYS = 14;
+
+/** State of one "New quotation" task, from the customer to the confirmed quotation. */
+@Injectable({ providedIn: 'root' })
+export class QuotationStore {
+  private readonly api = inject(QuotationApiService);
+  private readonly business = inject(BusinessService);
+  private readonly clock = inject(SiteClockService);
+
+  readonly reference = signal(newReference('QUO'));
+  readonly customer = signal<{ id: string; name: string; meta: string | null } | null>(null);
+  readonly lines = signal<QuoteLine[]>([]);
+  /** ISO date; set from the site's today when the task starts. */
+  readonly validTill = signal('');
+  readonly draft = signal<string | null>(null);
+  readonly state = signal<QuoteState>('idle');
+  readonly failure = signal<QuoteFailure | null>(null);
+  /** The confirmed quotation's name. */
+  readonly result = signal<string | null>(null);
+  /** The quotation page has shown the result; until then, returning to the task must show it. */
+  readonly resultShown = signal(false);
+  readonly savingDraft = signal(false);
+  /** The draft was saved on purpose, so starting over must keep it. */
+  private readonly draftSaved = signal(false);
+
+  readonly total = computed(() => quoteTotal(this.lines()));
+  readonly ready = computed(
+    () =>
+      !!this.customer() &&
+      this.lines().length > 0 &&
+      this.lines().every((l) => l.qty > 0 && l.rate >= 0) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(this.validTill()) &&
+      this.state() !== 'confirming',
+  );
+  /** A confirmation is running or its result is still open; leaving keeps the quotation. */
+  readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  start(): void {
+    const draft = this.draft();
+    // A saved draft is the user's; only a draft a failed or unresolved confirmation left behind is cleaned up.
+    if (draft && this.state() !== 'confirmed' && !this.draftSaved() && !this.busy()) {
+      void this.api.discard(draft).catch(() => undefined);
+    }
+    this.reference.set(newReference('QUO'));
+    this.customer.set(null);
+    this.lines.set([]);
+    this.validTill.set('');
+    this.draft.set(null);
+    this.state.set('idle');
+    this.failure.set(null);
+    this.result.set(null);
+    this.resultShown.set(false);
+    this.savingDraft.set(false);
+    this.draftSaved.set(false);
+    void this.clock.ensure().then(() => {
+      if (!this.validTill()) {
+        const today = this.clock.now();
+        this.validTill.set(
+          toIsoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + VALID_DAYS)),
+        );
+      }
+    });
+  }
+
+  /** Entering the task from elsewhere: keep a running, unresolved or unseen quotation; else start over. */
+  resume(): void {
+    const keep = this.busy() || (this.state() === 'confirmed' && !this.resultShown());
+    if (!keep) {
+      this.start();
+    }
+  }
+
+  setCustomer(customer: { id: string; name: string; meta: string | null } | null): void {
+    this.clearFailure();
+    this.customer.set(customer);
+  }
+
+  /** Adds the item at its selling price, or one more of it when it's already quoted. */
+  addItem(item: CatalogItem): void {
+    this.clearFailure();
+    const lines = this.lines();
+    const at = lines.findIndex((l) => l.item.code === item.code);
+    this.lines.set(
+      at >= 0
+        ? lines.map((l, i) => (i === at ? { ...l, qty: l.qty + 1 } : l))
+        : [...lines, { item, qty: 1, rate: item.price }],
+    );
+  }
+
+  setQty(index: number, qty: number): void {
+    this.clearFailure();
+    this.lines.update((lines) =>
+      qty > 0
+        ? lines.map((l, i) => (i === index ? { ...l, qty } : l))
+        : lines.filter((_, i) => i !== index),
+    );
+  }
+
+  setRate(index: number, rate: number): void {
+    this.clearFailure();
+    this.lines.update((lines) => lines.map((l, i) => (i === index ? { ...l, rate } : l)));
+  }
+
+  setValidTill(date: string): void {
+    this.clearFailure();
+    this.validTill.set(date);
+  }
+
+  async confirm(): Promise<void> {
+    // Set before the first await: a double tap must not create the quotation twice.
+    if (this.busy() || !this.ready()) {
+      return;
+    }
+    this.state.set('confirming');
+    this.failure.set(null);
+    const request = await this.request();
+    if (!request) {
+      this.state.set('idle');
+      return;
+    }
+    const current = () => this.reference() === request.reference;
+    try {
+      const quotation = await this.api.confirm(request, this.draft(), (name) => {
+        if (current()) {
+          this.draft.set(name);
+        }
+      });
+      if (current()) {
+        this.finish(quotation);
+      }
+    } catch (error) {
+      if (current()) {
+        this.fail(error);
+      }
+    }
+  }
+
+  /** Saves the quotation as an ERPNext draft to finish later; resolves to its name, or null when it failed. */
+  async saveDraft(): Promise<string | null> {
+    if (this.busy() || this.savingDraft()) {
+      return null;
+    }
+    this.savingDraft.set(true);
+    this.failure.set(null);
+    const reference = this.reference();
+    const current = () => this.reference() === reference;
+    try {
+      const request = await this.request();
+      if (!request) {
+        return null;
+      }
+      const name = await this.api.saveDraft(request, this.draft());
+      if (!current()) {
+        return null;
+      }
+      this.draft.set(name);
+      this.draftSaved.set(true);
+      if (this.state() === 'failed') {
+        this.state.set('idle');
+      }
+      return name;
+    } catch (error) {
+      if (current()) {
+        this.fail(error);
+      }
+      return null;
+    } finally {
+      if (current()) {
+        this.savingDraft.set(false);
+      }
+    }
+  }
+
+  /** After an unresolved confirmation: found shows the quotation, a draft or nothing returns to the form. */
+  async checkResult(): Promise<'found' | 'not-found' | 'pending'> {
+    // Only once the confirmation gave up: while it still runs, finding nothing doesn't mean nothing was posted.
+    if (this.state() !== 'unresolved') {
+      return 'pending';
+    }
+    const reference = this.reference();
+    const current = () => this.reference() === reference;
+    this.state.set('checking');
+    try {
+      const found = await this.api.find(reference);
+      if (!current()) {
+        return 'pending';
+      }
+      if (found === 'not-found' || 'draft' in found) {
+        if (found !== 'not-found') {
+          this.draft.set(found.draft);
+        }
+        this.state.set('idle');
+        return 'not-found';
+      }
+      this.finish(found.quotation);
+      return 'found';
+    } catch {
+      if (current()) {
+        this.state.set('unresolved');
+      }
+      return 'pending';
+    }
+  }
+
+  private finish(quotation: string): void {
+    this.result.set(quotation);
+    this.state.set('confirmed');
+  }
+
+  private fail(error: unknown): void {
+    if (error instanceof UnresolvedError) {
+      this.state.set('unresolved');
+      return;
+    }
+    if (error instanceof PostedEarlierError) {
+      // The earlier version stands in ERPNext. Confirming again is a deliberate new quotation.
+      this.draft.set(null);
+      this.reference.set(newReference('QUO'));
+      this.failure.set('changed');
+      this.state.set('failed');
+      return;
+    }
+    const erpnextError = ErpnextError.from(error);
+    this.failure.set(
+      erpnextError.kind === 'forbidden'
+        ? 'permission'
+        : erpnextError.kind === 'offline'
+          ? 'offline'
+          : 'error',
+    );
+    this.state.set('failed');
+  }
+
+  private clearFailure(): void {
+    if (this.state() === 'failed') {
+      this.state.set('idle');
+      this.failure.set(null);
+    }
+  }
+
+  private async request(): Promise<QuotationRequest | null> {
+    const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
+    const customer = this.customer();
+    if (!business || !customer || !this.lines().length) {
+      return null;
+    }
+    return {
+      reference: this.reference(),
+      company: business.name,
+      currency: business.currency,
+      customer: customer.id,
+      date: toIsoDate(this.clock.now()),
+      validTill: this.validTill(),
+      lines: this.lines().map((l) => ({
+        item: l.item.code,
+        uom: l.item.uom,
+        qty: l.qty,
+        rate: l.rate,
+      })),
+    };
+  }
+}

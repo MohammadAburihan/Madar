@@ -5,7 +5,12 @@ import { paymentRoutes } from './features/payments/payment.routes';
 import { projectRoutes } from './features/projects/projects.routes';
 import { purchaseRoutes } from './features/purchasing/purchase.routes';
 import { reportRoutes } from './features/reports/reports.routes';
-import { invoiceRoute, saleRoutes, salesRecordsRoute } from './features/sales/sale.routes';
+import {
+  invoiceRoute,
+  quotationRoutes,
+  saleRoutes,
+  salesRecordsRoute,
+} from './features/sales/sale.routes';
 
 const placeholder = (path: string, titleKey: string) => ({
   path,
@@ -36,6 +41,7 @@ export const routes: Routes = [
       saleRoutes,
       invoiceRoute,
       salesRecordsRoute,
+      ...quotationRoutes,
       ...paymentRoutes,
       ...inventoryRoutes,
       ...purchaseRoutes,

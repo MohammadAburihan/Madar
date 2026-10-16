@@ -2090,7 +2090,84 @@
       "closed": "مغلق",
       "subtitleOwn": "{{business}} · مبيعاتك",
       "onHold": "معلّق",
-      "creditNote": "صدر إشعار دائن"
+      "creditNote": "صدر إشعار دائن",
+      "newQuotation": "إنشاء عرض سعر"
+    },
+    "quote": {
+      "back": "رجوع",
+      "title": "عرض سعر جديد",
+      "subtitleDraft": "{{customer}} · مسودة {{draft}}",
+      "noCustomer": "اختر العميل",
+      "customer": "العميل",
+      "searchCustomer": "ابحث باسم العميل أو هاتفه",
+      "change": "تغيير",
+      "items": "الأصناف",
+      "searchItems": "البحث بالاسم أو الرمز أو الباركود",
+      "qty": "كمية {{item}}",
+      "decrease": "{{item}} أقل بواحد",
+      "increase": "{{item}} أكثر بواحد",
+      "rate": "سعر الوحدة · {{item}}",
+      "validTill": "صالح حتى",
+      "total": "إجمالي عرض السعر {{amount}}",
+      "note": "لا ينقل عرض السعر المخزون ولا يسجّل دفعة.",
+      "confirm": "تأكيد عرض السعر",
+      "confirming": "جارٍ التأكيد…",
+      "saveDraft": "حفظ المسودة",
+      "saving": "جارٍ الحفظ…",
+      "draftSaved": {
+        "title": "تم حفظ المسودة",
+        "message": "حُفظت {{draft}} في ERPNext. أكّدها عند موافقة العميل."
+      },
+      "notCreated": {
+        "title": "لم يُنشأ عرض السعر",
+        "message": "لم يُؤكَّد شيء. راجعه وأكّده مرة أخرى."
+      },
+      "failed": {
+        "permission": {
+          "title": "لا يمكنك تأكيد عروض الأسعار",
+          "message": "لم يسمح ERPNext بذلك لدورك."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "لم يُرسل عرض السعر. تحقق من الاتصال وحاول مرة أخرى."
+        },
+        "changed": {
+          "title": "تم تأكيد نسخة سابقة",
+          "message": "النسخة السابقة قائمة في ERPNext. التأكيد مجدداً ينشئ عرض سعر جديداً."
+        },
+        "error": {
+          "title": "لم يُؤكَّد عرض السعر",
+          "message": "رفضه ERPNext. راجع التفاصيل وحاول مرة أخرى."
+        }
+      },
+      "checking": {
+        "title": "التحقق من عرض السعر",
+        "cardTitle": "التأكيد لم يُحسم بعد",
+        "cardMessage": "انتهت مهلة الطلب. قد يكون عرض السعر موجوداً بالفعل. لا تنشئه مرة أخرى.",
+        "planned": "إجمالي عرض السعر"
+      },
+      "pageTitle": "عرض السعر",
+      "confirmedTitle": "تم تأكيد عرض السعر",
+      "pageSubtitle": "{{name}} · {{customer}}",
+      "cardTitle": "{{state}} · {{total}}",
+      "cardMessage": "{{items}}. لا توجد حركة مخزون أو فاتورة أو دفعة.",
+      "share": "مشاركة عرض السعر",
+      "backToSales": "العودة للمبيعات",
+      "loadFailed": {
+        "title": "تعذّر تحميل عرض السعر",
+        "message": "تحقق من الاتصال وحاول مرة أخرى."
+      },
+      "pdf": {
+        "title": "عرض السعر {{name}}",
+        "for": "إلى {{customer}}",
+        "validUntil": "صالح حتى {{date}}",
+        "item": "الصنف",
+        "qty": "الكمية",
+        "rate": "السعر",
+        "amount": "المبلغ",
+        "total": "الإجمالي {{amount}}",
+        "note": "الأسعار كما وردت في العرض. عرض السعر ليس فاتورة."
+      }
     }
   }
 }
