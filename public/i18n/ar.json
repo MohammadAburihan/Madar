@@ -2465,7 +2465,9 @@
       "donePaid": "المدفوع الأصلي {{paid}}.",
       "doneDue": "انخفض المتبقي {{before}} ← {{after}}.",
       "doneCustomerCredit": "يبقى الإشعار الدائن رصيداً في حساب العميل.",
-      "doneNoRefund": "لا يوجد رد نقدي."
+      "doneNoRefund": "لا يوجد رد نقدي.",
+      "asSold": "حيث بيع كل صنف",
+      "doneGoodsAsSold": "أُعيد {{goods}} إلى حيث بيعت."
     }
   }
 }

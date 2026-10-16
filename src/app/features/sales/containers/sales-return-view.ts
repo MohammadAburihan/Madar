@@ -106,7 +106,11 @@ export function returnDone(
     subtitle: t('doneSubtitle', { invoice: source.invoice, customer: source.customerName }),
     cardTitle: t('doneCard', { credit: formatMoney(result.credit, currency) }),
     cardMessage: [
-      goods ? t('doneGoods', { goods, warehouse }) : null,
+      goods
+        ? sent.warehouse
+          ? t('doneGoods', { goods, warehouse })
+          : t('doneGoodsAsSold', { goods })
+        : null,
       t('donePaid', { paid: amount(paid) }),
       reduced
         ? t('doneDue', { before: amount(source.outstanding), after: amount(result.dueAfter) })

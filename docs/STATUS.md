@@ -85,7 +85,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   left with a delivery note) don't offer returns yet: those need a delivery return too. The mock's "Save draft" is
   left out, as on the other confirmations.
   e2e: return an unpaid planter sale (credit ILS 45.00, due 45.00 → 0.00), then nothing is left and Sales reads
-  "Credit note issued"; a paid walk-in sale returned in Arabic keeps the credit for the customer.
+  "Credit note issued"; a paid walk-in sale returned in Arabic keeps the credit for the customer. Review pass 1 (3 medium,
+  1 low) fixed: a posted note is this return's result only when it returned what is asked now; the preview credits
+  each row with its share of the invoice's taxes and rounding; goods sold from several warehouses go back to each
+  one ("Where each item was sold from") unless one is chosen; the suggested quantity is at most what is left.
 - Next: Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)

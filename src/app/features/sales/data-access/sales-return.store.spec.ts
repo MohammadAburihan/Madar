@@ -137,4 +137,21 @@ describe('SalesReturnStore', () => {
     expect(await store.checkResult()).toBe('found');
     expect(store.result()).toEqual(RESULT);
   });
+
+  it('names the one warehouse the goods came from, else each row’s own, and suggests at most what is left', async () => {
+    const { store, api } = setup();
+    api.source.mockResolvedValue({
+      ...SOURCE,
+      lines: [
+        { ...SOURCE.lines[0], returnable: 0.5 },
+        { ...SOURCE.lines[0], row: 'pot', code: 'POT-30', warehouse: 'shop' },
+      ],
+    });
+    await store.load();
+    expect([store.warehouse(), store.qtyInputs()]).toEqual(['as-sold', { tree: '0.5', pot: '0' }]);
+    expect(store.ready()).toBe(true);
+    api.confirm.mockResolvedValue(RESULT);
+    await store.confirm();
+    expect(api.confirm.mock.calls[0][0].warehouse).toBeNull();
+  });
 });

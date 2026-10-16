@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { confirmRequest, reusableDraft, unresolvedOr } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  confirmRequest,
+  reusableDraft,
+  unresolvedOr,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { ReturnRequest, ReturnResult, ReturnSource } from './sales-return.models';
@@ -26,6 +31,7 @@ interface InvoiceDoc {
   update_stock: number;
   base_grand_total: number;
   base_rounded_total: number;
+  base_net_total?: number;
   outstanding_amount: number;
   conversion_rate: number;
   party_account_currency?: string | null;
@@ -87,6 +93,9 @@ export class SalesReturnApiService {
       .filter((c) => !c.update_outstanding_for_self)
       .reduce((sum, c) => sum + Math.abs(Number(c.base_grand_total)), 0);
     const outstanding = outstandingIn(doc, currency);
+    // Taxes and rounding scale every row alike, so a row's credit is its net amount in the same proportion.
+    const net = Number(doc.base_net_total) || 0;
+    const scale = net ? Math.abs(owed(doc) / net) : 1;
     const left = new Map(template.items.map((i) => [i.sales_invoice_item, -Number(i.qty)]));
     const stock = await stockedItems(
       this.erpnext,
@@ -106,7 +115,7 @@ export class SalesReturnApiService {
         uom: i.uom,
         sold: Number(i.qty),
         returnable: Math.max(left.get(i.name) ?? 0, 0),
-        rate: Number(i.base_net_rate),
+        rate: Number(i.base_net_rate) * scale,
         warehouse: i.warehouse ?? null,
         isStock: stock.has(i.item_code),
       })),
@@ -128,6 +137,10 @@ export class SalesReturnApiService {
     // Posted with this task's reference, it is this request's result; posted otherwise, it is someone else's.
     const ours = String(remembered?.remarks ?? '').includes(request.reference);
     if (remembered?.docstatus === 1 && ours) {
+      // Posted by a slow earlier attempt: this request's result only if it returned what is asked now.
+      if (!sameReturn(remembered, request)) {
+        throw new PostedEarlierError(remembered.name);
+      }
       return this.result(remembered, request);
     }
     const current = remembered?.docstatus === 0 ? remembered : null;
@@ -228,4 +241,14 @@ export class SalesReturnApiService {
       dueAfter: outstandingIn(original, request.currency),
     };
   }
+}
+
+function sameReturn(note: InvoiceDoc, request: ReturnRequest): boolean {
+  const rows = note.items ?? [];
+  return (
+    rows.length === request.lines.length &&
+    request.lines.every((l) =>
+      rows.some((r) => r.sales_invoice_item === l.row && Math.abs(-Number(r.qty) - l.qty) <= 1e-6),
+    )
+  );
 }

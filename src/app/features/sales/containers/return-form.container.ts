@@ -15,6 +15,7 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
+import { AS_SOLD } from '../data-access/sales-return.models';
 import { injectReturnContext } from './return-context';
 import { returnHeading, returnLineCard, returnQtyLabel, returnSummary } from './sales-return-view';
 
@@ -134,6 +135,7 @@ export class ReturnFormContainer implements OnInit {
       warehouse: t('sales.return.warehouse'),
       chooseWarehouse: t('sales.deliver.chooseWarehouse'),
       reason: t('sales.return.reason'),
+      asSold: t('sales.return.asSold'),
       summaryTitle: t('sales.return.summaryTitle'),
       noRefund: t('sales.return.noRefund'),
       confirm: t('sales.return.confirm'),
@@ -158,9 +160,10 @@ export class ReturnFormContainer implements OnInit {
       : { title: tr.t('sales.return.title'), subtitle: this.ctx.store.invoiceName() ?? '' };
   });
 
-  protected readonly warehouseOptions = computed(() =>
-    this.ctx.store.warehouses().map((w) => ({ value: w.id, label: w.name })),
-  );
+  protected readonly warehouseOptions = computed(() => [
+    { value: AS_SOLD, label: this.text().asSold },
+    ...this.ctx.store.warehouses().map((w) => ({ value: w.id, label: w.name })),
+  ]);
 
   protected readonly form = computed(() => {
     const store = this.ctx.store;

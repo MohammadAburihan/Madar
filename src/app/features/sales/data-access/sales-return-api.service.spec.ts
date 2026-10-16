@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
+import { PostedEarlierError } from '../../../core/erpnext/confirmation';
 import { ReturnChangedError, SalesReturnApiService } from './sales-return-api.service';
 
 const MAKE = 'erpnext.accounts.doctype.sales_invoice.sales_invoice.make_sales_return';
@@ -12,6 +13,7 @@ const ORIGINAL = {
   update_stock: 1,
   base_grand_total: 320,
   base_rounded_total: 320,
+  base_net_total: 320,
   outstanding_amount: 200,
   conversion_rate: 1,
   party_account_currency: 'ILS',
@@ -135,5 +137,74 @@ describe('SalesReturnApiService', () => {
       'frappe.client.submit',
     ]);
     expect(postCalls[1].body['doc']).toMatchObject({ name: 'SI-1050', modified: 'm' });
+  });
+
+  it('credits each row with its share of the invoice’s taxes', async () => {
+    fakeErpnext(
+      { Item: () => [{ name: 'OLV-20' }] },
+      { [MAKE]: template },
+      {
+        'Sales Invoice/SI-1042': {
+          ...ORIGINAL,
+          base_net_total: 170,
+          base_grand_total: 195.5,
+          base_rounded_total: 196,
+          items: [{ ...ORIGINAL.items[0], base_net_rate: 85 }],
+        },
+      },
+    );
+    expect((await api().source('SI-1042', 'ILS')).lines[0].rate).toBeCloseTo(98, 6);
+  });
+
+  it('takes a posted note with this reference as the result only when it returned what is asked', async () => {
+    const posted = {
+      name: 'SI-1050',
+      docstatus: 1,
+      remarks: 'Madar return RET-ABC1234',
+      base_grand_total: -170,
+      base_rounded_total: 0,
+      items: [{ sales_invoice_item: 'row-1', qty: -2 }],
+    };
+    fakeErpnext({}, {}, { 'Sales Invoice/SI-1050': posted, 'Sales Invoice/SI-1042': ORIGINAL });
+    await expect(api().confirm(request, 'SI-1050')).rejects.toBeInstanceOf(PostedEarlierError);
+    expect(
+      (await api().confirm({ ...request, lines: [{ row: 'row-1', qty: 2 }] }, 'SI-1050')).credit,
+    ).toBe(170);
+  });
+
+  it('sends each row back to its own warehouse unless one is chosen', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        [MAKE]: () => ({
+          ...template(),
+          items: [
+            { item_code: 'OLV-20', qty: -1, sales_invoice_item: 'a', warehouse: 'Main' },
+            { item_code: 'POT-30', qty: -1, sales_invoice_item: 'b', warehouse: 'Shop' },
+          ],
+        }),
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'SI-1050' }),
+        'frappe.client.submit': () => ({
+          name: 'SI-1050',
+          base_grand_total: -1,
+          base_rounded_total: 0,
+        }),
+      },
+      { 'Sales Invoice/SI-1042': ORIGINAL },
+    );
+    await api().confirm(
+      {
+        ...request,
+        warehouse: null,
+        lines: [
+          { row: 'a', qty: 1 },
+          { row: 'b', qty: 1 },
+        ],
+      },
+      null,
+    );
+    const doc = postCalls[1].body['doc'] as { items: { warehouse: string }[] };
+    expect(doc).not.toHaveProperty('set_warehouse');
+    expect(doc.items.map((i) => i.warehouse)).toEqual(['Main', 'Shop']);
   });
 });

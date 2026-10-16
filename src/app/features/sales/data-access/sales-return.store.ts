@@ -1,6 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
+import {
+  PostedEarlierError,
+  UnresolvedError,
+  newReference,
+} from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import {
@@ -9,6 +13,7 @@ import {
 } from '../../../core/stock/warehouse-directory.service';
 import { ReturnChangedError, SalesReturnApiService } from './sales-return-api.service';
 import {
+  AS_SOLD,
   ReturnLine,
   ReturnRequest,
   ReturnResult,
@@ -65,7 +70,7 @@ export class SalesReturnStore {
   readonly ready = computed(
     () =>
       !!this.source() &&
-      (!this.needsWarehouse() || !!this.warehouse()) &&
+      (!this.needsWarehouse() || this.warehouse() !== null) &&
       this.qtyValid() &&
       this.returningNow() > 0 &&
       // An earlier return went through elsewhere: the invoice must be reloaded first.
@@ -120,14 +125,16 @@ export class SalesReturnStore {
     }
     this.source.set(source);
     this.warehouses.set(warehouses);
-    const from = source.lines.find((l) => l.isStock && l.warehouse)?.warehouse;
-    this.warehouse.set(
-      source.movesStock
-        ? (warehouses.find((w) => w.id === from)?.id ?? warehouses[0]?.id ?? null)
-        : null,
-    );
+    // One warehouse the goods all came from is named; otherwise each row goes back where it was sold from.
+    const from = new Set(source.lines.filter((l) => l.isStock).map((l) => l.warehouse));
+    const only = from.size === 1 ? warehouses.find((w) => from.has(w.id)) : undefined;
+    this.warehouse.set(source.movesStock ? (only?.id ?? AS_SOLD) : null);
     const open = source.lines.filter((l) => l.returnable > 0);
-    this.qtyInputs.set(Object.fromEntries(open.map((l, i) => [l.row, i === 0 ? '1' : '0'])));
+    this.qtyInputs.set(
+      Object.fromEntries(
+        open.map((l, i) => [l.row, i === 0 ? String(Math.min(1, l.returnable)) : '0']),
+      ),
+    );
   }
 
   setWarehouse(warehouse: string | null): void {
@@ -160,7 +167,7 @@ export class SalesReturnStore {
         reference,
         invoice: source.invoice,
         currency: business?.currency ?? '',
-        warehouse: this.needsWarehouse() ? this.warehouse() : null,
+        warehouse: this.needsWarehouse() && this.warehouse() !== AS_SOLD ? this.warehouse() : null,
         reason: this.reason(),
         lines: this.openLines()
           .map((l) => ({ row: l.row, qty: this.quantities()[l.row] }))
@@ -226,6 +233,15 @@ export class SalesReturnStore {
   private fail(error: unknown): void {
     if (error instanceof UnresolvedError) {
       this.state.set('unresolved');
+      return;
+    }
+    if (error instanceof PostedEarlierError) {
+      // The earlier return stands in ERPNext; the invoice has moved on, so it must be reloaded.
+      this.draft.set(null);
+      this.leftDrafts.delete(this.invoiceName() ?? '');
+      this.reference.set(newReference('RET'));
+      this.failure.set('changed');
+      this.state.set('failed');
       return;
     }
     if (error instanceof ReturnChangedError) {

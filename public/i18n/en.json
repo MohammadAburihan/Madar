@@ -2385,7 +2385,9 @@
       "donePaid": "Original paid {{paid}}.",
       "doneDue": "Due reduced {{before}} → {{after}}.",
       "doneCustomerCredit": "The credit stays on the customer's account.",
-      "doneNoRefund": "No cash refund."
+      "doneNoRefund": "No cash refund.",
+      "asSold": "Where each item was sold from",
+      "doneGoodsAsSold": "{{goods}} returned to where they were sold from."
     }
   }
 }
