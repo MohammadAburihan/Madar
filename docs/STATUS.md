@@ -90,8 +90,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   each row with its share of the invoice's taxes and rounding; goods sold from several warehouses go back to each
   one ("Where each item was sold from") unless one is chosen; the suggested quantity is at most what is left. Review
   pass 2 (2 medium, 2 low): the return page itself refuses sales Madar can't return (opened by URL), and POS sales
-  aren't returnable (their return would refund cash); an empty row counts as 0. Deferred (low): on Desk invoices
-  with a fixed header discount or "Actual" taxes, the preview spreads them by value while ERPNext copies them whole.
+  aren't returnable (their return would refund cash); an empty row counts as 0. Review pass 3 (1 high) fixed: a part
+  return takes its share of a fixed invoice discount and of "Actual" charges (ERPNext's mapper copies them whole), so
+  the posted credit matches the preview (checked on v16).
 - Next: Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)

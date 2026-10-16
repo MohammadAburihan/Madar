@@ -153,19 +153,44 @@ export class SalesReturnApiService {
     }
     const current = remembered?.docstatus === 0 ? remembered : null;
     try {
-      const template = await this.template(request.invoice).catch((error: unknown) => {
-        // Everything was returned since the form loaded.
-        throw ErpnextError.from(error).status === 417 ? new ReturnChangedError() : error;
-      });
+      const [template, original] = await Promise.all([
+        this.template(request.invoice).catch((error: unknown) => {
+          // Everything was returned since the form loaded.
+          throw ErpnextError.from(error).status === 417 ? new ReturnChangedError() : error;
+        }),
+        firstValueFrom(this.erpnext.doc<InvoiceDoc>('Sales Invoice', request.invoice)),
+      ]);
       const qty = new Map(request.lines.map((l) => [l.row, l.qty]));
       const left = new Map(template.items.map((i) => [i.sales_invoice_item, -Number(i.qty)]));
       if (request.lines.some((l) => (left.get(l.row) ?? 0) < l.qty - 1e-9)) {
         throw new ReturnChangedError();
       }
+      // The mapper copies the whole fixed discount and "Actual" charges; a part return takes its share by value.
+      const value = (rows: { qty: number; rate: number }[]) =>
+        rows.reduce((sum, r) => sum + Math.abs(r.qty) * r.rate, 0);
+      const sold = value(
+        original.items.map((i) => ({ qty: Number(i.qty), rate: Number(i['rate']) })),
+      );
+      const share = sold
+        ? value(
+            original.items
+              .filter((i) => i.name && qty.has(i.name))
+              .map((i) => ({ qty: qty.get(i.name!)!, rate: Number(i['rate']) })),
+          ) / sold
+        : 1;
+      const scaled = (amount: unknown) => Math.round(Number(amount ?? 0) * share * 100) / 100;
+      const taxes = ((template['taxes'] ?? []) as Record<string, unknown>[]).map((t) =>
+        t['charge_type'] === 'Actual' ? { ...t, tax_amount: scaled(t['tax_amount']) } : t,
+      );
       const fields = {
         ...Object.fromEntries(Object.entries(template).filter(([key]) => !key.startsWith('__'))),
         // Credits the original invoice; ERPNext keeps it on the note itself when it exceeds what is owed.
         update_outstanding_for_self: 0,
+        taxes,
+        // A percentage discount is worked out again from the returned rows; a fixed one isn't.
+        ...(Number(template['additional_discount_percentage'])
+          ? {}
+          : { discount_amount: scaled(template['discount_amount']) }),
         remarks: [`Madar return ${request.reference}`, request.reason.trim()]
           .filter(Boolean)
           .join(' · '),

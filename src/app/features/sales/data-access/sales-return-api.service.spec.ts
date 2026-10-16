@@ -208,4 +208,41 @@ describe('SalesReturnApiService', () => {
     expect(doc).not.toHaveProperty('set_warehouse');
     expect(doc.items.map((i) => i.warehouse)).toEqual(['Main', 'Shop']);
   });
+
+  it('takes the returned share of a fixed discount and "Actual" charges, which the mapper copies whole', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        [MAKE]: () => ({
+          ...template(),
+          discount_amount: -20,
+          additional_discount_percentage: 0,
+          taxes: [
+            { charge_type: 'Actual', tax_amount: -10 },
+            { charge_type: 'On Net Total', rate: 16 },
+          ],
+        }),
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'SI-1050' }),
+        'frappe.client.submit': () => ({
+          name: 'SI-1050',
+          base_grand_total: -40,
+          base_rounded_total: 0,
+        }),
+      },
+      {
+        'Sales Invoice/SI-1042': {
+          ...ORIGINAL,
+          items: [{ ...ORIGINAL.items[0], qty: 2, rate: 45 }],
+        },
+      },
+    );
+    await api().confirm(request, null);
+    expect(postCalls[1].body['doc']).toMatchObject({
+      discount_amount: -10,
+      taxes: [
+        { charge_type: 'Actual', tax_amount: -5 },
+        { charge_type: 'On Net Total', rate: 16 },
+      ],
+    });
+  });
 });
