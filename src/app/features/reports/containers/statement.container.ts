@@ -18,6 +18,7 @@ import {
 import { formatMoney } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { NATIVE_PLATFORM } from '../../../core/platform/native-platform';
 import {
   SupplierDirectoryService,
   SupplierOption,
@@ -112,7 +113,7 @@ interface Party {
     <app-back-link [label]="txt.back" (back)="router.navigate(['/reports'])" />
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="subtitle()">
-        @if (statement()) {
+        @if (statement() && canExport) {
           <div class="actions">
             <button type="button" class="md-btn" [disabled]="preparing()" (click)="share()">
               {{ txt.share }}
@@ -266,7 +267,9 @@ interface Party {
             [message]="txt.pdfFailed.message"
           />
         }
-        @if (!desktop()) {
+        @if (!canExport) {
+          <p class="muted">{{ txt.exportOnWeb }}</p>
+        } @else if (!desktop()) {
           <button
             type="button"
             class="md-btn md-btn--primary"
@@ -303,6 +306,8 @@ export class StatementContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
+  /** The phone apps can't save or share files until the native share and file plugins are added. */
+  protected readonly canExport = inject(NATIVE_PLATFORM) === 'web';
   private readonly today = signal<Date | null>(null);
   protected readonly period = createPeriod(this.today, this.i18n.tr, this.i18n.language);
   protected readonly party = signal<Party | null>(null);
@@ -360,6 +365,7 @@ export class StatementContainer {
       shareMobile: t('statements.shareMobile'),
       download: t('statements.download'),
       preparing: t('statements.preparing'),
+      exportOnWeb: t('statements.exportOnWeb'),
       note: t('statements.note'),
       loading: t('statements.loading'),
       retry: t('reports.retry'),
@@ -449,6 +455,8 @@ export class StatementContainer {
   }
 
   protected clearParty(): void {
+    // A load still running belongs to the party being cleared.
+    this.run++;
     this.party.set(null);
     this.statement.set(null);
     this.state.set('idle');
