@@ -185,6 +185,41 @@ export class PurchaseApiService {
     );
   }
 
+  /** One purchasable item by its exact code, at the supplier's buying price; null when it can't be bought. */
+  async item(
+    code: string,
+    ctx: { company: string; supplier: string; currency: string; date: string },
+  ): Promise<PurchaseItem | null> {
+    const [row] = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        item_name: string;
+        stock_uom: string;
+        is_stock_item: number;
+      }>('Item', {
+        fields: ['name', 'item_name', 'stock_uom', 'is_stock_item'],
+        filters: [
+          ['name', '=', code],
+          ['disabled', '=', 0],
+          ['is_purchase_item', '=', 1],
+          ['has_variants', '=', 0],
+        ],
+        limit: 1,
+      }),
+    );
+    if (!row) {
+      return null;
+    }
+    const priceList = await this.priceList().catch(() => null);
+    return {
+      code: row.name,
+      name: row.item_name,
+      uom: row.stock_uom,
+      kind: row.is_stock_item ? 'product' : 'service',
+      rate: await this.rate(row.name, priceList, ctx).catch(() => 0),
+    };
+  }
+
   /**
    * Inserts and submits the order. A timeout or lost connection throws UnresolvedError: the order may exist,
    * so callers must look it up with find(), not resubmit. Resolves to the order's name.
@@ -368,12 +403,14 @@ export class PurchaseApiService {
       schedule_date: request.scheduleDate,
       // Purchase Order has no remarks; this field is otherwise unused (decided 14 Oct 2026).
       order_confirmation_no: request.reference,
+      ...(request.project ? { project: request.project } : {}),
       items: request.lines.map((l) => ({
         item_code: l.item,
         qty: l.qty,
         rate: l.rate,
         uom: l.uom,
         schedule_date: request.scheduleDate,
+        ...(request.project ? { project: request.project } : {}),
       })),
     };
   }

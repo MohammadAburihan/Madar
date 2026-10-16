@@ -51,4 +51,19 @@ describe('ProjectSectionComponent', () => {
       'SI-042',
     );
   });
+
+  it('emits the row picked when rows open something', async () => {
+    const fixture = TestBed.createComponent(ProjectSectionComponent);
+    fixture.componentRef.setInput('heading', 'Material requirement');
+    fixture.componentRef.setInput('empty', 'None');
+    fixture.componentRef.setInput('rowsInteractive', true);
+    fixture.componentRef.setInput('rows', [
+      { label: 'Ceramic planters · POT-30', status: '12 needed · 8 available', short: true },
+    ]);
+    const picked: number[] = [];
+    fixture.componentInstance.rowSelected.subscribe((i) => picked.push(i));
+    await fixture.whenStable();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button.row')!.click();
+    expect(picked).toEqual([0]);
+  });
 });

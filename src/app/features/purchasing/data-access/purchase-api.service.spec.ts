@@ -185,6 +185,40 @@ describe('PurchaseApiService', () => {
     expect(ctx).toMatchObject({ buying_price_list: 'Standard Buying', supplier: 'Green Clay' });
   });
 
+  it('finds one purchasable item by its exact code, at the buying price', async () => {
+    let itemQuery: { filters?: unknown[] } | undefined;
+    fakeErpnext(
+      {
+        Item: (query) => {
+          itemQuery = query;
+          return [{ name: 'ITM-1', item_name: 'Planter', stock_uom: 'Unit', is_stock_item: 1 }];
+        },
+      },
+      {
+        'frappe.client.get_value': () => ({ buying_price_list: 'Standard Buying' }),
+        'erpnext.stock.get_item_details.get_item_details': () => ({
+          price_list_rate: 45,
+          last_purchase_rate: 20,
+        }),
+      },
+    );
+    const ctx = {
+      company: 'Rehan Nursery',
+      supplier: 'Green Clay',
+      currency: 'ILS',
+      date: '2026-10-14',
+    };
+    expect(await api().item('ITM-1', ctx)).toEqual({
+      code: 'ITM-1',
+      name: 'Planter',
+      uom: 'Unit',
+      kind: 'product',
+      rate: 45,
+    });
+    expect(itemQuery?.filters).toContainEqual(['name', '=', 'ITM-1']);
+    expect(itemQuery?.filters).toContainEqual(['is_purchase_item', '=', 1]);
+  });
+
   it('inserts and submits the order with the Madar reference, schedule date and rates', async () => {
     const { postCalls } = fakeErpnext(
       {},
@@ -383,6 +417,21 @@ describe('PurchaseApiService', () => {
       expect(await api().findReceipt('REC-ABC1234')).toEqual({ draft: 'MAT-PRE-0001' });
       rows = [{ name: 'MAT-PRE-0001', docstatus: 1 }];
       expect(await api().findReceipt('REC-ABC1234')).toEqual({ receipt: 'MAT-PRE-0001' });
+    });
+  });
+
+  it("books a project's order to the project, on the order and each line", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        'frappe.client.insert': (body) => ({ ...(body['doc'] as object), name: 'PO-2049' }),
+        'frappe.client.submit': () => ORDER,
+      },
+    );
+    await api().confirm(request({ project: 'PROJ-0001' }), null);
+    expect(postCalls[0].body['doc']).toMatchObject({
+      project: 'PROJ-0001',
+      items: [{ item_code: 'POT-30', project: 'PROJ-0001' }],
     });
   });
 });

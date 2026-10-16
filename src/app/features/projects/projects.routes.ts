@@ -27,6 +27,34 @@ export const projectRoutes: Route[] = [
       import('./containers/requirement.container').then((m) => m.RequirementContainer),
   },
   {
+    path: 'projects/:name/supply/:item',
+    loadComponent: () =>
+      import('./containers/supply-flow.container').then((m) => m.SupplyFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/supply-plan.container').then((m) => m.SupplyPlanContainer),
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./containers/supply-review.container').then((m) => m.SupplyReviewContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/supply-checking.container').then((m) => m.SupplyCheckingContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/supply-done.container').then((m) => m.SupplyDoneContainer),
+      },
+    ],
+  },
+  {
     path: 'projects/:name',
     loadComponent: () => import('./containers/project.container').then((m) => m.ProjectContainer),
   },

@@ -20,6 +20,7 @@ const PLANTER: PurchaseItem = {
 function setup() {
   const api = {
     searchItems: vi.fn().mockResolvedValue([PLANTER]),
+    item: vi.fn().mockResolvedValue(PLANTER),
     confirm: vi.fn(),
     saveDraft: vi.fn(),
     find: vi.fn(),
@@ -223,5 +224,50 @@ describe('PurchaseOrderStore', () => {
     expect(await store.checkResult()).toBe('pending');
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
+  });
+
+  it("books a project's shortfall: adds its item once a supplier is chosen, and the project to the order", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'POT-30', 4);
+    await store.applyPrefill();
+    expect(store.lines()).toEqual([]);
+    store.setSupplier('Green Clay');
+    await store.applyPrefill();
+    expect(store.lines()).toEqual([{ item: PLANTER, qty: 4, rate: 45 }]);
+    await store.applyPrefill();
+    expect(store.lines()).toHaveLength(1);
+    api.confirm.mockResolvedValue('PO-2049');
+    await store.confirm();
+    expect(api.confirm.mock.calls[0][0].project).toBe('PROJ-0001');
+  });
+
+  it("prices the project's line for the supplier chosen last, even when an earlier search answers late", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'POT-30', 4);
+    let answerFirst: (item: PurchaseItem) => void = () => undefined;
+    api.item
+      .mockReturnValueOnce(new Promise((resolve) => (answerFirst = resolve)))
+      .mockResolvedValueOnce({ ...PLANTER, rate: 40 });
+    store.setSupplier('Green Clay');
+    const first = store.applyPrefill();
+    store.setSupplier('Blue Stone');
+    await store.applyPrefill();
+    answerFirst(PLANTER);
+    await first;
+    expect(store.lines()).toEqual([{ item: { ...PLANTER, rate: 40 }, qty: 4, rate: 40 }]);
+  });
+
+  it("looks the project's item up by its exact code, and says so when it can't be bought", async () => {
+    const { store, api } = setup();
+    await store.loadSuppliers();
+    store.forProject('PROJ-0001', 'ITM-1', 4);
+    api.item.mockResolvedValueOnce(null);
+    store.setSupplier('Green Clay');
+    await store.applyPrefill();
+    expect(api.item.mock.calls[0][0]).toBe('ITM-1');
+    expect(api.searchItems).not.toHaveBeenCalled();
+    expect([store.lines(), store.prefillMissing()]).toEqual([[], 'ITM-1']);
   });
 });

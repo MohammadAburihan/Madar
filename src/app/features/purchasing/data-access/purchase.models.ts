@@ -23,6 +23,8 @@ export interface OrderRequest {
   supplier: string;
   /** "Required By" on every line; ERPNext rejects an order without it. */
   scheduleDate: string;
+  /** Bought for a project's shortfall; booked on the order and its lines. */
+  project?: string | null;
   lines: { item: string; uom: string; qty: number; rate: number }[];
 }
 

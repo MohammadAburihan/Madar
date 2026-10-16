@@ -52,7 +52,7 @@ import {
     @let txt = text();
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     <app-back-link [label]="txt.back" (back)="router.navigate(['/projects'])" />
-    @if (!caps().manageProjects) {
+    @if (!caps().manageProjects && !caps().supplyProjects) {
       <app-feedback-card
         tone="warning"
         [title]="txt.noAccess.title"
@@ -61,7 +61,9 @@ import {
     } @else if (view(); as v) {
       <app-page-heading [title]="v.heading.title" [subtitle]="v.heading.subtitle" />
       <app-status-chip [label]="v.heading.chip.label" [tone]="v.heading.chip.tone" />
-      <app-stat-card [stats]="v.stats" />
+      @if (caps().manageProjects) {
+        <app-stat-card [stats]="v.stats" />
+      }
       @if (v.tasks) {
         <app-project-section [heading]="txt.tasks" [items]="v.tasks" [empty]="txt.noTasks" />
       }
@@ -69,6 +71,8 @@ import {
         [heading]="txt.requirements"
         [rows]="v.requirements"
         [empty]="txt.noRequirements"
+        [rowsInteractive]="caps().supplyProjects"
+        (rowSelected)="supply(v.requirementItems[$event])"
       />
       <app-project-section
         [heading]="txt.attachments"
@@ -82,10 +86,22 @@ import {
       >
         <app-totals-card density="compact" [rows]="v.linked" />
       </app-project-section>
-      <button type="button" class="md-btn md-btn--primary" (click)="addRequirement()">
-        {{ txt.addRequirement }}
-      </button>
-      <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
+      @if (caps().supplyProjects && v.nextItem) {
+        <button type="button" class="md-btn md-btn--primary" (click)="supply(v.nextItem)">
+          {{ txt.supply }}
+        </button>
+      }
+      @if (caps().manageProjects) {
+        <button
+          type="button"
+          class="md-btn"
+          [class.md-btn--primary]="!(caps().supplyProjects && v.nextItem)"
+          (click)="addRequirement()"
+        >
+          {{ txt.addRequirement }}
+        </button>
+        <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
+      }
     } @else if (failed()) {
       <app-page-heading [title]="txt.title" [subtitle]="name()" />
       <app-feedback-card
@@ -128,6 +144,7 @@ export class ProjectContainer {
       linked: t('project.overview.linked'),
       noLinked: t('project.overview.noLinked'),
       addRequirement: t('project.overview.addRequirement'),
+      supply: t('project.overview.supply'),
       edit: t('project.overview.edit'),
       loading: t('project.loading'),
       retry: t('project.retry'),
@@ -152,6 +169,12 @@ export class ProjectContainer {
       stats: budgetStats(project, currency, tr),
       tasks: project.tasks?.map((task) => taskCard(task, language, tr)) ?? null,
       requirements: project.requirements.map((r) => requirementRow(r, tr)),
+      requirementItems: project.requirements.map((r) => r.item),
+      // "Review materials and supply" opens the first item stock falls short for, else the first one.
+      nextItem:
+        project.requirements.find((r) => r.available < r.required)?.item ??
+        project.requirements[0]?.item ??
+        null,
       attachments: project.attachments.map((a) => attachmentCard(a, language)),
       // Order values and expense amounts only for roles that see costs (docs/PERMISSIONS.md).
       linked: linkedRows(project.linked, this.caps().seeCosts ? currency : null, tr),
@@ -161,7 +184,7 @@ export class ProjectContainer {
   constructor() {
     effect(() => {
       const name = this.name();
-      if (this.caps().manageProjects) {
+      if (this.caps().manageProjects || this.caps().supplyProjects) {
         untracked(() => void this.load(name));
       }
     });
@@ -182,6 +205,10 @@ export class ProjectContainer {
         this.failed.set(true);
       }
     }
+  }
+
+  protected supply(item: string): void {
+    void this.router.navigate(['/projects', this.name(), 'supply', item]);
   }
 
   protected addRequirement(): void {

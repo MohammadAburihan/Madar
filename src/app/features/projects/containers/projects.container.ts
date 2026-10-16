@@ -43,7 +43,7 @@ import { projectCard } from './project-view';
     @let txt = text();
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
-    @if (!caps().manageProjects) {
+    @if (!caps().manageProjects && !caps().supplyProjects) {
       <app-feedback-card
         tone="warning"
         [title]="txt.noAccess.title"
@@ -62,9 +62,11 @@ import { projectCard } from './project-view';
       } @empty {
         <p class="muted">{{ txt.empty }}</p>
       }
-      <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
-        {{ txt.newProject }}
-      </button>
+      @if (caps().manageProjects) {
+        <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
+          {{ txt.newProject }}
+        </button>
+      }
     }
   `,
 })
@@ -101,7 +103,7 @@ export class ProjectsContainer {
   constructor() {
     // The roles may arrive after the page opens (a session that recovers), so load once they allow it.
     effect(() => {
-      if (this.caps().manageProjects) {
+      if (this.caps().manageProjects || this.caps().supplyProjects) {
         untracked(() => void this.load());
       }
     });
