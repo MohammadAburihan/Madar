@@ -20,7 +20,7 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { ContactsApiService } from '../data-access/contacts-api.service';
+import { ContactsApiService, LIST_LIMIT } from '../data-access/contacts-api.service';
 import {
   ContactKind,
   ContactRow,
@@ -145,6 +145,9 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ emptyText() }}</p>
         }
       }
+      @if (state() === 'ready' && capped()) {
+        <p class="muted">{{ txt.capped }}</p>
+      }
     }
   `,
 })
@@ -169,6 +172,8 @@ export class ContactsContainer {
   protected readonly term = signal('');
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly rows = signal<ContactRow[]>([]);
+  /** The kind the loaded rows are; the filter changes before the new list arrives. */
+  private readonly rowsKind = signal<ContactKind | null>(null);
   protected readonly selected = signal<string | null>(null);
   private readonly detail = signal<CustomerDetail | SupplierDetail | null>(null);
   protected readonly panelFailed = signal(false);
@@ -201,6 +206,7 @@ export class ContactsContainer {
       choose: t('contacts.choose'),
       openDetail: t('contacts.openDetail'),
       panelFailed: t('contacts.panelFailed'),
+      capped: t('contacts.capped', { count: LIST_LIMIT }),
       error: { title: t('contacts.error.title'), message: t('contacts.error.message') },
       noAccess: { title: t('contacts.noAccess.title'), message: t('contacts.noAccess.message') },
     };
@@ -230,6 +236,9 @@ export class ContactsContainer {
   protected readonly tableRows = computed(() =>
     this.rows().map((r) => ({ id: r.id, cells: contactRow(r, this.currency()) })),
   );
+
+  /** A full page of rows: there may be more, found by searching. */
+  protected readonly capped = computed(() => this.rows().length >= LIST_LIMIT);
 
   protected readonly emptyText = computed(() =>
     this.i18n
@@ -291,8 +300,8 @@ export class ContactsContainer {
       onCleanup(() => clearTimeout(timer));
     });
     effect(() => {
-      const id = this.desktop() ? this.selectedId() : null;
       const kind = this.current();
+      const id = this.desktop() && this.rowsKind() === kind ? this.selectedId() : null;
       untracked(() => void this.loadDetail(kind, id));
     });
   }
@@ -302,6 +311,7 @@ export class ContactsContainer {
     this.state.set('loading');
     // A previous list's rows must not stay selectable under the new one.
     this.rows.set([]);
+    this.rowsKind.set(null);
     this.selected.set(null);
     try {
       const business = await this.business.ensure();
@@ -314,6 +324,7 @@ export class ContactsContainer {
           : await this.api.supplierList(term, business, this.caps().seeCosts);
       if (run === this.run) {
         this.rows.set(rows);
+        this.rowsKind.set(kind);
         this.state.set('ready');
       }
     } catch {

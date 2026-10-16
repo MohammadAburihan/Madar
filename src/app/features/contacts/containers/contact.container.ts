@@ -21,7 +21,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ContactsApiService } from '../data-access/contacts-api.service';
 import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactActions } from './contacts-access';
+import { contactActions, contactKinds } from './contacts-access';
 import { contactLines, contactSubtitle, customerView, supplierView } from './contacts-view';
 
 /** One customer or supplier: how to reach them, what they owe or are owed, and what to do next. */
@@ -49,7 +49,14 @@ import { contactLines, contactSubtitle, customerView, supplierView } from './con
     @let txt = text();
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     <app-back-link [label]="txt.back" (back)="back()" />
-    @if (view(); as v) {
+    @if (!allowed()) {
+      <app-page-heading [title]="txt.pageTitle" />
+      <app-feedback-card
+        tone="warning"
+        [title]="txt.noAccess.title"
+        [message]="txt.noAccess.message"
+      />
+    } @else if (view(); as v) {
       <app-page-heading [title]="v.name" [subtitle]="v.subtitle" />
       @if (v.lines) {
         <p class="lines">{{ v.lines }}</p>
@@ -107,6 +114,11 @@ export class ContactContainer {
     this.kind() === 'suppliers' ? 'suppliers' : 'customers',
   );
 
+  /** Opened by URL too: only the kinds of contact the role works with (docs/PERMISSIONS.md). */
+  protected readonly allowed = computed(() =>
+    contactKinds(this.caps()).includes(this.contactKind()),
+  );
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -114,6 +126,7 @@ export class ContactContainer {
       pageTitle: t('contacts.title'),
       loading: t('contacts.loading'),
       retry: t('contacts.retry'),
+      noAccess: { title: t('contacts.noAccess.title'), message: t('contacts.noAccess.message') },
       loadFailed: {
         title: t('contacts.loadFailed.title'),
         message: t('contacts.loadFailed.message'),
@@ -155,6 +168,9 @@ export class ContactContainer {
     effect(() => {
       const kind = this.contactKind();
       const id = this.id();
+      if (!this.allowed()) {
+        return;
+      }
       untracked(() => void this.load(kind, id));
     });
   }

@@ -105,7 +105,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   panel. Review pass 1 (1 high, 1 medium, 2 low) fixed: salespeople and store associates see their own sales and
   payments on a customer's page and in the list balances; the table has an Outstanding column only when the rows
   have balances; a deep-linked customer doesn't replace one picked meanwhile; "Buy from" keeps its supplier after a
-  retried load.
+  retried load. Review pass 2 (1 medium, 2 low) fixed: a contact page opened by link checks the role works with that
+  kind (e2e: a salesperson can't open a supplier); a full list says only the first 30 show and search finds others;
+  switching kinds on desktop doesn't load a detail for the previous list's row.
 - Next: Contacts C2 (add/edit a contact, transaction history), then Settings.
 
 ## End-to-end happy paths: merged (#26)

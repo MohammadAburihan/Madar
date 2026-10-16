@@ -6,6 +6,10 @@ test.describe('customers and suppliers @phone', () => {
     await signIn(page, 'owner');
     await page.goto('/contacts');
     await expectHeading(page, 'Customers & suppliers');
+    // The test site has more customers than one page: the list says so.
+    await expect(
+      page.getByText(named('Showing the first', '30', '. Search to find others.')),
+    ).toBeVisible();
     await page.locator('app-search-field input').fill(CUSTOMER);
     const card = page.locator('app-person-card', { hasText: CUSTOMER }).first();
     await expect(card).toContainText('059-000-0142');
@@ -44,6 +48,14 @@ test.describe('customers and suppliers @phone', () => {
     await expect(page.getByLabel('Supplier')).toHaveValue(SUPPLIER, { timeout: 15_000 });
     await page.goto('/contacts?kind=suppliers');
     await expect(page.getByRole('radio', { name: 'Suppliers' })).toBeChecked();
+  });
+
+  test('keeps each role to the contacts it works with, even by link', async ({ page }) => {
+    await signIn(page, 'salesperson');
+    await page.goto('/contacts');
+    await expect(page.getByRole('radio', { name: 'Suppliers' })).toHaveCount(0);
+    await page.goto(`/contacts/suppliers/${encodeURIComponent(SUPPLIER)}`);
+    await expect(page.getByText('No contacts for your role')).toBeVisible();
   });
 
   test('shows the contacts in Arabic, right to left', async ({ page }) => {

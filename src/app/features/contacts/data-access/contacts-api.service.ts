@@ -4,7 +4,8 @@ import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.ser
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ContactInfo, ContactRow, CustomerDetail, SupplierDetail } from './contacts.models';
 
-const LIST_LIMIT = 30;
+/** Lists show this many rows; the screen says so when there may be more. */
+export const LIST_LIMIT = 30;
 
 interface PartyDoc {
   name: string;

@@ -2456,6 +2456,7 @@
     "loadFailed": {
       "title": "This contact couldn't load",
       "message": "Check the connection and try again."
-    }
+    },
+    "capped": "Showing the first {{count}}. Search to find others."
   }
 }
