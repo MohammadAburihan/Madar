@@ -6,6 +6,8 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { SiteClockService } from '../../../core/time/site-clock.service';
+import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { BottomNavComponent } from '../components/bottom-nav.component';
 import { BusinessBarComponent } from '../../../shared/ui/business-bar.component';
 import { SidebarNavComponent } from '../components/sidebar-nav.component';
@@ -13,7 +15,13 @@ import { buildShellView } from './shell-view';
 
 @Component({
   selector: 'app-shell',
-  imports: [BottomNavComponent, BusinessBarComponent, RouterOutlet, SidebarNavComponent],
+  imports: [
+    BottomNavComponent,
+    BusinessBarComponent,
+    FeedbackCardComponent,
+    RouterOutlet,
+    SidebarNavComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'ion-page', '[class]': "'layout-' + viewport()" },
   // One outlet for every layout: crossing a breakpoint must not destroy and reload the page.
@@ -42,6 +50,18 @@ import { buildShellView } from './shell-view';
           [switchLabel]="text().switchBusiness"
           (switchBusiness)="openBusinesses()"
         />
+      }
+      @if (clock.unknownZone()) {
+        <div class="clock" role="alert">
+          <app-feedback-card
+            tone="warning"
+            [title]="clockText().title"
+            [message]="clockText().message"
+          />
+          <button type="button" class="md-btn" (click)="clock.retry()">
+            {{ clockText().retry }}
+          </button>
+        </div>
       }
       <router-outlet />
     </main>
@@ -76,6 +96,17 @@ import { buildShellView } from './shell-view';
     .bar {
       padding: 16px 20px 0;
     }
+
+    .clock {
+      display: grid;
+      gap: 12px;
+      padding: 16px 20px 0;
+    }
+
+    :host(.layout-tablet) .clock,
+    :host(.layout-desktop) .clock {
+      padding: 24px 40px 0;
+    }
   `,
 })
 export class ShellContainer implements OnInit {
@@ -83,6 +114,7 @@ export class ShellContainer implements OnInit {
   private readonly business = inject(BusinessService);
   private readonly i18n = injectI18n();
   private readonly router = inject(Router);
+  protected readonly clock = inject(SiteClockService);
   protected readonly url = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -107,7 +139,18 @@ export class ShellContainer implements OnInit {
     ),
   );
 
+  protected readonly clockText = computed(() => {
+    const { t } = this.tr();
+    return {
+      title: t('clock.unknown.title'),
+      message: t('clock.unknown.message'),
+      retry: t('clock.unknown.retry'),
+    };
+  });
+
   ngOnInit(): void {
+    // Read the site's time zone early, so a failure shows here whichever page is open.
+    void this.clock.ensure();
     void this.business.ensure().catch(() => undefined);
   }
 

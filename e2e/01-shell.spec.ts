@@ -33,3 +33,17 @@ test('each role sees only its areas in the sidebar @desktop', async ({ page }) =
   await expect(nav.getByRole('link', { name: 'Purchases' })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: 'Reports' })).toHaveCount(0);
 });
+
+test("warns when the business's time zone can't be read, and Retry clears it @phone @desktop", async ({
+  page,
+}) => {
+  await page.route('**/frappe.client.get_time_zone*', (route) => route.abort());
+  await signIn(page, 'owner');
+  const warning = page
+    .getByRole('alert')
+    .filter({ hasText: "The business's time zone couldn't be read" });
+  await expect(warning).toBeVisible();
+  await page.unroute('**/frappe.client.get_time_zone*');
+  await warning.getByRole('button', { name: 'Try again' }).click();
+  await expect(warning).toHaveCount(0);
+});

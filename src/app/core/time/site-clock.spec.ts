@@ -1,4 +1,8 @@
-import { wallClock } from './site-clock.service';
+import { TestBed } from '@angular/core/testing';
+import { Observable, of, throwError } from 'rxjs';
+import { vi } from 'vitest';
+import { ErpnextClient } from '../erpnext/erpnext-client';
+import { SiteClockService, wallClock } from './site-clock.service';
 
 describe('wallClock', () => {
   it('shifts an instant to the site time zone', () => {
@@ -17,5 +21,26 @@ describe('wallClock', () => {
     const instant = new Date(2026, 9, 12, 10, 0);
     expect(wallClock(instant, null)).toBe(instant);
     expect(wallClock(instant, 'Not/AZone')).toBe(instant);
+  });
+});
+
+describe('SiteClockService', () => {
+  const setup = (get: () => Observable<unknown>) => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErpnextClient, useValue: { get: vi.fn(get) } }],
+    });
+    return TestBed.inject(SiteClockService);
+  };
+
+  it("says when the site's time zone can't be read, and clears it once Retry reads it", async () => {
+    let fail = true;
+    const clock = setup(() =>
+      fail ? throwError(() => new Error('offline')) : of({ time_zone: 'Asia/Hebron' }),
+    );
+    await clock.ensure();
+    expect([clock.unknownZone(), clock.timeZone()]).toEqual([true, null]);
+    fail = false;
+    await clock.retry();
+    expect([clock.unknownZone(), clock.timeZone()]).toEqual([false, 'Asia/Hebron']);
   });
 });

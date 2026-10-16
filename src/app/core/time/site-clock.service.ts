@@ -11,16 +11,28 @@ import { shareInFlight } from '../util/share-in-flight';
 export class SiteClockService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly zone = signal<string | null>(null);
+  private readonly failed = signal(false);
   private readonly loadZone = shareInFlight(() =>
     firstValueFrom(this.erpnext.get<{ time_zone: string }>('frappe.client.get_time_zone'))
-      .then(({ time_zone }) => this.zone.set(time_zone || null))
-      .catch(() => undefined),
+      .then(({ time_zone }) => {
+        this.zone.set(time_zone || null);
+        this.failed.set(!time_zone);
+      })
+      // Dates fall back to the device's clock; `unknownZone` lets the shell say so instead of staying silent.
+      .catch(() => this.failed.set(true)),
   );
 
   readonly timeZone = this.zone.asReadonly();
+  /** The site's time zone couldn't be read, so "today" and due dates follow this device's clock. */
+  readonly unknownZone = this.failed.asReadonly();
 
   ensure(): Promise<void> {
     return this.zone() ? Promise.resolve() : this.loadZone();
+  }
+
+  /** Tries reading the site's time zone again. */
+  retry(): Promise<void> {
+    return this.loadZone();
   }
 
   /** The site's current wall-clock time, as a local Date with the same fields. */

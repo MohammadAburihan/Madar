@@ -71,8 +71,8 @@ payments and expenses now interleave by when they were entered.
   paid" bill) stays on the statement with both sides shown. Review pass 2 (2 low): Retry now redoes every failed step;
   deferred: a disabled customer or supplier can't be picked for a statement (opening one by link still works).
 - Step 5 batch review (2 medium, 2 low, #25): fixed Profit by month's Retry after a clock failure; Change cancels a statement still
-  loading. Deferred (low): disabled suppliers can't be picked for a statement either; app-wide, when the site's time
-  zone can't be read, "today" silently falls back to the device's date (SiteClockService never reports the failure).
+  loading. Deferred (low): disabled suppliers can't be picked for a statement either. When the site's time zone can't be
+  read, "today" falls back to the device's date; since #31 the shell says so, with Try again.
 - **More page**: merged (#24). On phones the More tab lists the role's destinations the tab bar doesn't hold (Purchases,
   Contacts, Money, Projects, Reports, Settings, Switch business), following the same role rules as the desktop sidebar.
   "Items & services" from the mock is left out until that area exists.
