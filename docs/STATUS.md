@@ -38,6 +38,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   server (`report_to_pdf`) in the reader's language. On the phone apps Share and Download need the native share and
   file plugins (`@capacitor/share`, `@capacitor/filesystem`), not added yet: a dependency to decide. No mock exists for
   the supplier statement; it follows the customer one.
+  Review pass 1 (1 medium, 2 low) fixed: a share the browser refuses after the PDF renders falls back to a download;
+  Retry redoes whichever step failed (the date, the supplier list, the linked party); a fully paid invoice (POS, "is
+  paid" bill) stays on the statement with both sides shown.
 - **Known gap (all steps):** on phones the "More" tab is still a placeholder, so Money, Purchases, Contacts, Projects and
   Reports are reachable there only through links. To be built with the design's More page.
 

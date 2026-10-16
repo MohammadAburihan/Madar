@@ -61,14 +61,23 @@ export class StatementsApiService {
       owed(Number(before[0]?.['SUM(`debit`)'] ?? 0), Number(before[0]?.['SUM(`credit`)'] ?? 0)),
     );
     const moves = rows
-      .map((r) => ({
-        date: String(r['posting_date']),
-        voucherType: String(r['voucher_type']),
-        voucher: String(r['voucher_no']),
-        posted: String(r['MIN(`creation`)'] ?? ''),
-        amount: round(owed(Number(r['SUM(`debit`)'] ?? 0), Number(r['SUM(`credit`)'] ?? 0))),
-      }))
-      .filter((m) => m.amount !== 0)
+      .map((r) => {
+        const debit = Number(r['SUM(`debit`)'] ?? 0);
+        const credit = Number(r['SUM(`credit`)'] ?? 0);
+        // Each side kept: a fully paid invoice (a POS sale, an "is paid" bill) both adds and settles, and still counts.
+        const adds = round(kind === 'customer' ? debit : credit);
+        const settles = round(kind === 'customer' ? credit : debit);
+        return {
+          date: String(r['posting_date']),
+          voucherType: String(r['voucher_type']),
+          voucher: String(r['voucher_no']),
+          posted: String(r['MIN(`creation`)'] ?? ''),
+          adds,
+          settles,
+          amount: round(adds - settles),
+        };
+      })
+      .filter((m) => m.adds !== 0 || m.settles !== 0)
       // Same-day documents in the order they were posted: an invoice before the payment that settles it.
       .sort((a, b) => a.date.localeCompare(b.date) || a.posted.localeCompare(b.posted));
     const invoiceType = kind === 'customer' ? 'Sales Invoice' : 'Purchase Invoice';
@@ -102,8 +111,8 @@ export class StatementsApiService {
         firstItem: invoice?.firstItem ?? null,
         account: payment?.account ?? null,
         against: payment?.against ?? [],
-        invoiced: m.amount > 0 ? m.amount : 0,
-        paid: m.amount < 0 ? -m.amount : 0,
+        invoiced: m.adds,
+        paid: m.settles,
         balance,
       };
     });

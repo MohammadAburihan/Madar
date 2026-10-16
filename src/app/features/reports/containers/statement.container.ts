@@ -237,7 +237,7 @@ interface Party {
           [title]="txt.loadFailed.title"
           [message]="txt.loadFailed.message"
         />
-        <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
+        <button type="button" class="md-btn" (click)="retry()">{{ txt.retry }}</button>
       } @else if (view(); as v) {
         @if (desktop()) {
           <app-metric-cards [metrics]="v.metrics" />
@@ -428,7 +428,7 @@ export class StatementContainer {
       const party = this.party();
       const range = this.period.range();
       if (this.today() && party && this.period.usable() && this.caps().seeReports) {
-        untracked(() => void this.load(party.id, range));
+        untracked(() => void this.loadStatement(party.id, range));
       }
     });
   }
@@ -454,11 +454,28 @@ export class StatementContainer {
     this.state.set('idle');
   }
 
-  protected load(id = this.party()?.id, range = this.period.range()): Promise<void> | void {
-    if (!id) {
+  /** Redoes whichever step failed: the site's today, the supplier list, the linked party, or the statement. */
+  protected retry(): void {
+    this.state.set('idle');
+    if (!this.today()) {
+      void this.clock
+        .ensure()
+        .then(() => this.today.set(this.clock.now()))
+        .catch(() => this.state.set('error'));
       return;
     }
-    return this.loadStatement(id, range);
+    if (this.kind() === 'supplier' && !this.suppliers().length) {
+      void this.loadSuppliers().catch(() => this.state.set('error'));
+    }
+    const linked = this.party$();
+    if (linked && !this.party()) {
+      void this.openParty(linked);
+      return;
+    }
+    const party = this.party();
+    if (party) {
+      void this.loadStatement(party.id, this.period.range());
+    }
   }
 
   protected open(id: string): void {
@@ -484,7 +501,14 @@ export class StatementContainer {
     }
     // The device's share sheet where the browser offers one for files; a download otherwise.
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: file.name }).catch(() => undefined);
+      try {
+        await navigator.share({ files: [file], title: file.name });
+      } catch (error) {
+        // The tap's permission may have lapsed while the PDF rendered; download instead. Cancelling is silent.
+        if ((error as Error)?.name !== 'AbortError') {
+          saveFile(file);
+        }
+      }
     } else {
       saveFile(file);
     }

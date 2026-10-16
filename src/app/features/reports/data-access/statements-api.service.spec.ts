@@ -111,4 +111,18 @@ describe('StatementsApiService', () => {
     expect(await api().pdf('<html></html>')).toBe(pdf);
     expect(postCalls[0].body).toEqual({ html: '<html></html>', orientation: 'Portrait' });
   });
+
+  it('keeps a document that both adds and settles, such as a fully paid invoice', async () => {
+    fakeErpnext({
+      'GL Entry': (query) =>
+        query.groupBy
+          ? [gl('Sales Invoice', 'SI-POS', '2026-10-01', 90, 90, '2026-10-01 09:00:00')]
+          : [{ 'SUM(`debit`)': 0, 'SUM(`credit`)': 0 }],
+    });
+    const statement = await api().statement('customer', 'Walk-in', 'Rehan Nursery', RANGE);
+    expect([statement.invoiced, statement.paid, statement.outstanding, statement.invoices]).toEqual(
+      [90, 90, 0, 1],
+    );
+    expect(statement.entries[0]).toMatchObject({ invoiced: 90, paid: 90, balance: 0 });
+  });
 });
