@@ -49,6 +49,7 @@ export class SiteApiService {
     let consumed = 0;
     let returned = 0;
     const sources = new Map<string, number>();
+    const returnedTo: Record<string, number> = {};
     for (const r of rows.filter((r) => r.project === project)) {
       if (r.t === site) {
         delivered += r.qty;
@@ -58,6 +59,7 @@ export class SiteApiService {
       } else if (r.s === site) {
         if (r.t) {
           returned += r.qty;
+          returnedTo[r.t] = round((returnedTo[r.t] ?? 0) + r.qty);
         } else {
           consumed += r.qty;
         }
@@ -75,6 +77,7 @@ export class SiteApiService {
       delivered: round(delivered),
       consumed: round(consumed),
       returned: round(returned),
+      returnedTo,
       atSite,
       pendingOrders,
       warehouses,

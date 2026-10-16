@@ -83,13 +83,17 @@ export class SiteStore {
   }
 
   async load(): Promise<void> {
+    // Taken before the first await, so a task started meanwhile makes this load stale.
+    const run = ++this.loads;
     const project = this.project();
     const item = this.item();
     const business = await this.business.ensure();
+    if (run !== this.loads) {
+      return;
+    }
     if (!project || !item || !business) {
       throw new Error('No project, item or business');
     }
-    const run = ++this.loads;
     const balance = await this.api.balance(project, item, business.name);
     if (run !== this.loads) {
       return;
@@ -144,6 +148,7 @@ export class SiteStore {
       return;
     }
     this.discardLeftover();
+    this.used.set(null);
     this.reset('use');
   }
 

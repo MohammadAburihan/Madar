@@ -126,7 +126,7 @@ export function pendingNotes(balance: SiteBalance, tr: Translator): string[] {
 /** The posted return against the balance after it, as on the return-posted mock. */
 export function returnedView(
   balance: SiteBalance,
-  target: { name: string; qty: number },
+  target: { warehouse: string; name: string; qty: number },
   returned: number,
   tr: Translator,
 ) {
@@ -151,7 +151,7 @@ export function returnedView(
       },
       {
         label: tr.t('project.site.returnedRows.returned', { warehouse: target.name }),
-        value: supplyUnits(balance.returned, tr),
+        value: supplyUnits(balance.returnedTo[target.warehouse] ?? 0, tr),
       },
       {
         label: tr.t('project.site.returnedRows.atSite'),

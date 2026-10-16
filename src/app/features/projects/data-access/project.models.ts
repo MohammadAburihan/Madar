@@ -126,6 +126,8 @@ export interface SiteBalance {
   delivered: number;
   consumed: number;
   returned: number;
+  /** What went back to each warehouse. */
+  returnedTo: Record<string, number>;
   /** The project's share of the site warehouse, from the stock ledger. */
   atSite: number;
   pendingOrders: { name: string; qty: number }[];

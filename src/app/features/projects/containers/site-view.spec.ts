@@ -14,6 +14,7 @@ const BALANCE: SiteBalance = {
   delivered: 8,
   consumed: 0,
   returned: 0,
+  returnedTo: {},
   atSite: 8,
   pendingOrders: [{ name: 'PO-2049', qty: 4 }],
   warehouses: [{ warehouse: 'Main warehouse - RN', name: 'Main warehouse', qty: 0 }],
@@ -60,8 +61,16 @@ describe('site view', () => {
   });
 
   it('lays out the return-posted mock', () => {
-    const after = { ...BALANCE, consumed: 5, returned: 2, atSite: 1 };
-    const v = visible(view.returnedView(after, { name: 'Main warehouse', qty: 2 }, 2, en));
+    // 2 went back to Main earlier and 1 to the shop: the row counts Main only.
+    const after = {
+      ...BALANCE,
+      consumed: 5,
+      returned: 3,
+      returnedTo: { 'Main warehouse - RN': 2, 'Garden shop - RN': 1 },
+      atSite: 1,
+    };
+    const main = { warehouse: 'Main warehouse - RN', name: 'Main warehouse', qty: 2 };
+    const v = visible(view.returnedView(after, main, 2, en));
     expect(v.chip).toBe('2 returned · Confirmed');
     expect(v.card.message).toBe('The return is posted. Still at the site: 1 unit.');
     expect(v.rows.map((r) => [r.label, r.value])).toEqual([
@@ -72,12 +81,8 @@ describe('site view', () => {
       ['Main warehouse stock', '2 units'],
     ]);
     expect(v.pending?.title).toBe('PO-2049 · 4 units · pending receipt');
-    const empty = visible(
-      view.returnedView({ ...after, atSite: 0 }, { name: 'Main warehouse', qty: 2 }, 2, ar),
-    );
+    const empty = visible(view.returnedView({ ...after, atSite: 0 }, main, 2, ar));
     expect(empty.card.message).toBe('تم ترحيل الإرجاع. لم يبقَ شيء في الموقع.');
-    expect(visible(view.returnedView(after, { name: 'Main warehouse', qty: 2 }, 2, ar)).chip).toBe(
-      'تم إرجاع 2 · مؤكد',
-    );
+    expect(visible(view.returnedView(after, main, 2, ar)).chip).toBe('تم إرجاع 2 · مؤكد');
   });
 });

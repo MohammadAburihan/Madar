@@ -42,6 +42,7 @@ describe('SiteApiService', () => {
         { project: 'PROJ-0001', qty: 2, s: 'Garden shop - RN', t: SITE },
         { project: 'PROJ-0001', qty: 5, s: SITE, t: null },
         { project: 'PROJ-0001', qty: 1, s: SITE, t: 'Main warehouse - RN' },
+        { project: 'PROJ-0001', qty: 0.5, s: SITE, t: 'Garden shop - RN' },
         { project: 'PROJ-0009', qty: 40, s: 'Main warehouse - RN', t: SITE },
       ],
       Item: () => [{ name: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit' }],
@@ -56,7 +57,8 @@ describe('SiteApiService', () => {
       site: SITE,
       delivered: 8,
       consumed: 5,
-      returned: 1,
+      returned: 1.5,
+      returnedTo: { 'Main warehouse - RN': 1, 'Garden shop - RN': 0.5 },
       atSite: 2,
       pendingOrders: [],
       warehouses: [

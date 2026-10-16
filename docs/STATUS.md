@@ -34,6 +34,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   - **4b-3 — Site use and returns** (this PR): the overview lists what the project holds at the site; for each item,
     record what was used (a Material Issue from the site, booked to the project, so its cost counts as actual), then
     return unused stock to a warehouse (a transfer booked to the project). Both are safe to repeat by reference.
+    Review pass 1 (3 low) fixed: "Returned to" counts that warehouse only; a balance load begun before the task started
+    over is dropped; a new use forgets the last one, so a later return isn't titled "Usage recorded".
   - **4b-4 — The desktop project workspace.**
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft

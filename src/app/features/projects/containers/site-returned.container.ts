@@ -95,6 +95,7 @@ export class SiteReturnedContainer implements OnInit {
       return null;
     }
     const target = balance.warehouses.find((w) => w.warehouse === sent.to) ?? {
+      warehouse: sent.to,
       name: sent.to,
       qty: 0,
     };

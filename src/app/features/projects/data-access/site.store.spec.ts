@@ -15,6 +15,7 @@ const BALANCE: SiteBalance = {
   delivered: 8,
   consumed: 0,
   returned: 0,
+  returnedTo: {},
   atSite: 8,
   pendingOrders: [],
   warehouses: [
@@ -153,5 +154,44 @@ describe('SiteStore', () => {
     answer(BALANCE);
     await slow;
     expect(store.balance()).toBeNull();
+  });
+
+  it('drops a balance whose load began before the task started over, even while the business was loading', async () => {
+    let business: (b: { name: string; currency: string }) => void = () => undefined;
+    const api = {
+      balance: vi.fn().mockResolvedValue(BALANCE),
+      post: vi.fn(),
+      find: vi.fn(),
+      discard: vi.fn(),
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: SiteApiService, useValue: api },
+        {
+          provide: BusinessService,
+          useValue: { ensure: () => new Promise((r) => (business = r)) },
+        },
+      ],
+    });
+    const store = TestBed.inject(SiteStore);
+    store.start('PROJ-0001', 'POT-30');
+    const slow = store.load();
+    store.start('PROJ-0001', 'SOIL');
+    business({ name: 'Rehan Nursery', currency: 'ILS' });
+    await slow;
+    expect([store.item(), store.balance()]).toEqual(['SOIL', null]);
+  });
+
+  it('forgets a shown use once a new use starts, so a later return is not titled "Usage recorded"', async () => {
+    const { store, api } = await loaded();
+    store.setUse('5');
+    api.post.mockResolvedValue('STE-1');
+    await store.confirm();
+    store.resultShown.set(true);
+    store.toReturn();
+    expect(store.used()).toBe(5);
+    store.toUse();
+    store.toReturn();
+    expect(store.used()).toBeNull();
   });
 });
