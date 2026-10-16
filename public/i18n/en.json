@@ -2529,10 +2529,10 @@
         "one": "{{count}} unit",
         "other": "{{count}} units"
       },
-      "goodsDelivered": "Goods delivered · {{warehouse}}",
-      "goodsReturned": "Goods returned · {{warehouse}}",
-      "goodsReceived": "Goods received · {{warehouse}}",
-      "goodsSentBack": "Goods sent back · {{warehouse}}",
+      "goodsDelivered": "Goods delivered",
+      "goodsReturned": "Goods returned",
+      "goodsReceived": "Goods received",
+      "goodsSentBack": "Goods sent back",
       "dueOnly": "Due {{due}}"
     }
   }

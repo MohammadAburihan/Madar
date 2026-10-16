@@ -337,7 +337,8 @@ export class ContactsApiService {
     const recent = { orderBy: 'posting_date desc, creation desc', limit: HISTORY_LIMIT };
     const [invoices, payments, deliveries] = await Promise.all([
       withMoney
-        ? firstValueFrom(
+        ? // A role that can't read invoices or payments still sees the rest of the history.
+          firstValueFrom(
             this.erpnext.list<Record<string, unknown>>(
               customer ? 'Sales Invoice' : 'Purchase Invoice',
               {
@@ -356,7 +357,7 @@ export class ContactsApiService {
                 ...recent,
               },
             ),
-          )
+          ).catch(() => [])
         : Promise.resolve([]),
       withMoney
         ? firstValueFrom(
@@ -371,7 +372,7 @@ export class ContactsApiService {
               filters: [['party_type', '=', customer ? 'Customer' : 'Supplier'], ...scope('party')],
               ...recent,
             }),
-          )
+          ).catch(() => [])
         : Promise.resolve([]),
       firstValueFrom(
         this.erpnext.list<{

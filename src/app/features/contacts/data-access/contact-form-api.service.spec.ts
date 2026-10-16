@@ -113,4 +113,31 @@ describe('ContactFormApiService', () => {
       supplier_primary_address: 'A-NEW',
     });
   });
+
+  it('unlinks a cleared address, and reuses a contact an earlier failed edit linked', async () => {
+    const { postCalls } = fakeErpnext(
+      { Contact: () => [{ name: 'C-EARLIER' }] },
+      { 'frappe.client.save': (body) => body['doc'] },
+      {
+        'Customer/Lina Haddad': {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          customer_primary_address: 'A-1',
+        },
+        'Contact/C-EARLIER': { name: 'C-EARLIER', phone_nos: [], email_ids: [] },
+      },
+    );
+    await api().save(
+      'customers',
+      { name: 'Lina Haddad', phone: '059-1', email: '', address: '' },
+      'Lina Haddad',
+      'CON-1',
+      'Palestine',
+    );
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.save', 'frappe.client.save']);
+    expect(postCalls[1].body['doc']).toMatchObject({
+      customer_primary_contact: 'C-EARLIER',
+      customer_primary_address: null,
+    });
+  });
 });

@@ -173,6 +173,14 @@ describe('contacts view', () => {
       ),
     ).toBe('Goods received · Main');
     expect(
+      historyCard(
+        { ...base, kind: 'delivery', name: 'DN-2', amount: null, qty: 1 },
+        'customers',
+        'ILS',
+        en,
+      ).message,
+    ).toBe('Goods delivered');
+    expect(
       visible(
         historyCard(
           { ...base, kind: 'invoice', name: 'SI-9', amount: 45, status: 'Credit Note Issued' },

@@ -44,6 +44,15 @@ test.describe.serial('adding and editing a contact @phone', () => {
     await page.goto('/contacts');
     await page.locator('app-search-field input').fill(name);
     await expect(page.locator('app-person-card', { hasText: name })).toContainText('059-000-7322');
+
+    // Clearing the address takes it off the contact.
+    await page.goto(page_);
+    await page.getByRole('button', { name: 'Edit contact' }).click();
+    await expect(page.getByLabel('Address')).toHaveValue('7 Olive Lane');
+    await page.getByLabel('Address').fill('');
+    await page.getByRole('button', { name: 'Save contact' }).click();
+    await expect(page).toHaveURL(page_, { timeout: 30_000 });
+    await expect(page.locator('p.lines')).not.toContainText('Olive Lane');
   });
 
   test('shows a new customer’s empty history', async ({ page }) => {
@@ -60,7 +69,7 @@ test('lists a customer’s invoices and payments, and opens an invoice @phone', 
   await page.goto(`/contacts/customers/${encodeURIComponent(CUSTOMER)}/history`);
   await expectHeading(page, 'Transaction history');
   const invoice = page.locator('button.card', { hasText: 'Invoice confirmed' }).first();
-  await expect(invoice).toContainText(named('Paid'));
+  await expect(invoice).toContainText(named('Due'));
   await expect(
     page.locator('app-feedback-card', { hasText: 'Customer payment' }).first(),
   ).toBeVisible();

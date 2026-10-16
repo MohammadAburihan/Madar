@@ -65,7 +65,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       />
       <button type="button" class="md-btn" (click)="loadExisting()">{{ txt.retry }}</button>
     } @else {
-      @if (!id()) {
+      @if (!id() && !lockedKind()) {
         <app-select-field
           [label]="txt.type"
           [options]="typeOptions()"
@@ -163,6 +163,8 @@ export class ContactFormContainer {
   protected readonly email = signal('');
   protected readonly address = signal('');
   private readonly chosenKind = signal<ContactKind | null>(null);
+  /** Fixed once a create is sent: checking and saving again must stay with that kind. */
+  protected readonly lockedKind = signal<ContactKind | null>(null);
   protected readonly loading = signal(false);
   protected readonly loadFailed = signal(false);
   protected readonly saving = signal(false);
@@ -191,7 +193,7 @@ export class ContactFormContainer {
 
   protected readonly contactKind = computed<ContactKind>(() => {
     const kinds = this.kinds();
-    const wanted = this.chosenKind() ?? (this.kind() || this.type());
+    const wanted = this.lockedKind() ?? this.chosenKind() ?? (this.kind() || this.type());
     return kinds.find((k) => k === wanted) ?? kinds[0] ?? 'customers';
   });
 
@@ -299,6 +301,9 @@ export class ContactFormContainer {
     this.notCreated.set(false);
     const kind = this.contactKind();
     const existing = this.id() ?? this.created;
+    if (!existing) {
+      this.lockedKind.set(kind);
+    }
     try {
       const business = await this.business.ensure();
       const saved = await this.api.save(

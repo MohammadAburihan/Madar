@@ -123,7 +123,11 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   deliveries, or a supplier's (receipts only without cost access), newest first, searchable, own sales only for sales
   roles; invoices open their page. The mock's "More options" is left out.
   e2e: add a customer (name and email checks), edit phone and address, find them in the list, empty history; Lina's
-  history opens an invoice; add a supplier on desktop; a salesperson may add customers only (Arabic).
+  history opens an invoice; add a supplier on desktop; a salesperson may add customers only (Arabic). Review pass 1
+  (3 medium, 2 low) fixed: history still shows deliveries when invoices or payments can't be read; clearing the
+  address takes it off the contact (e2e); the contact type locks once a create is sent, so checking and saving again
+  stay with it; a retry after a failed edit reuses the contact and address the first try linked; deliveries
+  without a header warehouse read without one.
 - Next: Settings.
 
 ## End-to-end happy paths: merged (#26)

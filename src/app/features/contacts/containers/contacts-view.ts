@@ -181,16 +181,21 @@ export function historyCard(
     case 'delivery':
       return {
         title: `${entry.name} · ${tr.plural('contacts.history.units', entry.qty, { count: qty(entry.qty) })}`,
-        message: t(
-          kind === 'customers'
-            ? entry.status === 'Return'
-              ? 'goodsReturned'
-              : 'goodsDelivered'
-            : entry.status === 'Return'
-              ? 'goodsSentBack'
-              : 'goodsReceived',
-          { warehouse: entry.place ?? '' },
-        ),
+        // Rows may each carry their own warehouse; then the note has none to name.
+        message: [
+          t(
+            kind === 'customers'
+              ? entry.status === 'Return'
+                ? 'goodsReturned'
+                : 'goodsDelivered'
+              : entry.status === 'Return'
+                ? 'goodsSentBack'
+                : 'goodsReceived',
+          ),
+          entry.place,
+        ]
+          .filter(Boolean)
+          .join(' · '),
       };
   }
 }

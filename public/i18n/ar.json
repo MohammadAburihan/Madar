@@ -2613,10 +2613,10 @@
         "many": "{{count}} وحدة",
         "other": "{{count}} وحدة"
       },
-      "goodsDelivered": "تم تسليم البضائع · {{warehouse}}",
-      "goodsReturned": "أُعيدت البضائع · {{warehouse}}",
-      "goodsReceived": "تم استلام البضائع · {{warehouse}}",
-      "goodsSentBack": "أُعيدت البضائع للمورّد · {{warehouse}}",
+      "goodsDelivered": "تم تسليم البضائع",
+      "goodsReturned": "أُعيدت البضائع",
+      "goodsReceived": "تم استلام البضائع",
+      "goodsSentBack": "أُعيدت البضائع للمورّد",
       "dueOnly": "المتبقي {{due}}"
     }
   }

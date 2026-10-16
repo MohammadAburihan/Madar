@@ -220,4 +220,22 @@ describe('ContactsApiService', () => {
     expect(history.map((e) => e.kind)).toEqual(['delivery']);
     expect(listCalls.map((c) => c.doctype)).toEqual(['Purchase Receipt']);
   });
+
+  it('still shows the deliveries when invoices and payments can’t be read', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+      'Payment Entry': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+      'Delivery Note': () => [
+        {
+          name: 'DN-1',
+          posting_date: '2026-10-11',
+          total_qty: 2,
+          set_warehouse: null,
+          is_return: 0,
+        },
+      ],
+    });
+    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    expect(history.map((e) => e.name)).toEqual(['DN-1']);
+  });
 });
