@@ -166,11 +166,23 @@ describe('SalesReturnApiService', () => {
       base_rounded_total: 0,
       items: [{ sales_invoice_item: 'row-1', qty: -2 }],
     };
-    fakeErpnext({}, {}, { 'Sales Invoice/SI-1050': posted, 'Sales Invoice/SI-1042': ORIGINAL });
+    const { postCalls } = fakeErpnext(
+      {},
+      {},
+      { 'Sales Invoice/SI-1050': posted, 'Sales Invoice/SI-1042': ORIGINAL },
+    );
     await expect(api().confirm(request, 'SI-1050')).rejects.toBeInstanceOf(PostedEarlierError);
     expect(
       (await api().confirm({ ...request, lines: [{ row: 'row-1', qty: 2 }] }, 'SI-1050')).credit,
     ).toBe(170);
+    // Posted by an earlier task's slow submit: reload first, never a second note.
+    await expect(
+      api().confirm(
+        { ...request, reference: 'RET-NEXT', lines: [{ row: 'row-1', qty: 2 }] },
+        'SI-1050',
+      ),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
+    expect(postCalls).toEqual([]);
   });
 
   it('sends each row back to its own warehouse unless one is chosen', async () => {

@@ -92,7 +92,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   pass 2 (2 medium, 2 low): the return page itself refuses sales Madar can't return (opened by URL), and POS sales
   aren't returnable (their return would refund cash); an empty row counts as 0. Review pass 3 (1 high) fixed: a part
   return takes its share of a fixed invoice discount and of "Actual" charges (ERPNext's mapper copies them whole), so
-  the posted credit matches the preview (checked on v16).
+  the posted credit matches the preview (checked on v16). Review pass 4 (1 low-medium) fixed: a carried-over draft that an
+  earlier task's slow submit posted asks for a reload instead of a second credit note.
 - Next: Contacts and Settings. A new order without a quotation has no mock and isn't planned.
 
 ## End-to-end happy paths: merged (#26)

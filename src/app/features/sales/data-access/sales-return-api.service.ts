@@ -142,7 +142,6 @@ export class SalesReturnApiService {
     const remembered = draft
       ? await reusableDraft(this.erpnext.doc<InvoiceDoc>('Sales Invoice', draft))
       : null;
-    // Posted with this task's reference, it is this request's result; posted otherwise, it is someone else's.
     const ours = String(remembered?.remarks ?? '').includes(request.reference);
     if (remembered?.docstatus === 1 && ours) {
       // Posted by a slow earlier attempt: this request's result only if it returned what is asked now.
@@ -150,6 +149,10 @@ export class SalesReturnApiService {
         throw new PostedEarlierError(remembered.name);
       }
       return this.result(remembered, request);
+    }
+    if (remembered?.docstatus === 1) {
+      // An earlier task's own slow submit landed: the invoice must be reloaded, never returned against twice.
+      throw new PostedEarlierError(remembered.name);
     }
     const current = remembered?.docstatus === 0 ? remembered : null;
     try {
