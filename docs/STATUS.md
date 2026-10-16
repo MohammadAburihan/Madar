@@ -37,6 +37,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (2 medium, 2 low) fixed: an account added since the chart was read is read again, not left out; the
   by-month total uses the whole period's figures and says when only the last 12 months are listed; figures hide while
   the custom dates are out of order; internal transfers between own accounts are left out of money in and out.
+  Review pass 2 (1 medium, 2 low) fixed: a failed transfers read fails the load (only a forbidden one falls back);
+  parallel months share one chart reread and a late failure can't evict a newer chart; Retry rereads the site's today.
 - **5b — Customer and supplier statements**, with Share and Download PDF.
 
 ## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)

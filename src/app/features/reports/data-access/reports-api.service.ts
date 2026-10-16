@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { AccountFlow, DateRange, PeriodFigures } from './report.models';
 
 interface AccountRow {
@@ -19,8 +20,9 @@ export class ReportsApiService {
   private readonly accountCache = new Map<string, Promise<AccountRow[]>>();
 
   async figures(company: string, range: DateRange): Promise<PeriodFigures> {
+    const chart = this.accounts(company);
     const [cached, rows, transfers] = await Promise.all([
-      this.accounts(company),
+      chart,
       // Debits and credits are in the company currency. Opening entries and year-end closing are not activity.
       firstValueFrom(
         this.erpnext.list<Record<string, number | string>>('GL Entry', {
@@ -41,8 +43,7 @@ export class ReportsApiService {
     let accounts = cached;
     if (rows.some((r) => !accounts.some((a) => a.name === r['account']))) {
       // An account added since the chart was read: read it again rather than leave its figures out.
-      this.accountCache.delete(company);
-      accounts = await this.accounts(company);
+      accounts = await this.rereadAccounts(company, chart);
     }
     const byName = new Map(accounts.map((a) => [a.name, a]));
     let income = 0;
@@ -109,7 +110,13 @@ export class ReportsApiService {
         ],
         limit: 0,
       }),
-    ).catch(() => []);
+      // Auditors may not read payments: their totals then include transfers. Other failures fail the load.
+    ).catch((error: unknown) => {
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        return [];
+      }
+      throw error;
+    });
     const moved = new Map<string, { in: number; out: number }>();
     const add = (account: string, side: 'in' | 'out', amount: number) => {
       const entry = moved.get(account) ?? { in: 0, out: 0 };
@@ -137,10 +144,28 @@ export class ReportsApiService {
           limit: 0,
         }),
       );
-      // A failed read is retried next time rather than cached.
-      cached.catch(() => this.accountCache.delete(company));
-      this.accountCache.set(company, cached);
+      this.remember(company, cached);
     }
     return cached;
+  }
+
+  /** One reread for every parallel call that found the same stale chart. */
+  private rereadAccounts(company: string, stale: Promise<AccountRow[]>): Promise<AccountRow[]> {
+    const current = this.accountCache.get(company);
+    if (current && current !== stale) {
+      return current;
+    }
+    this.accountCache.delete(company);
+    return this.accounts(company);
+  }
+
+  private remember(company: string, read: Promise<AccountRow[]>): void {
+    this.accountCache.set(company, read);
+    // A failed read is retried next time; a later, successful one is left in place.
+    read.catch(() => {
+      if (this.accountCache.get(company) === read) {
+        this.accountCache.delete(company);
+      }
+    });
   }
 }

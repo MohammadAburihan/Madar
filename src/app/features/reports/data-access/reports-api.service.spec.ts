@@ -1,4 +1,6 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { ReportsApiService } from './reports-api.service';
 
@@ -102,5 +104,33 @@ describe('ReportsApiService', () => {
     });
     const figures = await api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' });
     expect([figures.moneyIn, figures.moneyOut]).toEqual([500, 0]);
+  });
+
+  it("fails rather than count transfers twice when payments can't be read for a reason other than permission", async () => {
+    fakeErpnext({
+      Account: () => [],
+      'GL Entry': () => [],
+      'Payment Entry': () => throwError(() => new HttpErrorResponse({ status: 500 })),
+    });
+    await expect(
+      api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' }),
+    ).rejects.toBeTruthy();
+  });
+
+  it('shares one chart reread between parallel months', async () => {
+    let accounts: object[] = [];
+    const { listCalls } = fakeErpnext({
+      Account: () => accounts,
+      'GL Entry': () => [{ account: 'Sales - RN', 'SUM(`debit`)': 0, 'SUM(`credit`)': 5 }],
+    });
+    await api().figures('Rehan Nursery', { from: '2026-09-01', to: '2026-09-30' });
+    accounts = [
+      { name: 'Sales - RN', account_name: 'Sales', root_type: 'Income', account_type: null },
+    ];
+    const before = listCalls.filter((c) => c.doctype === 'Account').length;
+    await Promise.all(
+      [1, 2, 3].map(() => api().figures('Rehan Nursery', { from: '2026-10-01', to: '2026-10-31' })),
+    );
+    expect(listCalls.filter((c) => c.doctype === 'Account').length - before).toBe(1);
   });
 });

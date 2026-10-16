@@ -321,15 +321,12 @@ export class ReportsContainer {
     this.kind.set('custom');
   }
 
+  /** Reads the site's today again too, so a page left open overnight moves to the new day. */
   protected reload(): void {
-    if (!this.today()) {
-      void this.clock
-        .ensure()
-        .then(() => this.today.set(this.clock.now()))
-        .catch(() => this.state.set('error'));
-      return;
-    }
-    void this.load(this.range(), this.desktop());
+    void this.clock
+      .ensure()
+      .then(() => this.today.set(this.clock.now()))
+      .catch(() => this.state.set('error'));
   }
 
   protected openProfit(): void {
