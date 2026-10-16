@@ -102,7 +102,7 @@ export function orderCard(order: OrderRecord, currency: string, tr: Translator):
       order.docstatus === 0
         ? `${t('draftOrder')} · ${formatMoney(order.total, currency)}`
         : `${t('confirmedOrder', { items })}\n${progress}`,
-    openable: false,
+    openable: true,
     cells: [order.name, order.customer, status, formatMoney(order.total, currency)],
   };
 }

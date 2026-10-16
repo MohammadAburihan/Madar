@@ -9,6 +9,7 @@ import {
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { HtmlPdfService } from '../../../core/erpnext/html-pdf.service';
 import { QuotationDetail, QuotationRequest } from './quotation.models';
+import { stockedItems } from './stocked-items';
 
 interface QuotationDoc {
   name: string;
@@ -134,20 +135,11 @@ export class QuotationApiService {
 
   async quotation(name: string): Promise<QuotationDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<QuotationDoc>('Quotation', name));
-    const codes = [...new Set((doc.items ?? []).map((i) => i.item_code))];
-    const stocked = codes.length
-      ? await firstValueFrom(
-          this.erpnext.list<{ name: string }>('Item', {
-            fields: ['name'],
-            filters: [
-              ['name', 'in', codes],
-              ['is_stock_item', '=', 1],
-            ],
-            limit: 0,
-          }),
-        ).catch(() => [])
-      : [];
-    const stock = new Set(stocked.map((i) => i.name));
+    // Only the wording depends on it, so an unreadable item list doesn't hide the quotation.
+    const stock = await stockedItems(
+      this.erpnext,
+      (doc.items ?? []).map((i) => i.item_code),
+    ).catch(() => new Set<string>());
     return {
       name: doc.name,
       customer: doc.party_name,

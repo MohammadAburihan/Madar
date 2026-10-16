@@ -57,3 +57,16 @@ test('quotes in Arabic, right to left @phone', async ({ page }) => {
   await expect(page).toHaveURL(/\/sales\/quotes\/[^/]+$/, { timeout: 60_000 });
   await expectHeading(page, 'تم تأكيد عرض السعر');
 });
+
+test('reads a sales order in Arabic, right to left @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  await page.goto('/sales');
+  await toArabic(page);
+  await page.getByRole('radio', { name: 'الطلبات' }).click();
+  await page.locator('button.card').first().click();
+  await expect(page).toHaveURL(/\/sales\/orders\/[^/]+$/);
+  await expectHeading(page, /أمر البيع/);
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('app-status-chip').first()).toContainText(named('الطلب', ':'));
+  await expect(page.getByLabel('التسليم المتوقع')).toBeVisible();
+});
