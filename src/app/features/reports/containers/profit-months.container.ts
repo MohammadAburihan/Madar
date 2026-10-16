@@ -54,7 +54,7 @@ import { lastThreeMonths, profitByMonth, rangeText } from './reports-view';
         [title]="txt.loadFailed.title"
         [message]="txt.loadFailed.message"
       />
-      <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
+      <button type="button" class="md-btn" (click)="retry()">{{ txt.retry }}</button>
     } @else if (view(); as v) {
       <app-profit-card [label]="txt.total" [amount]="v.total" [rows]="v.totalRows" />
       @for (month of v.months; track month.id) {
@@ -146,6 +146,21 @@ export class ProfitMonthsContainer {
         untracked(() => void this.load());
       }
     });
+  }
+
+  /** The site's today first if that is what failed, then the months. */
+  protected async retry(): Promise<void> {
+    if (!this.today()) {
+      this.failed.set(false);
+      try {
+        await this.clock.ensure();
+        this.today.set(this.clock.now());
+      } catch {
+        this.failed.set(true);
+      }
+      return;
+    }
+    await this.load();
   }
 
   protected async load(): Promise<void> {

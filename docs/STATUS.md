@@ -24,14 +24,16 @@ _Last updated: 16 Oct 2026_
 | #20 | **Desktop project workspace** (step 4b-4): tasks table, movement ledger per item, site stock and records |
 | #21 | Step 4 batch review fixes |
 | #22 | **Reports overview** (step 5a): profit and money in and out by period and month |
+| #23 | **Statements** (step 5b): customer and supplier statements with Share and Download PDF |
+| #24 | **More page** on phones |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## In progress — step 5 of 6: Reports
+## Step 5 of 6 — Reports: done (#22–#25)
 
 - **5a — Reports overview**: merged (#22). Deferred (low): an exchange-rate revaluation of a foreign-currency bank
   account counts as money in or out; a hand-made journal entry holding two unrelated payments is netted as a transfer.
-- **5b — Customer and supplier statements** (this PR): from the reports page, pick a customer (search) or supplier
+- **5b — Customer and supplier statements**: merged (#23). from the reports page, pick a customer (search) or supplier
   (list) and a period; the statement shows the opening balance, each posted invoice, return, payment or journal entry
   in posting order with its running balance, and the outstanding amount, from the party ledger in the company
   currency. Invoices and supplier payments open their pages. Share and Download PDF render the statement on the ERPNext
@@ -42,7 +44,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Retry redoes whichever step failed (the date, the supplier list, the linked party); a fully paid invoice (POS, "is
   paid" bill) stays on the statement with both sides shown. Review pass 2 (2 low): Retry now redoes every failed step;
   deferred: a disabled customer or supplier can't be picked for a statement (opening one by link still works).
-- **More page** (this PR): on phones the More tab lists the role's destinations the tab bar doesn't hold (Purchases,
+- Step 5 batch review (2 medium, 2 low, #25): fixed Profit by month's Retry after a clock failure; in the phone apps the
+  statement says PDFs are on the web for now instead of buttons that do nothing; Change cancels a statement still
+  loading. Deferred (low): disabled suppliers can't be picked for a statement either.
+- **More page**: merged (#24). On phones the More tab lists the role's destinations the tab bar doesn't hold (Purchases,
   Contacts, Money, Projects, Reports, Settings, Switch business), following the same role rules as the desktop sidebar.
   "Items & services" from the mock is left out until that area exists.
 

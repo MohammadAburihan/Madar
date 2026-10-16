@@ -1921,7 +1921,8 @@
       "title": "That customer or supplier wasn't found",
       "message": "Choose one from the list."
     },
-    "loading": "Loading statement…"
+    "loading": "Loading statement…",
+    "exportOnWeb": "Sharing and downloading the PDF work in Madar on the web for now; the app adds them soon."
   },
   "more": {
     "subtitle": "{{business}} · {{role}}",
