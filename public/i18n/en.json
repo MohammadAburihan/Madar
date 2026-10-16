@@ -1931,7 +1931,8 @@
     "unknown": {
       "title": "The business's time zone couldn't be read",
       "message": "Dates, \"today\" and due days follow this device's clock until it can be read.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "trying": "Trying…"
     },
     "recovered": {
       "title": "The business's time zone is read",

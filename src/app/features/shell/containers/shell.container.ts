@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -120,6 +127,7 @@ export class ShellContainer implements OnInit {
   private readonly i18n = injectI18n();
   private readonly router = inject(Router);
   protected readonly clock = inject(SiteClockService);
+  protected readonly retrying = signal(false);
   protected readonly url = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -151,6 +159,7 @@ export class ShellContainer implements OnInit {
       title: t(`clock.${state}.title`),
       message: t(`clock.${state}.message`),
       action: t(state === 'unknown' ? 'clock.unknown.retry' : 'clock.recovered.ok'),
+      trying: t('clock.unknown.trying'),
     };
   });
 
@@ -160,7 +169,8 @@ export class ShellContainer implements OnInit {
    */
   protected clockAction(): void {
     if (this.clock.unknownZone()) {
-      void this.clock.retry();
+      this.retrying.set(true);
+      void this.clock.retry().finally(() => this.retrying.set(false));
     } else {
       this.clock.dismissRecovered();
     }
