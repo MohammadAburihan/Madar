@@ -207,6 +207,7 @@ function sameQuotation(doc: QuotationDoc, request: QuotationRequest): boolean {
   const rows = doc.items ?? [];
   return (
     doc.party_name === request.customer &&
+    doc.valid_till === request.validTill &&
     rows.length === request.lines.length &&
     request.lines.every(
       (l, i) =>

@@ -46,6 +46,7 @@ describe('QuotationApiService', () => {
       name: 'QT-1',
       docstatus: 1,
       party_name: 'Lina Haddad',
+      valid_till: '2026-10-30',
       items: [{ item_code: 'POT-30', qty: 2, rate: 45 }],
     };
     const { postCalls } = fakeErpnext({}, {}, { 'Quotation/QT-1': posted });
@@ -56,6 +57,9 @@ describe('QuotationApiService', () => {
         request({ lines: [{ item: 'POT-30', uom: 'Unit', qty: 3, rate: 45 }] }),
         'QT-1',
       ),
+    ).rejects.toBeInstanceOf(PostedEarlierError);
+    await expect(
+      api().confirm(request({ validTill: '2026-11-06' }), 'QT-1'),
     ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
