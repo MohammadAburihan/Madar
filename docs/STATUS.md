@@ -28,6 +28,7 @@ _Last updated: 16 Oct 2026_
 | #24 | **More page** on phones |
 | #25 | Step 5 batch review fixes |
 | #26 | **Playwright end-to-end suite** for every happy path |
+| #27 | Project sites kept out of the sale, receipt and move pickers |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
@@ -47,7 +48,10 @@ reuses one (a server already on :4200 may proxy to `frontend`); the collection t
 Found while looping, fixed in #27: the Project sites warehouse was offered to sell from, receive into and move
 through; only the project flows (supply, use, return) touch it now. The inventory page still shows its balances.
 Review pass 1 (1 medium, 1 low) fixed: a move's "Company total" reads the same before and after (both leave the site
-warehouse out); a stray doc comment removed.
+warehouse out); a stray doc comment removed. Merged (#27).
+Also found while looping, fixed in #28: Money's history put all of a day's payments before that day's expenses and
+cut the list at 50, so after a busy day a just-recorded expense could be missing from the page "Done" opens; a day's
+payments and expenses now interleave by when they were entered.
 
 ## Step 5 of 6 — Reports: done (#22–#25)
 

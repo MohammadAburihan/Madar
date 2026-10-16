@@ -12,6 +12,8 @@ export interface PaymentRecord {
   amount: number;
   status: 'confirmed' | 'draft' | 'cancelled';
   postingDate: string;
+  /** When it was entered: orders a day's payments and expenses together. */
+  created: string;
   invoices: string[];
   /** Expenses only: whether a receipt is attached. */
   receipt?: boolean;
@@ -66,11 +68,9 @@ export class MoneyApiService {
         ? Promise.resolve(null)
         : this.largestOpen('Purchase Invoice', 'supplier_name', company).catch(() => null),
     ]);
-    // Both lists come newest first; merged, they are sorted again (stable, so same-day order holds).
+    // Both lists come newest first; merged, a day's payments and expenses interleave by when they were entered.
     const history = expenses.length
-      ? [...payments, ...expenses]
-          .sort((a, b) => b.postingDate.localeCompare(a.postingDate))
-          .slice(0, HISTORY_LIMIT)
+      ? [...payments, ...expenses].sort(newestFirst).slice(0, HISTORY_LIMIT)
       : payments;
     return { payments: history, receivable, payable };
   }
@@ -83,24 +83,31 @@ export class MoneyApiService {
     const found = await Promise.all(
       batches(expenseAccounts, ACCOUNT_BATCH).map((accounts) =>
         firstValueFrom(
-          this.erpnext.list<{ name: string; posting_date: string; docstatus: number }>(
-            'Journal Entry',
-            {
-              fields: ['name', 'posting_date', 'docstatus'],
-              filters: [
-                ['company', '=', company],
-                ['docstatus', '<', 2],
-                ['Journal Entry Account', 'account', 'in', accounts],
-              ],
-              orderBy: 'posting_date desc, creation desc',
-              limit: HISTORY_LIMIT,
-            },
-          ),
+          this.erpnext.list<{
+            name: string;
+            posting_date: string;
+            creation: string;
+            docstatus: number;
+          }>('Journal Entry', {
+            fields: ['name', 'posting_date', 'creation', 'docstatus'],
+            filters: [
+              ['company', '=', company],
+              ['docstatus', '<', 2],
+              ['Journal Entry Account', 'account', 'in', accounts],
+            ],
+            orderBy: 'posting_date desc, creation desc',
+            limit: HISTORY_LIMIT,
+          }),
         ),
       ),
     );
     // Batches overlap, and an entry with two expense rows comes back once per row.
-    const entries = found.flat().sort((a, b) => b.posting_date.localeCompare(a.posting_date));
+    const entries = found
+      .flat()
+      .sort(
+        (a, b) =>
+          b.posting_date.localeCompare(a.posting_date) || b.creation.localeCompare(a.creation),
+      );
     const names = [...new Set(entries.map((e) => e.name))].slice(0, HISTORY_LIMIT);
     if (!names.length) {
       return [];
@@ -144,6 +151,7 @@ export class MoneyApiService {
         amount: debits.reduce((sum, r) => sum + r.debit, 0),
         status: entry.docstatus === 1 ? 'confirmed' : 'draft',
         postingDate: entry.posting_date,
+        created: entry.creation,
         invoices: [],
         receipt: files.some((f) => f.attached_to_name === entryName),
       };
@@ -167,6 +175,7 @@ export class MoneyApiService {
         paid_amount: number;
         docstatus: number;
         posting_date: string;
+        creation: string;
       }>('Payment Entry', {
         fields: [
           'name',
@@ -177,6 +186,7 @@ export class MoneyApiService {
           'paid_amount',
           'docstatus',
           'posting_date',
+          'creation',
         ],
         filters,
         orderBy: 'posting_date desc, creation desc',
@@ -211,6 +221,7 @@ export class MoneyApiService {
         amount: r.paid_amount,
         status: r.docstatus === 1 ? 'confirmed' : r.docstatus === 2 ? 'cancelled' : 'draft',
         postingDate: r.posting_date,
+        created: r.creation,
         invoices: references
           .filter((ref) => ref.parent === r.name)
           .map((ref) => ref.reference_name),
@@ -259,3 +270,6 @@ export class MoneyApiService {
     return new Map(rows.map((r) => [r.name, r.account_name]));
   }
 }
+
+const newestFirst = (a: PaymentRecord, b: PaymentRecord) =>
+  b.postingDate.localeCompare(a.postingDate) || b.created.localeCompare(a.created);
