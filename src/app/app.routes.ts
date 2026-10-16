@@ -58,7 +58,6 @@ export const routes: Routes = [
       },
       placeholder('new', 'nav.new'),
       placeholder('drafts', 'nav.drafts'),
-      placeholder('businesses', 'nav.activeBusiness'),
       {
         path: 'task/:action',
         loadComponent: () =>

@@ -2572,6 +2572,29 @@
     "openTask": {
       "title": "A confirmation is still open",
       "message": "Finish checking it before signing out: its reference would be lost, and doing it again could record it twice."
+    },
+    "addBusiness": "Add another business"
+  },
+  "businesses": {
+    "title": "Your businesses",
+    "subtitle": "Choose where you want to work.",
+    "current": "Current business · {{role}}\n{{currency}} · Open now",
+    "open": "Open {{business}}",
+    "remove": "Remove {{business}}",
+    "add": "Add business connection",
+    "address": "Workspace address",
+    "hint": "Each business has its own Madar address and its own server. Ask the business owner for it.",
+    "save": "Save business",
+    "cancel": "Cancel",
+    "note": "Opening another business signs you in there separately. Its records never mix with this one's.",
+    "errors": {
+      "invalid": "Enter an address like padel.example.com.",
+      "current": "That is this business's own address.",
+      "known": "That business is already saved."
+    },
+    "nativeOnly": {
+      "title": "Other businesses open in the browser",
+      "message": "In the app, this business is the one it was set up for. Open another business's Madar address in a browser."
     }
   }
 }
