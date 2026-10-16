@@ -343,4 +343,14 @@ describe('TransferStore', () => {
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
   });
+
+  it('leaves the project sites out of a plain move: only project supply and returns move that stock', async () => {
+    const { store, api } = setup();
+    api.warehouses.mockResolvedValue([
+      { id: MAIN, name: 'Main warehouse' },
+      { id: 'Project sites - RN', name: 'Project sites' },
+    ]);
+    await store.loadWarehouses();
+    expect(store.warehouses().map((w) => w.name)).toEqual(['Main warehouse']);
+  });
 });

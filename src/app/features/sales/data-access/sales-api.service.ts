@@ -8,6 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
@@ -134,6 +135,8 @@ export class SalesApiService {
           ['is_group', '=', 0],
           ['disabled', '=', 0],
           ['warehouse_type', '!=', 'Transit'],
+          // Project site stock is the projects'; only their flows move it.
+          ['warehouse_name', '!=', SITE_WAREHOUSE_NAME],
         ],
         orderBy: 'warehouse_name asc',
         limit: 0,

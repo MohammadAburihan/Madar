@@ -26,10 +26,12 @@ _Last updated: 16 Oct 2026_
 | #22 | **Reports overview** (step 5a): profit and money in and out by period and month |
 | #23 | **Statements** (step 5b): customer and supplier statements with Share and Download PDF |
 | #24 | **More page** on phones |
+| #25 | Step 5 batch review fixes |
+| #26 | **Playwright end-to-end suite** for every happy path |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## End-to-end happy paths (this PR)
+## End-to-end happy paths: merged (#26)
 
 `npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site, through its own dev server on :4321
 (`ERPNEXT_DEV_URL=http://localhost:8081`, always started fresh so it can't reach `frontend`), at phone (390 px) and desktop (1440 px) widths, one at a time in file
@@ -42,7 +44,8 @@ officer's and store associate's homes; a whole sale and the reports in Arabic. R
 sales and supply use, and new records get unique names. Not in CI, which has no ERPNext.
 Review pass 1 (1 medium, 1 low) fixed: the suite runs its own dev server on :4321 pointed at the test site and never
 reuses one (a server already on :4200 may proxy to `frontend`); the collection test requires its follow-up button.
-Found while looping: the sale's stock check offers the Project sites warehouse as another place to sell from (to fix).
+Found while looping, fixed in #27: the Project sites warehouse was offered to sell from, receive into and move
+through; only the project flows (supply, use, return) touch it now. The inventory page still shows its balances.
 
 ## Step 5 of 6 — Reports: done (#22–#25)
 

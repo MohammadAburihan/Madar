@@ -12,5 +12,7 @@ describe('WarehouseDirectoryService', () => {
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['company', '=', 'Rehan Nursery']);
     expect(listCalls[0].query.filters).toContainEqual(['warehouse_type', '!=', 'Transit']);
+    // Goods aren't received into the project sites: only project supply moves stock there.
+    expect(listCalls[0].query.filters).toContainEqual(['warehouse_name', '!=', 'Project sites']);
   });
 });
