@@ -29,7 +29,7 @@ const RESULT: TransferResult = {
 
 function setup() {
   const api = {
-    warehouses: vi.fn().mockResolvedValue([
+    movableWarehouses: vi.fn().mockResolvedValue([
       { id: STORES, name: 'Stores' },
       { id: MAIN, name: 'Main warehouse' },
       { id: SHOP, name: 'Garden shop' },

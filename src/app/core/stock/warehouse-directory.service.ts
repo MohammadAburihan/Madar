@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
+import { SITE_WAREHOUSE_NAME } from './site-warehouse';
 
 export interface WarehouseOption {
   id: string;
@@ -21,6 +22,8 @@ export class WarehouseDirectoryService {
           ['is_group', '=', 0],
           ['disabled', '=', 0],
           ['warehouse_type', '!=', 'Transit'],
+          // Project site stock is the projects'; only their flows move it.
+          ['warehouse_name', '!=', SITE_WAREHOUSE_NAME],
         ],
         orderBy: 'warehouse_name asc',
         limit: 0,

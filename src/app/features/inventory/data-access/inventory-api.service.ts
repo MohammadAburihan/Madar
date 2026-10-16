@@ -7,6 +7,7 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import {
   InventoryOverview,
   Movement,
@@ -257,6 +258,11 @@ export class InventoryApiService {
     };
   }
 
+  /** Where a plain move can take stock: every location but the project sites, whose stock only project flows move. */
+  async movableWarehouses(company: string): Promise<WarehouseInfo[]> {
+    return (await this.warehouses(company)).filter((w) => w.name !== SITE_WAREHOUSE_NAME);
+  }
+
   private async result(entry: EntryDoc, request: TransferRequest): Promise<TransferResult> {
     const base = {
       entry: entry.name,
@@ -265,7 +271,7 @@ export class InventoryApiService {
     };
     try {
       // The same locations the move screen totals, so "Company total" reads the same before and after.
-      const warehouses = await this.warehouses(request.company);
+      const warehouses = await this.movableWarehouses(request.company);
       const item = await this.item(
         request.item,
         warehouses.map((w) => w.id),

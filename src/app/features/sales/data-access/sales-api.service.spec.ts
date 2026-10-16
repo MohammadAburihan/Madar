@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { NEVER, Observable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
+import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { ErpnextClient, ListQuery } from '../../../core/erpnext/erpnext-client';
 import { CatalogItem, SaleRequest } from './sale.models';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
@@ -168,6 +169,16 @@ describe('SalesApiService', () => {
       parenttype: 'Sales Invoice',
       uom: 'Unit',
     });
+  });
+
+  it("offers the company's warehouses to sell from, but not the project sites", async () => {
+    const { listCalls } = fakeErpnext({
+      Warehouse: () => [{ name: 'Main warehouse - RN', warehouse_name: 'Main warehouse' }],
+    });
+    expect(await TestBed.inject(SalesApiService).warehouses('Rehan Nursery')).toEqual([
+      { id: 'Main warehouse - RN', name: 'Main warehouse' },
+    ]);
+    expect(listCalls[0].query.filters).toContainEqual(['warehouse_name', '!=', 'Project sites']);
   });
 
   it('filters the catalog to products or services', async () => {

@@ -8,7 +8,8 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { SupplyPlan, SupplyRequest } from './project.models';
-import { ProjectsApiService, SITE_WAREHOUSE_NAME } from './projects-api.service';
+import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
+import { ProjectsApiService } from './projects-api.service';
 
 export interface EntryDoc {
   name: string;

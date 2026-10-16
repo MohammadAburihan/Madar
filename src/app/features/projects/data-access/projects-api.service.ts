@@ -8,6 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import {
   Attachment,
@@ -40,9 +41,6 @@ interface ProjectDoc {
   company: string;
   [key: string]: unknown;
 }
-
-/** The shared warehouse that holds every project's site stock; each project's share comes from the ledger. */
-export const SITE_WAREHOUSE_NAME = 'Project sites';
 
 /** The project sites warehouse doesn't exist yet, and this role can't create it (Item Manager can). */
 export class SiteWarehouseMissingError extends Error {

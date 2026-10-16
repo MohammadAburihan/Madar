@@ -92,7 +92,7 @@ export class TransferStore {
   async loadWarehouses(): Promise<void> {
     const business = await this.business.ensure();
     if (business) {
-      this.warehouses.set(await this.api.warehouses(business.name));
+      this.warehouses.set(await this.api.movableWarehouses(business.name));
     }
   }
 
