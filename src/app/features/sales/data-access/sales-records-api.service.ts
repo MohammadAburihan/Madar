@@ -65,7 +65,14 @@ export class SalesRecordsApiService {
       status: r.status,
       isReturn: !!r.is_return,
       // A draft has moved no stock yet; a confirmed invoice did, or billed a delivery that did.
-      delivered: r.docstatus === 1 && (!!r.update_stock || fromDeliveries.has(r.name)),
+      delivered:
+        r.docstatus !== 1
+          ? false
+          : r.update_stock || fromDeliveries?.has(r.name)
+            ? true
+            : fromDeliveries
+              ? false
+              : null,
       total: r.base_rounded_total || r.base_grand_total,
       // Outstanding is in the receivable account's currency: converted only when that isn't the company's.
       outstanding:
@@ -79,9 +86,9 @@ export class SalesRecordsApiService {
 
   /**
    * The invoices whose goods left with a delivery: one the invoice bills, or one made from it afterwards (which
-   * records the delivered quantity on the invoice's rows). Empty when that can't be read.
+   * records the delivered quantity on the invoice's rows). Null when that can't be read.
    */
-  private async billedDeliveries(names: readonly string[]): Promise<Set<string>> {
+  private async billedDeliveries(names: readonly string[]): Promise<Set<string> | null> {
     if (!names.length) {
       return new Set();
     }
@@ -92,12 +99,17 @@ export class SalesRecordsApiService {
           filters: [['name', 'in', names] as Filter, filter],
           limit: 0,
         }),
-      ).catch(() => []);
-    const [billed, deliveredAfter] = await Promise.all([
-      find(['Sales Invoice Item', 'delivery_note', 'is', 'set']),
-      find(['Sales Invoice Item', 'delivered_qty', '>', 0]),
-    ]);
-    return new Set([...billed, ...deliveredAfter].map((r) => r.name));
+      );
+    try {
+      const [billed, deliveredAfter] = await Promise.all([
+        find(['Sales Invoice Item', 'delivery_note', 'is', 'set']),
+        find(['Sales Invoice Item', 'delivered_qty', '>', 0]),
+      ]);
+      return new Set([...billed, ...deliveredAfter].map((r) => r.name));
+    } catch {
+      // Better to say nothing about the goods than "Invoice only" for goods that did leave.
+      return null;
+    }
   }
 
   async orders(q: RecordsQuery): Promise<OrderRecord[]> {

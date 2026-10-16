@@ -29,9 +29,11 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
         ? invoice.delivered
           ? t('goodsReturned')
           : null
-        : invoice.delivered
-          ? t('goodsDelivered')
-          : t('invoiceOnly');
+        : invoice.delivered === null
+          ? null
+          : invoice.delivered
+            ? t('goodsDelivered')
+            : t('invoiceOnly');
   const amount =
     invoice.outstanding > 0.005
       ? t('due', { amount: formatMoney(invoice.outstanding, currency) })
