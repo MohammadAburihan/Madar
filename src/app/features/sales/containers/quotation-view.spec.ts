@@ -10,6 +10,7 @@ const QUOTE: QuotationDetail = {
   name: 'QT-0084',
   customer: 'Lina Haddad',
   customerName: 'Lina Haddad',
+  forCustomer: true,
   docstatus: 1,
   status: 'Open',
   date: '2026-10-11',

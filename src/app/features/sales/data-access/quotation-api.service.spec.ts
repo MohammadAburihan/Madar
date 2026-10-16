@@ -77,6 +77,7 @@ describe('QuotationApiService', () => {
           name: 'QT-1',
           docstatus: 1,
           status: 'Open',
+          quotation_to: 'Customer',
           party_name: 'Lina Haddad',
           customer_name: 'Lina Haddad',
           transaction_date: '2026-10-16',
@@ -98,7 +99,7 @@ describe('QuotationApiService', () => {
       },
     );
     const quotation = await api().quotation('QT-1');
-    expect(quotation).toMatchObject({ total: 90, customerName: 'Lina Haddad' });
+    expect(quotation).toMatchObject({ total: 90, customerName: 'Lina Haddad', forCustomer: true });
     // In the company currency, like the total, whatever currency the quotation was made in.
     expect(quotation.lines[0]).toMatchObject({ rate: 44.985, amount: 89.97 });
   });

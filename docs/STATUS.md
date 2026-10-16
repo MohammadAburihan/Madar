@@ -68,7 +68,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   purchase orders); valid-until must be today or later. Review pass 3 (2 medium, 1 low) fixed: ERPNext keeps the
   typed rates (list rate, no pricing rules, default taxes or rounding; a free line stays at 0, e2e); "Continue
   editing" leaves an open confirmation alone and never deletes the draft it opens; "Quotation confirmed" is shown
-  only for the quotation just confirmed.
+  only for the quotation just confirmed. Review pass 4 (1 medium, 1 low) fixed: quotations to Leads (Desk CRM)
+  are left out of Sales and can't be edited in Madar; "Draft saved" goes away once the form changes again.
 - Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)

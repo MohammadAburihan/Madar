@@ -56,7 +56,7 @@ describe('SalesRecordsApiService', () => {
   });
 
   it('lists orders with how far they are delivered and invoiced, and quotations with their validity', async () => {
-    fakeErpnext({
+    const { listCalls } = fakeErpnext({
       'Sales Order': () => [
         {
           name: 'SO-0187',
@@ -93,6 +93,8 @@ describe('SalesRecordsApiService', () => {
       validTill: '2026-10-25',
       docstatus: 0,
     });
+    const quotes = listCalls.find((c) => c.doctype === 'Quotation')!;
+    expect(quotes.query.filters).toContainEqual(['quotation_to', '=', 'Customer']);
   });
 
   it('keeps a sales role to its own documents, reads outstanding in the company currency, and drafts as not yet owed', async () => {

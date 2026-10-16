@@ -21,6 +21,8 @@ export interface QuotationDetail {
   name: string;
   customer: string;
   customerName: string;
+  /** Made out to a customer; a quotation to a Lead (from Desk) can't be finished in Madar. */
+  forCustomer: boolean;
   docstatus: number;
   status: string;
   date: string;

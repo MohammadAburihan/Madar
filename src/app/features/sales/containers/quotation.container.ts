@@ -59,7 +59,7 @@ import { quotationHtml, quotationSummary } from './quotation-view';
         />
       }
       @if (v.draft) {
-        @if (caps().sell) {
+        @if (caps().sell && v.editable) {
           <button type="button" class="md-btn md-btn--primary" (click)="edit()">
             {{ txt.edit }}
           </button>
@@ -139,6 +139,7 @@ export class QuotationContainer {
       name: quotation.name,
       // A draft isn't sent to customers: it can be finished, not shared.
       draft: quotation.docstatus === 0,
+      editable: quotation.forCustomer,
       title: tr.t(this.justConfirmed() ? 'sales.quote.confirmedTitle' : 'sales.quote.pageTitle'),
       subtitle: tr.t('sales.quote.pageSubtitle', {
         name: quotation.name,

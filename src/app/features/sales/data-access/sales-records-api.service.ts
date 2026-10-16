@@ -179,7 +179,8 @@ export class SalesRecordsApiService {
           'valid_till',
           'transaction_date',
         ],
-        filters: scope(q),
+        // Quotations to Leads belong to Desk's CRM, not to the customer's sales.
+        filters: [...scope(q), ['quotation_to', '=', 'Customer']],
         orFilters: search(q.term, 'customer_name'),
         orderBy: 'transaction_date desc, creation desc',
         limit: RECORDS_LIMIT,

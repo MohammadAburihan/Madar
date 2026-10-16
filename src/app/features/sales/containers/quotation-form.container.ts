@@ -258,6 +258,13 @@ export class QuotationFormContainer implements OnInit {
       );
       onCleanup(() => clearTimeout(timer));
     });
+    effect(() => {
+      // Any change after a save is not in the draft yet.
+      this.ctx.store.customer();
+      this.ctx.store.lines();
+      this.ctx.store.validTill();
+      untracked(() => this.draftSaved.set(null));
+    });
     effect((onCleanup) => {
       const term = this.itemTerm();
       const timer = setTimeout(() => untracked(() => void this.searchItems(term)), SEARCH_DELAY_MS);

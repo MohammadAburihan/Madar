@@ -14,6 +14,7 @@ interface QuotationDoc {
   name: string;
   docstatus: number;
   status: string;
+  quotation_to: string;
   party_name: string;
   customer_name: string;
   transaction_date: string;
@@ -151,6 +152,7 @@ export class QuotationApiService {
       name: doc.name,
       customer: doc.party_name,
       customerName: doc.customer_name || doc.party_name,
+      forCustomer: doc.quotation_to === 'Customer',
       docstatus: doc.docstatus,
       status: doc.status,
       date: doc.transaction_date,
