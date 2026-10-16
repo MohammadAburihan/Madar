@@ -1713,6 +1713,51 @@
         "useValue": "{{units}} used at site",
         "returnValue": "{{units}} back to {{warehouse}}"
       }
+    },
+    "workspace": {
+      "edit": "Add update",
+      "tasks": "Next tasks",
+      "taskHeaders": {
+        "task": "Task",
+        "due": "Due · owner",
+        "status": "Status"
+      },
+      "taskStatus": {
+        "Open": "Open",
+        "Working": "In progress",
+        "PendingReview": "Pending review",
+        "Overdue": "Overdue",
+        "Completed": "Completed",
+        "Cancelled": "Cancelled"
+      },
+      "ledgerTitle": "{{item}} · {{code}} · {{required}} required",
+      "ledgerHeaders": {
+        "movement": "Movement",
+        "qty": "Qty",
+        "balance": "Balance / status"
+      },
+      "ledger": {
+        "stock": "In your warehouses",
+        "delivered": "Transfer to site",
+        "consumed": "Consumed on site",
+        "returned": "Returned from site",
+        "atSite": "Remaining at site",
+        "shortfall": "{{order}} shortfall",
+        "available": "Available",
+        "posted": "Posted",
+        "used": "Used",
+        "pending": "Pending receipt"
+      },
+      "siteStock": "Site stock",
+      "snapshot": "{{item}} · {{left}} at site · {{used}} used",
+      "returned": "Returned",
+      "atSiteNow": "At site now",
+      "records": "Project records",
+      "record": "{{kind}} · {{name}}",
+      "next": {
+        "title": "Next: receive {{units}}",
+        "message": "{{order}} brings {{units}} into stock. Deliver them to the project in a separate movement; receiving adds no site stock or consumption."
+      }
     }
   }
 }

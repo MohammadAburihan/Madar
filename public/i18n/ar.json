@@ -1777,6 +1777,51 @@
         "useValue": "استخدام {{units}} في الموقع",
         "returnValue": "{{units}} إلى {{warehouse}}"
       }
+    },
+    "workspace": {
+      "edit": "إضافة تحديث",
+      "tasks": "المهام التالية",
+      "taskHeaders": {
+        "task": "المهمة",
+        "due": "الاستحقاق · المسؤول",
+        "status": "الحالة"
+      },
+      "taskStatus": {
+        "Open": "مفتوحة",
+        "Working": "قيد التنفيذ",
+        "PendingReview": "بانتظار المراجعة",
+        "Overdue": "متأخرة",
+        "Completed": "مكتملة",
+        "Cancelled": "ملغاة"
+      },
+      "ledgerTitle": "{{item}} · {{code}} · المطلوب {{required}}",
+      "ledgerHeaders": {
+        "movement": "الحركة",
+        "qty": "الكمية",
+        "balance": "الرصيد / الحالة"
+      },
+      "ledger": {
+        "stock": "في مستودعاتك",
+        "delivered": "النقل إلى الموقع",
+        "consumed": "مستهلك في الموقع",
+        "returned": "أُعيد من الموقع",
+        "atSite": "المتبقي في الموقع",
+        "shortfall": "النقص في {{order}}",
+        "available": "متاح",
+        "posted": "مرحّل",
+        "used": "مستخدم",
+        "pending": "بانتظار الاستلام"
+      },
+      "siteStock": "مخزون الموقع",
+      "snapshot": "{{item}} · {{left}} في الموقع · {{used}} مستهلكة",
+      "returned": "تم الإرجاع",
+      "atSiteNow": "في الموقع الآن",
+      "records": "سجلات المشروع",
+      "record": "{{kind}} · {{name}}",
+      "next": {
+        "title": "التالي: استلام {{units}}",
+        "message": "يُستلم {{units}} لأمر الشراء {{order}} في المخزون. تُسلّم للمشروع بحركة منفصلة؛ الاستلام لا يزيد مخزون الموقع أو الاستهلاك."
+      }
     }
   }
 }
