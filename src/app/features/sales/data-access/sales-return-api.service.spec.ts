@@ -51,10 +51,14 @@ describe('SalesReturnApiService', () => {
     fakeErpnext(
       {
         Item: () => [{ name: 'OLV-20' }],
-        // An earlier return of 1 credited the invoice; a credit kept on its own note didn't.
-        'Sales Invoice': () => [
-          { base_grand_total: -85, update_outstanding_for_self: 0 },
-          { base_grand_total: -20, update_outstanding_for_self: 1 },
+        // An earlier return of 1 credited the invoice (in the ledger against it); one kept on its own note isn't.
+        'Payment Ledger Entry': () => [
+          {
+            voucher_type: 'Sales Invoice',
+            voucher_no: 'SI-R',
+            amount: -85,
+            amount_in_account_currency: -85,
+          },
         ],
       },
       { [MAKE]: () => ({ ...template(), items: [{ ...template().items[0], qty: -1 }] }) },

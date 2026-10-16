@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { CUSTOMER, MAIN, choose, expectHeading, named, signIn, topUp } from './support';
+import { CUSTOMER, MAIN, choose, expectHeading, named, plain, signIn, topUp } from './support';
 
 const TREE = { code: 'OLV-20', name: 'Olive tree · 20 L' };
 const SERVICE = { code: 'SRV-GARDEN', name: 'Garden consultation' };
@@ -126,7 +126,18 @@ test.describe.serial('ordering from a quotation @phone', () => {
     await expect(page.locator('app-feedback-card').first()).toContainText(
       named('Unpaid', '·', 'ILS 320.00'),
     );
-    await page.getByRole('button', { name: 'Open sales order' }).click();
+    // Its goods left on the order's delivery notes: Sales says so, not "Invoice only".
+    const invoiceName = plain(await page.locator('app-page-heading p').first().innerText()).split(
+      ' · ',
+    )[0];
+    await page.goto('/sales');
+    await page.locator('app-search-field input').fill(invoiceName);
+    await expect(page.locator('app-feedback-card', { hasText: invoiceName })).toContainText(
+      'Goods delivered',
+    );
+    await page.goto(`/sales/invoices/${invoiceName}`);
+    await expect(page.locator('app-status-chip', { hasText: 'Goods: Delivered' })).toBeVisible();
+    await page.goto(`/sales/orders/${order}`);
     for (const [kind, state] of [
       ['Order', 'Completed'],
       ['Delivery', 'Delivered'],

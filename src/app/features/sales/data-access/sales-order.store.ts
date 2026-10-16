@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import {
   PostedEarlierError,
   UnresolvedError,
@@ -30,7 +31,12 @@ export class SalesOrderStore {
   /** A confirmation is running or its result is still open: no other order may start. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
 
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
+
   /** Makes and submits the order, expected for delivery on the site's today until changed on the order. */
+
   async create(quotation: string): Promise<void> {
     // Set before the first await: a double tap must not make the order twice.
     if (this.busy()) {

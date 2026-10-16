@@ -101,15 +101,50 @@ export class SalesRecordsApiService {
         }),
       );
     try {
-      const [billed, deliveredAfter] = await Promise.all([
+      const [billed, deliveredAfter, fromOrders] = await Promise.all([
         find(['Sales Invoice Item', 'delivery_note', 'is', 'set']),
         find(['Sales Invoice Item', 'delivered_qty', '>', 0]),
+        this.deliveredThroughOrders(names),
       ]);
-      return new Set([...billed, ...deliveredAfter].map((r) => r.name));
+      return new Set([...billed, ...deliveredAfter].map((r) => r.name).concat(fromOrders));
     } catch {
       // Better to say nothing about the goods than "Invoice only" for goods that did leave.
       return null;
     }
+  }
+
+  /**
+   * Invoices billing an order whose goods a delivery note made from the same order delivered: ERPNext links the
+   * two only through the order rows, leaving the invoice rows' own delivered quantity at 0.
+   */
+  private async deliveredThroughOrders(names: readonly string[]): Promise<string[]> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{ name: string; so_detail: string }>('Sales Invoice', {
+        fields: ['name', 'items.so_detail as so_detail'],
+        filters: [
+          ['name', 'in', names],
+          ['Sales Invoice Item', 'so_detail', 'is', 'set'],
+        ],
+        limit: 0,
+      }),
+    );
+    const orderRows = [...new Set(rows.map((r) => r.so_detail).filter(Boolean))];
+    if (!orderRows.length) {
+      return [];
+    }
+    const delivered = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Sales Order Item', {
+        fields: ['name'],
+        filters: [
+          ['name', 'in', orderRows],
+          ['delivered_qty', '>', 0],
+        ],
+        parent: 'Sales Order',
+        limit: 0,
+      }),
+    );
+    const done = new Set(delivered.map((d) => d.name));
+    return [...new Set(rows.filter((r) => done.has(r.so_detail)).map((r) => r.name))];
   }
 
   async orders(q: RecordsQuery): Promise<OrderRecord[]> {

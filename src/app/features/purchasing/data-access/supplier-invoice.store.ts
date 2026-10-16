@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import {
   PostedEarlierError,
   UnresolvedError,
@@ -44,6 +45,10 @@ export class SupplierInvoiceStore {
   );
   /** A confirmation is running or its result is still open; leaving keeps the invoice. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
 
   start(order: string): void {
     const draft = this.draft();

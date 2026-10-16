@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
   PostedEarlierError,
@@ -83,6 +84,10 @@ export class SalesReturnStore {
   );
   /** A confirmation is running or its result is still open; leaving keeps the return. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
 
   qtyOk(line: ReturnLine): boolean {
     const qty = this.quantities()[line.row];

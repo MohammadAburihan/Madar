@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
   PostedEarlierError,
@@ -51,6 +52,10 @@ export class SiteStore {
     () => this.balance()?.warehouses.find((w) => w.warehouse === this.returnTo()) ?? null,
   );
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
   /** ERPNext refused the posting in a way that may mean the balance is out of date; reload before trying again. */
   readonly stale = computed(() => ['changed', 'stock', 'error'].includes(this.failure() ?? ''));
   readonly canUse = computed(

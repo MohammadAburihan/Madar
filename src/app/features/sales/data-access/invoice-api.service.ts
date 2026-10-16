@@ -4,6 +4,7 @@ import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { canReturn } from './sales-return.models';
+import { creditsAgainst } from './credits';
 import { stockedItems } from './stocked-items';
 
 export interface InvoiceDetail {
@@ -22,14 +23,6 @@ export interface InvoiceDetail {
   returnable: boolean;
   payments: { name: string; amount: number; account: string }[];
 }
-
-/** Without the credits, paid would count them as money: only a role's 403 is passed over. */
-const forbiddenAsNone = (error: unknown): never[] => {
-  if (ErpnextError.from(error).kind === 'forbidden') {
-    return [];
-  }
-  throw error;
-};
 
 @Injectable({ providedIn: 'root' })
 export class InvoiceApiService {
@@ -50,7 +43,12 @@ export class InvoiceApiService {
           update_stock: number;
           is_return: number;
           is_pos?: number;
-          items?: { item_code: string }[];
+          items?: {
+            item_code: string;
+            delivery_note?: string | null;
+            delivered_qty?: number;
+            so_detail?: string | null;
+          }[];
         }>('Sales Invoice', name),
       ),
       firstValueFrom(
@@ -65,47 +63,8 @@ export class InvoiceApiService {
           limit: 0,
         }),
       ).catch(() => []),
-      // Every entry settling it in the ledger; which of them are credit notes is worked out below.
-      firstValueFrom(
-        this.erpnext.list<{
-          voucher_type: string;
-          voucher_no: string;
-          amount_in_account_currency: number;
-        }>('Payment Ledger Entry', {
-          fields: ['voucher_type', 'voucher_no', 'amount_in_account_currency'],
-          filters: [
-            ['against_voucher_type', '=', 'Sales Invoice'],
-            ['against_voucher_no', '=', name],
-            ['voucher_type', 'in', ['Sales Invoice', 'Journal Entry']],
-            ['voucher_no', '!=', name],
-            ['delinked', '=', 0],
-          ],
-          limit: 0,
-        }),
-      ).catch(forbiddenAsNone),
+      creditsAgainst(this.erpnext, name),
     ]);
-    // A credit note matched to it later is settled by a "Credit Note" Journal Entry; bank journals are money.
-    const journals = [
-      ...new Set(
-        credits.filter((c) => c.voucher_type === 'Journal Entry').map((c) => c.voucher_no),
-      ),
-    ];
-    const creditJournals = new Set(
-      journals.length
-        ? (
-            await firstValueFrom(
-              this.erpnext.list<{ name: string }>('Journal Entry', {
-                fields: ['name'],
-                filters: [
-                  ['name', 'in', journals],
-                  ['voucher_type', '=', 'Credit Note'],
-                ],
-                limit: 0,
-              }),
-            ).catch(forbiddenAsNone)
-          ).map((j) => j.name)
-        : [],
-    );
     const payments = references.length
       ? await firstValueFrom(
           this.erpnext.list<{ name: string; paid_to: string }>('Payment Entry', {
@@ -128,6 +87,25 @@ export class InvoiceApiService {
           }),
         ).catch(() => [])
       : [];
+    // Goods can also leave on a delivery note: one the invoice bills, one made from it, or one from the same order.
+    const rows = invoice.items ?? [];
+    const orderRows = [...new Set(rows.map((r) => r.so_detail).filter((r): r is string => !!r))];
+    const deliveredElsewhere =
+      rows.some((r) => !!r.delivery_note || Number(r.delivered_qty) > 0) ||
+      (orderRows.length > 0 &&
+        (
+          await firstValueFrom(
+            this.erpnext.list<{ name: string }>('Sales Order Item', {
+              fields: ['name'],
+              filters: [
+                ['name', 'in', orderRows],
+                ['delivered_qty', '>', 0],
+              ],
+              parent: 'Sales Order',
+              limit: 1,
+            }),
+          ).catch(() => [])
+        ).length > 0);
     const goods = invoice.update_stock
       ? new Set<string>()
       : await stockedItems(
@@ -143,13 +121,8 @@ export class InvoiceApiService {
         invoice.docstatus === 1 ? 'confirmed' : invoice.docstatus === 2 ? 'cancelled' : 'draft',
       total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
-      credited: Math.max(
-        -credits
-          .filter((c) => c.voucher_type === 'Sales Invoice' || creditJournals.has(c.voucher_no))
-          .reduce((sum, c) => sum + Number(c.amount_in_account_currency), 0),
-        0,
-      ),
-      delivered: invoice.docstatus === 1 && !!invoice.update_stock,
+      credited: credits.account,
+      delivered: invoice.docstatus === 1 && (!!invoice.update_stock || deliveredElsewhere),
       returnable: canReturn({
         docstatus: invoice.docstatus,
         isReturn: !!invoice.is_return,

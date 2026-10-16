@@ -142,7 +142,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   e2e: the connection facts and language switch (phone); sign out and the next person signing in (desktop). Review
   pass 1 found only lows: the currency name now clears and ignores a late answer for another currency; a stale
   sign-out notice can't outlive the page (the shell's router-outlet makes each visit a new page).
-- **E2E figures** (this PR): `e2e/15-figures.spec.ts` reads ERPNext directly (`erp()` in `e2e/support.ts`, through the
+- **E2E figures**: merged (#40). `e2e/15-figures.spec.ts` reads ERPNext directly (`erp()` in `e2e/support.ts`, through the
   dev server's proxy as the signed-in owner) and checks that the screens show the same numbers: Home's confirmed sales
   today and customer invoices due; every inventory quantity against its Bin; payment amounts on Money; each invoice's
   due or total on Sales; a customer's and a supplier's balance on Contacts (desktop and phone); an invoice page's
@@ -158,7 +158,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Note" Journal Entry in the ledger, so those count too (bank journals stay money). Pass 4 (2 low): the row reads "Credited by
   credit notes" (journals entered by hand count too). Deferred (low, from before): on an invoice in another currency
   than its receivable account, total and outstanding are in different currencies.
-- Next: the whole-branch review of the batch (Sales S2–S4, Contacts, Settings).
+- **Batch review fixes** (this PR), from one review of everything merged since #32 (3 medium, 1 low):
+  - An invoice billed from an order reads "Goods delivered" (Sales list and its page) once the order's goods left on
+    a delivery note made from the order. ERPNext links the two only through the order rows (e2e).
+  - The return form's "Original payment" uses the same ledger credits as the invoice page (shared `creditsAgainst`),
+    so a credit note matched later or a rounded credit isn't counted as paid.
+  - Sign out is refused while any task has a confirmation running or unresolved (`OpenTasksService` in core/tasks;
+    every task store registers its `busy`): the reload would lose its reference.
+  - "Sell to" from a customer's page fills in their balance, refuses a disabled customer, and says so when the
+    customer is gone.
+- Next: decide the business-connection flow (Settings' "Add another business"); then step 6.
 
 ## End-to-end happy paths: merged (#26)
 

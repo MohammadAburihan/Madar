@@ -243,7 +243,11 @@
       "add": "+ Add customer",
       "note": "Walk-in sales need permission. The business stays fixed throughout this sale.",
       "noResults": "No customers match “{{term}}”.",
-      "loading": "Searching…"
+      "loading": "Searching…",
+      "linkedMissing": {
+        "title": "That customer can't be sold to",
+        "message": "They were removed or disabled in ERPNext. Choose a customer below."
+      }
     },
     "items": {
       "title": "Add items",
@@ -2564,6 +2568,10 @@
         "title": "You weren't signed out",
         "message": "ERPNext didn't end the session. Try again."
       }
+    },
+    "openTask": {
+      "title": "A confirmation is still open",
+      "message": "Finish checking it before signing out: its reference would be lost, and doing it again could record it twice."
     }
   }
 }

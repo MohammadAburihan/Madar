@@ -74,8 +74,14 @@ export class CustomerDirectoryService {
     }));
   }
 
-  /** One customer by exact id, for a page opened on a known customer; null when there is none. */
-  async byId(id: string): Promise<CustomerOption | null> {
+  /**
+   * One customer by exact id, for a page opened on a known customer; null when there is none. For a task
+   * (`company` given) a disabled customer counts as none, and the balance is filled in as `search` does.
+   */
+  async byId(
+    id: string,
+    company?: { name: string; currency: string },
+  ): Promise<CustomerOption | null> {
     const [row] = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -84,20 +90,24 @@ export class CustomerDirectoryService {
         primary_address: string | null;
       }>('Customer', {
         fields: ['name', 'customer_name', 'mobile_no', 'primary_address'],
-        filters: [['name', '=', id]],
+        filters: [['name', '=', id], ...(company ? ([['disabled', '=', 0]] as Filter[]) : [])],
         limit: 1,
       }),
     );
-    return row
-      ? {
-          id: row.name,
-          name: row.customer_name,
-          phone: row.mobile_no,
-          city: firstAddressLine(row.primary_address),
-          outstanding: 0,
-          unpaidInvoices: 0,
-        }
-      : null;
+    if (!row) {
+      return null;
+    }
+    const balance = company
+      ? (await this.balancesFor([row.name], company).catch(() => new Map())).get(row.name)
+      : undefined;
+    return {
+      id: row.name,
+      name: row.customer_name,
+      phone: row.mobile_no,
+      city: firstAddressLine(row.primary_address),
+      outstanding: balance?.outstanding ?? 0,
+      unpaidInvoices: balance?.count ?? 0,
+    };
   }
 
   async create(customer: NewCustomer, country: string): Promise<CustomerOption> {

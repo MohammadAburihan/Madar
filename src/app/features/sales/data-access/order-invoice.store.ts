@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -32,6 +33,10 @@ export class OrderInvoiceStore {
   readonly ready = computed(() => !!this.preview() && this.state() !== 'confirming');
   /** A confirmation is running or its result is still open; leaving keeps the invoice. */
   readonly busy = computed(() => ['confirming', 'unresolved', 'checking'].includes(this.state()));
+
+  constructor() {
+    inject(OpenTasksService).register(this.busy);
+  }
 
   start(order: string): void {
     this.reference.set(newReference('INV'));

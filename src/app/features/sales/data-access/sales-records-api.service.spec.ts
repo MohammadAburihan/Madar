@@ -140,4 +140,41 @@ describe('SalesRecordsApiService', () => {
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['owner', '=', 'lina@rehan.example']);
   });
+
+  it('counts an order’s invoice as delivered when the order’s goods left on its delivery note', async () => {
+    fakeErpnext({
+      'Sales Invoice': (query) => {
+        const filters = JSON.stringify(query.filters);
+        if (filters.includes('so_detail')) {
+          return [{ name: 'SI-ORD', so_detail: 'row-1' }];
+        }
+        if (filters.includes('delivery_note') || filters.includes('delivered_qty')) {
+          return [];
+        }
+        return [
+          {
+            name: 'SI-ORD',
+            customer_name: 'Lina Haddad',
+            docstatus: 1,
+            is_return: 0,
+            update_stock: 0,
+            base_grand_total: 320,
+            base_rounded_total: 320,
+            outstanding_amount: 320,
+            conversion_rate: 1,
+            party_account_currency: 'ILS',
+            posting_date: '2026-10-16',
+          },
+        ];
+      },
+      'Sales Order Item': () => [{ name: 'row-1' }],
+    });
+    const [row] = await api().invoices({
+      company: 'Rehan Nursery',
+      currency: 'ILS',
+      term: '',
+      owner: null,
+    });
+    expect(row.delivered).toBe(true);
+  });
 });
