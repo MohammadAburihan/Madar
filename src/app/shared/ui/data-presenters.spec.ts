@@ -66,5 +66,18 @@ describe('Data presenters', () => {
     fixture.componentRef.setInput('density', 'compact');
     await fixture.whenStable();
     expect(host.classList.contains('compact')).toBe(true);
+
+    expect(Array.from(host.querySelectorAll('bdi')).map((b) => b.getAttribute('dir'))).toEqual([
+      'ltr',
+      'ltr',
+    ]);
+    fixture.componentRef.setInput('rows', [{ label: 'After use', value: '3 at site', text: true }]);
+    await fixture.whenStable();
+    expect(host.querySelector('bdi')?.getAttribute('dir')).toBe('auto');
+
+    expect(host.classList.contains('tint')).toBe(false);
+    fixture.componentRef.setInput('tone', 'tint');
+    await fixture.whenStable();
+    expect(host.classList.contains('tint')).toBe(true);
   });
 });

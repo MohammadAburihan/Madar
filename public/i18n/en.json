@@ -1395,7 +1395,9 @@
         "title": "This project couldn't load",
         "message": "Check the connection and try again."
       },
-      "supply": "Review materials and supply"
+      "supply": "Review materials and supply",
+      "site": "Materials at site",
+      "siteValue": "{{units}} at site"
     },
     "form": {
       "newTitle": "New project",
@@ -1593,6 +1595,123 @@
         "cardTitle": "We didn't get a final answer",
         "cardMessage": "The delivery may have been posted. Check the result instead of posting again, so the stock isn't moved twice.",
         "planned": "Planned delivery"
+      }
+    },
+    "site": {
+      "title": "Materials at site",
+      "subtitle": "{{title}} · {{project}}",
+      "chip": "{{delivered}} delivered · {{used}} used",
+      "rows": {
+        "delivered": "Delivered to site",
+        "consumed": "Consumed",
+        "atSite": "Available at site",
+        "pending": "{{order}} purchase shortfall",
+        "pendingValue": "{{qty}} pending receipt"
+      },
+      "useQty": "Use now *",
+      "useError": "Enter a quantity above 0 and up to {{max}} at the site",
+      "useCard": "Record use of {{units}}",
+      "before": "At site before",
+      "afterUse": "After confirming use",
+      "afterUseValue": "{{left}} at site · {{consumed}} consumed",
+      "useAdvice": {
+        "title": "Usage changes the site balance",
+        "message": "Confirm records {{qty}} consumed. Site stock falls from {{before}} to {{after}}.",
+        "messagePending": "Confirm records {{qty}} consumed. Site stock falls from {{before}} to {{after}}; purchase stays open."
+      },
+      "confirmUse": "Confirm use of {{qty}}",
+      "toReturn": "Return unused stock",
+      "note": "Delivery and consumption are separate records.",
+      "nothingAtSite": {
+        "title": "Nothing at the site",
+        "message": "The project holds none of this item at the site. Supply it first."
+      },
+      "siteMissing": {
+        "title": "Nothing delivered yet",
+        "message": "No project has been supplied yet, so there is no site stock to use or return."
+      },
+      "usedTitle": "Usage recorded",
+      "returnTitle": "Return unused stock",
+      "usedChip": "{{used}} used · {{left}} at site",
+      "returnRows": {
+        "delivered": "Delivered",
+        "consumed": "Consumed",
+        "atSite": "Still at site"
+      },
+      "returnTo": "Return to",
+      "returnQty": "Return now *",
+      "returnError": "Enter a quantity above 0 and up to {{max}} at the site",
+      "returnCard": "Return to {{warehouse}}",
+      "siteAfter": "Site balance after return",
+      "warehouseAfter": "{{warehouse}} after return",
+      "returnAdvice": {
+        "title": "Return only unused stock",
+        "message": "Confirm moves {{units}} back to {{warehouse}}. The {{consumed}} consumed stay recorded."
+      },
+      "confirmReturn": "Confirm return of {{qty}}",
+      "pendingNote": "{{order}} still has {{units}} pending receipt.",
+      "done": "Done",
+      "returnedTitle": "Return posted",
+      "returnedChip": "{{qty}} returned · Confirmed",
+      "returnedCard": {
+        "title": "Project material balances updated",
+        "message": "The return is posted. Still at the site: {{units}}.",
+        "messageNone": "The return is posted. Nothing is left at the site."
+      },
+      "returnedRows": {
+        "delivered": "Delivered to site",
+        "consumed": "Consumed",
+        "returned": "Returned to {{warehouse}}",
+        "atSite": "Remaining at site",
+        "warehouse": "{{warehouse}} stock"
+      },
+      "pendingCard": "{{order}} · {{units}} · pending receipt",
+      "pendingCardMessage": "Of {{delivered}} supplied: {{used}} used + {{returned}} returned + {{left}} at site. Another {{ordered}} are on order. Review the requirement after returns.",
+      "openOrder": "Open linked purchase {{order}}",
+      "backToProject": "Return to project overview",
+      "loadFailed": {
+        "title": "The site materials couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "noAccess": {
+        "title": "You can't record site materials",
+        "message": "Your ERPNext role doesn't allow it. It needs Projects User and a stock role."
+      },
+      "reload": "Reload site stock",
+      "confirming": "Posting…",
+      "failed": {
+        "permission": {
+          "title": "You can't post this",
+          "message": "ERPNext didn't allow it for your role. No stock moved."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "Nothing was sent. Check the connection and try again."
+        },
+        "stock": {
+          "title": "Not enough at the site",
+          "message": "The site no longer holds that much. Reload the site stock and try again."
+        },
+        "changed": {
+          "title": "Already posted",
+          "message": "An earlier attempt was posted with different details. Reload the site stock to see where it stands."
+        },
+        "error": {
+          "title": "ERPNext refused it",
+          "message": "Nothing was posted. Reload the site stock and try again."
+        }
+      },
+      "notCreated": {
+        "title": "Nothing was posted",
+        "message": "Check the details and confirm again."
+      },
+      "checking": {
+        "title": "Checking the posting",
+        "cardTitle": "The result didn't come back",
+        "cardMessage": "ERPNext may have posted it. Check before trying again, so stock isn't moved twice.",
+        "planned": "Planned",
+        "useValue": "{{units}} used at site",
+        "returnValue": "{{units}} back to {{warehouse}}"
       }
     }
   }

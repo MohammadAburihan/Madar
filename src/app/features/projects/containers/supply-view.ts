@@ -3,7 +3,7 @@ import { TotalRow } from '../../../shared/ui/totals-card.component';
 import { SupplyPlan } from '../data-access/project.models';
 
 const qtyFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 });
-const qty = (value: number) => qtyFormat.format(Math.round(value * 1e6) / 1e6);
+export const qty = (value: number) => qtyFormat.format(Math.round(value * 1e6) / 1e6);
 export const supplyUnits = (count: number, tr: Translator) =>
   tr.plural('project.supply.units', count, { count: qty(count) });
 

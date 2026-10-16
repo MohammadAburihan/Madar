@@ -20,6 +20,7 @@ import {
   ProjectTask,
   Requirement,
   RequirementRequest,
+  SiteItem,
 } from './project.models';
 
 interface RequestDoc {
@@ -90,7 +91,7 @@ export class ProjectsApiService {
 
   async project(name: string): Promise<ProjectDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', name));
-    const [names, tasks, requirements, attachments, linked, actual] = await Promise.all([
+    const [names, tasks, requirements, attachments, linked, actual, siteItems] = await Promise.all([
       this.customerNames(doc.customer ? [doc.customer] : []),
       // Only Projects User reads tasks; for other roles the section is left out rather than shown empty.
       this.tasks(name).catch(() => null),
@@ -98,6 +99,7 @@ export class ProjectsApiService {
       this.attachments(name).catch(() => []),
       this.linked(name).catch(() => []),
       this.actualCost(name, doc.company).catch(() => null),
+      this.siteItems(name, doc.company).catch(() => []),
     ]);
     return {
       ...summary(doc, names),
@@ -106,6 +108,7 @@ export class ProjectsApiService {
       plannedDate: doc.expected_start_date,
       tasks,
       requirements,
+      siteItems,
       attachments,
       linked,
     };
@@ -170,8 +173,8 @@ export class ProjectsApiService {
     return inserted.name;
   }
 
-  /** The shared site warehouse, created under the company's warehouse root the first time it is needed. */
-  async siteWarehouse(company: string): Promise<string> {
+  /** The shared site warehouse, or null before anything was ever delivered to a project. */
+  async findSiteWarehouse(company: string): Promise<string | null> {
     const [found] = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Warehouse', {
         fields: ['name'],
@@ -183,8 +186,14 @@ export class ProjectsApiService {
         limit: 1,
       }),
     );
+    return found?.name ?? null;
+  }
+
+  /** The shared site warehouse, created under the company's warehouse root the first time it is needed. */
+  async siteWarehouse(company: string): Promise<string> {
+    const found = await this.findSiteWarehouse(company);
     if (found) {
-      return found.name;
+      return found;
     }
     const [root] = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Warehouse', {
@@ -446,6 +455,52 @@ export class ProjectsApiService {
     }
     // Fully delivered requests leave nothing to show.
     return [...byItem.values()].filter((r) => r.required > 1e-6);
+  }
+
+  /** What the project holds at the site, per item: its share of the shared site warehouse. */
+  private async siteItems(project: string, company: string): Promise<SiteItem[]> {
+    const site = await this.findSiteWarehouse(company);
+    if (!site) {
+      return [];
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<Record<string, number | string>>('Stock Ledger Entry', {
+        fields: ['item_code', { SUM: 'actual_qty' }],
+        filters: [
+          ['warehouse', '=', site],
+          ['project', '=', project],
+          ['is_cancelled', '=', 0],
+        ],
+        groupBy: 'item_code',
+        limit: 0,
+      }),
+    );
+    const held = rows
+      .map((r) => ({ item: String(r['item_code']), atSite: Number(r['SUM(`actual_qty`)'] ?? 0) }))
+      .filter((r) => r.atSite > 1e-6);
+    if (!held.length) {
+      return [];
+    }
+    const items = (
+      await Promise.all(
+        batches(held.map((r) => r.item)).map((group) =>
+          firstValueFrom(
+            this.erpnext.list<{ name: string; item_name: string; stock_uom: string }>('Item', {
+              fields: ['name', 'item_name', 'stock_uom'],
+              filters: [['name', 'in', group] as Filter],
+              limit: 0,
+            }),
+          ),
+        ),
+      )
+    ).flat();
+    const byCode = new Map(items.map((i) => [i.name, i]));
+    return held.map((r) => ({
+      item: r.item,
+      itemName: byCode.get(r.item)?.item_name ?? r.item,
+      uom: byCode.get(r.item)?.stock_uom ?? '',
+      atSite: Math.round(r.atSite * 1e6) / 1e6,
+    }));
   }
 
   /** The company's stock warehouses that can supply a project: not groups, transit, or the project sites. */

@@ -5,13 +5,15 @@ export interface TotalRow {
   value: string;
   /** Highlights the row's amount, e.g. the balance left after a payment. */
   accent?: boolean;
+  /** A phrase with words, not an amount: it takes its direction from its own text instead of left-to-right. */
+  text?: boolean;
 }
 
 /** Money / Summary: label on the start side, amount as an isolated left-to-right run on the end side. */
 @Component({
   selector: 'app-totals-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.compact]': "density() === 'compact'" },
+  host: { '[class.compact]': "density() === 'compact'", '[class.tint]': "tone() === 'tint'" },
   template: `
     <dl>
       @if (heading()) {
@@ -21,7 +23,7 @@ export interface TotalRow {
         <div class="row">
           <dt>{{ row.label }}</dt>
           <dd [class.accent]="row.accent">
-            <bdi dir="ltr">{{ row.value }}</bdi>
+            <bdi [attr.dir]="row.text ? 'auto' : 'ltr'">{{ row.value }}</bdi>
           </dd>
         </div>
       }
@@ -65,6 +67,11 @@ export interface TotalRow {
       font: 600 16px / var(--md-lh) var(--md-font);
     }
 
+    :host(.tint) dl {
+      border-color: var(--md-tint);
+      background: var(--md-tint);
+    }
+
     :host(.compact) dl {
       gap: 8px;
       padding: 14px;
@@ -84,4 +91,6 @@ export class TotalsCardComponent {
   readonly density = input<'regular' | 'compact'>('regular');
   /** Optional first line, e.g. "2 Unit · Main warehouse to Garden shop". */
   readonly heading = input<string | null>(null);
+  /** Tint marks a preview of what confirming will do, as on the usage-review mock. */
+  readonly tone = input<'surface' | 'tint'>('surface');
 }
