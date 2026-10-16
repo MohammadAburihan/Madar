@@ -68,3 +68,31 @@ export const salesRecordsRoute: Route = {
   pathMatch: 'full',
   loadComponent: () => import('./containers/sales.container').then((m) => m.SalesContainer),
 };
+
+export const quotationRoutes: Route[] = [
+  {
+    path: 'sales/quote/new',
+    loadComponent: () =>
+      import('./containers/quotation-flow.container').then((m) => m.QuotationFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/quotation-form.container').then((m) => m.QuotationFormContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/quotation-checking.container').then(
+            (m) => m.QuotationCheckingContainer,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'sales/quotes/:name',
+    loadComponent: () =>
+      import('./containers/quotation.container').then((m) => m.QuotationContainer),
+  },
+];

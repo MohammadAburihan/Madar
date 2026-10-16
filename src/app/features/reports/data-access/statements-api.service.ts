@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { HtmlPdfService } from '../../../core/erpnext/html-pdf.service';
 import { DateRange, PartyKind, Statement, StatementEntry } from './report.models';
 
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -16,6 +17,7 @@ const accountName = (account: string | null) => account?.replace(/ - [^-]+$/, ''
 @Injectable({ providedIn: 'root' })
 export class StatementsApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly htmlPdf = inject(HtmlPdfService);
 
   async statement(
     kind: PartyKind,
@@ -134,12 +136,7 @@ export class StatementsApiService {
 
   /** Renders the statement's HTML to a PDF on the ERPNext server. */
   pdf(html: string): Promise<Blob> {
-    return firstValueFrom(
-      this.erpnext.postForBlob('frappe.utils.print_format.report_to_pdf', {
-        html,
-        orientation: 'Portrait',
-      }),
-    );
+    return this.htmlPdf.render(html);
   }
 
   private async invoiceDetails(doctype: string, names: readonly string[]) {

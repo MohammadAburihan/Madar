@@ -2,9 +2,11 @@ import { formatMoney, formatShortDate } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
 import { Translator } from '../../../core/i18n/translator';
 import { InvoiceRecord, OrderRecord, QuoteRecord } from '../data-access/sales-records.models';
+import { quoteState } from './quotation-view';
 
 export interface RecordCard {
   id: string;
+  kind: 'invoices' | 'orders' | 'quotes';
   title: string;
   message: string;
   /** Madar has a page for it. */
@@ -41,6 +43,7 @@ export function invoiceCard(invoice: InvoiceRecord, currency: string, tr: Transl
   const status = [state, payment].filter(Boolean).join(' · ');
   return {
     id: invoice.name,
+    kind: 'invoices',
     title: t('title', { name: invoice.name, customer: invoice.customer }),
     message: `${status}\n${[goods, amount].filter(Boolean).join(' · ')}`,
     openable: true,
@@ -93,6 +96,7 @@ export function orderCard(order: OrderRecord, currency: string, tr: Translator):
   const status = order.docstatus === 0 ? t('draftOrder') : progress;
   return {
     id: order.name,
+    kind: 'orders',
     title: t('title', { name: order.name, customer: order.customer }),
     message:
       order.docstatus === 0
@@ -117,9 +121,10 @@ export function quoteCard(
     : null;
   return {
     id: quote.name,
+    kind: 'quotes',
     title: t('title', { name: quote.name, customer: quote.customer }),
     message: [`${state} · ${formatMoney(quote.total, currency)}`, valid].filter(Boolean).join('\n'),
-    openable: false,
+    openable: true,
     cells: [
       quote.name,
       quote.customer,
@@ -127,14 +132,4 @@ export function quoteCard(
       formatMoney(quote.total, currency),
     ],
   };
-}
-
-function quoteState(status: string): 'open' | 'ordered' | 'lost' | 'expired' {
-  return status === 'Ordered' || status === 'Partially Ordered'
-    ? 'ordered'
-    : status === 'Lost'
-      ? 'lost'
-      : status === 'Expired'
-        ? 'expired'
-        : 'open';
 }

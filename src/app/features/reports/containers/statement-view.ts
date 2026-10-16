@@ -1,3 +1,4 @@
+import { htmlText } from '../../../core/erpnext/html-pdf.service';
 import { formatMoney } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
 import { Translator } from '../../../core/i18n/translator';
@@ -184,14 +185,7 @@ export function statementSubtitle(
   return [business, partyName, rangeText(statement.range, language)].filter(Boolean).join(' · ');
 }
 
-// The PDF renderer's fonts have no glyph for the bidi isolates the translator adds; the table cells isolate instead.
-const escape = (text: string) =>
-  text
-    .replace(/[\u2066-\u2069]/g, '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+const escape = htmlText;
 
 /** The statement as a self-contained HTML page for the server's PDF renderer, in the reader's language. */
 export function statementHtml(

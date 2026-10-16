@@ -59,6 +59,9 @@ const SEARCH_DELAY_MS = 250;
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.heading" [subtitle]="txt.subtitle">
         @if (caps().sell) {
+          <button type="button" class="md-btn" (click)="newQuotation()">
+            {{ txt.newQuotation }}
+          </button>
           <button type="button" class="md-btn md-btn--primary" (click)="quickSale()">
             {{ txt.quickSale }}
           </button>
@@ -90,7 +93,7 @@ const SEARCH_DELAY_MS = 250;
           [label]="txt.heading"
           [headers]="txt.headers"
           [rows]="rows()"
-          [interactive]="kind() === 'invoices'"
+          [interactive]="kind() !== 'orders'"
           [empty]="emptyText()"
           [ltrColumns]="[0, 3]"
           (opened)="open($event)"
@@ -114,6 +117,9 @@ const SEARCH_DELAY_MS = 250;
       @if (!desktop()) {
         <button type="button" class="md-btn md-btn--primary" (click)="quickSale()">
           {{ txt.quickSale }}
+        </button>
+        <button type="button" class="md-btn" (click)="newQuotation()">
+          {{ txt.newQuotation }}
         </button>
       }
     }
@@ -152,6 +158,7 @@ export class SalesContainer {
         t(`sales.records.headers.${h}`),
       ),
       quickSale: t('sales.records.quickSale'),
+      newQuotation: t('sales.records.newQuotation'),
       forbidden: t('sales.records.forbidden'),
       loading: t('sales.records.loading'),
       retry: t('sales.records.retry'),
@@ -235,9 +242,14 @@ export class SalesContainer {
 
   /** Only a row that is itself openable: the list on screen may still be the previous tab's. */
   protected open(id: string): void {
-    if (this.cards().find((c) => c.id === id)?.openable) {
-      void this.router.navigate(['/sales/invoices', id]);
+    const card = this.cards().find((c) => c.id === id);
+    if (card?.openable) {
+      void this.router.navigate([card.kind === 'quotes' ? '/sales/quotes' : '/sales/invoices', id]);
     }
+  }
+
+  protected newQuotation(): void {
+    void this.router.navigate(['/sales/quote/new']);
   }
 
   protected quickSale(): void {

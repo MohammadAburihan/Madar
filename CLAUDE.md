@@ -148,7 +148,8 @@ src/app/
   does). Madar's writes therefore send no token; if Desk is ever served on Madar's origin, add the header.
 - Writes are idempotent through a Madar reference (`SALE-…`, `COLL-…`; `newReference` in
   `core/erpnext/confirmation.ts`) in the document's `remarks` or the payment's `reference_no`. Purchase Order has
-  no `remarks`, so its `PUR-…` reference goes in `order_confirmation_no`. Run confirming
+  no `remarks`, so its `PUR-…` reference goes in `order_confirmation_no`; Quotation, Sales Order and Delivery Note
+  have none either, so theirs (`QUO-…`, …) go in the hidden `utm_content`. Run confirming
   requests through `confirmRequest`, which turns timeouts and 504s into `UnresolvedError`; then look the
   reference up instead of resubmitting, and submit the leftover draft if one exists.
 - Templates from `get_payment_entry` are new documents (`__islocal`, no name). Never spread one over an existing

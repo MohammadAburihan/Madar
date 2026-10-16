@@ -50,7 +50,28 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   invoice status, so an invoice settled by a credit note reads "Credit note issued", not paid; orders and quotations
   show the rounded total, as invoices do. Review pass 5 (2 low): an unreadable delivery lookup leaves the goods wording
   out; deferred: an invoice partly delivered by a delivery note made from it reads "Goods delivered".
-- Next: S2 quotations, S3 sales orders with delivery and invoicing, S4 returns; then Contacts and Settings.
+- **Sales S1**: merged (#32). Deferred (low): an invoice partly delivered by a delivery note made from it reads "Goods
+  delivered".
+- **Sales S2 — Quotations** (this PR): Create quotation (from Sales) picks a customer, items at their selling price
+  (editable only for roles that may change prices), quantities and a valid-until date (two weeks from the site's
+  today), then confirms it or saves a draft; safe to repeat through a `QUO-…` reference in the quotation's hidden
+  `utm_content`. The quotation page (also opened from the Quotes tab) shows its state, lines, total and validity, and
+  shares a PDF that Madar builds in the reader's language (ERPNext's print formats fetch their styles from the site's
+  host name, which a container may not reach). e2e: confirm a 2-planter quotation and see "Open · ILS 90.00" on its
+  page and on Sales; share its PDF; save a draft; the whole flow in Arabic.
+  Review pass 1 (1 high, 3 medium) fixed: a "changed" failure while saving a draft no longer locks the form (the same
+  bug fixed in the purchase order form); a removed line's typed price doesn't come back when the item is re-added
+  (e2e); Save draft needs valid prices and dates, as Confirm does; quotation lines show the company currency, like
+  the total. Review pass 2 (3 medium, 3 low) fixed: only the latest draft save ends the saving state (no duplicate
+  draft after a restart; also in purchase orders); a saved draft opens from Sales and "Continue editing" finishes and
+  confirms it (e2e); drafts can't be shared; a failure before sending doesn't leave a confirmation stuck (also in
+  purchase orders); valid-until must be today or later. Review pass 3 (2 medium, 1 low) fixed: ERPNext keeps the
+  typed rates (list rate, no pricing rules, default taxes or rounding; a free line stays at 0, e2e); "Continue
+  editing" leaves an open confirmation alone and never deletes the draft it opens; "Quotation confirmed" is shown
+  only for the quotation just confirmed. Review pass 4 (1 medium, 1 low) fixed: quotations to Leads (Desk CRM)
+  are left out of Sales and can't be edited in Madar; "Draft saved" goes away once the form changes again. Review
+  pass 5 found one low (a posted draft with another valid-until date counted as the same quotation), fixed.
+- Next: S3 sales orders (from a quotation or new) with delivery and invoicing, S4 returns; then Contacts and Settings.
 
 ## End-to-end happy paths: merged (#26)
 
