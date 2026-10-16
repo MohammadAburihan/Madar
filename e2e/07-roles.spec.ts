@@ -27,7 +27,7 @@ test('the purchasing officer works from the purchasing workspace @desktop', asyn
   await expect(page.locator('app-data-table').first()).toBeVisible();
 });
 
-test('the store associate sells and collects @phone', async ({ page }) => {
+test('the store associate starts a sale from Home @phone', async ({ page }) => {
   await signIn(page, 'storeAssociate');
   await page.getByRole('button', { name: 'Sell' }).click();
   await expect(page).toHaveURL(/\/sales\/new$/);
