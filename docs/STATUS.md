@@ -139,7 +139,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   memory for the next person. Not built: "Save connection settings" (nothing on the page is editable yet) and "Add
   another business" / Connect business: connecting to another workspace address is the business-connection flow,
   which depends on the open authentication and multi-site decisions (overview section 12).
-  e2e: the connection facts and language switch (phone); sign out and the next person signing in (desktop).
+  e2e: the connection facts and language switch (phone); sign out and the next person signing in (desktop). Review
+  pass 1 found only lows: the currency name now clears and ignores a late answer for another currency; a stale
+  sign-out notice can't outlive the page (the shell's router-outlet makes each visit a new page).
 - Next: widen e2e coverage to check what the screens show; then the whole-branch review of the batch.
 
 ## End-to-end happy paths: merged (#26)

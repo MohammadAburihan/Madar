@@ -122,9 +122,17 @@ export class SettingsContainer {
   constructor() {
     effect(() => {
       const currency = this.business.active()?.currency;
+      untracked(() => this.currencyName.set(null));
       if (currency) {
         untracked(
-          () => void this.api.currencyName(currency).then((name) => this.currencyName.set(name)),
+          () =>
+            void this.api
+              .currencyName(currency)
+              // Only for the currency still shown: a slow answer for another must not replace it.
+              .then(
+                (name) =>
+                  this.business.active()?.currency === currency && this.currencyName.set(name),
+              ),
         );
       }
     });
