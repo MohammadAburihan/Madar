@@ -166,8 +166,10 @@ Run the same checks locally before pushing: `npm run format:check` (or `npm run 
 
 ## Feature delivery
 
-Each feature goes build → PR → `/code-review` → fix → merge; the `delivering-features` skill
-(`.claude/skills/`) has the full loop. Reviews aim for confidence, not zero findings: stop reviewing and merge
+Each feature goes build → e2e → PR → `/code-review` → fix → merge; the `delivering-features` skill
+(`.claude/skills/`) has the full loop. Every new or changed feature adds Playwright tests in `e2e/` for all its happy
+paths (phone and desktop where it has both, Arabic for new screens) that check what the screen shows, and the whole
+suite passes before merging. Reviews aim for confidence, not zero findings: stop reviewing and merge
 (CI green) once a pass finds nothing above low severity, or two passes in a row find only low-severity items.
 Defer the rest to the PR description or `docs/STATUS.md`.
 
