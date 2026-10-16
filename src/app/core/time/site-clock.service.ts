@@ -12,9 +12,12 @@ export class SiteClockService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly zone = signal<string | null>(null);
   private readonly failed = signal(false);
+  private readonly recoveredZone = signal(false);
   private readonly loadZone = shareInFlight(() =>
     firstValueFrom(this.erpnext.get<{ time_zone: string }>('frappe.client.get_time_zone'))
       .then(({ time_zone }) => {
+        // Read after a failure: dates already worked out on the open page still follow the device.
+        this.recoveredZone.set(this.failed() && !!time_zone);
         this.zone.set(time_zone || null);
         this.failed.set(!time_zone);
       })
@@ -25,6 +28,8 @@ export class SiteClockService {
   readonly timeZone = this.zone.asReadonly();
   /** The site's time zone couldn't be read, so "today" and due dates follow this device's clock. */
   readonly unknownZone = this.failed.asReadonly();
+  /** Read on a retry: the open page may still show dates from the device's clock until it reloads. */
+  readonly recovered = this.recoveredZone.asReadonly();
 
   ensure(): Promise<void> {
     return this.zone() ? Promise.resolve() : this.loadZone();

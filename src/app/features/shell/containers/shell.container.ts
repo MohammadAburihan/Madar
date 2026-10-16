@@ -52,7 +52,7 @@ import { buildShellView } from './shell-view';
         />
       }
       @if (clock.unknownZone()) {
-        <div class="clock" role="alert">
+        <div class="clock">
           <app-feedback-card
             tone="warning"
             [title]="clockText().title"
@@ -61,6 +61,15 @@ import { buildShellView } from './shell-view';
           <button type="button" class="md-btn" (click)="clock.retry()">
             {{ clockText().retry }}
           </button>
+        </div>
+      } @else if (clock.recovered()) {
+        <div class="clock">
+          <app-feedback-card
+            tone="warning"
+            [title]="clockText().recoveredTitle"
+            [message]="clockText().recoveredMessage"
+          />
+          <button type="button" class="md-btn" (click)="reload()">{{ clockText().reload }}</button>
         </div>
       }
       <router-outlet />
@@ -145,8 +154,16 @@ export class ShellContainer implements OnInit {
       title: t('clock.unknown.title'),
       message: t('clock.unknown.message'),
       retry: t('clock.unknown.retry'),
+      recoveredTitle: t('clock.recovered.title'),
+      recoveredMessage: t('clock.recovered.message'),
+      reload: t('clock.recovered.reload'),
     };
   });
+
+  /** A full reload, so every date on the page is worked out again in the business's time zone. */
+  protected reload(): void {
+    window.location.reload();
+  }
 
   ngOnInit(): void {
     // Read the site's time zone early, so a failure shows here whichever page is open.

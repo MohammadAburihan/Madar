@@ -41,6 +41,10 @@ describe('SiteClockService', () => {
     expect([clock.unknownZone(), clock.timeZone()]).toEqual([true, null]);
     fail = false;
     await clock.retry();
-    expect([clock.unknownZone(), clock.timeZone()]).toEqual([false, 'Asia/Hebron']);
+    expect([clock.unknownZone(), clock.timeZone(), clock.recovered()]).toEqual([
+      false,
+      'Asia/Hebron',
+      true,
+    ]);
   });
 });

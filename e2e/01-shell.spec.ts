@@ -34,16 +34,20 @@ test('each role sees only its areas in the sidebar @desktop', async ({ page }) =
   await expect(nav.getByRole('link', { name: 'Reports' })).toHaveCount(0);
 });
 
-test("warns when the business's time zone can't be read, and Retry clears it @phone @desktop", async ({
+test("warns when the business's time zone can't be read, then asks to reload once it is @phone @desktop", async ({
   page,
 }) => {
   await page.route('**/frappe.client.get_time_zone*', (route) => route.abort());
   await signIn(page, 'owner');
-  const warning = page
-    .getByRole('alert')
-    .filter({ hasText: "The business's time zone couldn't be read" });
+  const warning = page.getByText("The business's time zone couldn't be read");
   await expect(warning).toBeVisible();
   await page.unroute('**/frappe.client.get_time_zone*');
-  await warning.getByRole('button', { name: 'Try again' }).click();
+  await page.getByRole('button', { name: 'Try again' }).click();
+  // Read now, but the page's dates came from the device: it asks for a reload rather than hiding the problem.
+  const recovered = page.getByText("The business's time zone is read");
+  await expect(recovered).toBeVisible();
+  await page.getByRole('button', { name: 'Reload', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 }).first()).toContainText('Rehan');
+  await expect(recovered).toHaveCount(0);
   await expect(warning).toHaveCount(0);
 });
