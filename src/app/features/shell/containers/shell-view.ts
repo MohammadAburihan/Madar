@@ -55,7 +55,7 @@ const DESKTOP_NAV: NavDefinition[] = [
     id: 'reports',
     icon: LucideChartColumn,
     route: '/reports',
-    hiddenFor: ['salesperson', 'storeAssociate', 'warehouse', 'purchasing', 'projectManager'],
+    shownIf: (caps) => caps.seeReports,
   },
   { id: 'settings', icon: LucideSettings, route: '/settings' },
 ];

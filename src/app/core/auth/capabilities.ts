@@ -31,6 +31,8 @@ export interface Capabilities {
   manageProjects: boolean;
   /** Send stock to a project's site. */
   supplyProjects: boolean;
+  /** Profit, money in and out, and statements (docs/PERMISSIONS.md: owner only). */
+  seeReports: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -50,6 +52,7 @@ const SALES_ROLE: Capabilities = {
   recordExpenses: false,
   manageProjects: false,
   supplyProjects: false,
+  seeReports: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -70,6 +73,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordExpenses: true,
     manageProjects: true,
     supplyProjects: true,
+    seeReports: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -90,6 +94,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordExpenses: false,
     manageProjects: false,
     supplyProjects: true,
+    seeReports: false,
   },
   projectManager: {
     sell: false,
@@ -108,6 +113,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordExpenses: false,
     manageProjects: true,
     supplyProjects: true,
+    seeReports: false,
   },
   purchasing: {
     sell: false,
@@ -127,6 +133,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     recordExpenses: false,
     manageProjects: false,
     supplyProjects: false,
+    seeReports: false,
   },
 };
 
@@ -199,6 +206,9 @@ const SUPPLY_PROJECTS_NEEDS = [
   ['Stock User', 'Accounts Manager'], // read Stock Ledger Entry (the project's site stock); Stock Manager can't
 ];
 
+// Reports read the general ledger and the chart of accounts (v16 permissions).
+const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
+
 /**
  * The persona's rules, narrowed by the user's actual ERPNext roles where a persona can hold users who can't
  * do the task (an owner who is only an Accounts Manager can't move stock).
@@ -233,5 +243,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     supplyProjects:
       caps.supplyProjects &&
       SUPPLY_PROJECTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    seeReports:
+      caps.seeReports &&
+      SEE_REPORTS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }

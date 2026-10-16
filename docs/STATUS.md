@@ -22,10 +22,21 @@ _Last updated: 16 Oct 2026_
 | #18 | **Supply a project** (step 4b-2): plan an item, send stock to the project site, buy the shortfall booked to the project |
 | #19 | **Site use and returns** (step 4b-3): materials at site, recording use, returning unused stock |
 | #20 | **Desktop project workspace** (step 4b-4): tasks table, movement ledger per item, site stock and records |
+| #21 | Step 4 batch review fixes |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## Step 4 of 6 — Record expense, then Supply a project: done (#16–#20)
+## In progress — step 5 of 6: Reports
+
+- **5a — Reports overview** (this PR): profit (sales income less cost of goods sold and other expenses) and money in
+  and out per cash and bank account for this month, last month, this year or custom dates, all from the posted general
+  ledger in the company currency (opening entries and year-end closing left out). The phone shows the mock's cards,
+  month bars and a profit-by-month page; tablet and desktop show four figures and a by-month table with a total. Owner
+  only, and only with a role that can read the ledger (Accounts User, Accounts Manager or Auditor). Money in and out
+  includes transfers between the business's own accounts. Expenses include stock adjustments, as ERPNext's P&L does.
+- **5b — Customer and supplier statements**, with Share and Download PDF.
+
+## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)
 
 Batch review of step 4 (2 medium, 5 low): fixed that a failed requirements or site-stock read no longer shows an empty
 project (only a role that can't read stock sees none), a timed-out project create asks to check its result before

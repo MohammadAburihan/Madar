@@ -1771,5 +1771,68 @@
         "message": "The ledger and site stock are missing. Check the connection and try again."
       }
     }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "{{business}} · posted figures",
+    "period": {
+      "label": "Period",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "thisYear": "This year",
+      "custom": "Custom",
+      "option": "{{kind}} · {{range}}",
+      "from": "From",
+      "to": "To",
+      "invalid": "Choose a start date on or before the end date."
+    },
+    "profit": "Profit",
+    "income": "Sales income",
+    "costOfGoods": "Cost of goods sold",
+    "expenses": "Expenses",
+    "profitHint": "Income − cost of goods sold − expenses",
+    "incomeHint": "Posted sales invoices",
+    "profitByMonth": "Profit by month · last 3 months",
+    "money": "Money in and out",
+    "moneyIn": "Money in",
+    "moneyOut": "Money out",
+    "net": "Net for the period",
+    "byAccount": "By account",
+    "in": "In",
+    "out": "Out",
+    "noAccounts": "No money moved through a cash or bank account in this period.",
+    "lastMonths": "Last 3 months · {{currency}}",
+    "payments": "Payments in this period",
+    "byMonth": "By month · amounts in {{currency}}",
+    "headers": {
+      "month": "Month",
+      "income": "Sales income",
+      "costOfGoods": "Cost of goods sold",
+      "expenses": "Expenses",
+      "profit": "Profit",
+      "moneyIn": "Money in",
+      "moneyOut": "Money out"
+    },
+    "total": "Total",
+    "toDate": "{{month}} · to date",
+    "note": "Figures come from what is posted in ERPNext. Drafts and cancelled records are not included.",
+    "loading": "Loading reports…",
+    "retry": "Try again",
+    "loadFailed": {
+      "title": "The reports couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "Reports are for the owner",
+      "message": "Your role doesn't include reports, or ERPNext doesn't let it read the accounts."
+    },
+    "profitPage": {
+      "title": "Profit by month",
+      "subtitle": "{{business}} · {{range}}",
+      "total": "Profit for the period",
+      "note": "Profit is sales income minus the cost of goods sold and expenses, as posted in ERPNext."
+    },
+    "back": "Back",
+    "costs": "Cost of goods sold and expenses"
   }
 }

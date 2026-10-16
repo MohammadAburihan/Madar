@@ -43,6 +43,10 @@ describe('buildShellView', () => {
     for (const persona of ['salesperson', 'storeAssociate', 'warehouse', 'purchasing'] as const) {
       expect(build(persona).desktopNav.map((i) => i.id)).not.toContain('reports');
     }
+    // An owner whose roles can't read the ledger would only reach an error.
+    expect(build('owner', 'en', ['Sales Manager']).desktopNav.map((i) => i.id)).not.toContain(
+      'reports',
+    );
   });
 
   it('hides Sales, Money and Projects from the purchasing officer', () => {
