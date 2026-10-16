@@ -19,6 +19,7 @@ describe('capabilitiesFor', () => {
       recordExpenses: true,
       manageProjects: true,
       supplyProjects: true,
+      seeReports: true,
     });
   });
 
@@ -41,6 +42,7 @@ describe('capabilitiesFor', () => {
         recordExpenses: false,
         manageProjects: false,
         supplyProjects: persona === 'storeAssociate',
+        seeReports: false,
       });
     }
   });
@@ -192,5 +194,20 @@ describe('capabilitiesFor', () => {
     expect(caps.paymentModes).toEqual([]);
     expect(caps.collect).toBe(false);
     expect(caps.money).toBe('none');
+  });
+
+  it('lets only the owner see reports, when ERPNext lets them read the ledger', () => {
+    expect(capabilitiesFor('owner').seeReports).toBe(true);
+    for (const persona of [
+      'salesperson',
+      'storeAssociate',
+      'warehouse',
+      'purchasing',
+      'projectManager',
+    ] as const) {
+      expect(capabilitiesFor(persona).seeReports).toBe(false);
+    }
+    expect(capabilitiesFor('owner', ['Sales Manager', 'Stock Manager']).seeReports).toBe(false);
+    expect(capabilitiesFor('owner', ['Accounts Manager']).seeReports).toBe(true);
   });
 });

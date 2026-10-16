@@ -22,10 +22,33 @@ _Last updated: 16 Oct 2026_
 | #18 | **Supply a project** (step 4b-2): plan an item, send stock to the project site, buy the shortfall booked to the project |
 | #19 | **Site use and returns** (step 4b-3): materials at site, recording use, returning unused stock |
 | #20 | **Desktop project workspace** (step 4b-4): tasks table, movement ledger per item, site stock and records |
+| #21 | Step 4 batch review fixes |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
-## Step 4 of 6 — Record expense, then Supply a project: done (#16–#20)
+## In progress — step 5 of 6: Reports
+
+- **5a — Reports overview** (this PR): profit (sales income less cost of goods sold and other expenses) and money in
+  and out per cash and bank account for this month, last month, this year or custom dates, all from the posted general
+  ledger in the company currency (opening entries and year-end closing left out). The phone shows the mock's cards,
+  month bars and a profit-by-month page; tablet and desktop show four figures and a by-month table with a total. Owner
+  only, and only with a role that can read the ledger (Accounts User, Accounts Manager or Auditor). Expenses include
+  stock adjustments, as ERPNext's P&L does.
+  Review pass 1 (2 medium, 2 low) fixed: an account added since the chart was read is read again, not left out; the
+  by-month total uses the whole period's figures and says when only the last 12 months are listed; figures hide while
+  the custom dates are out of order; internal transfers between own accounts are left out of money in and out.
+  Review pass 2 (1 medium, 2 low) fixed: a failed transfers read fails the load (only a forbidden one falls back);
+  parallel months share one chart reread and a late failure can't evict a newer chart; Retry rereads the site's today.
+  Review pass 3 (1 medium, 1 low) fixed: money in and out net out every movement between own cash and bank accounts
+  within a voucher (contra journal entries as well as internal-transfer payments), and each report load starts from a
+  fresh chart of accounts. Review pass 4: 1 low, deferred with the other lows below.
+  Deferred (low): an exchange-rate revaluation of a foreign-currency bank account counts as money in or out; a hand-made
+  journal entry holding two unrelated payments (one into a bank, one out of cash) is netted as a transfer.
+- **5b — Customer and supplier statements**, with Share and Download PDF.
+- **Known gap (all steps):** on phones the "More" tab is still a placeholder, so Money, Purchases, Contacts, Projects and
+  Reports are reachable there only through links. To be built with the design's More page.
+
+## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)
 
 Batch review of step 4 (2 medium, 5 low): fixed that a failed requirements or site-stock read no longer shows an empty
 project (only a role that can't read stock sees none), a timed-out project create asks to check its result before
