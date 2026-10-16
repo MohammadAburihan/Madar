@@ -6,6 +6,7 @@ import { paymentRoutes } from './features/payments/payment.routes';
 import { projectRoutes } from './features/projects/projects.routes';
 import { purchaseRoutes } from './features/purchasing/purchase.routes';
 import { reportRoutes } from './features/reports/reports.routes';
+import { settingsRoutes } from './features/settings/settings.routes';
 import {
   invoiceRoute,
   quotationRoutes,
@@ -49,7 +50,7 @@ export const routes: Routes = [
       ...projectRoutes,
       ...reportRoutes,
       ...contactRoutes,
-      placeholder('settings', 'nav.settings'),
+      ...settingsRoutes,
       {
         path: 'more',
         loadComponent: () =>
