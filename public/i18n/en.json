@@ -1922,5 +1922,9 @@
       "message": "Choose one from the list."
     },
     "loading": "Loading statement…"
+  },
+  "more": {
+    "subtitle": "{{business}} · {{role}}",
+    "switchBusiness": "Switch business"
   }
 }

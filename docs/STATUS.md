@@ -42,8 +42,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Retry redoes whichever step failed (the date, the supplier list, the linked party); a fully paid invoice (POS, "is
   paid" bill) stays on the statement with both sides shown. Review pass 2 (2 low): Retry now redoes every failed step;
   deferred: a disabled customer or supplier can't be picked for a statement (opening one by link still works).
-- **Known gap (all steps):** on phones the "More" tab is still a placeholder, so Money, Purchases, Contacts, Projects and
-  Reports are reachable there only through links. To be built with the design's More page.
+- **More page** (this PR): on phones the More tab lists the role's destinations the tab bar doesn't hold (Purchases,
+  Contacts, Money, Projects, Reports, Settings, Switch business), following the same role rules as the desktop sidebar.
+  "Items & services" from the mock is left out until that area exists.
 
 ## Step 4 of 6 — Record expense, then Supply a project: done (#16–#21)
 

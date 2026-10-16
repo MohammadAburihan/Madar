@@ -2,7 +2,7 @@ import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { realTranslator } from '../../../../testing/real-translator';
 import { buildPlaceholderView } from './placeholder-view';
-import { buildShellView } from './shell-view';
+import { buildMoreView, buildShellView } from './shell-view';
 
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, ''));
 
@@ -99,6 +99,39 @@ describe('buildShellView', () => {
       'projects',
       'settings',
     ]);
+  });
+});
+
+describe('buildMoreView', () => {
+  const more = (persona: Persona, roles?: string[], language: 'en' | 'ar' = 'en') =>
+    buildMoreView(
+      {
+        persona,
+        capabilities: capabilitiesFor(persona, roles),
+        businessName: 'Rehan Nursery',
+        userName: 'Rehan Mansour',
+      },
+      realTranslator(language),
+    );
+
+  it("lists the owner's destinations the tab bar doesn't hold, as on the More mock", () => {
+    const view = plain(more('owner'));
+    expect(view.subtitle).toBe('Rehan Nursery · Owner');
+    expect(view.items.map((i: { label: string }) => i.label)).toEqual([
+      'Purchases',
+      'Contacts',
+      'Money',
+      'Projects',
+      'Reports',
+      'Settings',
+      'Switch business',
+    ]);
+    expect(plain(more('owner', undefined, 'ar')).items.at(-1).label).toBe('تبديل المنشأة');
+  });
+
+  it('follows the role: a warehouse worker has no Sales tab, so nothing is duplicated or missing', () => {
+    const ids = more('warehouse', ['Stock User']).items.map((i) => i.id);
+    expect(ids).toEqual(['purchases', 'contacts', 'settings', 'businesses']);
   });
 });
 

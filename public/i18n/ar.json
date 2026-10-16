@@ -1998,5 +1998,9 @@
       "message": "اختر واحداً من القائمة."
     },
     "loading": "جارٍ تحميل كشف الحساب…"
+  },
+  "more": {
+    "subtitle": "{{business}} · {{role}}",
+    "switchBusiness": "تبديل المنشأة"
   }
 }
