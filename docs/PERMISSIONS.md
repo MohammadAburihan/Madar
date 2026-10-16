@@ -50,7 +50,7 @@ to the Owner.
 | Pay suppliers, record expenses | ✅ | — | — | — | — | — |
 | Transfer, count, or adjust stock | ✅ | — | ✅ | ✅ | — | — |
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
-| Supply a project | ✅ | — | ✅ | ✅ | — | ✅ |
+| Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
 | Create or edit items and prices | ✅ | — | — | — | ✅ | — |
 
 ## Enforcement

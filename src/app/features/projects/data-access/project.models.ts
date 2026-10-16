@@ -28,6 +28,14 @@ export interface Requirement {
   available: number;
 }
 
+/** An item the project holds at the site. */
+export interface SiteItem {
+  item: string;
+  itemName: string;
+  uom: string;
+  atSite: number;
+}
+
 export interface Attachment {
   name: string;
   size: number | null;
@@ -50,6 +58,7 @@ export interface ProjectDetail extends ProjectSummary {
   /** Null when the role can't read tasks. */
   tasks: ProjectTask[] | null;
   requirements: Requirement[];
+  siteItems: SiteItem[];
   attachments: Attachment[];
   linked: LinkedRecord[];
 }
@@ -106,4 +115,36 @@ export interface SupplyRequest {
   from: string;
   site: string;
   requestRows: RequestRow[];
+}
+
+/** One item at a project's site: what was delivered, used and returned, and what is there now. */
+export interface SiteBalance {
+  item: string;
+  itemName: string;
+  uom: string;
+  site: string;
+  delivered: number;
+  consumed: number;
+  returned: number;
+  /** What went back to each warehouse. */
+  returnedTo: Record<string, number>;
+  /** The project's share of the site warehouse, from the stock ledger. */
+  atSite: number;
+  pendingOrders: { name: string; qty: number }[];
+  /** The company's own warehouses with the item's stock in each, where unused stock can go back. */
+  warehouses: { warehouse: string; name: string; qty: number }[];
+  /** The warehouse most of the item came from: the suggested place to return it. */
+  returnTo: string | null;
+}
+
+/** Records use at the site (to is null), or returns unused stock from the site to a warehouse. */
+export interface SiteRequest {
+  reference: string;
+  company: string;
+  project: string;
+  item: string;
+  uom: string;
+  qty: number;
+  site: string;
+  to: string | null;
 }

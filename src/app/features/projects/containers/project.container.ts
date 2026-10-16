@@ -29,6 +29,7 @@ import {
   linkedRows,
   overviewHeading,
   requirementRow,
+  siteRow,
   taskCard,
 } from './project-view';
 
@@ -74,6 +75,15 @@ import {
         [rowsInteractive]="caps().supplyProjects"
         (rowSelected)="supply(v.requirementItems[$event])"
       />
+      @if (v.site.length) {
+        <app-project-section
+          [heading]="txt.site"
+          [rows]="v.site"
+          [empty]="''"
+          [rowsInteractive]="caps().supplyProjects"
+          (rowSelected)="openSite(v.siteItems[$event])"
+        />
+      }
       <app-project-section
         [heading]="txt.attachments"
         [items]="v.attachments"
@@ -139,6 +149,7 @@ export class ProjectContainer {
       noTasks: t('project.overview.noTasks'),
       requirements: t('project.overview.requirements'),
       noRequirements: t('project.overview.noRequirements'),
+      site: t('project.overview.site'),
       attachments: t('project.overview.attachments'),
       noAttachments: t('project.overview.noAttachments'),
       linked: t('project.overview.linked'),
@@ -175,6 +186,8 @@ export class ProjectContainer {
         project.requirements.find((r) => r.available < r.required)?.item ??
         project.requirements[0]?.item ??
         null,
+      site: project.siteItems.map((s) => siteRow(s, tr)),
+      siteItems: project.siteItems.map((s) => s.item),
       attachments: project.attachments.map((a) => attachmentCard(a, language)),
       // Order values and expense amounts only for roles that see costs (docs/PERMISSIONS.md).
       linked: linkedRows(project.linked, this.caps().seeCosts ? currency : null, tr),
@@ -209,6 +222,10 @@ export class ProjectContainer {
 
   protected supply(item: string): void {
     void this.router.navigate(['/projects', this.name(), 'supply', item]);
+  }
+
+  protected openSite(item: string): void {
+    void this.router.navigate(['/projects', this.name(), 'site', item]);
   }
 
   protected addRequirement(): void {

@@ -19,6 +19,7 @@ _Last updated: 16 Oct 2026_
 | #15 | **Pay suppliers** (step 3c-2): the payment form with save draft, the recorded payment and its page; step 3 (Purchase) is complete |
 | #16 | **Record expense** (step 4a): category, amount, date, account, optional project and receipt photo; expenses in the Money history |
 | #17 | **Projects** (step 4b-1): the list, creating and editing a project, its overview and material requirements; the Project manager persona |
+| #18 | **Supply a project** (step 4b-2): plan an item, send stock to the project site, buy the shortfall booked to the project |
 
 Every feature PR was built, reviewed, fixed and checked end to end on the ERPNext test site before merging.
 
@@ -28,24 +29,14 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - **4b — Projects and supplying them**, in three PRs:
   - **4b-1 — Projects**: merged (#17). Deferred: a project with 20 or more undated open tasks shows only those as
     next tasks.
-  - **4b-2 — Supply** (this PR): from a requirement on the overview, plan one item (need, stock per warehouse, what
-    is already at the site and on order, the shortfall), send stock from a warehouse to the shared project-site
-    warehouse as a transfer booked to the project and linked to the open requests, and buy the shortfall through a
-    purchase order prefilled with the item and booked to the project. Owner, project manager, warehouse and store
-    associates with Projects User.
-    Review pass 1 (3 medium, 1 low) fixed: store associates who supply projects can open Projects (without budget,
-    costs or editing); "Buy" shows only to roles that order purchases; closed, held and completed orders no longer
-    count as on order; after ERPNext refuses a delivery the plan must be reloaded before trying again.
-    Review pass 2 (1 medium, 2 low) fixed: clickable requirement rows keep their layout; drop-shipped orders don't count
-    as on order; a late search for an earlier supplier can't price the prefilled line.
-    Review pass 3 (2 medium) fixed: the prefilled item is looked up by its exact code (and the form says when it can't
-    be bought); the shortfall to buy leaves out what other warehouses still hold, and the plan says to send it from
-    there.
-    Review pass 4 (3 medium) fixed: what stays in the chosen warehouse also counts as still in stock (with a partial or
-    empty quantity); supplying needs a role that can read the stock ledger (Stock User or Accounts Manager).
-    Review pass 5 (2 low), deferred: extra stock already at the site isn't counted against a later requirement's
-    shortfall; a quantity ERPNext refuses for an item counted in whole units needs a reload instead of an edit.
-  - **4b-3 — Site use and returns**, and the desktop project workspace.
+  - **4b-2 — Supply**: merged (#18). Deferred (low): extra stock already at the site isn't counted against a later
+    requirement's shortfall; a quantity ERPNext refuses for an item counted in whole units needs a reload.
+  - **4b-3 — Site use and returns** (this PR): the overview lists what the project holds at the site; for each item,
+    record what was used (a Material Issue from the site, booked to the project, so its cost counts as actual), then
+    return unused stock to a warehouse (a transfer booked to the project). Both are safe to repeat by reference.
+    Review pass 1 (3 low) fixed: "Returned to" counts that warehouse only; a balance load begun before the task started
+    over is dropped; a new use forgets the last one, so a later return isn't titled "Usage recorded".
+  - **4b-4 — The desktop project workspace.**
 
 Deferred from step 3 (low): a timed-out first "Save draft" that isn't found yet can leave a second unsubmitted draft
 (purchase orders, supplier payments); a leftover invoice draft the purchasing officer can't delete stays in ERPNext;

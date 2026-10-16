@@ -10,6 +10,7 @@ import {
   ProjectSummary,
   ProjectTask,
   Requirement,
+  SiteItem,
 } from '../data-access/project.models';
 
 const qtyFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 });
@@ -79,6 +80,17 @@ export function taskCard(task: ProjectTask, language: Language, tr: Translator):
 }
 
 /** "Ceramic planter · POT-30" with "12 needed · 8 available", flagged when stock falls short. */
+/** "Ceramic planters · POT-30 — 3 units at site". */
+export function siteRow(site: SiteItem, tr: Translator) {
+  return {
+    label: tr.t('project.overview.requirementLine', { item: site.itemName, code: site.item }),
+    status: tr.t('project.overview.siteValue', {
+      units: tr.plural('project.supply.units', site.atSite, { count: qty(site.atSite) }),
+    }),
+    short: false,
+  };
+}
+
 export function requirementRow(requirement: Requirement, tr: Translator) {
   return {
     label: tr.t('project.overview.requirementLine', {

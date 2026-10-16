@@ -146,6 +146,32 @@ describe('ProjectsApiService', () => {
     ]);
   });
 
+  it("lists what the project holds at the site, from its share of the site warehouse's ledger", async () => {
+    const { listCalls } = fakeErpnext(
+      {
+        Warehouse: (query) =>
+          query.filters?.some((f) => f[0] === 'warehouse_name' && f[1] === '=')
+            ? [{ name: 'Project sites - RN' }]
+            : [],
+        'Stock Ledger Entry': () => [
+          { item_code: 'POT-30', 'SUM(`actual_qty`)': 3 },
+          { item_code: 'SOIL', 'SUM(`actual_qty`)': 0 },
+        ],
+        Item: () => [{ name: 'POT-30', item_name: 'Ceramic planter', stock_uom: 'Unit' }],
+      },
+      {},
+      { 'Project/PROJ-0001': PROJECT },
+    );
+    const project = await api().project('PROJ-0001');
+    expect(project.siteItems).toEqual([
+      { item: 'POT-30', itemName: 'Ceramic planter', uom: 'Unit', atSite: 3 },
+    ]);
+    const ledger = listCalls.find((c) => c.doctype === 'Stock Ledger Entry')!.query;
+    expect(ledger.filters).toContainEqual(['warehouse', '=', 'Project sites - RN']);
+    expect(ledger.filters).toContainEqual(['project', '=', 'PROJ-0001']);
+    expect(ledger.groupBy).toBe('item_code');
+  });
+
   it("leaves the cost and tasks out for a role that can't read them", async () => {
     fakeErpnext(
       {

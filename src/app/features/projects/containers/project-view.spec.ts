@@ -19,6 +19,7 @@ const PROJECT: ProjectDetail = {
   tasks: [
     { subject: 'Prepare planting beds', due: '2026-10-12', owners: ['Salim'], status: 'Open' },
   ],
+  siteItems: [],
   requirements: [
     { item: 'POT-30', itemName: 'Ceramic planters', uom: 'Unit', required: 12, available: 8 },
   ],
@@ -61,6 +62,13 @@ describe('project view', () => {
     expect(visible(view.requirementRow(PROJECT.requirements[0], ar)).status).toBe(
       'المطلوب 12 · المتاح 8',
     );
+    const site = { item: 'POT-30', itemName: 'Ceramic planters', uom: 'Unit', atSite: 3 };
+    expect(visible(view.siteRow(site, en))).toEqual({
+      label: 'Ceramic planters · POT-30',
+      status: '3 units at site',
+      short: false,
+    });
+    expect(visible(view.siteRow(site, ar)).status).toBe('3 وحدات في الموقع');
     expect(view.attachmentCard(PROJECT.attachments[0], 'en')).toEqual({
       title: 'Site plan PDF · v3',
       message: '1.8 MB',
