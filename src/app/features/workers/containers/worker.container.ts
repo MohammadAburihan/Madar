@@ -73,6 +73,13 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
         >
           {{ txt.markAttendance }}
         </button>
+        <button
+          type="button"
+          class="md-btn"
+          (click)="router.navigate(['/workers/leave/new'], { queryParams: { worker: id() } })"
+        >
+          {{ txt.requestLeave }}
+        </button>
       }
       <button type="button" class="md-btn" (click)="router.navigate(['/workers', id(), 'edit'])">
         {{ txt.edit }}
@@ -115,6 +122,7 @@ export class WorkerContainer {
       retry: t('workers.retry'),
       edit: t('workers.edit'),
       markAttendance: t('workers.markAttendance'),
+      requestLeave: t('workers.requestLeave'),
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
       loadFailed: {
         title: t('workers.loadFailed.title'),

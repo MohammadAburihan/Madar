@@ -70,3 +70,37 @@ export interface SheetRow {
 
 /** What saving one worker's attendance came to. */
 export type MarkResult = 'marked' | 'already' | 'unresolved' | 'failed';
+
+export type LeaveTab = 'waiting' | 'decided';
+
+export interface LeaveRequest {
+  id: string;
+  worker: string;
+  workerName: string;
+  leaveType: string;
+  from: string;
+  to: string;
+  days: number;
+  reason: string;
+  status: string;
+  /** Approved or rejected, and submitted in ERPNext. */
+  decided: boolean;
+  requested: string;
+}
+
+/** A leave type the worker can take: days left on their allocation, or unpaid. */
+export interface LeaveBalance {
+  type: string;
+  /** Null for unpaid leave, which has no allocation. */
+  left: number | null;
+}
+
+export interface LeaveFormValue {
+  worker: string;
+  leaveType: string;
+  from: string;
+  to: string;
+  reason: string;
+}
+
+export type LeaveDecision = 'Approved' | 'Rejected';

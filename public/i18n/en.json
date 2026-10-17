@@ -2631,7 +2631,8 @@
       "newProject": "New project",
       "addContact": "Add contact",
       "addWorker": "Add worker",
-      "markAttendance": "Mark attendance"
+      "markAttendance": "Mark attendance",
+      "requestLeave": "Request leave"
     }
   },
   "workers": {
@@ -2823,6 +2824,122 @@
       "note": "Saved attendance is submitted in ERPNext; to change a marked day, ask HR to correct it there.",
       "draft": "Draft in ERPNext: {{status}}. Submit or delete it there to mark this day."
     },
-    "markAttendance": "Mark attendance"
+    "markAttendance": "Mark attendance",
+    "leave": {
+      "title": "Leave requests",
+      "subtitle": "Workers & HR · {{business}} · To approve",
+      "search": "Search",
+      "placeholder": "Search worker or leave type",
+      "tabs": {
+        "waiting": "Waiting",
+        "decided": "Decided"
+      },
+      "loading": "Loading leave requests…",
+      "empty": {
+        "waiting": "No leave is waiting for approval.",
+        "decided": "No leave has been decided yet."
+      },
+      "noResults": "No leave requests match your search.",
+      "capped": "Showing the first {{count}}. Search to find others.",
+      "error": {
+        "title": "Leave requests couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "request": "Request leave",
+      "backToWorkers": "Back to workers",
+      "status": {
+        "waiting": "Waiting for approval",
+        "Approved": "Approved",
+        "Rejected": "Rejected",
+        "Cancelled": "Cancelled",
+        "Open": "Open"
+      },
+      "reasonLine": "Reason: {{reason}}",
+      "requestedOn": "Requested {{date}}",
+      "daysRequested": "Days requested",
+      "leftAfter": "Left after approval",
+      "leftNow": "Leave left now",
+      "approveNote": "Approving submits it in ERPNext and marks those days as leave.",
+      "approvedNote": "Those days are marked as leave.",
+      "approve": "Approve leave",
+      "reject": "Reject",
+      "deciding": "Saving…",
+      "openWorker": "Open the worker's page",
+      "loadFailed": {
+        "title": "This leave request couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "decideFailed": {
+        "permission": {
+          "title": "You can't decide this request",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "Nothing was decided. Check the connection and try again."
+        },
+        "error": {
+          "title": "ERPNext didn't take the decision",
+          "message": "Read the request again and try once more."
+        }
+      },
+      "decideUnresolved": {
+        "title": "The decision isn't resolved yet",
+        "message": "The request timed out. Check the result: the request is read again, and it is never decided twice."
+      },
+      "check": "Check result",
+      "form": {
+        "title": "Request leave",
+        "subtitle": "Sent to the leave approver; it counts once approved.",
+        "worker": "Worker *",
+        "workerError": "Choose the worker.",
+        "type": "Leave type *",
+        "typeError": "Choose a leave type.",
+        "noTypes": "This worker has no leave allocated. Allocate leave in ERPNext first.",
+        "from": "From *",
+        "to": "To *",
+        "datesError": "Choose a start, and an end on or after it.",
+        "reason": "Reason",
+        "days": "Days",
+        "send": "Send leave request",
+        "sending": "Sending…",
+        "optionsFailed": "Workers couldn't load. Try again before sending.",
+        "failed": {
+          "permission": {
+            "title": "You can't request this leave",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The request wasn't sent. Check the connection and send again."
+          },
+          "balance": {
+            "title": "Not enough leave left",
+            "message": "The worker doesn't have enough of this leave type for these days. Choose fewer days or another type."
+          },
+          "overlap": {
+            "title": "Leave already requested",
+            "message": "The worker already has leave on some of these days."
+          },
+          "error": {
+            "title": "The request wasn't sent",
+            "message": "ERPNext refused it. Check the dates and type, and send again."
+          }
+        },
+        "notCreated": {
+          "title": "The request wasn't sent",
+          "message": "Nothing was saved. Check the details and send again."
+        },
+        "unresolved": {
+          "title": "Sending not yet resolved",
+          "message": "The request timed out. It may already be sent. Check before sending again (reference {{reference}})."
+        }
+      },
+      "unpaid": "{{type}} · unpaid",
+      "typeLeft": "{{type}} · {{days}} left",
+      "daysLeftAfter": "{{days}} · {{left}} left after"
+    },
+    "leaveRequests": "Leave requests",
+    "requestLeave": "Request leave"
   }
 }

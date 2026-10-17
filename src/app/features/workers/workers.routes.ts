@@ -12,6 +12,22 @@ export const workerRoutes: Route[] = [
       import('./containers/attendance.container').then((m) => m.AttendanceContainer),
   },
   {
+    path: 'workers/leave',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./containers/leave-requests.container').then((m) => m.LeaveRequestsContainer),
+  },
+  {
+    path: 'workers/leave/new',
+    loadComponent: () =>
+      import('./containers/leave-form.container').then((m) => m.LeaveFormContainer),
+  },
+  {
+    path: 'workers/leave/:id',
+    loadComponent: () =>
+      import('./containers/leave-request.container').then((m) => m.LeaveRequestContainer),
+  },
+  {
     path: 'workers/new',
     loadComponent: () =>
       import('./containers/worker-form.container').then((m) => m.WorkerFormContainer),
