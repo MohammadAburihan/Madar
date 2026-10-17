@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Business } from '../../../core/business/business.service';
-import { UnresolvedError, confirmRequest } from '../../../core/erpnext/confirmation';
-import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
-import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { confirmRequest } from '../../../core/erpnext/confirmation';
+import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ShiftFormValue, ShiftType } from './workers.models';
 
 /** "07:00:00" (or Frappe's "7:00:00") as "07:00". */
@@ -16,29 +15,14 @@ const shiftDay = (iso: string, by: number) => {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d + by)).toISOString().slice(0, 10);
 };
-const dayBefore = (iso: string) => shiftDay(iso, -1);
-const dayAfter = (iso: string) => shiftDay(iso, 1);
+export const dayBefore = (iso: string) => shiftDay(iso, -1);
 
-interface Running {
+/** A shift the worker is on when the new one would start. */
+export interface RunningShift {
   name: string;
-  shift_type: string;
-  end_date: string | null;
-}
-
-/** A shift change, worked out before anything is written (see `ShiftApiService.plan`). */
-export interface ShiftPlan {
-  value: ShiftFormValue;
-  /** Shifts to end the day before the new one, with their end dates as they were. */
-  running: Running[];
-  /** Shifts to start again the day after a temporary one. */
-  resume: { shift_type: string; from: string; until: string | null }[];
-}
-
-/** The new shift was made, but the regular one couldn't be resumed after it; applying the plan again does. */
-export class ShiftIncompleteError extends Error {
-  constructor(readonly reason: unknown) {
-    super('The regular shift was not resumed');
-  }
+  shift: string;
+  /** Null while it runs until further notice. */
+  until: string | null;
 }
 
 /** Shifts (Frappe HR Shift Type) and who works them from when (Shift Assignment). */
@@ -112,132 +96,67 @@ export class ShiftApiService {
   }
 
   /**
-   * Works out the change: Madar keeps one shift per worker, so the shifts running into the new one's start end the
-   * day before, and when the new shift is temporary they resume the day after. A later shift that would overlap is
-   * refused before anything changes.
+   * The worker's shifts still running on `from`. Frappe HR refuses a new shift over one of them, so the form
+   * offers to end it first.
    */
-  async plan(value: ShiftFormValue): Promise<ShiftPlan> {
-    const later = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Shift Assignment', {
-        fields: ['name'],
-        filters: [
-          ['employee', '=', value.worker],
-          ['docstatus', '=', 1],
-          ['status', '=', 'Active'],
-          ['start_date', '>=', value.from],
-          ...(value.until ? ([['start_date', '<=', value.until]] as Filter[]) : []),
-        ],
-        limit: 1,
-      }),
+  async running(worker: string, from: string): Promise<RunningShift[]> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{ name: string; shift_type: string; end_date: string | null }>(
+        'Shift Assignment',
+        {
+          fields: ['name', 'shift_type', 'end_date'],
+          filters: [
+            ['employee', '=', worker],
+            ['docstatus', '=', 1],
+            ['status', '=', 'Active'],
+            ['start_date', '<', from],
+          ],
+          orFilters: [
+            ['end_date', 'is', 'not set'],
+            ['end_date', '>=', from],
+          ],
+          limit: 0,
+        },
+      ),
     );
-    if (later.length) {
-      throw new ErpnextError('server', 'A later shift overlaps', 417, 'OverlappingShiftError');
-    }
-    const running = await firstValueFrom(
-      this.erpnext.list<Running>('Shift Assignment', {
-        fields: ['name', 'shift_type', 'end_date'],
-        filters: [
-          ['employee', '=', value.worker],
-          ['docstatus', '=', 1],
-          ['status', '=', 'Active'],
-          ['start_date', '<', value.from],
-        ],
-        orFilters: [
-          ['end_date', 'is', 'not set'],
-          ['end_date', '>=', value.from],
-        ],
-        limit: 0,
-      }),
-    );
-    return {
-      value,
-      running,
-      resume: value.until
-        ? running
-            .filter((r) => !r.end_date || r.end_date > value.until)
-            .map((r) => ({
-              shift_type: r.shift_type,
-              from: dayAfter(value.until),
-              until: r.end_date,
-            }))
-        : [],
-    };
+    return rows.map((r) => ({ name: r.name, shift: r.shift_type, until: r.end_date }));
   }
 
   /**
-   * Carries the plan out, every step skipped when already done, so running it again after a lost answer finishes
-   * it without doing anything twice. ERPNext refusing the new shift puts the running shifts back as they were;
-   * after it exists, a failed resume throws ShiftIncompleteError and running the plan again finishes it.
+   * Ends a running shift on `end` (its end date stays editable once submitted). Setting the same date again is
+   * harmless, so after a lost answer this is simply tried again.
    */
-  async apply(plan: ShiftPlan, business: Business): Promise<void> {
-    const { value } = plan;
-    for (const r of plan.running) {
-      await this.setEnd(r.name, dayBefore(value.from));
-    }
-    if (!(await this.find(value))) {
-      try {
-        await confirmRequest(
-          this.insert(value.worker, value.shift, value.from, value.until, business),
-        );
-      } catch (error) {
-        // A definite answer (refused, forbidden, signed out) proves it doesn't exist; a lost one is left for a retry.
-        if (!(error instanceof UnresolvedError)) {
-          await this.restore(plan);
-        }
-        throw error;
-      }
-    }
-    try {
-      for (const r of plan.resume) {
-        const again = {
-          worker: value.worker,
-          shift: r.shift_type,
-          from: r.from,
-          until: r.until ?? '',
-        };
-        if (!(await this.find(again))) {
-          await confirmRequest(
-            this.insert(again.worker, again.shift, again.from, again.until, business),
-          );
-        }
-      }
-    } catch (error) {
-      throw error instanceof UnresolvedError ? error : new ShiftIncompleteError(error);
-    }
-  }
-
-  /** Puts the running shifts' end dates back, when the new shift was never made. */
-  async restore(plan: ShiftPlan): Promise<void> {
-    for (const r of plan.running) {
-      await this.setEnd(r.name, r.end_date);
-    }
-  }
-
-  private insert(worker: string, shift: string, from: string, until: string, business: Business) {
-    return this.erpnext.post<{ name: string }>('frappe.client.insert', {
-      doc: {
-        doctype: 'Shift Assignment',
-        employee: worker,
-        shift_type: shift,
-        start_date: from,
-        ...(until ? { end_date: until } : {}),
-        company: business.name,
-        status: 'Active',
-        docstatus: 1,
-      },
-    });
-  }
-
-  private setEnd(name: string, end: string | null) {
-    // End date stays editable on a submitted assignment.
-    return confirmRequest(
+  async end(name: string, end: string): Promise<void> {
+    await confirmRequest(
       this.erpnext.post('frappe.client.set_value', {
         doctype: 'Shift Assignment',
         name,
         fieldname: 'end_date',
-        value: end ?? '',
+        value: end,
       }),
     );
+  }
+
+  /**
+   * Submits the assignment, one write. Shift Assignment has no free-text field for a reference; worker, shift
+   * and start identify it, and `find()` looks a lost one up by them.
+   */
+  async assign(value: ShiftFormValue, business: Business): Promise<string> {
+    const doc = await confirmRequest(
+      this.erpnext.post<{ name: string }>('frappe.client.insert', {
+        doc: {
+          doctype: 'Shift Assignment',
+          employee: value.worker,
+          shift_type: value.shift,
+          start_date: value.from,
+          ...(value.until ? { end_date: value.until } : {}),
+          company: business.name,
+          status: 'Active',
+          docstatus: 1,
+        },
+      }),
+    );
+    return doc.name;
   }
 
   async find(value: ShiftFormValue): Promise<string | null> {

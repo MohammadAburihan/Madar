@@ -85,6 +85,16 @@ const SEARCH_DELAY_MS = 250;
     } @else {
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       <app-filter-chips [label]="txt.title" [options]="txt.tabOptions" [(value)]="tab" />
+      @if (desktop()) {
+        <div class="actions">
+          <button type="button" class="md-btn" (click)="markAttendance()">
+            {{ txt.markAttendance }}
+          </button>
+          <button type="button" class="md-btn" (click)="leaveRequests()">
+            {{ txt.leaveRequests }}
+          </button>
+        </div>
+      }
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
       } @else if (state() === 'error') {
@@ -101,14 +111,6 @@ const SEARCH_DELAY_MS = 250;
               [empty]="emptyText()"
               (opened)="selected.set($event)"
             />
-            <div class="actions">
-              <button type="button" class="md-btn" (click)="markAttendance()">
-                {{ txt.markAttendance }}
-              </button>
-              <button type="button" class="md-btn" (click)="leaveRequests()">
-                {{ txt.leaveRequests }}
-              </button>
-            </div>
           </div>
           <section class="panel" [attr.aria-label]="txt.title">
             @if (panel(); as p) {
@@ -126,6 +128,9 @@ const SEARCH_DELAY_MS = 250;
                 </button>
                 <button type="button" class="md-btn" (click)="requestLeave(p.id)">
                   {{ txt.requestLeave }}
+                </button>
+                <button type="button" class="md-btn" (click)="assignShift(p.id)">
+                  {{ txt.assignShift }}
                 </button>
               }
               <button type="button" class="md-btn" (click)="openDetail(p.id)">
@@ -214,6 +219,7 @@ export class WorkersContainer {
       addDesktop: t('workers.addDesktop'),
       markAttendance: t('workers.markAttendance'),
       requestLeave: t('workers.requestLeave'),
+      assignShift: t('workers.shift.assign'),
       leaveRequests: t('workers.leaveRequests'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
@@ -359,6 +365,10 @@ export class WorkersContainer {
 
   protected requestLeave(worker: string): void {
     void this.router.navigate(['/workers/leave/new'], { queryParams: { worker } });
+  }
+
+  protected assignShift(worker: string): void {
+    void this.router.navigate(['/workers/shift/new'], { queryParams: { worker } });
   }
 
   protected leaveRequests(): void {

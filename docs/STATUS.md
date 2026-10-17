@@ -267,37 +267,23 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
   types at once.
 - **H4 — Shifts** (this PR): a worker's page shows their shift on the day ("Shift: Morning · 07:00–15:00", or none
-  assigned). **Assign shift** (`/workers/shift/new`, from a worker's page, which preselects them, and "+ New") picks one of
-  the business's Shift Types with its times, a start and an optional end, and submits a Frappe HR Shift Assignment.
-  Shift Assignment has no free-text field for a reference, so a lost answer is looked up by worker, shift and start.
-  Overlapping shifts get their own message. The seed adds Morning and Evening shifts, Khaled on mornings. Shift types
-  themselves are set up in ERPNext. Design: Workers 08 Assign shift (mobile EN/AR), the shift line on Workers 02. e2e:
-  assign from a worker's page, checked in ERPNext and shown on the page; an overlapping one refused; Arabic; the seeded
-  shift on the desktop worker page.
-  Review pass 1 (1 medium, 2 low) fixed: assigning a shift ends the one worked until then the day before (end date is
-  editable after submit), so a shift can be changed without Desk; the worker's page shows the next shift ("From 26 Oct
-  2026: Evening …"), so a future change is visible after saving; a failed shift read says so, only a 403 hides it.
-  Design sync check (asked for on 17 Oct): desktop Workers now matches its mock (Mark attendance and Request leave in the
-  panel, Open worker after them, Leave requests under the table; the heading keeps only + Add worker), and the mocks
-  gained the shift lines and the new subtitle.
-  Review pass 2 (1 high, 1 medium, 1 low) fixed: a later shift that would overlap is refused before anything changes, and
-  a refused save puts the running shift's end back; a temporary shift (with an end) resumes the regular one the day
-  after, also after a lost answer is found; desktop Workers keeps Mark attendance under the table whoever is selected
-  (mock updated, EN/AR).
-  Review pass 3 (1 high, 2 medium, 2 low) fixed by planning the change before writing it: the plan (shifts to end, with
-  their old end dates, and shifts to resume) is applied step by step, each step skipped when already done, so "Check
-  result" after a lost answer, or "Try again" after a failed resume, finishes it without doing anything twice; until the
-  new shift exists any refusal puts the running shifts back; only the running shift whose hours overlap the new one is
-  ended (a worker can hold shifts at other hours). Deferred: leaving after a lost answer without checking keeps the
-  running shift ended. Seen once: `runtime-config.spec` failed in a full run and passed twice after (flaky, untouched).
-  Review pass 4 (3 medium, 1 low) fixed: Madar keeps one shift per worker again, so every running shift ends the day
-  before (the hours rule missed night shifts and left old shifts running; concurrent shifts at other hours stay a Desk
-  setup); the running shift is put back only when ERPNext itself refuses the new one, never after another error on a
-  retry; a lost shift is looked up among active assignments only.
-  Review pass 5 (1 high, 2 medium, 1 low) fixed: ending a running shift goes through `confirmRequest` (a lost answer is
-  unresolved, not "no connection"); the plan, with the running shifts' old end dates, is kept after a failure and reused
-  for the same change, and put back before a different one is planned; any definite refusal (refused, forbidden,
-  signed out) restores them, and a failed restore is reported, not swallowed; the dead "not created" card is gone.
+  assigned) and the next one already saved ("From 26 Oct 2026: Evening …"). **Assign shift** (`/workers/shift/new`, from a
+  worker's page or desktop panel, which preselect them, and "+ New") picks one of the business's Shift Types, a start and
+  an optional end, and submits a Frappe HR Shift Assignment in one write. When the worker has a shift running over the new
+  start, the form says so and offers **End {shift} on {day before}** first (one `set_value` of its end date, which stays
+  editable after submit and is harmless to repeat); Assign shows once nothing runs over the start. A lost answer is
+  looked up among active assignments by worker, shift and start, as Shift Assignment has no field for a reference.
+  Overlaps Frappe HR refuses get their own message. Seed: Morning and Evening shifts, Khaled on mornings; shift types
+  are set up in ERPNext. Design: Workers 08 Assign shift and 08b (a shift running over the start), the shift lines on
+  Workers 02, the desktop workspace (tabs, Mark attendance and Leave requests above the table, Mark attendance, Request
+  leave, Assign shift and Open worker in the panel). e2e: assign from a worker's page (checked in ERPNext, shown on the
+  page), end the running shift then assign a later one (both checked in ERPNext, the next shift shown), a same-day one
+  refused; Arabic; the seeded shift on the desktop worker page.
+  Review: passes 1–5 found the one-save "end the old shift and add the new one" too fragile (partial failures, lost
+  answers, temporary shifts, concurrent shifts); after pass 6 it became the two explicit, repeatable steps above.
+  Deferred: a temporary shift over a running one means ending it and re-assigning it after, by hand; concurrent
+  shifts at other hours stay a Desk setup. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
 

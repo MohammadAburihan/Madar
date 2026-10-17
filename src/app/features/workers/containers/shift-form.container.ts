@@ -8,12 +8,13 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { toIsoDate } from '../../../core/format/format';
+import { formatShortDate, toIsoDate } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
@@ -24,14 +25,11 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { ShiftApiService, ShiftIncompleteError, ShiftPlan } from '../data-access/shift-api.service';
+import { RunningShift, ShiftApiService, dayBefore } from '../data-access/shift-api.service';
 import { ShiftFormValue, ShiftType } from '../data-access/workers.models';
 import { shiftLabel } from './shift-view';
 
 type Failure = 'permission' | 'offline' | 'overlap' | 'error';
-
-const sameShift = (a: ShiftFormValue, b: ShiftFormValue) =>
-  a.worker === b.worker && a.shift === b.shift && a.from === b.from && a.until === b.until;
 
 /** "Assign shift": the shift a worker works from a date, as a submitted Shift Assignment. */
 @Component({
@@ -103,6 +101,12 @@ const sameShift = (a: ShiftFormValue, b: ShiftFormValue) =>
         [value]="until()"
         (valueChange)="until.set($event)"
       />
+      @for (r of runningView(); track r.name) {
+        <app-feedback-card tone="tint" [title]="r.title" [message]="txt.runningNote" />
+        <button type="button" class="md-btn" [disabled]="ending()" (click)="endRunning(r.name)">
+          {{ ending() ? txt.saving : r.end }}
+        </button>
+      }
       @if (failed(); as f) {
         <app-feedback-card
           tone="danger"
@@ -110,11 +114,11 @@ const sameShift = (a: ShiftFormValue, b: ShiftFormValue) =>
           [message]="txt.failed[f].message"
         />
       }
-      @if (unresolved() || incomplete()) {
+      @if (unresolved()) {
         <app-feedback-card
           tone="warning"
-          [title]="incomplete() ? txt.incomplete.title : txt.unresolved.title"
-          [message]="incomplete() ? txt.incomplete.message : txt.unresolved.message"
+          [title]="txt.unresolved.title"
+          [message]="txt.unresolved.message"
         />
         @if (pending()) {
           <p class="muted" role="status">{{ txt.pending }}</p>
@@ -127,7 +131,14 @@ const sameShift = (a: ShiftFormValue, b: ShiftFormValue) =>
         >
           {{ checking() ? txt.checking : txt.check }}
         </button>
-      } @else {
+      } @else if (!running().length) {
+        @if (notCreated()) {
+          <app-feedback-card
+            tone="warning"
+            [title]="txt.notCreated.title"
+            [message]="txt.notCreated.message"
+          />
+        }
         <button type="button" class="md-btn md-btn--primary" [disabled]="saving()" (click)="save()">
           {{ saving() ? txt.saving : txt.save }}
         </button>
@@ -163,10 +174,13 @@ export class ShiftFormContainer {
   protected readonly unresolved = signal(false);
   protected readonly checking = signal(false);
   protected readonly pending = signal(false);
-  /** The change being made: after a lost answer or a failed resume, applying it again finishes it. */
-  private plan: ShiftPlan | null = null;
-  /** The new shift is saved but the regular one couldn't be resumed after it. */
-  protected readonly incomplete = signal(false);
+  /** What was sent when the answer was lost: checking looks for exactly that. */
+  private sent: ShiftFormValue | null = null;
+  protected readonly notCreated = signal(false);
+  /** Shifts still running when the new one would start: ended first, as Frappe HR refuses an overlap. */
+  protected readonly running = signal<RunningShift[]>([]);
+  protected readonly ending = signal(false);
+  private runningRun = 0;
 
   protected readonly invalid = computed(() => {
     const errors = {
@@ -205,7 +219,8 @@ export class ShiftFormContainer {
       pending: t('sale.checking.pending'),
       noAccess: block('workers.noAccess'),
       unresolved: block('workers.shift.form.unresolved'),
-      incomplete: block('workers.shift.form.incomplete'),
+      notCreated: block('workers.shift.form.notCreated'),
+      runningNote: f('runningNote'),
       failed: {
         permission: block('workers.shift.form.failed.permission'),
         offline: block('workers.shift.form.failed.offline'),
@@ -228,6 +243,12 @@ export class ShiftFormContainer {
       if (this.allowed()) {
         untracked(() => void this.loadOptions());
       }
+    });
+    effect((onCleanup) => {
+      const worker = this.worker();
+      const from = this.from();
+      const timer = setTimeout(() => untracked(() => void this.loadRunning(worker, from)), 250);
+      onCleanup(() => clearTimeout(timer));
     });
   }
 
@@ -259,13 +280,77 @@ export class ShiftFormContainer {
     }
   }
 
+  /** "Khaled works Morning until further notice" and "End Morning on 18 Oct 2026". */
+  protected readonly runningView = computed(() => {
+    const { t } = this.i18n.tr();
+    const language = this.i18n.language();
+    const types = new Map(this.shifts().map((s) => [s.name, s]));
+    const name = this.workers().find((w) => w.id === this.worker())?.name ?? '';
+    return this.running().map((r) => {
+      const shift = types.get(r.shift);
+      const label = shift ? shiftLabel(shift) : r.shift;
+      return {
+        name: r.name,
+        title: r.until
+          ? t('workers.shift.form.runningUntil', {
+              worker: name,
+              shift: label,
+              date: formatShortDate(r.until, language),
+            })
+          : t('workers.shift.form.runningOpen', { worker: name, shift: label }),
+        end: t('workers.shift.form.endRunning', {
+          shift: r.shift,
+          date: formatShortDate(dayBefore(this.from()), language),
+        }),
+      };
+    });
+  });
+
+  private async loadRunning(worker: string, from: string): Promise<void> {
+    const run = ++this.runningRun;
+    this.running.set([]);
+    if (!worker || !from) {
+      return;
+    }
+    try {
+      const running = await this.api.running(worker, from);
+      if (run === this.runningRun) {
+        this.running.set(running);
+      }
+    } catch {
+      // Unknown: saving still meets Frappe HR's own overlap check.
+    }
+  }
+
+  /** Ends the running shift the day before the new one; the same date again is harmless, so a lost answer just retries. */
+  protected async endRunning(name: string): Promise<void> {
+    if (this.ending() || !this.from()) {
+      return;
+    }
+    this.ending.set(true);
+    this.failed.set(null);
+    try {
+      await this.api.end(name, dayBefore(this.from()));
+    } catch (error) {
+      this.fail(
+        error instanceof UnresolvedError
+          ? ErpnextError.from(new HttpErrorResponse({ status: 0 }))
+          : error,
+      );
+    } finally {
+      this.ending.set(false);
+      await this.loadRunning(this.worker(), this.from());
+    }
+  }
+
   protected async save(): Promise<void> {
     this.showErrors.set(true);
-    if (this.invalid() || this.saving() || this.unresolved() || this.incomplete()) {
+    if (this.invalid() || this.saving() || this.unresolved() || this.running().length) {
       return;
     }
     this.saving.set(true);
     this.failed.set(null);
+    this.notCreated.set(false);
     const value: ShiftFormValue = {
       worker: this.worker(),
       shift: this.shift(),
@@ -277,61 +362,44 @@ export class ShiftFormContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      // A plan kept from a failed try still knows the running shifts' old end dates: reuse it for the same change,
-      // and put them back before planning a different one.
-      if (this.plan && !sameShift(this.plan.value, value)) {
-        await this.api.restore(this.plan);
-        this.plan = null;
-      }
-      this.plan ??= await this.api.plan(value);
-      await this.api.apply(this.plan, business);
+      await this.api.assign(value, business);
       void this.router.navigate(['/workers', value.worker], { replaceUrl: true });
     } catch (error) {
-      this.fail(error);
+      if (error instanceof UnresolvedError) {
+        this.sent = value;
+        this.unresolved.set(true);
+      } else {
+        this.fail(error);
+      }
     } finally {
       this.saving.set(false);
     }
   }
 
-  /** After a lost answer or a failed resume: the same change again, each step done only once. */
+  /** Looks for the shift a lost answer may have made; only finding it, or not, settles anything. */
   protected async check(): Promise<void> {
-    const plan = this.plan;
-    if (this.checking() || !plan) {
+    const sent = this.sent;
+    if (this.checking() || !sent) {
       return;
     }
     this.checking.set(true);
     this.pending.set(false);
-    this.failed.set(null);
     try {
-      const business = await this.business.ensure();
-      if (!business) {
-        throw new Error('No active business');
-      }
-      await this.api.apply(plan, business);
+      const found = await this.api.find(sent);
       this.unresolved.set(false);
-      this.incomplete.set(false);
-      void this.router.navigate(['/workers', plan.value.worker], { replaceUrl: true });
-    } catch (error) {
-      if (error instanceof UnresolvedError) {
-        this.pending.set(true);
-      } else {
-        this.unresolved.set(false);
-        this.fail(error);
+      if (found) {
+        void this.router.navigate(['/workers', sent.worker], { replaceUrl: true });
+        return;
       }
+      this.notCreated.set(true);
+    } catch {
+      this.pending.set(true);
     } finally {
       this.checking.set(false);
     }
   }
 
   private fail(error: unknown): void {
-    if (error instanceof UnresolvedError) {
-      this.unresolved.set(true);
-      return;
-    }
-    if (error instanceof ShiftIncompleteError) {
-      this.incomplete.set(true);
-      return;
-    }
     const e = ErpnextError.from(error);
     if (e.kind === 'forbidden') {
       void this.session.checkExpired();

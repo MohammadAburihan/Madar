@@ -2950,7 +2950,7 @@
       "assign": "Assign shift",
       "form": {
         "title": "Assign shift",
-        "subtitle": "The shift the worker works from this date; the current one ends the day before.",
+        "subtitle": "The shift the worker works from this date; attendance follows it.",
         "worker": "Worker *",
         "workerError": "Choose the worker.",
         "shift": "Shift *",
@@ -2983,12 +2983,16 @@
         },
         "unresolved": {
           "title": "Saving not yet resolved",
-          "message": "The request timed out. Check the result: the change is finished, and nothing is saved twice."
+          "message": "The request timed out. The shift may already be assigned. Check before saving again."
         },
-        "incomplete": {
-          "title": "Saved, but the regular shift isn't back yet",
-          "message": "The new shift is saved. Try again to start the regular shift again after it."
-        }
+        "notCreated": {
+          "title": "The shift wasn't assigned",
+          "message": "Nothing was saved. Check the details and try again."
+        },
+        "runningOpen": "{{worker}} works {{shift}} until further notice",
+        "runningUntil": "{{worker}} works {{shift}} until {{date}}",
+        "runningNote": "A new shift can't start over it. End it the day before first.",
+        "endRunning": "End {{shift}} on {{date}}"
       },
       "next": "From {{date}}: {{shift}}",
       "loadFailed": "The worker's shift couldn't load."
