@@ -129,6 +129,10 @@ src/app/
   LTR run. Pencil can't do bidi, so mocks show some Arabic strings in LTR order — trust the browser's bidi.
 - Breakpoints: mobile < 768px (bottom nav), tablet 768–1279px (80px rail), desktop ≥ 1280px (232px sidebar).
 - Verify against exported mock PNGs at 390/1024/1440px in both languages before calling UI work done.
+- Every change to a screen (a new screen, state or control, or a removed, moved or reworded one) is also made in
+  `docs/Madar.pen` through the Pencil MCP tools, in English and Arabic, in the same PR, so the design stays the source
+  of truth. Pencil edits reach disk only after the file is saved in Pencil: ask the user to save, then commit the
+  `.pen`.
 
 ## ERPNext API notes
 

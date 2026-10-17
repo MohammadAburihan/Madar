@@ -41,6 +41,9 @@ import { buildSignInView, NoticeKey } from './sign-in-view';
           [notice]="view().notice"
           (signIn)="signIn($event)"
           (forgotPassword)="forgotPassword($event)"
+          (changeBusiness)="
+            router.navigate(['/connect'], { queryParams: { returnUrl: returnUrl() } })
+          "
         />
       </div>
     </main>
@@ -84,7 +87,7 @@ export class SignInContainer {
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
   private readonly config = inject(RuntimeConfigService);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
 
   protected readonly viewport = inject(ViewportService).viewport;
   private readonly i18n = injectI18n();

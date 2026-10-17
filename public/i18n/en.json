@@ -218,7 +218,8 @@
     "noSession": {
       "title": "Signed in, but the session wasn't kept",
       "message": "This browser didn't keep the sign-in. Allow cookies for this site, then try again."
-    }
+    },
+    "changeBusiness": "Change business"
   },
   "placeholder": {
     "title": "{{area}} isn't available yet",
@@ -2591,10 +2592,24 @@
       "invalid": "Enter an address like padel.example.com.",
       "current": "That is this business's own address.",
       "known": "That business is already saved."
+    }
+  },
+  "connect": {
+    "setup": "Business setup",
+    "title": "Connect your business",
+    "subtitle": "Use the address supplied by your business.",
+    "address": "Workspace address *",
+    "hint": "Use a secure workspace address. Your business runs its own server.",
+    "connect": "Connect business",
+    "connecting": "Connecting…",
+    "help": {
+      "title": "Need the address?",
+      "message": "Ask your business owner for the workspace address."
     },
-    "nativeOnly": {
-      "title": "Other businesses open in the browser",
-      "message": "In the app, this business is the one it was set up for. Open another business's Madar address in a browser."
+    "errors": {
+      "invalid": "Enter an address like rehan.example.com.",
+      "insecure": "Use a secure address that starts with https://.",
+      "unreachable": "No Madar answered at this address. Check it, or the connection, and try again."
     }
   }
 }

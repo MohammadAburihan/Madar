@@ -42,6 +42,7 @@ export function buildSignInView(input: SignInViewInput, tr: Translator): SignInV
       submit: t('signIn.submit'),
       submitting: t('signIn.submitting'),
       forgot: t('signIn.forgot'),
+      changeBusiness: t('signIn.changeBusiness'),
       footer: t('signIn.connectedTo', { host: input.host }),
     },
     notice: input.notice ? notice(input.notice, businessName, input.forgotEmail, tr) : null,
