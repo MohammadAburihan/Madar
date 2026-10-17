@@ -184,7 +184,11 @@ export class AdvanceFormContainer {
   /** A lost answer: giving again with the same reference finds what was done and finishes the rest. */
   protected readonly unresolved = signal(false);
   /** Once sent, the details stay as sent until the advance is resolved. */
-  protected readonly locked = computed(() => this.unresolved() || this.saving() || this.recorded());
+  protected readonly locked = computed(
+    () => this.unresolved() || this.saving() || this.recorded() || this.sent(),
+  );
+  /** Sent once with this reference: its details stay as sent, since a slow first try may still land. */
+  private readonly sent = signal(false);
   /** The advance exists in ERPNext: its details can no longer change, only its payment be tried again. */
   protected readonly recorded = signal(false);
   private readonly reference = newReference('ADV');
@@ -302,10 +306,9 @@ export class AdvanceFormContainer {
     }
   }
 
-  /** Records and pays the advance; after a lost answer the same call checks and finishes it. */
   /**
    * After a lost answer: looks the reference up, never records or pays. Done goes to the worker; recorded but not
-   * paid allows paying again; nothing found allows giving again (the same reference keeps it from doubling).
+   * paid allows paying again; nothing found allows giving the same advance again, under the same reference.
    */
   protected async check(): Promise<void> {
     if (this.saving()) {
@@ -339,6 +342,7 @@ export class AdvanceFormContainer {
     this.saving.set(true);
     this.failed.set(null);
     this.notCreated.set(false);
+    this.sent.set(true);
     try {
       const business = await this.business.ensure();
       if (!business) {

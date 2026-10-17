@@ -307,7 +307,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 2 (2 medium) fixed: amounts typed with Arabic digits are read (`parseNumber`, here and in the later HR
   forms); an Employee Advances account that isn't receivable is reported as a setup step before anything is recorded
   (each business site sets it once; noted in CLAUDE.md). The full suite's desktop Workers test now searches, as runs
-  add workers of their own. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  add workers of their own.
+  Review pass 3 (1 medium) fixed: once sent, the advance's details stay locked (a slow first try may still land under
+  the same reference); only the paying account can change after a failed payment. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
