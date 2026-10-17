@@ -33,6 +33,11 @@ describe('ConnectionService', () => {
     expect(await connection.connect('not an address')).toBe('invalid');
   });
 
+  it('takes non-Latin domain names, in their xn-- form', async () => {
+    const { connection } = setup('web');
+    expect(await connection.connect('rehan.السعودية')).toBe('elsewhere');
+  });
+
   it('in the apps, connects only to a Madar that answers, and forgets the previous business’s name', async () => {
     localStorage.setItem('madar.lastBusiness', 'Rehan Nursery');
     const { connection, http } = setup('android');

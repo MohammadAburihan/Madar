@@ -2426,7 +2426,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Use the address or invitation supplied by your business.",
+              "content": "Use the address supplied by your business.",
               "lineHeight": 1.4,
               "fontFamily": "$md-font",
               "fontSize": 15,
@@ -2488,19 +2488,6 @@
               }
             },
             {
-              "id": "q3ULhK",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Use invitation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Use invitation. Route specification: xjYER. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Use invitation"
-                }
-              }
-            },
-            {
               "id": "EcX7j",
               "type": "ref",
               "ref": "d3sxVd",
@@ -2513,7 +2500,7 @@
                   "fill": "$md-primary"
                 },
                 "RKM9S": {
-                  "content": "Ask your business owner for the workspace address or an invitation."
+                  "content": "Ask your business owner for the workspace address."
                 }
               }
             }
@@ -2781,13 +2768,26 @@
               }
             },
             {
+              "id": "WwGHk",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Change business",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Change business. Route specification: xR27d. Returns to the workspace-address screen; the typed address is kept. Keyboard: Enter/Space. Focus returns to opener.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Change business"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "tiboH",
               "name": "Interaction notes",
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Connected to rehan.example.com\nChange workspace in connection settings.",
+              "content": "Connected to rehan.example.com",
               "lineHeight": 1.4,
               "fontFamily": "$md-font",
               "fontSize": 14,
@@ -3022,16 +3022,16 @@
               "ref": "lIIqs",
               "name": "Issam Supplies",
               "width": "fill_container",
-              "context": "Role: button or table-row link. Accessible name: Issam Supplies · Salesperson · ILS · Open this business. Route specification: E5NfVx. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "context": "Another business's Madar address saved on this device. Open goes to that address (the apps connect to it and return to sign-in); Remove forgets it. Open is disabled while a confirmation is still open.",
               "descendants": {
                 "mwtRW": {
-                  "content": "Issam Supplies"
+                  "content": "issam.example.com"
                 },
                 "rsREK": {
-                  "content": "Salesperson"
+                  "content": "https://issam.example.com"
                 },
                 "TQSOO": {
-                  "content": "ILS · Open this business"
+                  "content": "Open issam.example.com · Remove"
                 }
               }
             },
@@ -3041,16 +3041,16 @@
               "ref": "lIIqs",
               "name": "Padel Works",
               "width": "fill_container",
-              "context": "Role: button or table-row link. Accessible name: Padel Works · Project manager · ILS · Open this business. Route specification: E5NfVx. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "context": "Another business's Madar address saved on this device. Open goes to that address (the apps connect to it and return to sign-in); Remove forgets it.",
               "descendants": {
                 "mwtRW": {
-                  "content": "Padel Works"
+                  "content": "padel.example.com"
                 },
                 "rsREK": {
-                  "content": "Project manager"
+                  "content": "https://padel.example.com"
                 },
                 "TQSOO": {
-                  "content": "ILS · Open this business"
+                  "content": "Open padel.example.com · Remove"
                 }
               }
             },
@@ -3060,7 +3060,7 @@
               "ref": "wk3Ko",
               "name": "Add business connection",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: Add business connection. Route specification: xR27d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "context": "Role: button. Accessible name: Add business connection. Opens a Workspace address field with Save business and Cancel; the address is saved on this device. Each business has its own Madar address.",
               "descendants": {
                 "rPCdT": {
                   "content": "Add business connection"
@@ -30277,19 +30277,6 @@
               }
             },
             {
-              "id": "EW9KE",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Save connection settings",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Save connection settings. Route specification: n2NC0h. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Save connection settings"
-                }
-              }
-            },
-            {
               "id": "CUi1O",
               "type": "ref",
               "ref": "Ab7yc",
@@ -30299,6 +30286,19 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Add another business"
+                }
+              }
+            },
+            {
+              "id": "tDFpb",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Sign out",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Sign out. Ends the ERPNext session and returns to sign-in. Disabled while a confirmation is still open (its reference would be lost). Route specification: uF3Qx.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Sign out"
                 }
               }
             }
@@ -71340,7 +71340,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "استخدم عنوان مساحة العمل أو رابط الدعوة الذي زودتك به منشأتك.",
+              "content": "استخدم العنوان الذي زودتك به منشأتك.",
               "lineHeight": 1.5,
               "textAlign": "right",
               "fontFamily": "$md-arabic",
@@ -71414,22 +71414,6 @@
               }
             },
             {
-              "id": "KXfEl",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Use invitation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: استخدام دعوة. Route specification: fEdiN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "استخدام دعوة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
               "id": "an46T",
               "type": "ref",
               "ref": "eoTqH",
@@ -71445,7 +71429,7 @@
                   "textAlign": "right"
                 },
                 "CZQQN": {
-                  "content": "اطلب من مالك المنشأة عنوان مساحة العمل أو رابط دعوة.",
+                  "content": "اطلب من مالك المنشأة عنوان مساحة العمل.",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -71746,13 +71730,26 @@
               }
             },
             {
+              "id": "B3mdY",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Change business",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تغيير المنشأة. Route specification: dTC1n. Returns to the workspace-address screen; the typed address is kept. Keyboard: Enter/Space. Focus returns to opener.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تغيير المنشأة"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "W48VV7",
               "name": "Interaction notes",
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "متصل بـ rehan.example.com\nغيّر مساحة العمل من إعدادات الاتصال.",
+              "content": "متصل بـ rehan.example.com",
               "lineHeight": 1.5,
               "textAlign": "right",
               "fontFamily": "$md-arabic",
@@ -72012,19 +72009,19 @@
               "context": "Role: button or table-row link. Accessible name: مستلزمات عصام · مندوب مبيعات · ILS · فتح هذه المنشأة. Route specification: Z9Owk. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
               "descendants": {
                 "v62MUh": {
-                  "content": "مستلزمات عصام",
+                  "content": "issam.example.com",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
                 },
                 "pDYnv": {
-                  "content": "مندوب مبيعات",
+                  "content": "https://issam.example.com",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
                 },
                 "ysT02": {
-                  "content": "ILS · فتح هذه المنشأة",
+                  "content": "فتح issam.example.com · إزالة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -72040,19 +72037,19 @@
               "context": "Role: button or table-row link. Accessible name: أعمال بادل · مدير المشاريع · ILS · فتح هذه المنشأة. Route specification: Z9Owk. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
               "descendants": {
                 "v62MUh": {
-                  "content": "أعمال بادل",
+                  "content": "padel.example.com",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
                 },
                 "pDYnv": {
-                  "content": "مدير المشاريع",
+                  "content": "https://padel.example.com",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
                 },
                 "ysT02": {
-                  "content": "ILS · فتح هذه المنشأة",
+                  "content": "فتح padel.example.com · إزالة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -73236,22 +73233,6 @@
               }
             },
             {
-              "id": "FUF52",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Save connection settings",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: حفظ إعدادات الاتصال. Route specification: SSPnt. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "حفظ إعدادات الاتصال",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
               "id": "D0i2n",
               "type": "ref",
               "ref": "S1PTe",
@@ -73264,6 +73245,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "UV46H",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Sign out",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل الخروج. Ends the ERPNext session and returns to sign-in. Disabled while a confirmation is still open. Route specification: CISfr.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تسجيل الخروج"
                 }
               }
             }

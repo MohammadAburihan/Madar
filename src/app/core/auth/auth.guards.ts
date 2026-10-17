@@ -7,11 +7,17 @@ export const signedInGuard: CanMatchFn = async (_route, segments) => {
   const router = inject(Router);
   const session = inject(SessionService);
   const connection = inject(ConnectionService);
+  // The whole requested URL, so query parameters survive the trip through connecting and sign-in.
+  const requested = router.currentNavigation()?.extractedUrl;
+  const returnUrl = requested
+    ? router.serializeUrl(requested)
+    : '/' + segments.map((s) => s.path).join('/');
+  const back = returnUrl === '/' ? null : returnUrl;
   if (!connection.connected()) {
     // The apps need an address to reach at all; on the web, someone already signed in here has it.
     const signedIn = !connection.native && (await session.ensure().catch(() => false));
     if (!signedIn) {
-      return router.createUrlTree(['/connect']);
+      return router.createUrlTree(['/connect'], { queryParams: { returnUrl: back } });
     }
     void connection.connect(connection.address() ?? '');
   }
@@ -20,14 +26,9 @@ export const signedInGuard: CanMatchFn = async (_route, segments) => {
   if (signedIn) {
     return true;
   }
-  // The whole requested URL, so query parameters survive the trip through sign-in.
-  const requested = router.currentNavigation()?.extractedUrl;
-  const returnUrl = requested
-    ? router.serializeUrl(requested)
-    : '/' + segments.map((s) => s.path).join('/');
   return router.createUrlTree(['/sign-in'], {
     queryParams: {
-      returnUrl: returnUrl === '/' ? null : returnUrl,
+      returnUrl: back,
       expired: session.status() === 'expired' ? 1 : null,
     },
   });
@@ -35,7 +36,10 @@ export const signedInGuard: CanMatchFn = async (_route, segments) => {
 
 export const signedOutGuard: CanMatchFn = async () => {
   if (!inject(ConnectionService).connected()) {
-    return inject(Router).createUrlTree(['/connect']);
+    const router = inject(Router);
+    const returnUrl =
+      router.currentNavigation()?.extractedUrl.queryParamMap.get('returnUrl') ?? null;
+    return router.createUrlTree(['/connect'], { queryParams: { returnUrl } });
   }
   const signedIn = await inject(SessionService)
     .ensure()

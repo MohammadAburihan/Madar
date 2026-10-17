@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { NATIVE_ERPNEXT_URLS, NATIVE_PLATFORM } from '../platform/native-platform';
+import { RuntimeConfigService } from '../config/runtime-config';
+import { NATIVE_PLATFORM } from '../platform/native-platform';
 
 const KEY = 'madar.connection';
 const LAST_BUSINESS_KEY = 'madar.lastBusiness';
@@ -20,15 +21,14 @@ export class ConnectionService {
   private readonly document = inject(DOCUMENT);
   private readonly http = inject(HttpClient);
   private readonly platform = inject(NATIVE_PLATFORM);
-  private readonly devDefaults = inject(NATIVE_ERPNEXT_URLS);
+  private readonly config = inject(RuntimeConfigService);
   private readonly stored = signal(localStorage.getItem(KEY));
 
   readonly native = this.platform !== 'web';
   /** The business's address: the one typed in the apps, this site's own on the web. */
   readonly address = computed(() =>
-    this.native
-      ? this.stored() || this.devDefaults[this.platform] || null
-      : this.document.location.origin,
+    // In the apps, the server they actually use: the connected address, else the build's configured one.
+    this.native ? this.stored() || this.config.erpnextUrl() || null : this.document.location.origin,
   );
   /** The user has confirmed the business address on this device. */
   readonly connected = computed(() =>
@@ -66,7 +66,8 @@ export class ConnectionService {
     // A business's address is a domain name; local ERPNext (dev builds only) also runs on localhost or an IP.
     const ip = /^\d+(\.\d+){3}$/.test(url.hostname);
     const local = url.hostname === 'localhost' || ip;
-    const domain = /^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(url.hostname) && !ip;
+    // Non-Latin names (rehan.السعودية) reach here in their xn-- form.
+    const domain = /^([a-z0-9-]+\.)+([a-z]{2,}|xn--[a-z0-9-]+)$/i.test(url.hostname) && !ip;
     if (!(domain || (local && environment.allowInsecureConnection))) {
       return 'invalid';
     }

@@ -42,3 +42,17 @@ test('the connect screen in Arabic, and sign-in remembers the business @desktop'
   await page.goto('/');
   await expect(page).toHaveURL(/\/sign-in/);
 });
+
+test('opens the page that was asked for once connected and signed in @desktop', async ({
+  page,
+}) => {
+  await page.goto('/contacts?kind=suppliers');
+  await expect(page).toHaveURL(/\/connect\?returnUrl=/);
+  await page.getByLabel('Workspace address *').fill(new URL(page.url()).host);
+  await page.getByRole('button', { name: 'Connect business' }).click();
+  await expect(page).toHaveURL(/\/sign-in\?returnUrl=/);
+  await page.getByLabel(/Email/).fill(USERS.owner);
+  await page.getByLabel(/Password/).fill(PASSWORD);
+  await page.getByRole('button', { name: /^Sign in$/ }).click();
+  await expect(page).toHaveURL(/\/contacts\?kind=suppliers$/);
+});

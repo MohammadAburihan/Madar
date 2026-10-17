@@ -22,10 +22,12 @@ export class RuntimeConfigService {
   // reloads the app, so reading the stored address once is enough.
   readonly erpnextUrl = computed(() =>
     normalizeUrl(
-      this.config().erpnextUrl ||
-        (this.platform === 'web'
-          ? ''
-          : localStorage.getItem('madar.connection') || this.nativeUrls[this.platform] || ''),
+      this.platform === 'web'
+        ? this.config().erpnextUrl
+        : localStorage.getItem('madar.connection') ||
+            this.config().erpnextUrl ||
+            this.nativeUrls[this.platform] ||
+            '',
     ),
   );
   /** Host of the configured ERPNext, or null when requests go to the same origin. */

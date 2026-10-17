@@ -54,13 +54,13 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
         <button
           type="button"
           class="md-btn md-btn--primary"
-          [disabled]="openTasks.any()"
+          [disabled]="openTasks.any() || opening()"
           (click)="open(business.address)"
         >
           {{ txt.open(host(business.address)) }}
         </button>
-        @if (openFailed() === business.address) {
-          <p class="muted" role="alert">{{ txt.openFailed }}</p>
+        @if (openFailed()?.address === business.address) {
+          <p class="muted" role="alert">{{ txt.openFailed[openFailed()!.reason] }}</p>
         }
         <button type="button" class="md-btn" (click)="known.remove(business.address)">
           {{ txt.remove(host(business.address)) }}
@@ -103,7 +103,8 @@ export class BusinessesContainer {
   protected readonly known = inject(KnownBusinessesService);
   protected readonly openTasks = inject(OpenTasksService);
   private readonly connection = inject(ConnectionService);
-  protected readonly openFailed = signal<string | null>(null);
+  protected readonly openFailed = signal<{ address: string; reason: string } | null>(null);
+  protected readonly opening = signal(false);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
@@ -136,7 +137,11 @@ export class BusinessesContainer {
       cancel: t('businesses.cancel'),
       note: t('businesses.note'),
       openTask: block('settings.openTask'),
-      openFailed: t('connect.errors.unreachable'),
+      openFailed: {
+        invalid: t('connect.errors.invalid'),
+        insecure: t('connect.errors.insecure'),
+        unreachable: t('connect.errors.unreachable'),
+      } as Record<string, string>,
       errors: {
         invalid: t('businesses.errors.invalid'),
         current: t('businesses.errors.current'),
@@ -172,7 +177,7 @@ export class BusinessesContainer {
   /** Each business is its own Madar: the web opens its address; the apps connect to it and start over there. */
   protected async open(address: string): Promise<void> {
     // Leaving reloads the app: an open confirmation's reference would be lost.
-    if (this.openTasks.any()) {
+    if (this.openTasks.any() || this.opening()) {
       return;
     }
     this.openFailed.set(null);
@@ -180,10 +185,13 @@ export class BusinessesContainer {
       this.document.location.assign(address);
       return;
     }
-    if ((await this.connection.connect(address)) === 'connected') {
+    this.opening.set(true);
+    const result = await this.connection.connect(address);
+    if (result === 'connected') {
       this.document.location.assign('/sign-in');
-    } else {
-      this.openFailed.set(address);
+      return;
     }
+    this.opening.set(false);
+    this.openFailed.set({ address, reason: result });
   }
 }

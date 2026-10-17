@@ -48,8 +48,8 @@ describe('signedInGuard', () => {
       ],
     });
     const router = TestBed.inject(Router);
-    await router.navigateByUrl('/sales');
-    expect(router.url).toBe('/connect');
+    await router.navigateByUrl('/sales?x=1');
+    expect(router.url).toBe('/connect?returnUrl=%2Fsales%3Fx%3D1');
     await router.navigateByUrl('/sign-in');
     expect(router.url).toBe('/connect');
   });

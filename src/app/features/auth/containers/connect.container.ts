@@ -111,6 +111,8 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 export class ConnectContainer implements OnInit {
   /** Set when another business's Madar sent the user here with the address they typed there. */
   readonly confirm = input<string | undefined>();
+  /** The page asked for before connecting, to open after sign-in. */
+  readonly returnUrl = input<string | undefined>();
 
   private readonly connection = inject(ConnectionService);
   private readonly router = inject(Router);
@@ -167,11 +169,13 @@ export class ConnectContainer implements OnInit {
     const result = await this.connection.connect(this.address());
     this.connecting.set(false);
     if (result === 'connected') {
+      const back = this.returnUrl();
+      const query = back ? `?returnUrl=${encodeURIComponent(back)}` : '';
       if (this.connection.native) {
         // A fresh start, so nothing read from the previous business stays in memory.
-        this.document.location.assign('/sign-in');
+        this.document.location.assign(`/sign-in${query}`);
       } else {
-        void this.router.navigate(['/sign-in'], { replaceUrl: true });
+        void this.router.navigateByUrl(`/sign-in${query}`, { replaceUrl: true });
       }
     } else if (result === 'elsewhere') {
       const target = ConnectionService.origin(this.address())!;
