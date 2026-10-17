@@ -510,7 +510,12 @@ if (!(await list('Employee Advance', { employee: employee.Khaled, docstatus: 1 }
     'GET',
     `/api/method/hrms.overrides.employee_payment_entry.get_payment_entry_for_employee?dt=Employee%20Advance&dn=${advance.name}`,
   ).then((r) => r.message);
-  await insert({ ...payment, reference_no: 'Madar seed', reference_date: iso(today), docstatus: 1 });
+  await insert({
+    ...payment,
+    reference_no: 'Madar seed',
+    reference_date: iso(today),
+    docstatus: 1,
+  });
 }
 
 // Shifts for the Assign shift mock: Khaled works mornings.
