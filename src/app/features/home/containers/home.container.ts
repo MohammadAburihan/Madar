@@ -131,6 +131,8 @@ export class HomeContainer {
       supplyProjectShort: ['/projects'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
+      customers: ['/contacts'],
+      catalog: ['/inventory'],
     };
     void this.router.navigate(routes[id] ?? ['/task', id]);
   }

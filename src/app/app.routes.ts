@@ -61,7 +61,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/shell/containers/more.container').then((m) => m.MoreContainer),
       },
-      placeholder('new', 'nav.new'),
+      {
+        path: 'new',
+        loadComponent: () =>
+          import('./features/home/containers/new.container').then((m) => m.NewContainer),
+      },
       placeholder('drafts', 'nav.drafts'),
       {
         path: 'task/:action',

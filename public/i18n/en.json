@@ -2611,5 +2611,24 @@
       "insecure": "Use a secure address that starts with https://.",
       "unreachable": "No Madar answered at this address. Check it, or the connection, and try again."
     }
+  },
+  "newMenu": {
+    "title": "Create something",
+    "subtitle": "{{business}} · {{role}}",
+    "note": "Only actions available to your role and enabled modules appear.",
+    "none": "Your role has nothing to create here.",
+    "actions": {
+      "sell": "Quick sale",
+      "quote": "Create quotation",
+      "buy": "Buy from supplier",
+      "receivePayment": "Receive payment",
+      "paySupplier": "Pay supplier",
+      "receiveGoods": "Receive goods",
+      "recordExpense": "Record expense",
+      "transferStock": "Transfer stock",
+      "supplyProject": "Supply a project",
+      "newProject": "New project",
+      "addContact": "Add contact"
+    }
   }
 }
