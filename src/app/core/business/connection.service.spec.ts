@@ -39,9 +39,11 @@ describe('ConnectionService', () => {
   });
 
   it('in the apps, connects only to a Madar that answers, and forgets the previous business’s name', async () => {
+    // Connected to Rehan Nursery before; switching to another business forgets its name.
     localStorage.setItem('madar.lastBusiness', 'Rehan Nursery');
+    localStorage.setItem('madar.connection', 'https://rehan.example.com');
     const { connection, http } = setup('android');
-    expect(connection.connected()).toBe(false);
+    expect(connection.connected()).toBe(true);
     const failing = connection.connect('https://padel.example.com');
     http.expectOne('https://padel.example.com/api/method/ping').flush(null, {
       status: 0,

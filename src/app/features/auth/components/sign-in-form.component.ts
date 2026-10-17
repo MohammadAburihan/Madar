@@ -67,7 +67,12 @@ export interface SignInLabels {
       >
         {{ labels().forgot }}
       </button>
-      <button type="button" class="md-btn" (click)="changeBusiness.emit()">
+      <button
+        type="button"
+        class="md-btn"
+        [disabled]="submitting()"
+        (click)="changeBusiness.emit()"
+      >
         {{ labels().changeBusiness }}
       </button>
     </form>

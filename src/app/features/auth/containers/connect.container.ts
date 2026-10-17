@@ -166,10 +166,12 @@ export class ConnectContainer implements OnInit {
     }
     this.connecting.set(true);
     this.error.set(null);
+    const before = this.connection.address();
     const result = await this.connection.connect(this.address());
     this.connecting.set(false);
     if (result === 'connected') {
-      const back = this.returnUrl();
+      // A page of the previous business means nothing in another one.
+      const back = this.connection.address() === before ? this.returnUrl() : undefined;
       const query = back ? `?returnUrl=${encodeURIComponent(back)}` : '';
       if (this.connection.native) {
         // A fresh start, so nothing read from the previous business stays in memory.

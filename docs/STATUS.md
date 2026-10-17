@@ -197,7 +197,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   tap while connecting; in the apps the connected address wins over a bundled config.json server, so what is used and
   what is shown agree. The design changes are in docs/Madar.pen (saved in Pencil). Pass 2 (1 medium, 2 low): opening a
   saved business on the web lands on its Connect screen already confirmed; an unreachable ERPNext no longer sends a
-  signed-in user to Connect; Change business keeps sign-in's return page.
+  signed-in user to Connect; Change business keeps sign-in's return page. Pass 3 (4 low): an unreachable ERPNext never records a
+  connection; switching business drops the old business's return page; the previous name is cleared only when another
+  address was stored; Change business waits while signing in.
 - Next: step 6.
 
 ## End-to-end happy paths: merged (#26)

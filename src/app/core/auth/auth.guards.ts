@@ -15,12 +15,16 @@ export const signedInGuard: CanMatchFn = async (_route, segments) => {
   const back = returnUrl === '/' ? null : returnUrl;
   if (!connection.connected()) {
     // The apps need an address to reach at all; on the web, someone already signed in here has it.
-    // ERPNext unreachable counts as signed in here too, so the shell shows its connection state.
-    const signedIn = !connection.native && (await session.ensure().catch(() => true));
+    // ERPNext unreachable lets the shell show its connection state, without recording a connection.
+    const signedIn = connection.native
+      ? false
+      : await session.ensure().catch(() => 'unreachable' as const);
     if (!signedIn) {
       return router.createUrlTree(['/connect'], { queryParams: { returnUrl: back } });
     }
-    void connection.connect(connection.address() ?? '');
+    if (signedIn === true) {
+      void connection.connect(connection.address() ?? '');
+    }
   }
   // When ERPNext is unreachable, let the shell load and show its connection state instead of the sign-in form.
   const signedIn = await session.ensure().catch(() => true);

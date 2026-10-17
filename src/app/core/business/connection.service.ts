@@ -92,7 +92,7 @@ export class ConnectionService {
   }
 
   private remember(address: string): void {
-    if (this.stored() !== address) {
+    if (this.stored() && this.stored() !== address) {
       // The name shown before sign-in belongs to the previous business.
       localStorage.removeItem(LAST_BUSINESS_KEY);
     }
