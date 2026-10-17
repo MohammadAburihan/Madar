@@ -47,10 +47,10 @@ describe('LeaveApiService', () => {
       decided: false,
       requested: '2026-10-17',
     });
+    // Every request not yet submitted waits, a Desk draft given a status included.
     expect(listCalls[0].query.filters).toEqual([
       ['company', '=', 'Rehan Nursery'],
       ['docstatus', '=', 0],
-      ['status', '=', 'Open'],
     ]);
     expect(listCalls[0].query.orderBy).toBe('from_date asc, name asc');
     await api().requests('decided', 'Kha', BUSINESS);

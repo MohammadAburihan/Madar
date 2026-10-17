@@ -260,6 +260,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   (elsewhere or by a lost answer) is shown as it stands, never decided again. Leave pages need HR User or HR Manager,
   like Workers. Design: Workers 05–07 (mobile EN/AR). e2e: request from a worker's page and approve, checked in ERPNext;
   too much leave refused, then a request rejected from the list and found under Decided; Arabic; desktop entry.
+  Review pass 1 (1 medium, 3 low; one dropped: pages under the shell aren't cached) fixed: a failed read of the leave
+  types shows an error with a retry instead of "no leave allocated" (only a 403 means none); types and balances are
+  read as of the leave's start and follow it; a request given a status in Desk but not submitted waits, says so, and
+  can be decided; a 403 checks for an expired session.
 
 ## End-to-end happy paths: merged (#26)
 

@@ -62,6 +62,17 @@ describe('leave view', () => {
     expect(rejected).toMatchObject({ open: false, card: { title: 'Rejected', message: '' } });
   });
 
+  it('treats a request given a status in Desk but not submitted as still waiting', () => {
+    const draft = visible(leaveRequestView({ ...REQUEST, status: 'Approved' }, 14, 'en', en));
+    expect(draft).toMatchObject({ open: true, card: { title: 'Waiting for approval' } });
+    expect(draft.card.message).toBe(
+      'Saved as Approved in ERPNext but not submitted: nothing is decided yet. Approve or reject it here.',
+    );
+    expect(visible(leaveCard({ ...REQUEST, status: 'Rejected' }, 'en', en)).balance).toBe(
+      '3 days · Waiting for approval',
+    );
+  });
+
   it('labels leave types and the day count, unpaid ones without a balance', () => {
     expect(visible(balanceLabel({ type: 'Privilege Leave', left: 14 }, en))).toBe(
       'Privilege Leave · 14 days left',

@@ -2933,11 +2933,13 @@
         "unresolved": {
           "title": "Sending not yet resolved",
           "message": "The request timed out. It may already be sent. Check before sending again (reference {{reference}})."
-        }
+        },
+        "typesFailed": "Leave types couldn't load. Check the connection and try again."
       },
       "unpaid": "{{type}} · unpaid",
       "typeLeft": "{{type}} · {{days}} left",
-      "daysLeftAfter": "{{days}} · {{left}} left after"
+      "daysLeftAfter": "{{days}} · {{left}} left after",
+      "deskDraft": "Saved as {{status}} in ERPNext but not submitted: nothing is decided yet. Approve or reject it here."
     },
     "leaveRequests": "Leave requests",
     "requestLeave": "Request leave"

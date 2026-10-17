@@ -70,7 +70,10 @@ function toRequest(d: LeaveDoc): LeaveRequest {
 export class LeaveApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Waiting: open requests, oldest first. Decided: approved or rejected ones, newest first. */
+  /**
+   * Waiting: every request not yet submitted, oldest first, including ones given a status in Desk without
+   * submitting. Decided: approved or rejected ones, newest first.
+   */
   async requests(tab: LeaveTab, term: string, business: Business): Promise<LeaveRequest[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
@@ -79,10 +82,7 @@ export class LeaveApiService {
         filters: [
           ['company', '=', business.name],
           ...((tab === 'waiting'
-            ? [
-                ['docstatus', '=', 0],
-                ['status', '=', 'Open'],
-              ]
+            ? [['docstatus', '=', 0]]
             : [
                 ['docstatus', '=', 1],
                 ['status', 'in', ['Approved', 'Rejected']],

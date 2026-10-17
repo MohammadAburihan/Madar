@@ -224,6 +224,9 @@ export class LeaveRequestContainer {
         this.unresolved.set(true);
       } else {
         const kind = ErpnextError.from(error).kind;
+        if (kind === 'forbidden') {
+          void this.session.checkExpired();
+        }
         this.failed.set(
           kind === 'forbidden' ? 'permission' : kind === 'offline' ? 'offline' : 'error',
         );

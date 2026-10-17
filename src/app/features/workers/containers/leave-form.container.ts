@@ -74,7 +74,10 @@ type Failure = 'permission' | 'offline' | 'balance' | 'overlap' | 'error';
         <p class="muted" role="alert">{{ txt.workerError }}</p>
       }
       @if (worker()) {
-        @if (balances()?.length === 0) {
+        @if (balancesFailed()) {
+          <app-feedback-card tone="danger" [title]="txt.type" [message]="txt.typesFailed" />
+          <button type="button" class="md-btn" (click)="loadBalances()">{{ txt.retry }}</button>
+        } @else if (balances()?.length === 0) {
           <app-feedback-card tone="warning" [title]="txt.type" [message]="txt.noTypes" />
         } @else {
           <app-select-field
@@ -183,6 +186,7 @@ export class LeaveFormContainer {
   protected readonly notCreated = signal(false);
   private readonly reference = newReference('LEV');
   private balanceRun = 0;
+  protected readonly balancesFailed = signal(false);
 
   protected readonly invalid = computed(() => {
     const errors = {
@@ -205,6 +209,7 @@ export class LeaveFormContainer {
       type: t('workers.leave.form.type'),
       typeError: t('workers.leave.form.typeError'),
       noTypes: t('workers.leave.form.noTypes'),
+      typesFailed: t('workers.leave.form.typesFailed'),
       from: t('workers.leave.form.from'),
       to: t('workers.leave.form.to'),
       datesError: t('workers.leave.form.datesError'),
@@ -258,6 +263,15 @@ export class LeaveFormContainer {
         untracked(() => void this.loadWorkers());
       }
     });
+    effect((onCleanup) => {
+      const worker = this.worker();
+      const from = this.from();
+      const timer = setTimeout(
+        () => untracked(() => void this.loadBalances(worker, from)),
+        COUNT_DELAY_MS,
+      );
+      onCleanup(() => clearTimeout(timer));
+    });
     // Frappe HR counts the days (holidays aside), once the worker, type and dates are known.
     effect((onCleanup) => {
       const worker = this.worker();
@@ -309,35 +323,44 @@ export class LeaveFormContainer {
     }
   }
 
-  /** A worker's leave types are their own: choosing another reloads them and clears the type. */
+  /** A worker's leave types are their own: choosing another clears the type until theirs are read. */
   protected setWorker(id: string): void {
     if (this.unresolved() || id === this.worker()) {
       return;
     }
-    const run = ++this.balanceRun;
     this.worker.set(id);
     this.leaveType.set('');
+  }
+
+  /** The worker's leave types as of the leave's start: allocations cover their own period. */
+  protected async loadBalances(worker = this.worker(), from = this.from()): Promise<void> {
+    const run = ++this.balanceRun;
     this.balances.set(null);
-    if (!id) {
+    this.balancesFailed.set(false);
+    if (!worker) {
       return;
     }
-    this.api
-      .balances(id, this.today() || toIsoDate(this.clock.now()))
-      .then((balances) => {
-        if (run === this.balanceRun) {
-          this.balances.set(balances);
-          // One allocated type is the usual case: chosen, unpaid leave still on offer.
-          const allocated = balances.filter((b) => b.left !== null);
-          if (allocated.length === 1) {
-            this.leaveType.set(allocated[0].type);
-          }
-        }
-      })
-      .catch(() => {
-        if (run === this.balanceRun) {
+    try {
+      const balances = await this.api.balances(worker, from || this.today());
+      if (run !== this.balanceRun) {
+        return;
+      }
+      this.balances.set(balances);
+      if (!balances.some((b) => b.type === this.leaveType())) {
+        // One allocated type is the usual case: chosen, unpaid leave still on offer.
+        const allocated = balances.filter((b) => b.left !== null);
+        this.leaveType.set(allocated.length === 1 ? allocated[0].type : '');
+      }
+    } catch (error) {
+      if (run === this.balanceRun) {
+        // Only a role that can't read them has none to offer; anything else can be tried again.
+        if (ErpnextError.from(error).kind === 'forbidden') {
           this.balances.set([]);
+        } else {
+          this.balancesFailed.set(true);
         }
-      });
+      }
+    }
   }
 
   protected async send(): Promise<void> {
@@ -371,6 +394,10 @@ export class LeaveFormContainer {
         this.unresolved.set(true);
       } else {
         const e = ErpnextError.from(error);
+        if (e.kind === 'forbidden') {
+          // A 403 is also what an expired session gets; the shell then asks to sign in again.
+          void this.session.checkExpired();
+        }
         this.failed.set(
           e.kind === 'forbidden'
             ? 'permission'

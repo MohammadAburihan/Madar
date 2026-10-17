@@ -17,9 +17,8 @@ export function leaveRange(request: Pick<LeaveRequest, 'from' | 'to'>, language:
 
 /** Waiting for approval, Approved or Rejected, in the user's words. */
 export function leaveStatus(request: LeaveRequest, tr: Translator): string {
-  return tr.t(
-    `workers.leave.status.${request.decided ? request.status : request.status === 'Open' ? 'waiting' : request.status}`,
-  );
+  // Until it is submitted nothing is decided, whatever status Desk gave it.
+  return tr.t(`workers.leave.status.${request.decided ? request.status : 'waiting'}`);
 }
 
 /** The list card: worker, leave type and dates, and how many days and where it stands. */
@@ -39,7 +38,7 @@ export function leaveRequestView(
   language: Language,
   tr: Translator,
 ) {
-  const open = !request.decided && request.status === 'Open';
+  const open = !request.decided && request.status !== 'Cancelled';
   return {
     title: request.workerName,
     subtitle: `${request.leaveType} · ${request.id}`,
@@ -62,7 +61,11 @@ export function leaveRequestView(
     card: {
       title: leaveStatus(request, tr),
       message: open
-        ? tr.t('workers.leave.approveNote')
+        ? request.status === 'Open'
+          ? tr.t('workers.leave.approveNote')
+          : tr.t('workers.leave.deskDraft', {
+              status: tr.t(`workers.leave.status.${request.status}`),
+            })
         : request.status === 'Approved'
           ? tr.t('workers.leave.approvedNote')
           : '',
