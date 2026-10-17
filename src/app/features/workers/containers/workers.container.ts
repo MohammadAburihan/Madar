@@ -190,9 +190,11 @@ export class WorkersContainer {
     };
   });
 
-  /** Today's column only where attendance could be read, and never for those who left. */
+  /** Today's column where attendance could be read, or to say who isn't active; never for those who left. */
   private readonly withToday = computed(
-    () => this.current() === 'active' && this.rows().some((r) => r.today !== null),
+    () =>
+      this.current() === 'active' &&
+      this.rows().some((r) => r.today !== null || r.status !== 'Active'),
   );
 
   protected readonly headers = computed(() => {
@@ -211,7 +213,11 @@ export class WorkersContainer {
   protected readonly tableRows = computed(() =>
     this.rows().map((r) => {
       const cells = workerRow(r, this.i18n.language(), this.i18n.tr());
-      return { id: r.id, cells: this.withToday() ? cells : cells.slice(0, 2) };
+      const withToday = this.withToday();
+      return {
+        id: r.id,
+        cells: withToday ? [...cells.slice(0, 2), cells[2] ?? ''] : cells.slice(0, 2),
+      };
     }),
   );
 

@@ -231,6 +231,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   (one per shift) and a day counts once; advances in another currency are converted to the company's (by what was paid in it, `base_paid_amount`: Employee Advance has no exchange rate field, and an unknown field fails the whole read).
   Review pass 2 (1 medium, 1 low) fixed: a day with several shift records reads as its best one, matching the month's
   count; a worker of another company on the same site isn't shown, loaded or saved by link.
+  Review pass 3 (4 low): fixed recent attendance listing a day once per shift; attendance and leave degrading
+  separately when one is forbidden (and "not marked" only when attendance was read); desktop showing Inactive and
+  Suspended without readable attendance. Deferred: a user holding only HR User or HR Manager matches no Madar role and
+  falls back to the Owner's screens (ERPNext still refuses what they can't do); an HR persona is needed.
 
 ## End-to-end happy paths: merged (#26)
 

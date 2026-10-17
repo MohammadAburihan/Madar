@@ -60,6 +60,22 @@ const ATTENDANCE = ['Present', 'Work From Home', 'Half Day', 'On Leave', 'Absent
 
 const squash = (name: string) => name.trim().replace(/\s+/g, ' ');
 
+/** One record per day, newest first: the best of a day's shift records. */
+function bestPerDay(
+  rows: { attendance_date: string; status: string }[],
+): { date: string; status: string }[] {
+  const days = new Map<string, string>();
+  for (const r of rows) {
+    const current = days.get(r.attendance_date);
+    if (!current || ATTENDANCE.indexOf(r.status) < ATTENDANCE.indexOf(current)) {
+      days.set(r.attendance_date, r.status);
+    }
+  }
+  return [...days]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([date, status]) => ({ date, status }));
+}
+
 /** Days at work: a full or home day counts 1, a half day ½; a day with several shift records counts once. */
 function daysPresent(rows: { attendance_date: string; status: string }[]): number {
   const best = new Map<string, number>();
@@ -123,7 +139,7 @@ export class WorkersApiService {
         : null;
     return rows.map((r) => ({
       ...this.row(r, departments),
-      today: todays ? (todays.get(r.name) ?? { marked: false }) : null,
+      today: todays ? (todays.map.get(r.name) ?? todays.fallback) : null,
     }));
   }
 
@@ -144,19 +160,26 @@ export class WorkersApiService {
       this.advanceToRepay(id).catch(forbiddenAsNull),
       this.latestPay(id).catch(forbiddenAsNull),
       // Approved leave is marked ahead for every day it covers; recent means up to today.
-      this.attendance(id, [['attendance_date', '<=', today]], RECENT_LIMIT).catch(forbiddenAsNull),
+      // Enough records for the newest days even with one record per shift; collapsed per day below.
+      this.attendance(id, [['attendance_date', '<=', today]], RECENT_LIMIT * 4).catch(
+        forbiddenAsNull,
+      ),
     ]);
     return {
       ...this.row(doc, departments),
       today:
-        doc.status === 'Left' ? null : todayMap ? (todayMap.get(id) ?? { marked: false }) : null,
+        doc.status === 'Left'
+          ? null
+          : todayMap
+            ? (todayMap.map.get(id) ?? todayMap.fallback)
+            : null,
       joined: doc.date_of_joining,
       relieved: doc.relieving_date ?? null,
       presentThisMonth: month ? daysPresent(month) : null,
       leaveLeft,
       advanceToRepay: advance,
       pay,
-      recent: (recent ?? []).map((r) => ({ date: r.attendance_date, status: r.status })),
+      recent: bestPerDay(recent ?? []).slice(0, RECENT_LIMIT),
     };
   }
 
@@ -297,37 +320,51 @@ export class WorkersApiService {
   }
 
   /** Each worker's attendance today, or the approved leave covering today. */
-  private async todayFor(ids: string[], today: string): Promise<Map<string, WorkerToday>> {
+  /**
+   * How each worker is today: `fallback` for those with nothing recorded, which is "not marked" only when
+   * attendance could be read. Null when neither attendance nor leave can be read.
+   */
+  private async todayFor(
+    ids: string[],
+    today: string,
+  ): Promise<{ map: Map<string, WorkerToday>; fallback: WorkerToday | null } | null> {
     const [attendance, leave] = await Promise.all([
       // A worker can have several records a day (one per shift), so no per-worker limit holds.
-      this.erpnext.listAll<{ employee: string; status: string }>('Attendance', {
-        fields: ['employee', 'status'],
-        filters: [
-          ['employee', 'in', ids],
-          ['attendance_date', '=', today],
-          ['docstatus', '=', 1],
-        ],
-      }),
-      this.erpnext.listAll<{ employee: string; to_date: string }>('Leave Application', {
-        fields: ['employee', 'to_date'],
-        filters: [
-          ['employee', 'in', ids],
-          ['from_date', '<=', today],
-          ['to_date', '>=', today],
-          ['status', '=', 'Approved'],
-          ['docstatus', '=', 1],
-        ],
-        orderBy: 'to_date desc',
-      }),
+      this.erpnext
+        .listAll<{ employee: string; status: string }>('Attendance', {
+          fields: ['employee', 'status'],
+          filters: [
+            ['employee', 'in', ids],
+            ['attendance_date', '=', today],
+            ['docstatus', '=', 1],
+          ],
+        })
+        .catch(forbiddenAsNull),
+      this.erpnext
+        .listAll<{ employee: string; to_date: string }>('Leave Application', {
+          fields: ['employee', 'to_date'],
+          filters: [
+            ['employee', 'in', ids],
+            ['from_date', '<=', today],
+            ['to_date', '>=', today],
+            ['status', '=', 'Approved'],
+            ['docstatus', '=', 1],
+          ],
+          orderBy: 'to_date desc',
+        })
+        .catch(forbiddenAsNull),
     ]);
+    if (!attendance && !leave) {
+      return null;
+    }
     const map = new Map<string, WorkerToday>();
-    for (const l of leave) {
+    for (const l of leave ?? []) {
       if (!map.has(l.employee)) {
         map.set(l.employee, { marked: true, status: 'On Leave', until: l.to_date });
       }
     }
     const best = new Map<string, number>();
-    for (const a of attendance) {
+    for (const a of attendance ?? []) {
       const rank = ATTENDANCE.indexOf(a.status);
       if (rank >= 0 && rank < (best.get(a.employee) ?? ATTENDANCE.length)) {
         best.set(a.employee, rank);
@@ -339,7 +376,7 @@ export class WorkersApiService {
         map.set(employee, { marked: true, status: ATTENDANCE[rank] as 'Present' });
       }
     }
-    return map;
+    return { map, fallback: attendance ? { marked: false } : null };
   }
 
   /** The worker's attendance, newest first: the newest `limit` records, or all of them. */

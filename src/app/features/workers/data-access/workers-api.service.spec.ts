@@ -111,7 +111,7 @@ describe('WorkersApiService', () => {
         Attendance: (q) =>
           q.fields.includes('employee')
             ? [{ employee: 'HR-EMP-00001', status: 'Present' }]
-            : q.limit === 5
+            : q.limit === 20
               ? [{ attendance_date: TODAY, status: 'Present' }]
               : [
                   { attendance_date: '2026-10-01', status: 'Present' },
@@ -164,7 +164,7 @@ describe('WorkersApiService', () => {
     expect(getCalls[0].params).toEqual({ employee: 'HR-EMP-00001', date: TODAY });
     const month = listCalls.find(
       (c) =>
-        c.doctype === 'Attendance' && c.query.limit !== 5 && !c.query.fields.includes('employee'),
+        c.doctype === 'Attendance' && c.query.limit !== 20 && !c.query.fields.includes('employee'),
     )!;
     expect(month.query.filters).toContainEqual(['attendance_date', '>=', '2026-10-01']);
     const slips = listCalls.find((c) => c.doctype === 'Salary Slip')!;
@@ -426,5 +426,31 @@ describe('WorkersApiService review fixes', () => {
     await expect(api().load('HR-EMP-00001', BUSINESS)).rejects.toBeTruthy();
     await expect(api().save(VALUE, 'HR-EMP-00001', 'EMP-1', BUSINESS)).rejects.toBeTruthy();
     expect(postCalls).toEqual([]);
+  });
+
+  it('keeps today from attendance when leave is forbidden, and lists each recent day once', async () => {
+    fakeErpnext(
+      {
+        Employee: () => EMPLOYEES.slice(0, 1),
+        'Leave Application': forbidden,
+        Attendance: (q) =>
+          q.fields.includes('employee')
+            ? [{ employee: 'HR-EMP-00001', status: 'Present' }]
+            : [
+                { attendance_date: '2026-10-17', status: 'Absent' },
+                { attendance_date: '2026-10-17', status: 'Present' },
+                { attendance_date: '2026-10-16', status: 'Half Day' },
+              ],
+      },
+      {},
+      { 'Employee/HR-EMP-00001': { ...EMPLOYEES[0], date_of_joining: '2025-03-03' } },
+    );
+    const [row] = await api().list('', 'active', BUSINESS, TODAY);
+    expect(row.today).toEqual({ marked: true, status: 'Present' });
+    const worker = await api().worker('HR-EMP-00001', BUSINESS, TODAY);
+    expect(worker.recent).toEqual([
+      { date: '2026-10-17', status: 'Present' },
+      { date: '2026-10-16', status: 'Half Day' },
+    ]);
   });
 });
