@@ -330,6 +330,9 @@ export class LeaveFormContainer {
     }
     this.worker.set(id);
     this.leaveType.set('');
+    // The last worker's types must not stay pickable while the new worker's load.
+    this.balanceRun++;
+    this.balances.set(null);
   }
 
   /** The worker's leave types as of the leave's start: allocations cover their own period. */

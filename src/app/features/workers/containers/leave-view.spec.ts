@@ -71,6 +71,13 @@ describe('leave view', () => {
     expect(visible(leaveCard({ ...REQUEST, status: 'Rejected' }, 'en', en)).balance).toBe(
       '3 days · Waiting for approval',
     );
+    // Cancelled in Desk: neither waiting nor decided.
+    expect(
+      visible(leaveRequestView({ ...REQUEST, status: 'Cancelled' }, 14, 'en', en)),
+    ).toMatchObject({
+      open: false,
+      card: { title: 'Cancelled' },
+    });
   });
 
   it('labels leave types and the day count, unpaid ones without a balance', () => {

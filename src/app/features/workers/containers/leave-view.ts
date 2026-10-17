@@ -18,7 +18,9 @@ export function leaveRange(request: Pick<LeaveRequest, 'from' | 'to'>, language:
 /** Waiting for approval, Approved or Rejected, in the user's words. */
 export function leaveStatus(request: LeaveRequest, tr: Translator): string {
   // Until it is submitted nothing is decided, whatever status Desk gave it.
-  return tr.t(`workers.leave.status.${request.decided ? request.status : 'waiting'}`);
+  return tr.t(
+    `workers.leave.status.${request.decided || request.status === 'Cancelled' ? request.status : 'waiting'}`,
+  );
 }
 
 /** The list card: worker, leave type and dates, and how many days and where it stands. */

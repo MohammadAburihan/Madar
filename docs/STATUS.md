@@ -264,6 +264,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   types shows an error with a retry instead of "no leave allocated" (only a 403 means none); types and balances are
   read as of the leave's start and follow it; a request given a status in Desk but not submitted waits, says so, and
   can be decided; a 403 checks for an expired session.
+  Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
+  types at once.
 
 ## End-to-end happy paths: merged (#26)
 
