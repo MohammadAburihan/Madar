@@ -41,22 +41,6 @@ export class ShiftIncompleteError extends Error {
   }
 }
 
-/** Whether two shifts' hours overlap; one ending before it starts runs past midnight. */
-function overlaps(a: ShiftType, b: ShiftType): boolean {
-  const span = (t: ShiftType): [number, number] => {
-    const minutes = (hhmm: string) => {
-      const [h, m] = hhmm.split(':').map(Number);
-      return h * 60 + m;
-    };
-    const start = minutes(t.start);
-    const end = minutes(t.end);
-    return [start, end <= start ? end + 24 * 60 : end];
-  };
-  const [as, ae] = span(a);
-  const [bs, be] = span(b);
-  return as < be && bs < ae;
-}
-
 /** Shifts (Frappe HR Shift Type) and who works them from when (Shift Assignment). */
 @Injectable({ providedIn: 'root' })
 export class ShiftApiService {
@@ -128,8 +112,8 @@ export class ShiftApiService {
   }
 
   /**
-   * Works out the change: the worker's shifts running into the new one's start whose hours overlap it end the day
-   * before, and when the new shift is temporary they resume the day after. A later shift that would overlap is
+   * Works out the change: Madar keeps one shift per worker, so the shifts running into the new one's start end the
+   * day before, and when the new shift is temporary they resume the day after. A later shift that would overlap is
    * refused before anything changes.
    */
   async plan(value: ShiftFormValue): Promise<ShiftPlan> {
@@ -149,32 +133,22 @@ export class ShiftApiService {
     if (later.length) {
       throw new ErpnextError('server', 'A later shift overlaps', 417, 'OverlappingShiftError');
     }
-    const [rows, types] = await Promise.all([
-      firstValueFrom(
-        this.erpnext.list<Running>('Shift Assignment', {
-          fields: ['name', 'shift_type', 'end_date'],
-          filters: [
-            ['employee', '=', value.worker],
-            ['docstatus', '=', 1],
-            ['status', '=', 'Active'],
-            ['start_date', '<', value.from],
-          ],
-          orFilters: [
-            ['end_date', 'is', 'not set'],
-            ['end_date', '>=', value.from],
-          ],
-          limit: 0,
-        }),
-      ),
-      this.shiftTypes(),
-    ]);
-    const hours = new Map(types.map((t) => [t.name, t]));
-    const target = hours.get(value.shift);
-    // Only the shift being replaced: Frappe HR lets a worker hold other shifts at other hours alongside it.
-    const running = rows.filter((r) => {
-      const other = hours.get(r.shift_type);
-      return !target || !other || overlaps(target, other);
-    });
+    const running = await firstValueFrom(
+      this.erpnext.list<Running>('Shift Assignment', {
+        fields: ['name', 'shift_type', 'end_date'],
+        filters: [
+          ['employee', '=', value.worker],
+          ['docstatus', '=', 1],
+          ['status', '=', 'Active'],
+          ['start_date', '<', value.from],
+        ],
+        orFilters: [
+          ['end_date', 'is', 'not set'],
+          ['end_date', '>=', value.from],
+        ],
+        limit: 0,
+      }),
+    );
     return {
       value,
       running,
@@ -192,25 +166,26 @@ export class ShiftApiService {
 
   /**
    * Carries the plan out, every step skipped when already done, so running it again after a lost answer finishes
-   * it without doing anything twice. Until the new shift exists, a refusal puts the running shifts back as they
-   * were; after it, a failed resume throws ShiftIncompleteError and running the plan again finishes it.
+   * it without doing anything twice. ERPNext refusing the new shift puts the running shifts back as they were;
+   * after it exists, a failed resume throws ShiftIncompleteError and running the plan again finishes it.
    */
   async apply(plan: ShiftPlan, business: Business): Promise<void> {
     const { value } = plan;
-    try {
-      for (const r of plan.running) {
-        await this.setEnd(r.name, dayBefore(value.from));
-      }
-      if (!(await this.find(value))) {
+    for (const r of plan.running) {
+      await this.setEnd(r.name, dayBefore(value.from));
+    }
+    if (!(await this.find(value))) {
+      try {
         await confirmRequest(
           this.insert(value.worker, value.shift, value.from, value.until, business),
         );
+      } catch (error) {
+        // Only ERPNext refusing the new shift proves it doesn't exist; anything else is left for a retry.
+        if (!(error instanceof UnresolvedError) && ErpnextError.from(error).kind === 'server') {
+          await this.restore(plan);
+        }
+        throw error;
       }
-    } catch (error) {
-      if (!(error instanceof UnresolvedError)) {
-        await this.restore(plan);
-      }
-      throw error;
     }
     try {
       for (const r of plan.resume) {
@@ -274,6 +249,7 @@ export class ShiftApiService {
           ['shift_type', '=', value.shift],
           ['start_date', '=', value.from],
           ['docstatus', '=', 1],
+          ['status', '=', 'Active'],
         ],
         limit: 1,
       }),

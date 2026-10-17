@@ -66,18 +66,28 @@ describe('ShiftApiService', () => {
     expect(postCalls).toEqual([]);
   });
 
-  it('replaces only the running shift whose hours overlap, and resumes it after a temporary one', async () => {
+  it('ends every running shift, one shift per worker, and resumes it after a temporary one', async () => {
     fakeErpnext({
-      'Shift Type': () => TYPES,
-      'Shift Assignment': assignments([
-        { name: 'SA-M', shift_type: 'Morning', end_date: null },
-        { name: 'SA-N', shift_type: 'Night', end_date: null },
-      ]),
+      'Shift Assignment': assignments([{ name: 'SA-N', shift_type: 'Night', end_date: null }]),
     });
-    const plan = await api().plan({ ...VALUE, shift: 'Evening', until: '2026-10-21' });
-    expect(plan.running.map((r) => r.name)).toEqual(['SA-M']);
-    expect(plan.resume).toEqual([{ shift_type: 'Morning', from: '2026-10-22', until: null }]);
+    const plan = await api().plan({ ...VALUE, shift: 'Early', until: '2026-10-21' });
+    expect(plan.running.map((r) => r.name)).toEqual(['SA-N']);
+    expect(plan.resume).toEqual([{ shift_type: 'Night', from: '2026-10-22', until: null }]);
     expect((await api().plan(VALUE)).resume).toEqual([]);
+  });
+
+  it('keeps the running shift ended when a retry fails for another reason than ERPNext refusing it', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Shift Assignment': assignments([]) },
+      { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 0 })) },
+    );
+    const plan: ShiftPlan = {
+      value: VALUE,
+      running: [{ name: 'SA-M', shift_type: 'Morning', end_date: null }],
+      resume: [],
+    };
+    await expect(api().apply(plan, BUSINESS)).rejects.toBeTruthy();
+    expect(postCalls.filter((c) => c.method === 'frappe.client.set_value')).toHaveLength(1);
   });
 
   it('ends the running shift the day before, then submits the new one and the resumed one', async () => {

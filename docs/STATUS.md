@@ -290,6 +290,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   new shift exists any refusal puts the running shifts back; only the running shift whose hours overlap the new one is
   ended (a worker can hold shifts at other hours). Deferred: leaving after a lost answer without checking keeps the
   running shift ended. Seen once: `runtime-config.spec` failed in a full run and passed twice after (flaky, untouched).
+  Review pass 4 (3 medium, 1 low) fixed: Madar keeps one shift per worker again, so every running shift ends the day
+  before (the hours rule missed night shifts and left old shifts running; concurrent shifts at other hours stay a Desk
+  setup); the running shift is put back only when ERPNext itself refuses the new one, never after another error on a
+  retry; a lost shift is looked up among active assignments only.
 
 ## End-to-end happy paths: merged (#26)
 
