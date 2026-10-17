@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { Business } from '../../../core/business/business.service';
 import { UnresolvedError, confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { AdvanceFormValue } from './workers.models';
 
 /** The advance is recorded but its payment failed: giving it again (same reference) pays that advance. */
@@ -96,6 +97,25 @@ export class AdvanceApiService {
         },
       ),
     );
+    const account = company?.default_employee_advance_account;
+    // Frappe HR refuses an advance whose account isn't receivable; ERPNext's standard chart leaves it untyped.
+    const type = account
+      ? await firstValueFrom(
+          this.erpnext.get<{ account_type?: string | null }>('frappe.client.get_value', {
+            doctype: 'Account',
+            filters: account,
+            fieldname: JSON.stringify(['account_type']),
+          }),
+        )
+      : null;
+    if (!account || type?.account_type !== 'Receivable') {
+      throw new ErpnextError(
+        'server',
+        `Employee advance account ${account ?? '(none)'} is not receivable`,
+        417,
+        'AdvanceAccountNotReceivable',
+      );
+    }
     return confirmRequest(
       this.erpnext.post<AdvanceDoc>('frappe.client.insert', {
         doc: {
@@ -107,7 +127,7 @@ export class AdvanceApiService {
           advance_amount: value.amount,
           company: business.name,
           currency: business.currency,
-          advance_account: company?.default_employee_advance_account ?? undefined,
+          advance_account: account,
           mode_of_payment: value.mode,
           docstatus: 1,
         },

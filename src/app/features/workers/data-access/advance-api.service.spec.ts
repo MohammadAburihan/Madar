@@ -17,7 +17,10 @@ const VALUE = {
 };
 const TEMPLATE = { doctype: 'Payment Entry', __islocal: 1, paid_amount: 300, references: [{}] };
 const posts = (insert: (body: Record<string, unknown>) => unknown) => ({
-  'frappe.client.get_value': () => ({ default_employee_advance_account: 'Employee Advances - RN' }),
+  'frappe.client.get_value': (params: Record<string, unknown>) =>
+    params['doctype'] === 'Account'
+      ? { account_type: 'Receivable' }
+      : { default_employee_advance_account: 'Employee Advances - RN' },
   'hrms.overrides.employee_payment_entry.get_payment_entry_for_employee': () => TEMPLATE,
   'frappe.client.insert': insert,
 });
@@ -91,5 +94,22 @@ describe('AdvanceApiService', () => {
       posts(() => throwError(() => new HttpErrorResponse({ status: 504 }))),
     );
     await expect(api().give(VALUE, 'ADV-REF', BUSINESS)).rejects.toBeInstanceOf(UnresolvedError);
+  });
+
+  it("says when the advance account isn't receivable, before recording anything", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      {
+        ...posts(() => ({})),
+        'frappe.client.get_value': (params: Record<string, unknown>) =>
+          params['doctype'] === 'Account'
+            ? { account_type: null }
+            : { default_employee_advance_account: 'Employee Advances - RN' },
+      },
+    );
+    await expect(api().give(VALUE, 'ADV-REF', BUSINESS)).rejects.toMatchObject({
+      excType: 'AdvanceAccountNotReceivable',
+    });
+    expect(postCalls).toEqual([]);
   });
 });

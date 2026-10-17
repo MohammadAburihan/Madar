@@ -14,6 +14,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { formatMoney, toIsoDate } from '../../../core/format/format';
+import { parseNumber } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import {
@@ -30,7 +31,7 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { AdvanceApiService, AdvanceNotPaidError } from '../data-access/advance-api.service';
 import { LeaveApiService } from '../data-access/leave-api.service';
 
-type Failure = 'permission' | 'offline' | 'error';
+type Failure = 'permission' | 'offline' | 'setup' | 'error';
 
 /** "Give an advance": money paid to a worker ahead of pay, recorded and paid in one go. */
 @Component({
@@ -190,7 +191,7 @@ export class AdvanceFormContainer {
   protected readonly pending = signal(false);
   protected readonly notCreated = signal(false);
 
-  private readonly value = computed(() => Number(this.amount().replace(/,/g, '')));
+  private readonly value = computed(() => parseNumber(this.amount()));
 
   protected readonly invalid = computed(() => {
     const errors = {
@@ -238,6 +239,7 @@ export class AdvanceFormContainer {
       failed: {
         permission: block('workers.advance.form.failed.permission'),
         offline: block('workers.advance.form.failed.offline'),
+        setup: block('workers.advance.form.failed.setup'),
         error: block('workers.advance.form.failed.error'),
       },
     };
@@ -367,7 +369,13 @@ export class AdvanceFormContainer {
           void this.session.checkExpired();
         }
         this.failed.set(
-          e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error',
+          e.kind === 'forbidden'
+            ? 'permission'
+            : e.kind === 'offline'
+              ? 'offline'
+              : e.excType === 'AdvanceAccountNotReceivable'
+                ? 'setup'
+                : 'error',
         );
       }
     } finally {

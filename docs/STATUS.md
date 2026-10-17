@@ -303,7 +303,11 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   from a worker's page, checked in ERPNext and shown as owed; the form in Arabic; closed to a salesperson.
   Review pass 1 (1 high, 1 medium) fixed: "Check result" only looks the reference up (done, recorded but not paid, or
   not given), never records or pays; locked selects are disabled (a new `disabled` input on the shared select) rather
-  than ignoring changes, and the paying account stays changeable after a failed payment. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  than ignoring changes, and the paying account stays changeable after a failed payment.
+  Review pass 2 (2 medium) fixed: amounts typed with Arabic digits are read (`parseNumber`, here and in the later HR
+  forms); an Employee Advances account that isn't receivable is reported as a setup step before anything is recorded
+  (each business site sets it once; noted in CLAUDE.md). The full suite's desktop Workers test now searches, as runs
+  add workers of their own. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

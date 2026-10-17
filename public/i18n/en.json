@@ -3051,6 +3051,10 @@
           "error": {
             "title": "The advance wasn't paid",
             "message": "ERPNext refused it. Check the account and amount, and try again."
+          },
+          "setup": {
+            "title": "Advances aren't set up in ERPNext",
+            "message": "The business's Employee Advances account must be of type Receivable. Set it in ERPNext (Chart of Accounts), then try again."
           }
         },
         "notCreated": {
