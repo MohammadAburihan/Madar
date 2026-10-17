@@ -286,7 +286,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   after the new start is shown and Save stays hidden until Until ends the new one before it; Save waits for the worker's
   shifts to load (with an error and retry if they can't); a lost answer when ending a shift says so and that repeating
   it is harmless. Deferred: concurrent shifts at other hours stay a Desk setup; leaving the form before putting the
-  regular shift back leaves that to the user. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  regular shift back leaves that to the user.
+  Review pass 8 (2 medium, 1 low) fixed: the shift the form ended is tied to that worker and start, and remembered before
+  the write (a lost answer may have ended it), so the put-back form opens for the right worker only; Save is hidden from
+  the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

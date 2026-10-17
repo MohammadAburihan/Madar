@@ -202,7 +202,8 @@ export class ShiftFormContainer {
   protected readonly later = signal<(RunningShift & { from: string })[]>([]);
   protected readonly runningState = signal<'loading' | 'ready' | 'error'>('loading');
   /** The shift this form ended for a temporary one: after saving, the form opens again to put it back after. */
-  private ended: { shift: string; until: string | null } | null = null;
+  private ended: { worker: string; from: string; shift: string; until: string | null } | null =
+    null;
   /** Opened to put a shift back after a temporary one. */
   readonly shiftParam = input<string | undefined>(undefined, { alias: 'shift' });
   readonly fromParam = input<string | undefined>(undefined, { alias: 'from' });
@@ -303,6 +304,8 @@ export class ShiftFormContainer {
       const worker = this.worker();
       const from = this.from();
       const until = this.until();
+      // Hidden at once: the last selection's shifts say nothing about this one.
+      untracked(() => this.runningState.set('loading'));
       const timer = setTimeout(
         () => untracked(() => void this.loadRunning(worker, from, until)),
         250,
@@ -445,13 +448,15 @@ export class ShiftFormContainer {
     }
     this.ending.set(true);
     this.failed.set(null);
+    // Remembered before the write: a lost answer may still have ended it.
+    this.ended = { worker: this.worker(), from: this.from(), shift: r.shift, until: r.until };
     try {
       await this.api.end(r.name, dayBefore(this.from()));
-      this.ended = { shift: r.shift, until: r.until };
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.failed.set('endUnresolved');
       } else {
+        this.ended = null;
         this.fail(error);
       }
     } finally {
@@ -462,7 +467,14 @@ export class ShiftFormContainer {
 
   protected async save(): Promise<void> {
     this.showErrors.set(true);
-    if (this.invalid() || this.saving() || this.unresolved() || this.running().length) {
+    if (
+      this.invalid() ||
+      this.saving() ||
+      this.unresolved() ||
+      this.runningState() !== 'ready' ||
+      this.running().length ||
+      this.later().length
+    ) {
       return;
     }
     this.saving.set(true);
@@ -521,7 +533,9 @@ export class ShiftFormContainer {
    * after, ending when it used to; otherwise the worker's page.
    */
   private afterSave(value: ShiftFormValue): void {
-    const ended = this.ended;
+    // Only the shift ended for this worker and this start is put back.
+    const ended =
+      this.ended?.worker === value.worker && this.ended.from === value.from ? this.ended : null;
     if (value.until && ended && (!ended.until || ended.until > value.until)) {
       void this.router.navigate(['/workers/shift/new'], {
         replaceUrl: true,
