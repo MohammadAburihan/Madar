@@ -248,6 +248,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   workers who have left since, by relieving date.
   Review pass 2 (1 medium, 1 low) fixed: a draft attendance saved in Desk shows on its row ("Draft in ERPNext …") instead
   of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
+  Review pass 3 (3 low) fixed: a refused save names the workers ERPNext refused (often a missing holiday list); a 403
+  checks for an expired session; the day can't be changed before the site's today is known.
 
 ## End-to-end happy paths: merged (#26)
 

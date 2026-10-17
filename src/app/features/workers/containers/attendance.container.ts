@@ -107,7 +107,7 @@ import { saveLabel, sheetRowView, statusOptions } from './attendance-view';
           <app-feedback-card
             tone="danger"
             [title]="txt.failed[f].title"
-            [message]="txt.failed[f].message"
+            [message]="f === 'error' ? refusedText() : txt.failed[f].message"
           />
         }
         @if (unresolved()) {
@@ -158,6 +158,8 @@ export class AttendanceContainer {
   protected readonly saved = signal<string | null>(null);
   protected readonly failed = signal<'permission' | 'offline' | 'error' | null>(null);
   protected readonly unresolved = signal(false);
+  /** Workers ERPNext refused in the last save, named so the user can fix their setup. */
+  protected readonly refused = signal<string[]>([]);
   private run = 0;
   private loadedDate = '';
 
@@ -201,6 +203,16 @@ export class AttendanceContainer {
 
   protected readonly open = computed(() => this.rows().filter((r) => r.state.kind === 'open'));
 
+  protected readonly refusedText = computed(() => {
+    const { t } = this.i18n.tr();
+    const names = this.refused();
+    return names.length
+      ? t('workers.attendance.failed.error.message', {
+          workers: names.join(this.i18n.language() === 'ar' ? '، ' : ', '),
+        })
+      : t('workers.error.message');
+  });
+
   protected readonly saveText = computed(() => saveLabel(this.open().length, this.i18n.tr()));
 
   constructor() {
@@ -221,8 +233,8 @@ export class AttendanceContainer {
   }
 
   protected setDate(date: string): void {
-    // The day stays put while a save for it runs.
-    if (this.saving() || date === this.date()) {
+    // The day stays put while a save for it runs, and until the site's today is known.
+    if (this.saving() || !this.today() || date === this.date()) {
       return;
     }
     this.date.set(date);
@@ -275,7 +287,12 @@ export class AttendanceContainer {
     }
     const date = this.date();
     // What to send, fixed now: nothing the user does while it runs changes it.
-    const marks = this.open().map((row) => ({ id: row.id, status: this.choice(row.id) }));
+    const marks = this.open().map((row) => ({
+      id: row.id,
+      name: row.name,
+      status: this.choice(row.id),
+    }));
+    const refused: string[] = [];
     this.saving.set(true);
     this.saved.set(null);
     this.failed.set(null);
@@ -298,7 +315,13 @@ export class AttendanceContainer {
         } catch (error) {
           const kind = ErpnextError.from(error).kind;
           failure = kind === 'forbidden' ? 'permission' : kind === 'offline' ? 'offline' : 'error';
-          if (failure !== 'error') {
+          if (failure === 'error') {
+            refused.push(row.name);
+          } else {
+            if (kind === 'forbidden') {
+              // A 403 is also what an expired session gets; the shell then asks to sign in again.
+              void this.session.checkExpired();
+            }
             // The rest would fail the same way.
             break;
           }
@@ -315,6 +338,7 @@ export class AttendanceContainer {
     }
     // Notices first: picking another day during the reload below clears them, never the other way round.
     this.failed.set(failure);
+    this.refused.set(refused);
     if (marked && !unresolved) {
       const tr = this.i18n.tr();
       this.saved.set(

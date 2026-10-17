@@ -2813,7 +2813,7 @@
         },
         "error": {
           "title": "Some attendance wasn't saved",
-          "message": "ERPNext refused it. The rows still open weren't marked; try again."
+          "message": "ERPNext refused attendance for {{workers}}. Check their setup there (for example a holiday list), then try again."
         }
       },
       "loadFailed": {
