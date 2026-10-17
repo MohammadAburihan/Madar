@@ -7,7 +7,7 @@ business rules change, then the code (`src/app/core/auth/persona.ts`, `capabilit
 
 | Madar role | Who | ERPNext roles |
 |---|---|---|
-| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager, HR Manager |
+| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager, HR Manager, Expense Approver |
 | **Salesperson** | Sells to customers and collects payments | Sales User, Accounts User |
 | **Store associate** (موظف المتجر) | Sells at the counter *and* handles stock | Sales User, Accounts User, Stock User |
 | **Warehouse worker** | Receives, moves, and counts stock | Stock User |
@@ -26,7 +26,7 @@ edit it. The plan reads the stock ledger, which v16 opens to Stock User and Acco
 
 Workers & HR runs on Frappe HR (the `hrms` app) and is added to a role rather than being one: any user who holds
 **HR User** or **HR Manager** sees, adds and edits workers, whatever their Madar role. Without one, not even the Owner does:
-Frappe HR opens Employees to those roles only, so the Owner holds HR Manager. Attendance, leave, advances and pay show
+Frappe HR opens Employees to those roles only, so the Owner holds HR Manager. Advances stay with the Owner, like paying suppliers: Frappe HR lets only Expense Approver submit an Employee Advance, and paying it is a Payment Entry, so the Owner also holds Expense Approver. Attendance, leave, advances and pay show
 only where the user's ERPNext roles can read them.
 
 The purchasing officer holds **Accounts User** because ERPNext v16 lets only Accounts User/Manager create supplier
@@ -63,6 +63,7 @@ to the Owner.
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
 | Create or edit items and prices | ✅ | — | — | — | ✅ | — |
 | See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
+| Give workers an advance, paid from a payment account (needs HR, Expense Approver and Accounts User or Manager) | ✅ | — | — | — | — | — |
 
 ## Enforcement
 

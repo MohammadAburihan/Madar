@@ -486,6 +486,33 @@ if (!(await list('Leave Application', { employee: employee.Rana })).length) {
   );
 }
 
+// Advances: ERPNext's default Employee Advances account must be receivable, as Frappe HR requires.
+await call('frappe.client.set_value', {
+  doctype: 'Account',
+  name: `Employee Advances - ${ABBR}`,
+  fieldname: 'account_type',
+  value: 'Receivable',
+});
+if (!(await list('Employee Advance', { employee: employee.Khaled, docstatus: 1 })).length) {
+  const advance = await insert({
+    doctype: 'Employee Advance',
+    employee: employee.Khaled,
+    posting_date: iso(today),
+    purpose: 'Medical bill',
+    advance_amount: 300,
+    company: COMPANY,
+    currency: 'ILS',
+    advance_account: `Employee Advances - ${ABBR}`,
+    mode_of_payment: 'Cash',
+    docstatus: 1,
+  });
+  const payment = await api(
+    'GET',
+    `/api/method/hrms.overrides.employee_payment_entry.get_payment_entry_for_employee?dt=Employee%20Advance&dn=${advance.name}`,
+  ).then((r) => r.message);
+  await insert({ ...payment, reference_no: 'Madar seed', reference_date: iso(today), docstatus: 1 });
+}
+
 // Shifts for the Assign shift mock: Khaled works mornings.
 for (const [name, start, end] of [
   ['Morning', '07:00:00', '15:00:00'],
@@ -518,6 +545,7 @@ const users = [
       'Stock Manager',
       'Projects Manager',
       'HR Manager',
+      'Expense Approver',
     ],
   },
   {

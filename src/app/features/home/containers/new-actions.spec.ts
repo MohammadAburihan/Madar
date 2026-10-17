@@ -20,6 +20,7 @@ describe('new actions', () => {
       'Mark attendance',
       'Request leave',
       'Assign shift',
+      'Give an advance',
     ]);
   });
 

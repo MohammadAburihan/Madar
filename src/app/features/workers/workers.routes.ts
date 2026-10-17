@@ -28,6 +28,11 @@ export const workerRoutes: Route[] = [
       import('./containers/leave-request.container').then((m) => m.LeaveRequestContainer),
   },
   {
+    path: 'workers/advance/new',
+    loadComponent: () =>
+      import('./containers/advance-form.container').then((m) => m.AdvanceFormContainer),
+  },
+  {
     path: 'workers/shift/new',
     loadComponent: () =>
       import('./containers/shift-form.container').then((m) => m.ShiftFormContainer),

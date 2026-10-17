@@ -2633,7 +2633,8 @@
       "addWorker": "Add worker",
       "markAttendance": "Mark attendance",
       "requestLeave": "Request leave",
-      "assignShift": "Assign shift"
+      "assignShift": "Assign shift",
+      "giveAdvance": "Give an advance"
     }
   },
   "workers": {
@@ -3006,6 +3007,54 @@
       },
       "next": "From {{date}}: {{shift}}",
       "loadFailed": "The worker's shift couldn't load."
+    },
+    "advance": {
+      "form": {
+        "title": "Give an advance",
+        "subtitle": "Money paid to the worker ahead of pay, repaid from salary.",
+        "worker": "Worker *",
+        "workerError": "Choose the worker.",
+        "amount": "Amount *",
+        "amountError": "Enter an amount above zero.",
+        "account": "Paid from *",
+        "purpose": "Purpose *",
+        "purposeError": "Say what the advance is for.",
+        "date": "Date *",
+        "dateError": "Choose a date up to today.",
+        "pay": "Pay advance · {{amount}}",
+        "saving": "Paying…",
+        "check": "Check result",
+        "payAgain": "Pay the advance again",
+        "recordedNote": "The advance is recorded in ERPNext but not paid yet; paying again pays that advance.",
+        "optionsFailed": "Workers and payment accounts couldn't load. Try again before paying.",
+        "noAccess": {
+          "title": "You can't give advances",
+          "message": "It needs HR, Expense Approver and an accounts role in ERPNext."
+        },
+        "noAccounts": {
+          "title": "No payment account to pay from",
+          "message": "Set up a cash or bank account for this business in ERPNext first."
+        },
+        "unresolved": {
+          "title": "Paying not yet resolved",
+          "message": "The request timed out. Check the result: what was done is found by reference {{reference}} and only the rest is done, never twice."
+        },
+        "failed": {
+          "permission": {
+            "title": "You can't pay this advance",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The advance wasn't paid. Check the connection and try again."
+          },
+          "error": {
+            "title": "The advance wasn't paid",
+            "message": "ERPNext refused it. Check the account and amount, and try again."
+          }
+        }
+      },
+      "give": "Give an advance"
     }
   }
 }

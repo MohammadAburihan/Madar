@@ -47,6 +47,8 @@ export interface Capabilities {
   editSuppliers: boolean;
   /** See, add and edit workers (Frappe HR Employees). */
   manageWorkers: boolean;
+  /** Pay workers an advance from the business's payment accounts. */
+  giveAdvances: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -74,6 +76,7 @@ const SALES_ROLE: Capabilities = {
   addSuppliers: false,
   editSuppliers: false,
   manageWorkers: false,
+  giveAdvances: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -102,6 +105,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addSuppliers: true,
     editSuppliers: true,
     manageWorkers: true,
+    giveAdvances: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -130,6 +134,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addSuppliers: false,
     editSuppliers: false,
     manageWorkers: false,
+    giveAdvances: false,
   },
   projectManager: {
     sell: false,
@@ -156,6 +161,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addSuppliers: false,
     editSuppliers: false,
     manageWorkers: false,
+    giveAdvances: false,
   },
   purchasing: {
     sell: false,
@@ -183,6 +189,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addSuppliers: true,
     editSuppliers: true,
     manageWorkers: false,
+    giveAdvances: false,
   },
 };
 
@@ -305,6 +312,9 @@ const EDIT_SUPPLIERS_NEEDS = [['Purchase Manager', 'Purchase Master Manager']];
 // Workers are Employees, with their Department and Designation; only HR User/Manager may read them in Frappe HR.
 const HR_ROLES = ['HR User', 'HR Manager'];
 
+// An advance is an Employee Advance (only Expense Approver may submit it) paid by a Payment Entry (accounts roles).
+const GIVE_ADVANCES_NEEDS = [HR_ROLES, ['Expense Approver'], ['Accounts User', 'Accounts Manager']];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -365,5 +375,8 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
       EDIT_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
     // HR is added to any role (docs/PERMISSIONS.md): the HR roles alone decide it.
     manageWorkers: HR_ROLES.some((role) => roles.includes(role)),
+    giveAdvances:
+      caps.giveAdvances &&
+      GIVE_ADVANCES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
   };
 }
