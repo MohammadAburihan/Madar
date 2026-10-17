@@ -7,6 +7,7 @@ import { projectRoutes } from './features/projects/projects.routes';
 import { purchaseRoutes } from './features/purchasing/purchase.routes';
 import { reportRoutes } from './features/reports/reports.routes';
 import { settingsRoutes } from './features/settings/settings.routes';
+import { workerRoutes } from './features/workers/workers.routes';
 import {
   invoiceRoute,
   quotationRoutes,
@@ -55,6 +56,7 @@ export const routes: Routes = [
       ...projectRoutes,
       ...reportRoutes,
       ...contactRoutes,
+      ...workerRoutes,
       ...settingsRoutes,
       {
         path: 'more',

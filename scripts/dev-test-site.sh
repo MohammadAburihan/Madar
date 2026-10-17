@@ -10,7 +10,7 @@ cd "$FRAPPE_DOCKER"
 
 docker compose -f pwd.yml exec -T backend bench drop-site "$SITE" --db-root-username root --db-root-password admin --force --no-backup 2>/dev/null || true
 docker compose -f pwd.yml exec -T backend bench new-site "$SITE" --mariadb-user-host-login-scope='%' \
-  --admin-password=admin --db-root-username=root --db-root-password=admin --install-app erpnext
+  --admin-password=admin --db-root-username=root --db-root-password=admin --install-app erpnext --install-app hrms
 
 # Reuse the stack's own network, sites volume, and image rather than assuming compose project names.
 backend=$(docker compose -f pwd.yml ps -q backend)

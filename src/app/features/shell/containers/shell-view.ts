@@ -2,6 +2,7 @@ import {
   LucideBoxes,
   LucideChartColumn,
   LucideHouse,
+  LucideIdCard,
   LucideLayers,
   LucideMenu,
   LucideReceipt,
@@ -38,6 +39,12 @@ const DESKTOP_NAV: NavDefinition[] = [
   },
   { id: 'inventory', icon: LucideBoxes, route: '/inventory' },
   { id: 'contacts', icon: LucideUsers, route: '/contacts' },
+  {
+    id: 'workers',
+    icon: LucideIdCard,
+    route: '/workers',
+    shownIf: (caps) => caps.manageWorkers,
+  },
   {
     id: 'money',
     icon: LucideWallet,
@@ -77,6 +84,7 @@ const MOBILE_NAV: NavDefinition[] = [
       '/money',
       '/purchases',
       '/contacts',
+      '/workers',
       '/projects',
       '/reports',
       '/settings',

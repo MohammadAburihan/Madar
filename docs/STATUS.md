@@ -1,6 +1,6 @@
 # Madar — project status
 
-_Last updated: 16 Oct 2026_
+_Last updated: 17 Oct 2026_
 
 ## Done (merged into `development`)
 
@@ -200,7 +200,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   signed-in user to Connect; Change business keeps sign-in's return page. Pass 3 (4 low): an unreachable ERPNext never records a
   connection; switching business drops the old business's return page; the previous name is cleared only when another
   address was stored; Change business waits while signing in.
-- **+ New** (this PR): Home's "+ New" opens **Create something** (`/new`, the New action menu mock): every task the
+- **+ New**: merged (#45). Home's "+ New" opens **Create something** (`/new`, the New action menu mock): every task the
   role may start (Quick sale, Create quotation, Buy from supplier, Receive payment, Pay supplier, Receive goods,
   Record expense, Transfer stock, Supply a project, New project, Add contact), each opening its task. The mock gained
   the four actions built since (Madar.pen, en and ar). Home's salesperson shortcuts "Customers" and "Catalog" now open
@@ -208,6 +208,24 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Arabic, has only their tasks.
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
+
+## Workers & HR (in progress, before step 6)
+
+Runs on Frappe HR (`hrms` v16.51.0) added to the local ERPNext image (`scripts/build-erpnext-image.sh`,
+`madar-erpnext:v16.50.0-hrms`); both local sites have it installed (backed up first). Planned as H1 workers, H2
+attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salary slips, H7 timesheets, each its own PR.
+
+- **H1 — Workers** (this PR): Workers (`/workers`, in the sidebar and More for roles holding HR User or HR Manager; the
+  Owner now holds HR Manager) lists the business's Employees on Active and Left tabs, searchable by name, job or phone,
+  each with how they are today (attendance, or approved leave "until" its end). A worker's page shows phone, department
+  and joining date, attendance this month, leave left (Frappe HR's balance), advances to repay and the latest salary
+  slip, each only where the role can read it. Add and edit a worker (name, gender, date of birth, job title, department,
+  phone, joining date; `EMP-…` reference in the bio for a lost create); "+ New" offers Add worker. Desktop: table with
+  Today and a side panel. Designs: Workers 01–03 (mobile EN/AR), Workers workspace (desktop EN/AR), Workers in the
+  sidebars, More and New action menus. The seed adds holiday list assignment, departments, job titles, four workers,
+  today's attendance, leave allocations and an approved leave. e2e: the list and a worker as ERPNext has them, the
+  Left tab, add (with ERPNext's required fields refused first) and edit, HR-only access, Arabic, the desktop panel.
+  The mock's Mark attendance and Request leave buttons come with H2 and H3.
 
 ## End-to-end happy paths: merged (#26)
 

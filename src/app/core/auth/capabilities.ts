@@ -45,6 +45,8 @@ export interface Capabilities {
   addSuppliers: boolean;
   /** Edit suppliers' contact details. */
   editSuppliers: boolean;
+  /** See, add and edit workers (Frappe HR Employees). */
+  manageWorkers: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -71,6 +73,7 @@ const SALES_ROLE: Capabilities = {
   editCustomers: true,
   addSuppliers: false,
   editSuppliers: false,
+  manageWorkers: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -98,6 +101,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: true,
     addSuppliers: true,
     editSuppliers: true,
+    manageWorkers: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -125,6 +129,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: false,
     addSuppliers: false,
     editSuppliers: false,
+    manageWorkers: false,
   },
   projectManager: {
     sell: false,
@@ -150,6 +155,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: true,
     addSuppliers: false,
     editSuppliers: false,
+    manageWorkers: false,
   },
   purchasing: {
     sell: false,
@@ -176,6 +182,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: false,
     addSuppliers: true,
     editSuppliers: true,
+    manageWorkers: false,
   },
 };
 
@@ -295,6 +302,9 @@ const EDIT_CUSTOMERS_NEEDS = [['Sales User', 'Sales Master Manager']];
 const ADD_SUPPLIERS_NEEDS = [['Purchase Master Manager']];
 const EDIT_SUPPLIERS_NEEDS = [['Purchase Manager', 'Purchase Master Manager']];
 
+// Workers are Employees, with their Department and Designation; only HR User/Manager may read them in Frappe HR.
+const HR_ROLES = ['HR User', 'HR Manager'];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -353,5 +363,7 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     editSuppliers:
       caps.editSuppliers &&
       EDIT_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    // HR is added to any role (docs/PERMISSIONS.md): the HR roles alone decide it.
+    manageWorkers: HR_ROLES.some((role) => roles.includes(role)),
   };
 }

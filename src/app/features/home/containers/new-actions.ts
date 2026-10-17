@@ -25,6 +25,7 @@ const ACTIONS: { id: string; allowed: (caps: Capabilities) => boolean; route: st
     allowed: (c) => c.editCustomers || c.addSuppliers,
     route: ['/contacts/new'],
   },
+  { id: 'addWorker', allowed: (c) => c.manageWorkers, route: ['/workers/new'] },
 ];
 
 /** "Create something": only what the user's role may start (docs/PERMISSIONS.md), as on the New action menu. */
