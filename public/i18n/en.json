@@ -2630,7 +2630,8 @@
       "supplyProject": "Supply a project",
       "newProject": "New project",
       "addContact": "Add contact",
-      "addWorker": "Add worker"
+      "addWorker": "Add worker",
+      "markAttendance": "Mark attendance"
     }
   },
   "workers": {
@@ -2769,6 +2770,59 @@
           "message": "Something went wrong in ERPNext. Try again."
         }
       }
-    }
+    },
+    "attendance": {
+      "title": "Mark attendance",
+      "subtitle": "{{business}} · Who is at work today. Workers on approved leave are already marked.",
+      "date": "Date *",
+      "dateError": "Choose a date up to today.",
+      "statuses": {
+        "Present": "Present",
+        "Absent": "Absent",
+        "Half Day": "Half day",
+        "Work From Home": "Working from home",
+        "On Leave": "On leave"
+      },
+      "marked": "Marked: {{status}}",
+      "workers": {
+        "one": "1 worker",
+        "other": "{{count}} workers"
+      },
+      "save": "Save attendance · {{workers}}",
+      "saving": "Saving…",
+      "none": "Everyone is marked for this day.",
+      "empty": "No active workers had joined by this day.",
+      "loading": "Loading the day's attendance…",
+      "saved": {
+        "title": "Attendance saved",
+        "message": "{{workers}} marked for {{date}}."
+      },
+      "unresolved": {
+        "title": "Saving not yet resolved",
+        "message": "Some answers were lost. Check the result: the day is read again, and saving again never marks anyone twice."
+      },
+      "check": "Check result",
+      "failed": {
+        "permission": {
+          "title": "Some attendance wasn't saved",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "Some attendance wasn't saved. Check the connection and save again."
+        },
+        "error": {
+          "title": "Some attendance wasn't saved",
+          "message": "ERPNext refused attendance for {{workers}}. Check their setup there (for example a holiday list), then try again."
+        }
+      },
+      "loadFailed": {
+        "title": "The day's attendance couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "note": "Saved attendance is submitted in ERPNext; to change a marked day, ask HR to correct it there.",
+      "draft": "Draft in ERPNext: {{status}}. Submit or delete it there to mark this day."
+    },
+    "markAttendance": "Mark attendance"
   }
 }

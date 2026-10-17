@@ -108751,6 +108751,19 @@
                   "content": "Leave requests"
                 }
               }
+            },
+            {
+              "id": "IfNcq",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Pay",
+              "context": "Role: button. Accessible name: Pay. Route specification: W70td (/workers/pay).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Pay"
+                }
+              }
             }
           ]
         },
@@ -109057,11 +109070,11 @@
               "fill": "$md-tint",
               "descendants": {
                 "Z8awi6": {
-                  "content": "October pay · not run yet",
+                  "content": "October pay · Draft",
                   "fill": "$md-primary"
                 },
                 "RKM9S": {
-                  "content": "Gross ILS 4,200.00 · Advance repayment ILS 300.00\nNet ILS 3,900.00"
+                  "content": "Gross ILS 4,200.00 · Net ILS 3,900.00"
                 }
               }
             },
@@ -109088,6 +109101,58 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Request leave"
+                }
+              }
+            },
+            {
+              "id": "lLuPZ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Assign shift",
+              "context": "Role: button. Accessible name: Assign shift. Route specification: J1K76u.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Assign shift"
+                }
+              }
+            },
+            {
+              "id": "U166iE",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Give an advance",
+              "context": "Role: button. Accessible name: Give an advance. Route specification: V2nGL.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Give an advance"
+                }
+              }
+            },
+            {
+              "id": "ITE2x",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Set salary",
+              "context": "Role: button. Accessible name: Set salary. Route specification: FVhNt.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Set salary"
+                }
+              }
+            },
+            {
+              "id": "kFPTp",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Log hours",
+              "context": "Role: button. Accessible name: Log hours. Route specification: ihdB2.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Log hours"
                 }
               }
             },
@@ -109782,6 +109847,22 @@
                   "textAlign": "right"
                 }
               }
+            },
+            {
+              "id": "dyKBe",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Pay",
+              "context": "Role: button. Accessible name: الرواتب. Route specification: Y8olo (/workers/pay).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "الرواتب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
             }
           ]
         },
@@ -110110,14 +110191,14 @@
               "fill": "$md-tint",
               "descendants": {
                 "v5EFM": {
-                  "content": "راتب أكتوبر · لم يُصرف بعد",
+                  "content": "راتب أكتوبر · مسودة",
                   "fill": "$md-primary",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
                 },
                 "CZQQN": {
-                  "content": "الإجمالي ILS 4,200.00 · سداد السلفة ILS 300.00\nالصافي ILS 3,900.00",
+                  "content": "الإجمالي ILS 4,200.00 · الصافي ILS 3,900.00",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -110150,6 +110231,70 @@
               "descendants": {
                 "yHiIx": {
                   "content": "طلب إجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "p1JcNS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Assign shift",
+              "context": "Role: button. Accessible name: تعيين وردية. Route specification: w4kPH9.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تعيين وردية",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "qHMVu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Give an advance",
+              "context": "Role: button. Accessible name: صرف سلفة. Route specification: VUAdg.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "صرف سلفة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "fqdfh",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Set salary",
+              "context": "Role: button. Accessible name: تحديد الراتب. Route specification: IUNFT.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تحديد الراتب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "FjrK5",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Log hours",
+              "context": "Role: button. Accessible name: تسجيل الساعات. Route specification: l0rXRQ.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تسجيل الساعات",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -114321,6 +114466,3269 @@
               "descendants": {
                 "yHiIx": {
                   "content": "فتح صفحة خالد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "J1K76u",
+      "x": 7690,
+      "y": 25560,
+      "name": "04 Mobile / Workers 08 Assign shift",
+      "context": "Route /workers/shift/new (?worker=). Handoff: English LTR; counterpart w4kPH9.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "VU1zT",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "FJB6K",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "GuYE9",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "EBgcI",
+          "name": "Shift assignment / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "F7u2j",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Uj8Ne",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UeCmc",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "ULK6s",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "uIOQb",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "m30BzV",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: w4kPH9.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "DJHEw",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh (the worker's page).",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "hhgfc",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "c4hhR1",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "DmGhF",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Assign shift",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "krliP",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "The shift the worker works from this date; attendance follows it.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "r5XSFQ",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Worker.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Khaled Omar ▾"
+                }
+              }
+            },
+            {
+              "id": "zcHjK",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Shift *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Shift.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Shift *"
+                },
+                "sedCr": {
+                  "content": "Morning · 07:00–15:00 ▾"
+                }
+              }
+            },
+            {
+              "id": "B2OPE",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "From *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: From.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "From *"
+                },
+                "sedCr": {
+                  "content": "19 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "R3kI1",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Until",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Until.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Until"
+                },
+                "sedCr": {
+                  "content": "Leave empty to keep it"
+                }
+              }
+            },
+            {
+              "id": "wSdCZ",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Assign shift",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Assign shift. Submits an ERPNext Shift Assignment.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Assign shift"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "w4kPH9",
+      "x": 18400,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 08 Assign shift",
+      "context": "Route /workers/shift/new (?worker=). Handoff: Arabic RTL; counterpart J1K76u.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "nyhuz",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "EtBef",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "jKn87",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HSbvh",
+          "name": "Shift assignment / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "slcSg",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fqndq",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "HOsRF",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "HHU7v",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "W1FHR",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "cbx7D",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: J1K76u.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "E9abK",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW (the worker's page).",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "A07F2",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "B0UB7c",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "ATyUO",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تعيين وردية",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "d5QwKM",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الوردية التي يعمل بها العامل من هذا التاريخ، ويتبعها الحضور.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "WuXix",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "خالد عمر ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "BcB1S",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Shift *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: الوردية.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الوردية *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "صباحية · 07:00–15:00 ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "uUMuN",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "From *",
+              "context": "Role: textbox or combobox. Accessible name: من.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "من *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "19 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "zVeTL",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Until",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: حتى.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "حتى",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "اتركه فارغاً للاستمرار",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "FuaGy",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Assign shift",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تعيين الوردية. Submits an ERPNext Shift Assignment.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تعيين الوردية",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "V2nGL",
+      "x": 8240,
+      "y": 25560,
+      "name": "04 Mobile / Workers 09 Give advance",
+      "context": "Route /workers/advance/new (?worker=). Handoff: English LTR; counterpart VUAdg.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "T3g7v",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "b2ZHf6",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "X8dHZ4",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "q8QjTI",
+          "name": "Employee advance / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "oMJ6F",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yxcfp",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V9hN2U",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "gv0ku",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Vpcos",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "Xr5Gr",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: VUAdg.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "E5a0M",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh (the worker's page).",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "i7uyU",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "b579BH",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "JC4K7",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Give an advance",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "rxL1p",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Money paid to the worker ahead of pay, repaid from salary.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "K48Rs",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Worker.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Khaled Omar ▾"
+                }
+              }
+            },
+            {
+              "id": "twOfv",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Amount *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Amount.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Amount *"
+                },
+                "sedCr": {
+                  "content": "ILS 300.00"
+                }
+              }
+            },
+            {
+              "id": "N3rdyK",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Paid from *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Paid from.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Paid from *"
+                },
+                "sedCr": {
+                  "content": "Main cash ▾"
+                }
+              }
+            },
+            {
+              "id": "WqFwH",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Purpose *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Purpose.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Purpose *"
+                },
+                "sedCr": {
+                  "content": "Medical bill"
+                }
+              }
+            },
+            {
+              "id": "HxPhe",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Date *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Date.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Date *"
+                },
+                "sedCr": {
+                  "content": "17 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "solbi",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Pay advance · ILS 300.00",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Pay advance · ILS 300.00. Submits an ERPNext Employee Advance and pays it from the chosen account (Payment Entry); ADV-… reference.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Pay advance · ILS 300.00"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "VUAdg",
+      "x": 17850,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 09 Give advance",
+      "context": "Route /workers/advance/new (?worker=). Handoff: Arabic RTL; counterpart V2nGL.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "r3KP2A",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "mViw1",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "AatyD",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "VpQOx",
+          "name": "Employee advance / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Y2ifan",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "e2iSVx",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "B9N1p",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "N24mC4",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VcIOA",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "XVCH5",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: V2nGL.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "NZDXn",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW (the worker's page).",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Vv8Aw",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "Nf3D8",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "jYOrg",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "صرف سلفة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ZXllr",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مبلغ يُدفع للعامل قبل الراتب ويُسترد من الراتب.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "I1wgN",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "خالد عمر ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "kmv10",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Amount *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: المبلغ.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "المبلغ *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "ILS 300.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "dqP0D",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Paid from *",
+              "context": "Role: textbox or combobox. Accessible name: من حساب.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "من حساب *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "الصندوق الرئيسي ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "YZzNp",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Purpose *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: الغرض.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الغرض *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "فاتورة علاج",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "FBapk",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Date *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: التاريخ.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "التاريخ *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "17 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "pbgvJ",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Pay advance · ILS 300.00",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: صرف السلفة · ILS 300.00. Submits an ERPNext Employee Advance and pays it from the chosen account (Payment Entry); ADV-… reference.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "صرف السلفة · ILS 300.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ihdB2",
+      "x": 8790,
+      "y": 25560,
+      "name": "04 Mobile / Workers 10 Log hours",
+      "context": "Route /workers/hours/new (?worker=). Handoff: English LTR; counterpart l0rXRQ.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "DjqYR",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "fqPHi",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "MmsRl",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "E2ojr",
+          "name": "Timesheet / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "ExTnL",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S3PMAr",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "m0iGg",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "HyHlJ",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "URGw8",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "HTWuR",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: l0rXRQ.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "rkyeh",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh (the worker's page).",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "BOu66",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "dXfuO",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Db3Ow",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Log hours",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "afePA",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Time a worker spent, optionally on a project.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "Nuv2J",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Worker.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Khaled Omar ▾"
+                }
+              }
+            },
+            {
+              "id": "rbx87",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Date *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Date.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Date *"
+                },
+                "sedCr": {
+                  "content": "17 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "RTkTM",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Hours *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Hours.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Hours *"
+                },
+                "sedCr": {
+                  "content": "6.5"
+                }
+              }
+            },
+            {
+              "id": "QqOl0",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Activity *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Activity.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Activity *"
+                },
+                "sedCr": {
+                  "content": "Planting ▾"
+                }
+              }
+            },
+            {
+              "id": "VebCD",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Project",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Project.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Project"
+                },
+                "sedCr": {
+                  "content": "Garden installation ▾"
+                }
+              }
+            },
+            {
+              "id": "H7n7ds",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Note",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Note.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Note"
+                },
+                "sedCr": {
+                  "content": "Front beds"
+                }
+              }
+            },
+            {
+              "id": "k9XbF",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Save hours",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Save hours. Submits an ERPNext Timesheet (TIME-… reference in its note).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Save hours"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "l0rXRQ",
+      "x": 17300,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 10 Log hours",
+      "context": "Route /workers/hours/new (?worker=). Handoff: Arabic RTL; counterpart ihdB2.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "O0dhSF",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "B6pda",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ja9TU",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "r5YMA",
+          "name": "Timesheet / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "h6FCMN",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cklhJ",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "AYrHz",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "iLgWu",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YXX2P",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "a24V6",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: ihdB2.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "L6ZrAh",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW (the worker's page).",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AlLc9",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "DEu7E",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "eXzmu",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تسجيل الساعات",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "FKvWl",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الوقت الذي قضاه العامل، ويمكن ربطه بمشروع.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "bimNi",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "خالد عمر ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "VNyM0",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Date *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: التاريخ.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "التاريخ *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "17 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "c3hTrJ",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Hours *",
+              "context": "Role: textbox or combobox. Accessible name: الساعات.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الساعات *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "6.5",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "UBRwn",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Activity *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: النشاط.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "النشاط *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "Planting ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "gAins",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Project",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: المشروع.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "المشروع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "Garden installation ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Qx2fW",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Note",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: ملاحظة.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "ملاحظة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "الأحواض الأمامية",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "rNrsT",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Save hours",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: حفظ الساعات. Submits an ERPNext Timesheet (TIME-… reference in its note).",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "حفظ الساعات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "W70td",
+      "x": 9340,
+      "y": 25560,
+      "name": "04 Mobile / Workers 11 Pay",
+      "context": "Route /workers/pay. Counterpart Y8olo.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "qGuJd",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "o66XA",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "CbARF",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "OwVde",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "siS7D",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XRhO2",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "uJVp4",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "z50TFF",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "g62Ki",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "c54qu3",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: xtIVr. Preserves business, route, input and focused control.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "KsuTY",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Pay · October 2026",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "v078x",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Workers & HR · Rehan Nursery · Salary slips",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "d5xwHl",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search workers",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: Search. Filters the list by name, job title or phone as you type.",
+              "height": "fit_content",
+              "padding": 0,
+              "descendants": {
+                "zjtuK": {
+                  "content": "Search worker"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "y0wB03",
+              "name": "Contact type filters",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "id": "Jq1Tx",
+                  "type": "ref",
+                  "ref": "OB83Y",
+                  "name": "Waiting",
+                  "fill": "$md-tint",
+                  "height": "fit_content",
+                  "justifyContent": "center",
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "context": "Role: tab, selected. Accessible name: October 2026.",
+                  "descendants": {
+                    "ynIiO": {
+                      "content": "October 2026",
+                      "fill": "$md-primary"
+                    }
+                  }
+                },
+                {
+                  "id": "B1UBa1",
+                  "type": "ref",
+                  "ref": "OB83Y",
+                  "name": "Decided",
+                  "fill": "$md-tint",
+                  "height": 48,
+                  "justifyContent": "center",
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "context": "Role: tab. Accessible name: September 2026.",
+                  "descendants": {
+                    "ynIiO": {
+                      "content": "September 2026",
+                      "fill": "$md-primary"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "o3SL6g",
+              "type": "ref",
+              "ref": "lIIqs",
+              "name": "Request Khaled Omar",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Khaled Omar salary slip. Opens the worker's page.",
+              "descendants": {
+                "mwtRW": {
+                  "content": "Khaled Omar"
+                },
+                "rsREK": {
+                  "content": "Gross ILS 4,200.00 · Net ILS 3,900.00"
+                },
+                "TQSOO": {
+                  "content": "Draft slip · Advance repayment ILS 300.00"
+                }
+              }
+            },
+            {
+              "id": "TkU2c",
+              "type": "ref",
+              "ref": "lIIqs",
+              "name": "Request Yousef Darwish",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Yousef Darwish. Opens Set salary.",
+              "descendants": {
+                "mwtRW": {
+                  "content": "Yousef Darwish"
+                },
+                "rsREK": {
+                  "content": "No salary set"
+                },
+                "TQSOO": {
+                  "content": "Set a salary to make a slip"
+                }
+              }
+            },
+            {
+              "id": "YAE0p",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Confirm draft slips. Submits the month's draft Salary Slips.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Confirm 1 draft slip"
+                }
+              }
+            },
+            {
+              "id": "D1EQ6H",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Create salary slips. Makes a draft Salary Slip for each active worker with a salary and none this month.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Create salary slips"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "e36b3",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "o1bBhJ",
+              "type": "ref",
+              "ref": "H3AT9w",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "kyQJu": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Home. Route specification: Lqpaw. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "i4H0c": {
+                  "fill": "$md-muted"
+                },
+                "W7M2mb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "ZHpcp": {
+                  "fill": "$md-muted"
+                },
+                "h1Rv3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Stock. Route specification: NTybC. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "jfsLn": {
+                  "fill": "$md-muted"
+                },
+                "W5nhJn": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "n3DGL": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Y8olo",
+      "x": 16750,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 11 Pay",
+      "context": "Route /workers/pay. Counterpart W70td.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "H5rpKX",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "KCZGR",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "j4KLyZ",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "he5G3",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zHDBN",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Gktn8",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "d2Hjo",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "C06fXq",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "jvRtI",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "L2ly1",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fvyw1",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: CEskZ. Preserves business, route, input and focused control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "oZZY9",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الرواتب · أكتوبر 2026",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "qqxVC",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "قسائم الرواتب · مشتل ريحان للنباتات والحدائق",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "FTHBd",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search workers",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: بحث. Filters the list by name, job title or phone as you type.",
+              "height": "fit_content",
+              "padding": 0,
+              "descendants": {
+                "AHy2k": {
+                  "content": "البحث بالعامل"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "t2O2a",
+              "name": "Contact type filters",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "id": "w5r3ib",
+                  "type": "ref",
+                  "ref": "SxuzC",
+                  "name": "Decided",
+                  "fill": "$md-tint",
+                  "height": 48,
+                  "justifyContent": "center",
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "context": "Role: tab.",
+                  "descendants": {
+                    "OOgtT": {
+                      "content": "سبتمبر 2026",
+                      "fill": "$md-primary",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "JWJOk",
+                  "type": "ref",
+                  "ref": "SxuzC",
+                  "name": "Waiting",
+                  "fill": "$md-tint",
+                  "height": "fit_content",
+                  "justifyContent": "center",
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "context": "Role: tab, selected.",
+                  "descendants": {
+                    "OOgtT": {
+                      "content": "أكتوبر 2026",
+                      "fill": "$md-primary",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "Yfakv",
+              "type": "ref",
+              "ref": "dT1Kf",
+              "name": "Request Khaled Omar",
+              "width": "fill_container",
+              "context": "Role: link. Opens the worker's page.",
+              "descendants": {
+                "v62MUh": {
+                  "content": "خالد عمر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "pDYnv": {
+                  "content": "الإجمالي ILS 4,200.00 · الصافي ILS 3,900.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "ysT02": {
+                  "content": "قسيمة مسودة · سداد سلفة ILS 300.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "MR4Go",
+              "type": "ref",
+              "ref": "dT1Kf",
+              "name": "Request Yousef Darwish",
+              "width": "fill_container",
+              "context": "Role: link. Opens Set salary.",
+              "descendants": {
+                "v62MUh": {
+                  "content": "يوسف درويش",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "pDYnv": {
+                  "content": "لا يوجد راتب محدد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "ysT02": {
+                  "content": "حدّد راتباً لإنشاء قسيمة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "P1j4yY",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تأكيد القسائم.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تأكيد قسيمة مسودة واحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "atUSM",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: إنشاء قسائم الرواتب.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إنشاء قسائم الرواتب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "i5I0o",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "v5EehZ",
+              "type": "ref",
+              "ref": "WaFGl",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "oHf5n": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: المزيد. Route specification: gGafI. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "UVGWb": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                },
+                "c3UIOS": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المخزون. Route specification: h0Bmm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "lYc9B": {
+                  "fill": "$md-muted"
+                },
+                "Z0WdPb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "z5QTU": {
+                  "fill": "$md-muted"
+                },
+                "p74FW3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "jsBhC": {
+                  "fill": "$md-muted"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "FVhNt",
+      "x": 9890,
+      "y": 25560,
+      "name": "04 Mobile / Workers 12 Set salary",
+      "context": "Route /workers/salary/new (?worker=). Counterpart IUNFT.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "VFi7f",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "RzLfe",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Xr6A5",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "eFGpv",
+          "name": "Salary / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "x30yFu",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QYbuN",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "I26YZ",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "t9K7hY",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "V36La",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "P2SPxP",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Route specification: IUNFT.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "Z5AmzJ",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh (the worker's page).",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "W1dBgn",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "CZDyC",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "YpHbr",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Set salary",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "M78a84",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Salary slips are made from this monthly salary, from this date.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "FzsLX",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Worker.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Yousef Darwish ▾"
+                }
+              }
+            },
+            {
+              "id": "Zi1hn",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Monthly salary *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Shift.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Monthly salary *"
+                },
+                "sedCr": {
+                  "content": "ILS 3,800.00"
+                }
+              }
+            },
+            {
+              "id": "POIVJ",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "From *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: From.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "From *"
+                },
+                "sedCr": {
+                  "content": "1 Nov 2026"
+                }
+              }
+            },
+            {
+              "id": "FDE8Y",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Paid into",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Until.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Paid into"
+                },
+                "sedCr": {
+                  "content": "Main cash ▾"
+                }
+              }
+            },
+            {
+              "id": "SMB4p",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Save salary",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Save salary. Submits a Salary Structure Assignment on the business's Madar salary structure (base = monthly salary).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Save salary"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "IUNFT",
+      "x": 16200,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 12 Set salary",
+      "context": "Route /workers/salary/new (?worker=). Counterpart FVhNt.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "U2LEC9",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "fYYwZ",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "fzcqk",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Bhssd",
+          "name": "Salary / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "bTdTN",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xQVw1",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "x3BgU",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yIpd9",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M7s6nB",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "w7G7p",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Route specification: FVhNt.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "Gc5cR",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW (the worker's page).",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "JPosZ",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "qd0r7",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "A5yul",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تحديد الراتب",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "hXYFa",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الراتب الشهري الذي تُنشأ منه قسائم الرواتب، اعتباراً من هذا التاريخ.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "QzDJN",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "يوسف درويش ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "o3YNXn",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Monthly salary *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: الوردية.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الراتب الشهري *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "ILS 3,800.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "EVrQD",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "From *",
+              "context": "Role: textbox or combobox. Accessible name: من.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "من *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "1 نوفمبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "M1EAMM",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Paid into",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: حتى.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "يُدفع إلى",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "الصندوق الرئيسي ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "iJJYd",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Save salary",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: حفظ الراتب.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "حفظ الراتب",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"

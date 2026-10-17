@@ -17,6 +17,7 @@ describe('new actions', () => {
       'New project',
       'Add contact',
       'Add worker',
+      'Mark attendance',
     ]);
   });
 

@@ -215,7 +215,7 @@ Runs on Frappe HR (`hrms` v16.51.0) added to the local ERPNext image (`scripts/b
 `madar-erpnext:v16.50.0-hrms`); both local sites have it installed (backed up first). Planned as H1 workers, H2
 attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salary slips, H7 timesheets, each its own PR.
 
-- **H1 — Workers** (this PR): Workers (`/workers`, in the sidebar and More for roles holding HR User or HR Manager; the
+- **H1 — Workers**: merged (#46). Workers (`/workers`, in the sidebar and More for roles holding HR User or HR Manager; the
   Owner now holds HR Manager) lists the business's Employees on Active and Left tabs, searchable by name, job or phone,
   each with how they are today (attendance, or approved leave "until" its end). A worker's page shows phone, department
   and joining date, attendance this month, leave left (Frappe HR's balance), advances to repay and the latest salary
@@ -235,6 +235,21 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   separately when one is forbidden (and "not marked" only when attendance was read); desktop showing Inactive and
   Suspended without readable attendance. Deferred: a user holding only HR User or HR Manager matches no Madar role and
   falls back to the Owner's screens (ERPNext still refuses what they can't do); an HR persona is needed.
+- **H2 — Attendance** (this PR): **Mark attendance** (`/workers/attendance`, from Workers, a worker's page and "+ New")
+  lists the business's active workers who had joined by the chosen day (up to today), each Present, Absent, Half day or
+  Working from home (Present preselected). Workers already marked show "Marked: …" and those on approved leave "On leave
+  until …"; saving submits one Frappe HR Attendance per open row. Frappe HR allows one record a day, so a repeat after a
+  lost answer reads as already marked; Check result reads the day again. Design: Workers 04 Attendance (mobile EN/AR).
+  e2e: a past day marked for a worker of the run's own, checked in ERPNext, then shown as marked; future days refused;
+  from a worker's page and in Arabic; closed to roles without HR; from the desktop workspace.
+  Review pass 1 (3 medium, 1 low) fixed: a save sends the choices made before it and the day can't change while it
+  runs; reloading the same day keeps the choices of rows still to save (a failed row isn't reset to Present); the day's
+  records are read by company and date, not by a list of worker ids that would outgrow the URL; a past day lists
+  workers who have left since, by relieving date.
+  Review pass 2 (1 medium, 1 low) fixed: a draft attendance saved in Desk shows on its row ("Draft in ERPNext …") instead
+  of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
+  Review pass 3 (3 low) fixed: a refused save names the workers ERPNext refused (often a missing holiday list); a 403
+  checks for an expired session; the day can't be changed before the site's today is known.
 
 ## End-to-end happy paths: merged (#26)
 
