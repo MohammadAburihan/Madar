@@ -30,6 +30,7 @@ interface EmployeeRow {
 interface EmployeeDoc extends EmployeeRow {
   first_name: string;
   last_name?: string | null;
+  company: string;
   gender: string;
   date_of_birth: string;
   date_of_joining: string;
@@ -54,7 +55,8 @@ const forbiddenAsNull = (error: unknown): null => {
   throw error;
 };
 
-const ATTENDANCE = ['Present', 'Absent', 'Half Day', 'Work From Home', 'On Leave'];
+// Best first: with one record per shift, the day reads as the best of them, as the month's count does.
+const ATTENDANCE = ['Present', 'Work From Home', 'Half Day', 'On Leave', 'Absent'];
 
 const squash = (name: string) => name.trim().replace(/\s+/g, ' ');
 
@@ -128,7 +130,7 @@ export class WorkersApiService {
   /** One worker: details, this month's attendance, leave left, advances to repay and the latest pay. */
   async worker(id: string, business: Business, today: string): Promise<WorkerDetail> {
     const [doc, departments] = await Promise.all([
-      firstValueFrom(this.erpnext.doc<EmployeeDoc>('Employee', id)),
+      this.employee(id, business),
       this.departmentNames(business),
     ]);
     const monthStart = `${today.slice(0, 8)}01`;
@@ -183,8 +185,8 @@ export class WorkersApiService {
   }
 
   /** The form's values for an existing worker. */
-  async load(id: string): Promise<WorkerFormValue> {
-    const doc = await firstValueFrom(this.erpnext.doc<EmployeeDoc>('Employee', id));
+  async load(id: string, business: Business): Promise<WorkerFormValue> {
+    const doc = await this.employee(id, business);
     return {
       name: doc.employee_name,
       gender: doc.gender,
@@ -215,7 +217,7 @@ export class WorkersApiService {
       cell_number: value.phone.trim() || null,
     };
     if (existing) {
-      const doc = await firstValueFrom(this.erpnext.doc<EmployeeDoc>('Employee', existing));
+      const doc = await this.employee(existing, business);
       // The form edits the full name ERPNext composes from first, middle and last: split it only when it
       // changed, and then drop the middle name, or ERPNext would add it back in.
       const renamed = squash(value.name) !== squash(doc.employee_name);
@@ -256,6 +258,20 @@ export class WorkersApiService {
       }),
     );
     return row?.name ?? null;
+  }
+
+  /** The worker, only if they belong to this business: a site can hold other companies' Employees too. */
+  private async employee(id: string, business: Business): Promise<EmployeeDoc> {
+    const doc = await firstValueFrom(this.erpnext.doc<EmployeeDoc>('Employee', id));
+    if (doc.company !== business.name) {
+      throw new ErpnextError(
+        'server',
+        `Employee ${id} is not in ${business.name}`,
+        404,
+        'DoesNotExistError',
+      );
+    }
+    return doc;
   }
 
   private row(r: EmployeeRow, departments: Map<string, string>): Omit<WorkerRow, 'today'> {
@@ -310,10 +326,17 @@ export class WorkersApiService {
         map.set(l.employee, { marked: true, status: 'On Leave', until: l.to_date });
       }
     }
+    const best = new Map<string, number>();
     for (const a of attendance) {
+      const rank = ATTENDANCE.indexOf(a.status);
+      if (rank >= 0 && rank < (best.get(a.employee) ?? ATTENDANCE.length)) {
+        best.set(a.employee, rank);
+      }
+    }
+    for (const [employee, rank] of best) {
       // Approved leave says until when; an attendance row only that the worker is away.
-      if (ATTENDANCE.includes(a.status) && !(a.status === 'On Leave' && map.has(a.employee))) {
-        map.set(a.employee, { marked: true, status: a.status as 'Present' });
+      if (!(ATTENDANCE[rank] === 'On Leave' && map.has(employee))) {
+        map.set(employee, { marked: true, status: ATTENDANCE[rank] as 'Present' });
       }
     }
     return map;

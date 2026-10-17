@@ -229,6 +229,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 1 (1 medium, 2 low) fixed: editing keeps ERPNext's first, middle and last names unless the name changed
   (then the middle name is cleared so ERPNext doesn't add it back); today's attendance reads every record of the day
   (one per shift) and a day counts once; advances in another currency are converted to the company's (by what was paid in it, `base_paid_amount`: Employee Advance has no exchange rate field, and an unknown field fails the whole read).
+  Review pass 2 (1 medium, 1 low) fixed: a day with several shift records reads as its best one, matching the month's
+  count; a worker of another company on the same site isn't shown, loaded or saved by link.
 
 ## End-to-end happy paths: merged (#26)
 

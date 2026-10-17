@@ -18,6 +18,7 @@ const EMPLOYEES = [
     department: 'Field team - RN',
     cell_number: '059-000-0177',
     status: 'Active',
+    company: 'Rehan Nursery',
   },
   {
     name: 'HR-EMP-00002',
@@ -26,6 +27,7 @@ const EMPLOYEES = [
     department: 'Garden shop - RN',
     cell_number: null,
     status: 'Active',
+    company: 'Rehan Nursery',
   },
   {
     name: 'HR-EMP-00003',
@@ -34,6 +36,7 @@ const EMPLOYEES = [
     department: null,
     cell_number: null,
     status: 'Active',
+    company: 'Rehan Nursery',
   },
 ];
 const DEPARTMENTS = [
@@ -260,7 +263,7 @@ describe('WorkersApiService', () => {
         },
       },
     );
-    const value = await api().load('HR-EMP-00001');
+    const value = await api().load('HR-EMP-00001', BUSINESS);
     expect(value).toEqual({
       name: 'Khaled Omar',
       gender: 'Male',
@@ -399,5 +402,29 @@ describe('WorkersApiService review fixes', () => {
     const worker = await api().worker('HR-EMP-00001', BUSINESS, TODAY);
     expect(worker.presentThisMonth).toBe(1.5);
     expect(worker.advanceToRepay).toBeCloseTo(420);
+  });
+
+  it("reads a day with several shifts as its best record, as the month's count does", async () => {
+    fakeErpnext({
+      Employee: () => EMPLOYEES.slice(0, 1),
+      Attendance: () => [
+        { employee: 'HR-EMP-00001', status: 'Absent' },
+        { employee: 'HR-EMP-00001', status: 'Present' },
+        { employee: 'HR-EMP-00001', status: 'Half Day' },
+      ],
+    });
+    const [row] = await api().list('', 'active', BUSINESS, TODAY);
+    expect(row.today).toEqual({ marked: true, status: 'Present' });
+  });
+
+  it("refuses another company's worker on the same site, to read, load or save", async () => {
+    const other = { ...STORED, company: 'Other Co' };
+    const { postCalls } = fakeErpnext({}, {}, { 'Employee/HR-EMP-00001': other });
+    await expect(api().worker('HR-EMP-00001', BUSINESS, TODAY)).rejects.toMatchObject({
+      excType: 'DoesNotExistError',
+    });
+    await expect(api().load('HR-EMP-00001', BUSINESS)).rejects.toBeTruthy();
+    await expect(api().save(VALUE, 'HR-EMP-00001', 'EMP-1', BUSINESS)).rejects.toBeTruthy();
+    expect(postCalls).toEqual([]);
   });
 });

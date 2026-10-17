@@ -303,7 +303,7 @@ export class WorkerFormContainer {
       }
       const [options, value] = await Promise.all([
         this.api.options(business),
-        id ? this.api.load(id) : null,
+        id ? this.api.load(id, business) : null,
       ]);
       if (run !== this.loadRun) {
         return;
