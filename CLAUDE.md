@@ -146,6 +146,8 @@ src/app/
 - Guests get 403 (not `"Guest"`) from `frappe.auth.get_logged_user`. 403 also means "no permission", so
   after a 403 call `SessionService.checkExpired()` to tell the two apart.
 - Default `Sales User` can't read Sales Invoices in v16; Home hides whatever a role can't read.
+- Frappe HR v16 reads holiday lists from submitted `Holiday List Assignment`s, not the company default; attendance and
+  leave fail without one. Approved leave marks "On Leave" attendance ahead for every day it covers.
 - `apply_price_list` takes `ctx`; give each item `parenttype: 'Sales Invoice'`, `uom`, `stock_uom` and
   `conversion_factor`, or ERPNext silently returns no price. Sales roles can't read Item Price directly.
 - Frappe checks CSRF only when the session holds a `csrf_token`, which `/api/method/login` never sets (Desk
@@ -198,7 +200,9 @@ frappe/frappe_docker repo), using its `pwd.yml` compose file:
 cd ../frappe_docker && docker compose -f pwd.yml up -d
 ```
 
-- `frappe/erpnext:v16.50.0`, served at http://localhost:8080.
+- `madar-erpnext:v16.50.0-hrms` (ERPNext v16.50.0 with Frappe HR, for Workers & HR), served at http://localhost:8080.
+  Build it with `scripts/build-erpnext-image.sh` (apps pinned in `docker/erpnext/apps.json`); `pwd.yml` uses it in
+  place of `frappe/erpnext`. A new site needs `--install-app hrms` as well as erpnext.
 - Site `frontend`, login `Administrator` / `admin` (local only; never reuse on AWS).
 - Stop with `docker compose -f pwd.yml down`. Don't add `-v` unless you mean to wipe the local data.
 - After the ERPNext image changes, migrate each site (`docker compose -f pwd.yml exec backend bench --site <site>

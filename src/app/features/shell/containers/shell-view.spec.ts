@@ -26,6 +26,7 @@ describe('buildShellView', () => {
       'Purchases',
       'Inventory',
       'Contacts',
+      'Workers',
       'Money',
       'Projects',
       'Reports',
@@ -33,6 +34,22 @@ describe('buildShellView', () => {
     ]);
     expect(view.mobileNav.map((i) => i.label)).toEqual(['Home', 'Sales', 'Stock', 'More']);
     expect(plain(view)).toMatchObject({ initials: 'RM', userMeta: 'Owner · English / العربية' });
+  });
+
+  it('shows Workers only to roles holding HR User or HR Manager, in English and Arabic', () => {
+    expect(build('owner', 'ar').desktopNav.find((i) => i.id === 'workers')).toMatchObject({
+      label: 'العمال',
+      route: '/workers',
+    });
+    expect(
+      build('owner', 'en', ['System Manager']).desktopNav.some((i) => i.id === 'workers'),
+    ).toBe(false);
+    expect(
+      build('storeAssociate', 'en', ['Sales User', 'Stock User', 'HR User']).desktopNav.some(
+        (i) => i.id === 'workers',
+      ),
+    ).toBe(true);
+    expect(build('salesperson').desktopNav.some((i) => i.id === 'workers')).toBe(false);
   });
 
   it('shows Reports to the owner only, in English and Arabic', () => {
@@ -120,6 +137,7 @@ describe('buildMoreView', () => {
     expect(view.items.map((i: { label: string }) => i.label)).toEqual([
       'Purchases',
       'Contacts',
+      'Workers',
       'Money',
       'Projects',
       'Reports',

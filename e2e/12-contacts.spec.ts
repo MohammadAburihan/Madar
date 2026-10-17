@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { CUSTOMER, SUPPLIER, expectHeading, named, signIn, toArabic } from './support';
+import { CUSTOMER, SUPPLIER, erp, expectHeading, named, signIn, toArabic } from './support';
 
 test.describe('customers and suppliers @phone', () => {
   test('finds a customer, sees what they owe, and starts a sale with them', async ({ page }) => {
@@ -10,10 +10,11 @@ test.describe('customers and suppliers @phone', () => {
     await page.locator('app-person-card').filter({ hasText: 'Samir' }).first().click();
     await page.goto('/contacts');
     await expectHeading(page, 'Customers & suppliers');
-    // The test site has more customers than one page: the list says so.
+    // More customers than one page: the list says so (a freshly seeded site has fewer).
+    const customers = await erp(page).list('Customer', ['name'], [['disabled', '=', 0]]);
     await expect(
       page.getByText(named('Showing the first', '30', '. Search to find others.')),
-    ).toBeVisible();
+    ).toHaveCount(customers.length > 30 ? 1 : 0);
     await page.locator('app-search-field input').fill(CUSTOMER);
     const card = page.locator('app-person-card', { hasText: CUSTOMER }).first();
     await expect(card).toContainText('059-000-0142');

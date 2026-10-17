@@ -5,7 +5,8 @@ import { ErpnextClient, ListQuery } from '../app/core/erpnext/erpnext-client';
 export type Lister = (query: ListQuery) => unknown[] | Observable<unknown[]>;
 export type Poster = (body: Record<string, unknown>) => Observable<unknown> | unknown;
 
-/** A fake ErpnextClient answering list, post and doc calls from tables, recording every call. */
+/** A fake ErpnextClient answering list, get, post and doc calls from tables, recording every call. */
+/** `get` methods are answered from `posts`, as both are whitelisted methods. */
 export function fakeErpnext(
   lists: Record<string, Lister> = {},
   posts: Record<string, Poster> = {},
@@ -16,6 +17,7 @@ export function fakeErpnext(
   const postCalls: { method: string; body: Record<string, unknown> }[] = [];
   const docCalls: string[] = [];
   const countCalls: { doctype: string; filters: unknown[] }[] = [];
+  const getCalls: { method: string; params: Record<string, unknown> }[] = [];
   const client = {
     list: (doctype: string, query: ListQuery) => {
       listCalls.push({ doctype, query });
@@ -25,6 +27,11 @@ export function fakeErpnext(
     post: (method: string, body: Record<string, unknown>) => {
       postCalls.push({ method, body });
       const result = posts[method]?.(body);
+      return result instanceof Observable ? result : of(result);
+    },
+    get: (method: string, params: Record<string, unknown> = {}) => {
+      getCalls.push({ method, params });
+      const result = posts[method]?.(params);
       return result instanceof Observable ? result : of(result);
     },
     postForBlob: (method: string, body: Record<string, unknown>) => client.post(method, body),
@@ -41,5 +48,5 @@ export function fakeErpnext(
     },
   };
   TestBed.configureTestingModule({ providers: [{ provide: ErpnextClient, useValue: client }] });
-  return { listCalls, postCalls, docCalls, countCalls };
+  return { listCalls, postCalls, docCalls, countCalls, getCalls };
 }

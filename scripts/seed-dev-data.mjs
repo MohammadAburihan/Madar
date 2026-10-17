@@ -323,6 +323,169 @@ if (
   );
 }
 
+// The project workspace mock: goods delivered to the shared project-site warehouse and a purchase booked to the project.
+const siteWarehouse = await ensure(
+  'Warehouse',
+  { warehouse_name: 'Project sites', company: COMPANY },
+  {
+    warehouse_name: 'Project sites',
+    company: COMPANY,
+    parent_warehouse: `All Warehouses - ${ABBR}`,
+  },
+);
+if (!(await list('Stock Entry', { remarks: 'Madar seed site delivery', docstatus: 1 })).length) {
+  await submit(
+    await insert({
+      doctype: 'Stock Entry',
+      stock_entry_type: 'Material Transfer',
+      company: COMPANY,
+      project,
+      remarks: 'Madar seed site delivery',
+      items: [
+        {
+          item_code: 'POT-30',
+          qty: 3,
+          s_warehouse: warehouse,
+          t_warehouse: siteWarehouse,
+          project,
+        },
+      ],
+    }),
+  );
+}
+if (!(await list('Purchase Order Item', { project }, ['parent'])).length) {
+  await submit(
+    await insert({
+      doctype: 'Purchase Order',
+      company: COMPANY,
+      supplier: 'Green Clay',
+      schedule_date: plusDays(5),
+      project,
+      taxes_and_charges: '',
+      taxes: [],
+      items: [
+        { item_code: 'POT-30', qty: 4, rate: 20, warehouse, schedule_date: plusDays(5), project },
+      ],
+    }),
+  );
+}
+
+// Workers & HR (Frappe HR): the workers, today's attendance and leave of the Workers mocks.
+const holidayList = await ensure(
+  'Holiday List',
+  { holiday_list_name: `${COMPANY} ${today.getFullYear()}` },
+  {
+    holiday_list_name: `${COMPANY} ${today.getFullYear()}`,
+    from_date: `${today.getFullYear()}-01-01`,
+    to_date: `${today.getFullYear()}-12-31`,
+  },
+);
+// Frappe HR v16 takes holiday lists from submitted assignments, not the company's default.
+if (!(await list('Holiday List Assignment', { assigned_to: COMPANY, docstatus: 1 })).length) {
+  await submit(
+    await insert({
+      doctype: 'Holiday List Assignment',
+      applicable_for: 'Company',
+      assigned_to: COMPANY,
+      holiday_list: holidayList,
+      from_date: `${today.getFullYear()}-01-01`,
+    }),
+  );
+}
+const departments = {};
+for (const name of ['Field team', 'Garden shop']) {
+  departments[name] = await ensure(
+    'Department',
+    { department_name: name, company: COMPANY },
+    { department_name: name, company: COMPANY, parent_department: 'All Departments' },
+  );
+}
+for (const name of ['Gardener', 'Cashier', 'Driver']) {
+  await ensure('Designation', { name }, { designation_name: name });
+}
+const workers = [
+  ['Khaled', 'Omar', 'Male', '1990-05-14', '2025-03-03', 'Gardener', 'Field team', '059-000-0177'],
+  ['Rana', 'Saleh', 'Female', '1994-08-02', '2024-09-15', 'Cashier', 'Garden shop', '059-000-0181'],
+  ['Yousef', 'Darwish', 'Male', '1988-01-20', '2023-04-01', 'Driver', 'Field team', '059-000-0190'],
+  [
+    'Huda',
+    'Nasser',
+    'Female',
+    '1992-11-09',
+    '2022-02-01',
+    'Cashier',
+    'Garden shop',
+    '059-000-0163',
+  ],
+];
+const employee = {};
+for (const [first, last, gender, birth, joined, designation, department, phone] of workers) {
+  employee[first] = await ensure(
+    'Employee',
+    { first_name: first, last_name: last, company: COMPANY },
+    {
+      first_name: first,
+      last_name: last,
+      gender,
+      date_of_birth: birth,
+      date_of_joining: joined,
+      designation,
+      department: departments[department],
+      cell_number: phone,
+      company: COMPANY,
+      ...(first === 'Huda' ? { status: 'Left', relieving_date: '2026-06-30' } : {}),
+    },
+  );
+}
+if (
+  !(await list('Attendance', { employee: employee.Khaled, attendance_date: iso(today) })).length
+) {
+  await submit(
+    await insert({
+      doctype: 'Attendance',
+      employee: employee.Khaled,
+      attendance_date: iso(today),
+      status: 'Present',
+      company: COMPANY,
+    }),
+  );
+}
+for (const first of ['Khaled', 'Rana', 'Yousef']) {
+  if (
+    !(
+      await list('Leave Allocation', {
+        employee: employee[first],
+        leave_type: 'Privilege Leave',
+        docstatus: 1,
+      })
+    ).length
+  ) {
+    await submit(
+      await insert({
+        doctype: 'Leave Allocation',
+        employee: employee[first],
+        leave_type: 'Privilege Leave',
+        from_date: `${today.getFullYear()}-01-01`,
+        to_date: `${today.getFullYear()}-12-31`,
+        new_leaves_allocated: 14,
+      }),
+    );
+  }
+}
+if (!(await list('Leave Application', { employee: employee.Rana })).length) {
+  await submit(
+    await insert({
+      doctype: 'Leave Application',
+      employee: employee.Rana,
+      leave_type: 'Privilege Leave',
+      from_date: plusDays(-1),
+      to_date: plusDays(3),
+      status: 'Approved',
+      company: COMPANY,
+    }),
+  );
+}
+
 const users = [
   {
     email: 'rehan@rehan.example',
@@ -335,6 +498,7 @@ const users = [
       'Purchase Manager',
       'Stock Manager',
       'Projects Manager',
+      'HR Manager',
     ],
   },
   {

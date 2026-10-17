@@ -39,6 +39,17 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 | Customer statement / supplier statement | كشف حساب العميل / كشف حساب المورد |
 | Opening balance / invoiced / balance | الرصيد الافتتاحي / قيمة الفواتير / الرصيد |
 | Period: this month / last month / this year / custom | الفترة: هذا الشهر / الشهر الماضي / هذه السنة / مخصصة |
+| Workers & HR / worker | العمال والموارد البشرية / العامل |
+| Active / left (worker status) | على رأس العمل / غادر |
+| Job title / department | المسمى الوظيفي / القسم |
+| Joining date / date of birth / gender | تاريخ الانضمام / تاريخ الميلاد / الجنس |
+| Attendance / present / absent / half day / on leave | الحضور / حاضر / غائب / نصف يوم / في إجازة |
+| Leave / leave request / leave left | الإجازة / طلب إجازة / الإجازة المتبقية |
+| Approve / reject / approvals | اعتماد / رفض / الموافقات |
+| Shift | الوردية |
+| Advance / advance to repay | السلفة / سلفة للسداد |
+| Payroll / salary slip / gross / net pay | الرواتب / قسيمة الراتب / الإجمالي / الصافي |
+| Timesheet / hours | سجل الساعات / الساعات |
 
 ## Locale and direction
 

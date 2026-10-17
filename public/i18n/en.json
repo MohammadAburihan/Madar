@@ -25,7 +25,8 @@
     "switchBusiness": "Switch business, current: {{business}}",
     "userMeta": "{{role}} · English / العربية",
     "drafts": "Drafts",
-    "new": "New"
+    "new": "New",
+    "workers": "Workers"
   },
   "home": {
     "greeting": {
@@ -2628,7 +2629,146 @@
       "transferStock": "Transfer stock",
       "supplyProject": "Supply a project",
       "newProject": "New project",
-      "addContact": "Add contact"
+      "addContact": "Add contact",
+      "addWorker": "Add worker"
+    }
+  },
+  "workers": {
+    "title": "Workers",
+    "subtitle": "Workers & HR · {{business}}",
+    "search": "Search",
+    "placeholder": "Search name, job or phone",
+    "tabs": {
+      "active": "Active",
+      "left": "Left"
+    },
+    "loading": "Loading workers…",
+    "retry": "Try again",
+    "choose": "Choose a worker to see their details.",
+    "openDetail": "Open worker",
+    "panelFailed": "This worker couldn't load.",
+    "error": {
+      "title": "Workers couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "Workers aren't open to your role",
+      "message": "Workers & HR needs the HR User or HR Manager role in ERPNext."
+    },
+    "headers": {
+      "worker": "Worker",
+      "designation": "Job title",
+      "today": "Today",
+      "department": "Department"
+    },
+    "noResults": "No workers match your search.",
+    "empty": {
+      "active": "No workers yet.",
+      "left": "No one has left."
+    },
+    "capped": "Showing the first {{count}}. Search to find others.",
+    "today": {
+      "notMarked": "Not marked today",
+      "Present": "Present today",
+      "Absent": "Absent today",
+      "Half Day": "Half day today",
+      "Work From Home": "Working from home today",
+      "On Leave": "On leave today",
+      "onLeaveUntil": "On leave until {{date}}"
+    },
+    "cell": {
+      "notMarked": "Not marked",
+      "Present": "Present",
+      "Absent": "Absent",
+      "Half Day": "Half day",
+      "Work From Home": "From home",
+      "On Leave": "On leave"
+    },
+    "status": {
+      "Inactive": "Inactive",
+      "Suspended": "Suspended",
+      "Left": "Left"
+    },
+    "leftOn": "Left on {{date}}",
+    "subtitleDetail": "{{designation}} · {{id}}",
+    "joined": "Joined {{date}}",
+    "presentThisMonth": "Present this month",
+    "leaveLeft": "Leave left",
+    "advanceToRepay": "Advance to repay",
+    "days": {
+      "one": "{{count}} day",
+      "other": "{{count}} days"
+    },
+    "leaveLeftTitle": "{{days}} leave left",
+    "presentSummary": "{{days}} present this month",
+    "advanceSummary": "{{amount}} advance to repay",
+    "pay": {
+      "title": "{{month}} pay · {{state}}",
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "message": "Gross {{gross}} · Net {{net}}"
+    },
+    "recent": "{{date}} · {{status}}",
+    "add": "Add worker",
+    "addDesktop": "+ Add worker",
+    "edit": "Edit worker",
+    "back": "Back",
+    "loadFailed": {
+      "title": "This worker couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "form": {
+      "newTitle": "Add worker",
+      "editTitle": "Edit worker",
+      "newSubtitle": "A worker of {{business}}, for attendance, leave and pay.",
+      "name": "Name *",
+      "nameError": "Enter the worker's name.",
+      "gender": "Gender *",
+      "genderError": "Choose a gender.",
+      "genders": {
+        "Male": "Male",
+        "Female": "Female",
+        "Other": "Other",
+        "Prefer not to say": "Prefer not to say"
+      },
+      "birthDate": "Date of birth *",
+      "birthDateError": "Enter a date of birth before today and before joining.",
+      "designation": "Job title",
+      "designationNone": "No job title",
+      "department": "Department",
+      "departmentNone": "No department",
+      "phone": "Phone",
+      "joined": "Joining date *",
+      "joinedError": "Enter the joining date.",
+      "save": "Save worker",
+      "saving": "Saving…",
+      "optionsFailed": "Job titles and departments couldn't load. Try again before saving.",
+      "noAccess": {
+        "title": "You can't add or edit workers",
+        "message": "Workers & HR needs the HR User or HR Manager role in ERPNext."
+      },
+      "notCreated": {
+        "title": "The worker wasn't added",
+        "message": "Nothing was saved. Check the details and save again."
+      },
+      "unresolved": {
+        "title": "Saving not yet resolved",
+        "message": "The request timed out. The worker may already be added. Check before saving again (reference {{reference}})."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't save this worker",
+          "message": "ERPNext didn't allow it for your role."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "The worker wasn't saved. Check the connection and save again."
+        },
+        "error": {
+          "title": "The worker wasn't saved",
+          "message": "Something went wrong in ERPNext. Try again."
+        }
+      }
     }
   }
 }

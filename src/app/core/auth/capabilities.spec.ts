@@ -26,6 +26,7 @@ describe('capabilitiesFor', () => {
       editCustomers: true,
       addSuppliers: true,
       editSuppliers: true,
+      manageWorkers: true,
     });
   });
 
@@ -55,6 +56,7 @@ describe('capabilitiesFor', () => {
         editCustomers: true,
         addSuppliers: false,
         editSuppliers: false,
+        manageWorkers: false,
       });
     }
   });
@@ -243,5 +245,18 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('salesperson', ['Sales User', 'Accounts User']).returnSales).toBe(true);
     expect(capabilitiesFor('salesperson', ['Sales User']).returnSales).toBe(false);
     expect(capabilitiesFor('warehouse').returnSales).toBe(false);
+  });
+
+  it('opens Workers & HR to any role that holds HR User or HR Manager, and only to them', () => {
+    expect(capabilitiesFor('owner').manageWorkers).toBe(true);
+    expect(capabilitiesFor('owner', ['System Manager', 'Accounts Manager']).manageWorkers).toBe(
+      false,
+    );
+    expect(capabilitiesFor('owner', ['System Manager', 'HR Manager']).manageWorkers).toBe(true);
+    expect(capabilitiesFor('salesperson').manageWorkers).toBe(false);
+    expect(
+      capabilitiesFor('storeAssociate', ['Sales User', 'Stock User', 'HR User']).manageWorkers,
+    ).toBe(true);
+    expect(capabilitiesFor('warehouse', ['Stock User']).manageWorkers).toBe(false);
   });
 });

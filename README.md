@@ -57,7 +57,7 @@ It never touches the `frontend` site. Users (password `Madar-Dev-2026`):
 
 | User | Role | Home variant |
 |---|---|---|
-| `rehan@rehan.example` | System Manager and managers | Owner |
+| `rehan@rehan.example` | System Manager, the managers and HR Manager | Owner |
 | `lina@rehan.example` | Sales User, Accounts User | Salesperson |
 | `omar@rehan.example` | Stock User | Warehouse worker |
 | `sami@rehan.example` | Sales User, Accounts User, Stock User | Store associate |
@@ -65,7 +65,8 @@ It never touches the `frontend` site. Users (password `Madar-Dev-2026`):
 | `yara@rehan.example` | Projects User, Stock User | Project manager |
 
 The site also has the quick-sale catalogue from the mocks (olive tree, ceramic planter, garden consultation),
-stock in Main warehouse and Garden shop, a Walk-in Customer, and Cash and Card (Main bank) payment accounts.
+stock in Main warehouse and Garden shop, a Walk-in Customer, and Cash and Card (Main bank) payment accounts, and
+the workers from the Workers mocks (Frappe HR): today's attendance, leave allocations and an approved leave.
 
 "Today" data is created for the day the script runs; rerun it to refresh.
 

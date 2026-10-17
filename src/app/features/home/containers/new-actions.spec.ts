@@ -16,6 +16,7 @@ describe('new actions', () => {
       'Supply a project',
       'New project',
       'Add contact',
+      'Add worker',
     ]);
   });
 
@@ -24,6 +25,12 @@ describe('new actions', () => {
       newActions(capabilitiesFor(persona), realTranslator('en')).map((a) => a.id);
     expect(ids('warehouse')).toEqual(['receiveGoods', 'transferStock', 'supplyProject']);
     expect(ids('salesperson')).toEqual(['sell', 'quote', 'receivePayment', 'addContact']);
+    expect(
+      newActions(
+        capabilitiesFor('storeAssociate', ['Sales User', 'Stock User', 'HR User']),
+        realTranslator('ar'),
+      ).find((a) => a.id === 'addWorker'),
+    ).toEqual({ id: 'addWorker', label: 'إضافة عامل', route: ['/workers/new'] });
     const [sell] = newActions(capabilitiesFor('owner'), realTranslator('ar'));
     expect(sell).toEqual({ id: 'sell', label: 'بيع سريع', route: ['/sales/new'] });
   });

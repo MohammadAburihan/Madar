@@ -25,7 +25,8 @@
     "switchBusiness": "تبديل المنشأة، الحالية: {{business}}",
     "userMeta": "{{role}} · العربية",
     "drafts": "المسودات",
-    "new": "جديد"
+    "new": "جديد",
+    "workers": "العمال"
   },
   "home": {
     "greeting": {
@@ -2712,7 +2713,150 @@
       "transferStock": "نقل المخزون",
       "supplyProject": "تجهيز مشروع",
       "newProject": "مشروع جديد",
-      "addContact": "إضافة جهة اتصال"
+      "addContact": "إضافة جهة اتصال",
+      "addWorker": "إضافة عامل"
+    }
+  },
+  "workers": {
+    "title": "العمال",
+    "subtitle": "العمال والموارد البشرية · {{business}}",
+    "search": "بحث",
+    "placeholder": "البحث بالاسم أو الوظيفة أو الهاتف",
+    "tabs": {
+      "active": "على رأس العمل",
+      "left": "غادروا"
+    },
+    "loading": "جارٍ تحميل العمال…",
+    "retry": "المحاولة مجدداً",
+    "choose": "اختر عاملاً لعرض تفاصيله.",
+    "openDetail": "فتح العامل",
+    "panelFailed": "تعذّر تحميل هذا العامل.",
+    "error": {
+      "title": "تعذّر تحميل العمال",
+      "message": "تحقّق من الاتصال وحاول مرة أخرى."
+    },
+    "noAccess": {
+      "title": "العمال غير متاحين لدورك",
+      "message": "تحتاج العمال والموارد البشرية إلى دور HR User أو HR Manager في ERPNext."
+    },
+    "headers": {
+      "worker": "العامل",
+      "designation": "المسمى الوظيفي",
+      "today": "اليوم",
+      "department": "القسم"
+    },
+    "noResults": "لا يوجد عمال يطابقون البحث.",
+    "empty": {
+      "active": "لا يوجد عمال بعد.",
+      "left": "لم يغادر أحد."
+    },
+    "capped": "يتم عرض أول {{count}}. استخدم البحث للعثور على غيرهم.",
+    "today": {
+      "notMarked": "لم يُسجَّل اليوم",
+      "Present": "حاضر اليوم",
+      "Absent": "غائب اليوم",
+      "Half Day": "نصف يوم اليوم",
+      "Work From Home": "يعمل من المنزل اليوم",
+      "On Leave": "في إجازة اليوم",
+      "onLeaveUntil": "في إجازة حتى {{date}}"
+    },
+    "cell": {
+      "notMarked": "لم يُسجَّل",
+      "Present": "حاضر",
+      "Absent": "غائب",
+      "Half Day": "نصف يوم",
+      "Work From Home": "من المنزل",
+      "On Leave": "في إجازة"
+    },
+    "status": {
+      "Inactive": "غير نشط",
+      "Suspended": "موقوف",
+      "Left": "غادر"
+    },
+    "leftOn": "غادر في {{date}}",
+    "subtitleDetail": "{{designation}} · {{id}}",
+    "joined": "انضم في {{date}}",
+    "presentThisMonth": "الحضور هذا الشهر",
+    "leaveLeft": "الإجازة المتبقية",
+    "advanceToRepay": "سلفة للسداد",
+    "days": {
+      "zero": "{{count}} يوم",
+      "one": "يوم واحد",
+      "two": "يومان",
+      "few": "{{count}} أيام",
+      "many": "{{count}} يوماً",
+      "other": "{{count}} يوم"
+    },
+    "leaveLeftTitle": "{{days}} إجازة متبقية",
+    "presentSummary": "{{days}} حضور هذا الشهر",
+    "advanceSummary": "سلفة للسداد {{amount}}",
+    "pay": {
+      "title": "راتب {{month}} · {{state}}",
+      "draft": "مسودة",
+      "confirmed": "مؤكد",
+      "message": "الإجمالي {{gross}} · الصافي {{net}}"
+    },
+    "recent": "{{date}} · {{status}}",
+    "add": "إضافة عامل",
+    "addDesktop": "+ إضافة عامل",
+    "edit": "تعديل العامل",
+    "back": "رجوع",
+    "loadFailed": {
+      "title": "تعذّر تحميل هذا العامل",
+      "message": "تحقّق من الاتصال وحاول مرة أخرى."
+    },
+    "form": {
+      "newTitle": "إضافة عامل",
+      "editTitle": "تعديل العامل",
+      "newSubtitle": "عامل في {{business}}، للحضور والإجازات والرواتب.",
+      "name": "الاسم *",
+      "nameError": "أدخل اسم العامل.",
+      "gender": "الجنس *",
+      "genderError": "اختر الجنس.",
+      "genders": {
+        "Male": "ذكر",
+        "Female": "أنثى",
+        "Other": "آخر",
+        "Prefer not to say": "أفضّل عدم الإفصاح"
+      },
+      "birthDate": "تاريخ الميلاد *",
+      "birthDateError": "أدخل تاريخ ميلاد قبل اليوم وقبل تاريخ الانضمام.",
+      "designation": "المسمى الوظيفي",
+      "designationNone": "بدون مسمى وظيفي",
+      "department": "القسم",
+      "departmentNone": "بدون قسم",
+      "phone": "الهاتف",
+      "joined": "تاريخ الانضمام *",
+      "joinedError": "أدخل تاريخ الانضمام.",
+      "save": "حفظ العامل",
+      "saving": "جارٍ الحفظ…",
+      "optionsFailed": "تعذّر تحميل المسميات الوظيفية والأقسام. حاول مرة أخرى قبل الحفظ.",
+      "noAccess": {
+        "title": "لا يمكنك إضافة العمال أو تعديلهم",
+        "message": "تحتاج العمال والموارد البشرية إلى دور HR User أو HR Manager في ERPNext."
+      },
+      "notCreated": {
+        "title": "لم تتم إضافة العامل",
+        "message": "لم يُحفظ شيء. راجع التفاصيل واحفظ مرة أخرى."
+      },
+      "unresolved": {
+        "title": "نتيجة الحفظ غير محسومة",
+        "message": "انتهت مهلة الطلب. قد يكون العامل قد أُضيف بالفعل. تحقّق قبل الحفظ مرة أخرى (المرجع {{reference}})."
+      },
+      "failed": {
+        "permission": {
+          "title": "لا يمكنك حفظ هذا العامل",
+          "message": "لم يسمح ERPNext بذلك لدورك."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "لم يُحفظ العامل. تحقّق من الاتصال واحفظ مرة أخرى."
+        },
+        "error": {
+          "title": "لم يُحفظ العامل",
+          "message": "حدث خطأ في ERPNext. حاول مرة أخرى."
+        }
+      }
     }
   }
 }

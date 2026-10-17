@@ -7,7 +7,7 @@ business rules change, then the code (`src/app/core/auth/persona.ts`, `capabilit
 
 | Madar role | Who | ERPNext roles |
 |---|---|---|
-| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager |
+| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager, HR Manager |
 | **Salesperson** | Sells to customers and collects payments | Sales User, Accounts User |
 | **Store associate** (موظف المتجر) | Sells at the counter *and* handles stock | Sales User, Accounts User, Stock User |
 | **Warehouse worker** | Receives, moves, and counts stock | Stock User |
@@ -23,6 +23,11 @@ Supplying a project reads the project, which ERPNext allows only Projects User o
 supplies projects therefore also needs **Projects User**; a warehouse worker given Projects User becomes a Project
 manager, who supplies projects too. Roles that only supply see the project without its budget and costs, and can't
 edit it. The plan reads the stock ledger, which v16 opens to Stock User and Accounts Manager but not Stock Manager.
+
+Workers & HR runs on Frappe HR (the `hrms` app) and is added to a role rather than being one: any user who holds
+**HR User** or **HR Manager** sees, adds and edits workers, whatever their Madar role. Without one, not even the Owner does:
+Frappe HR opens Employees to those roles only, so the Owner holds HR Manager. Attendance, leave, advances and pay show
+only where the user's ERPNext roles can read them.
 
 The purchasing officer holds **Accounts User** because ERPNext v16 lets only Accounts User/Manager create supplier
 invoices (decided 14 Oct 2026). Accounts User could also record payments in ERPNext; Madar still keeps paying suppliers
@@ -57,6 +62,7 @@ to the Owner.
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
 | Create or edit items and prices | ✅ | — | — | — | ✅ | — |
+| See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 
 ## Enforcement
 
