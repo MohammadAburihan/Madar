@@ -49,6 +49,11 @@ const SEARCH_DELAY_MS = 250;
       font: 600 20px / var(--md-lh) var(--md-font);
     }
 
+    .actions {
+      display: flex;
+      gap: 12px;
+    }
+
     .lines {
       margin: 0;
       color: var(--md-ink);
@@ -96,9 +101,14 @@ const SEARCH_DELAY_MS = 250;
               [empty]="emptyText()"
               (opened)="selected.set($event)"
             />
-            <button type="button" class="md-btn" (click)="leaveRequests()">
-              {{ txt.leaveRequests }}
-            </button>
+            <div class="actions">
+              <button type="button" class="md-btn" (click)="markAttendance()">
+                {{ txt.markAttendance }}
+              </button>
+              <button type="button" class="md-btn" (click)="leaveRequests()">
+                {{ txt.leaveRequests }}
+              </button>
+            </div>
           </div>
           <section class="panel" [attr.aria-label]="txt.title">
             @if (panel(); as p) {

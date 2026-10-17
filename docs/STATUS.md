@@ -280,6 +280,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Design sync check (asked for on 17 Oct): desktop Workers now matches its mock (Mark attendance and Request leave in the
   panel, Open worker after them, Leave requests under the table; the heading keeps only + Add worker), and the mocks
   gained the shift lines and the new subtitle.
+  Review pass 2 (1 high, 1 medium, 1 low) fixed: a later shift that would overlap is refused before anything changes, and
+  a refused save puts the running shift's end back; a temporary shift (with an end) resumes the regular one the day
+  after, also after a lost answer is found; desktop Workers keeps Mark attendance under the table whoever is selected
+  (mock updated, EN/AR).
 
 ## End-to-end happy paths: merged (#26)
 

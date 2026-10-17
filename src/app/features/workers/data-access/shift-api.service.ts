@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Business } from '../../../core/business/business.service';
-import { confirmRequest } from '../../../core/erpnext/confirmation';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { UnresolvedError, confirmRequest } from '../../../core/erpnext/confirmation';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { ShiftFormValue, ShiftType } from './workers.models';
 
 /** "07:00:00" (or Frappe's "7:00:00") as "07:00". */
@@ -11,10 +12,27 @@ const hhmm = (time: string) => {
   return `${(h ?? '0').padStart(2, '0')}:${(m ?? '00').padStart(2, '0')}`;
 };
 
-function dayBefore(iso: string): string {
+const shiftDay = (iso: string, by: number) => {
   const [y, m, d] = iso.split('-').map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d - 1));
-  return date.toISOString().slice(0, 10);
+  return new Date(Date.UTC(y, m - 1, d + by)).toISOString().slice(0, 10);
+};
+const dayBefore = (iso: string) => shiftDay(iso, -1);
+const dayAfter = (iso: string) => shiftDay(iso, 1);
+
+interface Running {
+  name: string;
+  shift_type: string;
+  end_date: string | null;
+}
+
+/** A running shift to start again after a temporary one. */
+export type Resumed = Running & { from: string };
+
+/** The new shift's answer was lost; once it is found, `resumed` still has to be started again. */
+export class ShiftUnresolvedError extends UnresolvedError {
+  constructor(readonly resumed: Resumed[]) {
+    super();
+  }
 }
 
 /** Shifts (Frappe HR Shift Type) and who works them from when (Shift Assignment). */
@@ -88,14 +106,32 @@ export class ShiftApiService {
   }
 
   /**
-   * Submits the assignment. Shift Assignment has no free-text field for a reference; worker, shift and start
-   * date identify it, and `find()` looks a lost one up by them.
+   * Submits the assignment. The shift worked until then ends the day before, and when the new one is temporary
+   * it resumes the day after. A later shift that would overlap is refused before anything changes, and a refused
+   * save puts the running shift back as it was. Shift Assignment has no free-text field for a reference; worker,
+   * shift and start identify it, and `find()` looks a lost one up by them. A lost answer throws
+   * ShiftUnresolvedError, carrying what is left to do once the new shift is found (`resume()`).
    */
   async assign(value: ShiftFormValue, business: Business): Promise<string> {
-    // The shift worked until now ends the day before: Frappe HR refuses one that overlaps an open-ended shift.
-    const running = await firstValueFrom(
+    const later = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Shift Assignment', {
         fields: ['name'],
+        filters: [
+          ['employee', '=', value.worker],
+          ['docstatus', '=', 1],
+          ['status', '=', 'Active'],
+          ['start_date', '>=', value.from],
+          ...(value.until ? ([['start_date', '<=', value.until]] as Filter[]) : []),
+        ],
+        limit: 1,
+      }),
+    );
+    if (later.length) {
+      throw new ErpnextError('server', 'A later shift overlaps', 417, 'OverlappingShiftError');
+    }
+    const running = await firstValueFrom(
+      this.erpnext.list<Running>('Shift Assignment', {
+        fields: ['name', 'shift_type', 'end_date'],
         filters: [
           ['employee', '=', value.worker],
           ['docstatus', '=', 1],
@@ -110,30 +146,64 @@ export class ShiftApiService {
       }),
     );
     for (const r of running) {
-      await firstValueFrom(
-        this.erpnext.post('frappe.client.set_value', {
-          doctype: 'Shift Assignment',
-          name: r.name,
-          fieldname: 'end_date',
-          value: dayBefore(value.from),
-        }),
-      );
+      await this.setEnd(r.name, dayBefore(value.from));
     }
-    const doc = await confirmRequest(
-      this.erpnext.post<{ name: string }>('frappe.client.insert', {
-        doc: {
-          doctype: 'Shift Assignment',
-          employee: value.worker,
-          shift_type: value.shift,
-          start_date: value.from,
-          ...(value.until ? { end_date: value.until } : {}),
-          company: business.name,
-          status: 'Active',
-          docstatus: 1,
-        },
+    const resume = value.until
+      ? running
+          .filter((r) => !r.end_date || r.end_date > value.until)
+          .map((r) => ({ ...r, from: dayAfter(value.until) }))
+      : [];
+    let name: string;
+    try {
+      const doc = await confirmRequest(
+        this.insert(value.worker, value.shift, value.from, value.until, business),
+      );
+      name = doc.name;
+    } catch (error) {
+      if (error instanceof UnresolvedError) {
+        throw new ShiftUnresolvedError(resume);
+      }
+      for (const r of running) {
+        await this.setEnd(r.name, r.end_date).catch(() => undefined);
+      }
+      throw error;
+    }
+    await this.resume(value.worker, resume, business);
+    return name;
+  }
+
+  /** The running shift again after a temporary one, as it was before (to its own end, or open-ended). */
+  async resume(worker: string, resume: Resumed[], business: Business): Promise<void> {
+    for (const r of resume) {
+      await firstValueFrom(this.insert(worker, r.shift_type, r.from, r.end_date ?? '', business));
+    }
+  }
+
+  private insert(worker: string, shift: string, from: string, until: string, business: Business) {
+    return this.erpnext.post<{ name: string }>('frappe.client.insert', {
+      doc: {
+        doctype: 'Shift Assignment',
+        employee: worker,
+        shift_type: shift,
+        start_date: from,
+        ...(until ? { end_date: until } : {}),
+        company: business.name,
+        status: 'Active',
+        docstatus: 1,
+      },
+    });
+  }
+
+  private setEnd(name: string, end: string | null) {
+    // End date stays editable on a submitted assignment.
+    return firstValueFrom(
+      this.erpnext.post('frappe.client.set_value', {
+        doctype: 'Shift Assignment',
+        name,
+        fieldname: 'end_date',
+        value: end ?? '',
       }),
     );
-    return doc.name;
   }
 
   async find(value: ShiftFormValue): Promise<string | null> {

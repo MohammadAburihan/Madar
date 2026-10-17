@@ -24,7 +24,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { ShiftApiService } from '../data-access/shift-api.service';
+import { Resumed, ShiftApiService, ShiftUnresolvedError } from '../data-access/shift-api.service';
 import { ShiftFormValue, ShiftType } from '../data-access/workers.models';
 import { shiftLabel } from './shift-view';
 
@@ -170,6 +170,8 @@ export class ShiftFormContainer {
   protected readonly notCreated = signal(false);
   /** What was sent when the answer was lost: checking looks for exactly that. */
   private sent: ShiftFormValue | null = null;
+  /** The regular shift to start again after a temporary one, still to do when the answer was lost. */
+  private resumed: Resumed[] = [];
 
   protected readonly invalid = computed(() => {
     const errors = {
@@ -286,6 +288,7 @@ export class ShiftFormContainer {
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.sent = value;
+        this.resumed = error instanceof ShiftUnresolvedError ? error.resumed : [];
         this.unresolved.set(true);
       } else {
         const e = ErpnextError.from(error);
@@ -314,6 +317,11 @@ export class ShiftFormContainer {
       const found = await this.api.find(this.sent);
       this.unresolved.set(false);
       if (found) {
+        const business = await this.business.ensure();
+        if (business && this.resumed.length) {
+          await this.api.resume(this.sent.worker, this.resumed, business);
+          this.resumed = [];
+        }
         void this.router.navigate(['/workers', this.sent.worker], { replaceUrl: true });
         return;
       }

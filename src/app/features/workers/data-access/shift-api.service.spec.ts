@@ -52,7 +52,14 @@ describe('ShiftApiService', () => {
 
   it('finds a lost assignment by worker, shift and start', async () => {
     const { listCalls } = fakeErpnext(
-      { 'Shift Assignment': () => [{ name: 'SA-1' }] },
+      {
+        'Shift Assignment': (q) =>
+          (q.filters ?? []).some(
+            (f) => (f as unknown[])[0] === 'start_date' && (f as unknown[])[1] === '=',
+          )
+            ? [{ name: 'SA-1' }]
+            : [],
+      },
       { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })) },
     );
     await expect(api().assign(VALUE, BUSINESS)).rejects.toBeInstanceOf(UnresolvedError);
@@ -65,13 +72,21 @@ describe('ShiftApiService', () => {
     ]);
   });
 
+  const later = (q: { filters?: unknown[] }) =>
+    (q.filters ?? []).some(
+      (f) => (f as unknown[])[0] === 'start_date' && (f as unknown[])[1] === '>=',
+    );
+
   it('ends the shift worked until now the day before the new one starts', async () => {
     const { postCalls, listCalls } = fakeErpnext(
-      { 'Shift Assignment': () => [{ name: 'SA-0' }] },
+      {
+        'Shift Assignment': (q) =>
+          later(q) ? [] : [{ name: 'SA-0', shift_type: 'Morning', end_date: null }],
+      },
       { 'frappe.client.insert': () => ({ name: 'SA-1' }) },
     );
     await api().assign({ ...VALUE, from: '2026-03-01' }, BUSINESS);
-    expect(listCalls[0].query.filters).toContainEqual(['start_date', '<', '2026-03-01']);
+    expect(listCalls[1].query.filters).toContainEqual(['start_date', '<', '2026-03-01']);
     expect(postCalls[0]).toEqual({
       method: 'frappe.client.set_value',
       body: {
@@ -81,7 +96,66 @@ describe('ShiftApiService', () => {
         value: '2026-02-28',
       },
     });
-    expect(postCalls[1].method).toBe('frappe.client.insert');
+    expect(postCalls.map((c) => c.method)).toEqual([
+      'frappe.client.set_value',
+      'frappe.client.insert',
+    ]);
+  });
+
+  it('refuses a shift a later one overlaps before changing anything', async () => {
+    const { postCalls } = fakeErpnext({
+      'Shift Assignment': (q) => (later(q) ? [{ name: 'SA-9' }] : []),
+    });
+    await expect(api().assign(VALUE, BUSINESS)).rejects.toMatchObject({
+      excType: 'OverlappingShiftError',
+    });
+    expect(postCalls).toEqual([]);
+  });
+
+  it('puts the running shift back when the new one is refused', async () => {
+    const { postCalls } = fakeErpnext(
+      {
+        'Shift Assignment': (q) =>
+          later(q) ? [] : [{ name: 'SA-0', shift_type: 'Morning', end_date: '2026-12-31' }],
+      },
+      {
+        'frappe.client.insert': () =>
+          throwError(
+            () => new HttpErrorResponse({ status: 417, error: { exc_type: 'ValidationError' } }),
+          ),
+      },
+    );
+    await expect(api().assign(VALUE, BUSINESS)).rejects.toBeTruthy();
+    expect(postCalls.at(-1)!.body).toEqual({
+      doctype: 'Shift Assignment',
+      name: 'SA-0',
+      fieldname: 'end_date',
+      value: '2026-12-31',
+    });
+  });
+
+  it('resumes the regular shift after a temporary one, or leaves that to after a lost answer', async () => {
+    const running = [{ name: 'SA-0', shift_type: 'Morning', end_date: null }];
+    const { postCalls } = fakeErpnext(
+      { 'Shift Assignment': (q) => (later(q) ? [] : running) },
+      { 'frappe.client.insert': () => ({ name: 'SA-1' }) },
+    );
+    await api().assign({ ...VALUE, shift: 'Evening', until: '2026-10-21' }, BUSINESS);
+    expect(postCalls.at(-1)!.body['doc']).toMatchObject({
+      shift_type: 'Morning',
+      start_date: '2026-10-22',
+    });
+    expect(postCalls.at(-1)!.body['doc']).not.toHaveProperty('end_date');
+    TestBed.resetTestingModule();
+    fakeErpnext(
+      { 'Shift Assignment': (q) => (later(q) ? [] : running) },
+      { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })) },
+    );
+    await expect(
+      api().assign({ ...VALUE, shift: 'Evening', until: '2026-10-21' }, BUSINESS),
+    ).rejects.toMatchObject({
+      resumed: [{ shift_type: 'Morning', from: '2026-10-22', end_date: null }],
+    });
   });
 
   it("reads the worker's next shift after a day", async () => {
