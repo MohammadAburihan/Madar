@@ -310,22 +310,24 @@ export class AttendanceContainer {
       this.saving.set(false);
     }
     // The day as ERPNext now has it: rows just marked, by this save or a lost answer, leave the sheet.
-    if (date === this.date()) {
-      if (unresolved) {
-        this.unresolved.set(true);
-      } else {
-        await this.load();
-      }
-      this.failed.set(failure);
-      if (marked && !unresolved) {
-        const tr = this.i18n.tr();
-        this.saved.set(
-          tr.t('workers.attendance.saved.message', {
-            workers: tr.plural('workers.attendance.workers', marked),
-            date: formatShortDate(date, this.i18n.language()),
-          }),
-        );
-      }
+    if (date !== this.date()) {
+      return;
+    }
+    // Notices first: picking another day during the reload below clears them, never the other way round.
+    this.failed.set(failure);
+    if (marked && !unresolved) {
+      const tr = this.i18n.tr();
+      this.saved.set(
+        tr.t('workers.attendance.saved.message', {
+          workers: tr.plural('workers.attendance.workers', marked),
+          date: formatShortDate(date, this.i18n.language()),
+        }),
+      );
+    }
+    if (unresolved) {
+      this.unresolved.set(true);
+    } else {
+      await this.load();
     }
   }
 

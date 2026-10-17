@@ -17,7 +17,11 @@ export function sheetRowView(row: SheetRow, language: Language, tr: Translator) 
           ? tr.t('workers.attendance.marked', {
               status: tr.t(`workers.attendance.statuses.${row.state.status}`),
             })
-          : null,
+          : row.state.kind === 'draft'
+            ? tr.t('workers.attendance.draft', {
+                status: tr.t(`workers.attendance.statuses.${row.state.status}`),
+              })
+            : null,
   };
 }
 

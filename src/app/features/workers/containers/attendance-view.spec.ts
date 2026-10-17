@@ -26,6 +26,9 @@ describe('attendance view', () => {
       visible(sheetRowView({ ...ROW, state: { kind: 'marked', status: 'Half Day' } }, 'en', en))
         .note,
     ).toBe('Marked: Half day');
+    expect(
+      visible(sheetRowView({ ...ROW, state: { kind: 'draft', status: 'Absent' } }, 'en', en)).note,
+    ).toBe('Draft in ERPNext: Absent. Submit or delete it there to mark this day.');
     expect(sheetRowView({ ...ROW, designation: null }, 'en', en).label).toBe('Khaled Omar');
   });
 

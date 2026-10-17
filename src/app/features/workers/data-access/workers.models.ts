@@ -60,7 +60,12 @@ export interface SheetRow {
   id: string;
   name: string;
   designation: string | null;
-  state: { kind: 'open' } | { kind: 'marked'; status: string } | { kind: 'leave'; until: string };
+  state:
+    | { kind: 'open' }
+    | { kind: 'marked'; status: string }
+    /** Saved but not submitted, in Desk: it blocks marking until it is submitted or deleted. */
+    | { kind: 'draft'; status: string }
+    | { kind: 'leave'; until: string };
 }
 
 /** What saving one worker's attendance came to. */

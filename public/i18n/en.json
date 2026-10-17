@@ -2820,7 +2820,8 @@
         "title": "The day's attendance couldn't load",
         "message": "Check the connection and try again."
       },
-      "note": "Saved attendance is submitted in ERPNext; to change a marked day, ask HR to correct it there."
+      "note": "Saved attendance is submitted in ERPNext; to change a marked day, ask HR to correct it there.",
+      "draft": "Draft in ERPNext: {{status}}. Submit or delete it there to mark this day."
     },
     "markAttendance": "Mark attendance"
   }

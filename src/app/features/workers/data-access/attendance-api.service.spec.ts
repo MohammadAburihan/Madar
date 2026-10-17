@@ -15,11 +15,14 @@ describe('AttendanceApiService', () => {
         { name: 'E1', employee_name: 'Khaled Omar', designation: 'Gardener' },
         { name: 'E2', employee_name: 'Rana Saleh', designation: 'Cashier' },
         { name: 'E3', employee_name: 'Yousef Darwish', designation: null },
+        { name: 'E4', employee_name: 'Huda Ali', designation: null },
       ],
       Attendance: () => [
-        { employee: 'E1', status: 'Absent' },
-        { employee: 'E1', status: 'Present' },
-        { employee: 'E2', status: 'On Leave' },
+        { employee: 'E1', status: 'Absent', docstatus: 1 },
+        { employee: 'E1', status: 'Present', docstatus: 1 },
+        { employee: 'E2', status: 'On Leave', docstatus: 1 },
+        // Saved in Desk but not submitted: Frappe HR refuses another record for the day.
+        { employee: 'E4', status: 'Absent', docstatus: 0 },
       ],
       'Leave Application': () => [{ employee: 'E2', to_date: '2026-10-20' }],
     });
@@ -27,6 +30,7 @@ describe('AttendanceApiService', () => {
       ['E1', { kind: 'marked', status: 'Present' }],
       ['E2', { kind: 'leave', until: '2026-10-20' }],
       ['E3', { kind: 'open' }],
+      ['E4', { kind: 'draft', status: 'Absent' }],
     ]);
     // Employed that day: joined by then and not relieved before, so a past day lists those who left since.
     expect(listCalls[0].query.filters).toEqual([

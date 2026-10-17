@@ -37,13 +37,14 @@ export class AttendanceApiService {
       return [];
     }
     const [attendance, leave] = await Promise.all([
-      this.erpnext.listAll<{ employee: string; status: string }>('Attendance', {
-        fields: ['employee', 'status'],
+      this.erpnext.listAll<{ employee: string; status: string; docstatus: number }>('Attendance', {
+        fields: ['employee', 'status', 'docstatus'],
         // By company and day, not by worker: a long id list would outgrow the GET URL.
         filters: [
           ['company', '=', business.name],
           ['attendance_date', '=', date],
-          ['docstatus', '=', 1],
+          // Drafts too: Frappe HR refuses a second record while one isn't cancelled.
+          ['docstatus', '<', 2],
         ],
       }),
       this.erpnext.listAll<{ employee: string; to_date: string }>('Leave Application', {
@@ -59,7 +60,11 @@ export class AttendanceApiService {
       }),
     ]);
     const marked = new Map<string, string>();
-    for (const a of attendance) {
+    const drafts = new Map<string, string>();
+    for (const a of attendance.filter((r) => r.docstatus === 0)) {
+      drafts.set(a.employee, a.status);
+    }
+    for (const a of attendance.filter((r) => r.docstatus === 1)) {
       const current = marked.get(a.employee);
       if (!current || RANK.indexOf(a.status) < RANK.indexOf(current)) {
         marked.set(a.employee, a.status);
@@ -74,6 +79,7 @@ export class AttendanceApiService {
     return workers.map((w) => {
       const until = onLeave.get(w.name);
       const status = marked.get(w.name);
+      const draft = drafts.get(w.name);
       return {
         id: w.name,
         name: w.employee_name,
@@ -84,7 +90,9 @@ export class AttendanceApiService {
             ? { kind: 'leave', until }
             : status
               ? { kind: 'marked', status }
-              : { kind: 'open' },
+              : draft
+                ? { kind: 'draft', status: draft }
+                : { kind: 'open' },
       };
     });
   }

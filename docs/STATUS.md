@@ -246,6 +246,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   runs; reloading the same day keeps the choices of rows still to save (a failed row isn't reset to Present); the day's
   records are read by company and date, not by a list of worker ids that would outgrow the URL; a past day lists
   workers who have left since, by relieving date.
+  Review pass 2 (1 medium, 1 low) fixed: a draft attendance saved in Desk shows on its row ("Draft in ERPNext …") instead
+  of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
 
 ## End-to-end happy paths: merged (#26)
 
