@@ -20,8 +20,10 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
+import { ShiftApiService } from '../data-access/shift-api.service';
 import { WorkersApiService } from '../data-access/workers-api.service';
-import { WorkerDetail } from '../data-access/workers.models';
+import { ShiftType, WorkerDetail } from '../data-access/workers.models';
+import { shiftLine } from './shift-view';
 import { workerLines, workerSubtitle, workerView } from './workers-view';
 
 /** One worker: how to reach them, their month at a glance, latest pay, and what to do next. */
@@ -59,6 +61,9 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
     } @else if (view(); as v) {
       <app-page-heading [title]="v.name" [subtitle]="v.subtitle" />
       <p class="lines">{{ v.lines }}</p>
+      @if (shiftText(); as s) {
+        <p class="muted">{{ s }}</p>
+      }
       @if (v.totals.length) {
         <app-totals-card density="compact" [rows]="v.totals" />
       }
@@ -79,6 +84,13 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
           (click)="router.navigate(['/workers/leave/new'], { queryParams: { worker: id() } })"
         >
           {{ txt.requestLeave }}
+        </button>
+        <button
+          type="button"
+          class="md-btn"
+          (click)="router.navigate(['/workers/shift/new'], { queryParams: { worker: id() } })"
+        >
+          {{ txt.assignShift }}
         </button>
       }
       <button type="button" class="md-btn" (click)="router.navigate(['/workers', id(), 'edit'])">
@@ -101,6 +113,7 @@ export class WorkerContainer {
   readonly id = input.required<string>();
 
   private readonly api = inject(WorkersApiService);
+  private readonly shifts = inject(ShiftApiService);
   private readonly business = inject(BusinessService);
   private readonly clock = inject(SiteClockService);
   protected readonly router = inject(Router);
@@ -110,6 +123,15 @@ export class WorkerContainer {
 
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
   private readonly detail = signal<WorkerDetail | null>(null);
+  /** Undefined when it couldn't be read. */
+  private readonly shift = signal<ShiftType | null | undefined>(undefined);
+
+  protected readonly shiftText = computed(() => {
+    const shift = this.shift();
+    return shift === undefined || this.detail()?.status !== 'Active'
+      ? null
+      : shiftLine(shift, this.i18n.tr());
+  });
   protected readonly failed = signal(false);
   private run = 0;
 
@@ -123,6 +145,7 @@ export class WorkerContainer {
       edit: t('workers.edit'),
       markAttendance: t('workers.markAttendance'),
       requestLeave: t('workers.requestLeave'),
+      assignShift: t('workers.shift.assign'),
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
       loadFailed: {
         title: t('workers.loadFailed.title'),
@@ -161,13 +184,22 @@ export class WorkerContainer {
   protected async load(id = this.id()): Promise<void> {
     const run = ++this.run;
     this.detail.set(null);
+    this.shift.set(undefined);
     this.failed.set(false);
     try {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
-      const detail = await this.api.worker(id, business, toIsoDate(this.clock.now()));
+      const today = toIsoDate(this.clock.now());
+      const [detail, shift] = await Promise.all([
+        this.api.worker(id, business, today),
+        // Shifts are optional on the page: unreadable or failed, the line is left out.
+        this.shifts.current(id, today).catch(() => undefined),
+      ]);
+      if (run === this.run) {
+        this.shift.set(shift);
+      }
       if (run === this.run) {
         this.detail.set(detail);
       }

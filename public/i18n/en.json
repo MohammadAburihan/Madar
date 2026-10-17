@@ -2632,7 +2632,8 @@
       "addContact": "Add contact",
       "addWorker": "Add worker",
       "markAttendance": "Mark attendance",
-      "requestLeave": "Request leave"
+      "requestLeave": "Request leave",
+      "assignShift": "Assign shift"
     }
   },
   "workers": {
@@ -2942,6 +2943,53 @@
       "deskDraft": "Saved as {{status}} in ERPNext but not submitted: nothing is decided yet. Approve or reject it here."
     },
     "leaveRequests": "Leave requests",
-    "requestLeave": "Request leave"
+    "requestLeave": "Request leave",
+    "shift": {
+      "current": "Shift: {{shift}}",
+      "none": "No shift assigned",
+      "assign": "Assign shift",
+      "form": {
+        "title": "Assign shift",
+        "subtitle": "The shift the worker works from this date; attendance follows it.",
+        "worker": "Worker *",
+        "workerError": "Choose the worker.",
+        "shift": "Shift *",
+        "shiftError": "Choose a shift.",
+        "noShifts": "No shifts are set up yet. Add shift types in ERPNext first.",
+        "from": "From *",
+        "until": "Until",
+        "untilHint": "Leave empty to keep it",
+        "datesError": "Choose a start, and an end on or after it.",
+        "save": "Assign shift",
+        "saving": "Saving…",
+        "optionsFailed": "Workers and shifts couldn't load. Try again before saving.",
+        "failed": {
+          "permission": {
+            "title": "You can't assign this shift",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The shift wasn't assigned. Check the connection and try again."
+          },
+          "overlap": {
+            "title": "The worker already has a shift then",
+            "message": "Another shift is assigned for some of these days. End it first, or choose other dates."
+          },
+          "error": {
+            "title": "The shift wasn't assigned",
+            "message": "ERPNext refused it. Check the details and try again."
+          }
+        },
+        "notCreated": {
+          "title": "The shift wasn't assigned",
+          "message": "Nothing was saved. Check the details and try again."
+        },
+        "unresolved": {
+          "title": "Saving not yet resolved",
+          "message": "The request timed out. The shift may already be assigned. Check before saving again."
+        }
+      }
+    }
   }
 }

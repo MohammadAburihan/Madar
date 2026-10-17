@@ -250,7 +250,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
   Review pass 3 (3 low) fixed: a refused save names the workers ERPNext refused (often a missing holiday list); a 403
   checks for an expired session; the day can't be changed before the site's today is known.
-- **H3 — Leave and approvals** (this PR): **Leave requests** (`/workers/leave`, from Workers) lists open requests
+- **H3 — Leave and approvals**: merged (#48). **Leave requests** (`/workers/leave`, from Workers) lists open requests
   waiting for approval (oldest first) and decided ones (newest first), searchable by worker or leave type. **Request
   leave** (`/workers/leave/new`, from a worker's page, which preselects them, the list and "+ New") offers the worker's
   allocated leave types with days left (one allocated type is chosen) and unpaid types, counts the days with Frappe HR
@@ -266,6 +266,14 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   can be decided; a 403 checks for an expired session.
   Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
   types at once.
+- **H4 — Shifts** (this PR): a worker's page shows their shift on the day ("Shift: Morning · 07:00–15:00", or none
+  assigned). **Assign shift** (`/workers/shift/new`, from a worker's page, which preselects them, and "+ New") picks one of
+  the business's Shift Types with its times, a start and an optional end, and submits a Frappe HR Shift Assignment.
+  Shift Assignment has no free-text field for a reference, so a lost answer is looked up by worker, shift and start.
+  Overlapping shifts get their own message. The seed adds Morning and Evening shifts, Khaled on mornings. Shift types
+  themselves are set up in ERPNext. Design: Workers 08 Assign shift (mobile EN/AR), the shift line on Workers 02. e2e:
+  assign from a worker's page, checked in ERPNext and shown on the page; an overlapping one refused; Arabic; the seeded
+  shift on the desktop worker page.
 
 ## End-to-end happy paths: merged (#26)
 

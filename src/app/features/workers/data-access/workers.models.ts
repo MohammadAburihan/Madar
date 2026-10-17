@@ -104,3 +104,18 @@ export interface LeaveFormValue {
 }
 
 export type LeaveDecision = 'Approved' | 'Rejected';
+
+export interface ShiftType {
+  name: string;
+  /** "07:00" */
+  start: string;
+  end: string;
+}
+
+export interface ShiftFormValue {
+  worker: string;
+  shift: string;
+  from: string;
+  /** Empty to keep it with no end. */
+  until: string;
+}
