@@ -226,6 +226,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   today's attendance, leave allocations and an approved leave. e2e: the list and a worker as ERPNext has them, the
   Left tab, add (with ERPNext's required fields refused first) and edit, HR-only access, Arabic, the desktop panel.
   The mock's Mark attendance and Request leave buttons come with H2 and H3.
+  Review pass 1 (1 medium, 2 low) fixed: editing keeps ERPNext's first, middle and last names unless the name changed
+  (then the middle name is cleared so ERPNext doesn't add it back); today's attendance reads every record of the day
+  (one per shift) and a day counts once; advances in another currency are converted to the company's.
 
 ## End-to-end happy paths: merged (#26)
 

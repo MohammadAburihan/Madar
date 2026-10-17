@@ -56,6 +56,23 @@ const forbiddenAsNull = (error: unknown): null => {
 
 const ATTENDANCE = ['Present', 'Absent', 'Half Day', 'Work From Home', 'On Leave'];
 
+const squash = (name: string) => name.trim().replace(/\s+/g, ' ');
+
+/** Days at work: a full or home day counts 1, a half day ½; a day with several shift records counts once. */
+function daysPresent(rows: { attendance_date: string; status: string }[]): number {
+  const best = new Map<string, number>();
+  for (const r of rows) {
+    const value =
+      r.status === 'Present' || r.status === 'Work From Home'
+        ? 1
+        : r.status === 'Half Day'
+          ? 0.5
+          : 0;
+    best.set(r.attendance_date, Math.max(best.get(r.attendance_date) ?? 0, value));
+  }
+  return [...best.values()].reduce((sum, v) => sum + v, 0);
+}
+
 /** "Khaled Omar" → first and last name, as ERPNext composes the full name from them. */
 function nameParts(name: string): { first_name: string; last_name: string } {
   const [first, ...rest] = name.trim().split(/\s+/);
@@ -122,7 +139,7 @@ export class WorkersApiService {
         ['attendance_date', '<=', today],
       ]).catch(forbiddenAsNull),
       this.leaveLeft(id, today).catch(forbiddenAsNull),
-      this.advanceToRepay(id).catch(forbiddenAsNull),
+      this.advanceToRepay(id, business.currency).catch(forbiddenAsNull),
       this.latestPay(id).catch(forbiddenAsNull),
       // Approved leave is marked ahead for every day it covers; recent means up to today.
       this.attendance(id, [['attendance_date', '<=', today]], RECENT_LIMIT).catch(forbiddenAsNull),
@@ -133,18 +150,7 @@ export class WorkersApiService {
         doc.status === 'Left' ? null : todayMap ? (todayMap.get(id) ?? { marked: false }) : null,
       joined: doc.date_of_joining,
       relieved: doc.relieving_date ?? null,
-      presentThisMonth: month
-        ? month.reduce(
-            (days, r) =>
-              days +
-              (r.status === 'Present' || r.status === 'Work From Home'
-                ? 1
-                : r.status === 'Half Day'
-                  ? 0.5
-                  : 0),
-            0,
-          )
-        : null,
+      presentThisMonth: month ? daysPresent(month) : null,
       leaveLeft,
       advanceToRepay: advance,
       pay,
@@ -201,7 +207,6 @@ export class WorkersApiService {
     business: Business,
   ): Promise<string> {
     const fields = {
-      ...nameParts(value.name),
       gender: value.gender,
       date_of_birth: value.birthDate,
       date_of_joining: value.joined,
@@ -211,13 +216,25 @@ export class WorkersApiService {
     };
     if (existing) {
       const doc = await firstValueFrom(this.erpnext.doc<EmployeeDoc>('Employee', existing));
-      await firstValueFrom(this.erpnext.post('frappe.client.save', { doc: { ...doc, ...fields } }));
+      // The form edits the full name ERPNext composes from first, middle and last: split it only when it
+      // changed, and then drop the middle name, or ERPNext would add it back in.
+      const renamed = squash(value.name) !== squash(doc.employee_name);
+      await firstValueFrom(
+        this.erpnext.post('frappe.client.save', {
+          doc: {
+            ...doc,
+            ...fields,
+            ...(renamed ? { ...nameParts(value.name), middle_name: '' } : {}),
+          },
+        }),
+      );
       return existing;
     }
     const doc = await confirmRequest(
       this.erpnext.post<{ name: string }>('frappe.client.insert', {
         doc: {
           doctype: 'Employee',
+          ...nameParts(value.name),
           ...fields,
           company: business.name,
           status: 'Active',
@@ -266,31 +283,26 @@ export class WorkersApiService {
   /** Each worker's attendance today, or the approved leave covering today. */
   private async todayFor(ids: string[], today: string): Promise<Map<string, WorkerToday>> {
     const [attendance, leave] = await Promise.all([
-      firstValueFrom(
-        this.erpnext.list<{ employee: string; status: string }>('Attendance', {
-          fields: ['employee', 'status'],
-          filters: [
-            ['employee', 'in', ids],
-            ['attendance_date', '=', today],
-            ['docstatus', '=', 1],
-          ],
-          limit: ids.length,
-        }),
-      ),
-      firstValueFrom(
-        this.erpnext.list<{ employee: string; to_date: string }>('Leave Application', {
-          fields: ['employee', 'to_date'],
-          filters: [
-            ['employee', 'in', ids],
-            ['from_date', '<=', today],
-            ['to_date', '>=', today],
-            ['status', '=', 'Approved'],
-            ['docstatus', '=', 1],
-          ],
-          orderBy: 'to_date desc',
-          limit: ids.length * 2,
-        }),
-      ),
+      // A worker can have several records a day (one per shift), so no per-worker limit holds.
+      this.erpnext.listAll<{ employee: string; status: string }>('Attendance', {
+        fields: ['employee', 'status'],
+        filters: [
+          ['employee', 'in', ids],
+          ['attendance_date', '=', today],
+          ['docstatus', '=', 1],
+        ],
+      }),
+      this.erpnext.listAll<{ employee: string; to_date: string }>('Leave Application', {
+        fields: ['employee', 'to_date'],
+        filters: [
+          ['employee', 'in', ids],
+          ['from_date', '<=', today],
+          ['to_date', '>=', today],
+          ['status', '=', 'Approved'],
+          ['docstatus', '=', 1],
+        ],
+        orderBy: 'to_date desc',
+      }),
     ]);
     const map = new Map<string, WorkerToday>();
     for (const l of leave) {
@@ -307,19 +319,21 @@ export class WorkersApiService {
     return map;
   }
 
+  /** The worker's attendance, newest first: the newest `limit` records, or all of them. */
   private attendance(
     id: string,
     filters: Filter[],
-    limit = 62,
+    limit?: number,
   ): Promise<{ attendance_date: string; status: string }[]> {
-    return firstValueFrom(
-      this.erpnext.list<{ attendance_date: string; status: string }>('Attendance', {
-        fields: ['attendance_date', 'status'],
-        filters: [['employee', '=', id], ['docstatus', '=', 1], ...filters],
-        orderBy: 'attendance_date desc',
-        limit,
-      }),
-    );
+    const query = {
+      fields: ['attendance_date', 'status'],
+      filters: [['employee', '=', id], ['docstatus', '=', 1], ...filters] as Filter[],
+      orderBy: 'attendance_date desc, name desc',
+    };
+    type Row = { attendance_date: string; status: string };
+    return limit
+      ? firstValueFrom(this.erpnext.list<Row>('Attendance', { ...query, limit }))
+      : this.erpnext.listAll<Row>('Attendance', query);
   }
 
   /** Leave days left across the worker's allocations today. */
@@ -330,34 +344,37 @@ export class WorkersApiService {
         { employee: id, date: today },
       ),
     );
-    return Object.values(details.leave_allocation ?? {}).reduce(
+    return Object.values(details?.leave_allocation ?? {}).reduce(
       (sum, a) => sum + Number(a.remaining_leaves || 0),
       0,
     );
   }
 
-  /** What the worker still owes back from advances paid to them. */
-  private async advanceToRepay(id: string): Promise<number> {
+  /** What the worker still owes back from advances paid to them, in the company currency. */
+  private async advanceToRepay(id: string, currency: string): Promise<number> {
     const rows = await this.erpnext.listAll<{
       paid_amount: number;
       claimed_amount: number;
       return_amount: number;
+      currency: string;
+      exchange_rate: number;
     }>('Employee Advance', {
-      fields: ['paid_amount', 'claimed_amount', 'return_amount'],
+      fields: ['paid_amount', 'claimed_amount', 'return_amount', 'currency', 'exchange_rate'],
       filters: [
         ['employee', '=', id],
         ['docstatus', '=', 1],
       ],
     });
-    return rows.reduce(
-      (sum, r) =>
-        sum +
-        Math.max(
-          0,
-          Number(r.paid_amount || 0) - Number(r.claimed_amount || 0) - Number(r.return_amount || 0),
-        ),
-      0,
-    );
+    return rows.reduce((sum, r) => {
+      const left = Math.max(
+        0,
+        Number(r.paid_amount || 0) - Number(r.claimed_amount || 0) - Number(r.return_amount || 0),
+      );
+      // Advances are kept in the advance's currency; the rate converts them to the company's.
+      return (
+        sum + left * (r.currency && r.currency !== currency ? Number(r.exchange_rate) || 1 : 1)
+      );
+    }, 0);
   }
 
   private async latestPay(id: string): Promise<WorkerPay | null> {

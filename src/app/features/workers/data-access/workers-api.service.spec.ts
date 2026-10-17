@@ -299,3 +299,107 @@ describe('WorkersApiService', () => {
     ]);
   });
 });
+
+describe('WorkersApiService review fixes', () => {
+  const STORED = {
+    ...EMPLOYEES[0],
+    first_name: 'Khaled',
+    middle_name: 'Ali',
+    last_name: 'Omar',
+    employee_name: 'Khaled Ali Omar',
+    gender: 'Male',
+    date_of_birth: '1990-05-14',
+    date_of_joining: '2025-03-03',
+  };
+  const VALUE = {
+    name: 'Khaled Ali Omar',
+    gender: 'Male',
+    birthDate: '1990-05-14',
+    joined: '2025-03-03',
+    designation: 'Gardener',
+    department: 'Field team - RN',
+    phone: '059-1',
+  };
+
+  it('leaves the stored name parts alone when the name is unchanged', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      { 'Employee/HR-EMP-00001': STORED },
+    );
+    await api().save({ ...VALUE, name: ' Khaled  Ali Omar ' }, 'HR-EMP-00001', 'EMP-1', BUSINESS);
+    expect(postCalls[0].body['doc']).toMatchObject({
+      first_name: 'Khaled',
+      middle_name: 'Ali',
+      last_name: 'Omar',
+      cell_number: '059-1',
+    });
+  });
+
+  it('drops the middle name when renaming, so ERPNext composes the new name', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      { 'Employee/HR-EMP-00001': STORED },
+    );
+    await api().save({ ...VALUE, name: 'Khaled Omar' }, 'HR-EMP-00001', 'EMP-1', BUSINESS);
+    expect(postCalls[0].body['doc']).toMatchObject({
+      first_name: 'Khaled',
+      middle_name: '',
+      last_name: 'Omar',
+    });
+  });
+
+  it('reads every attendance record of the day, even several shifts for one worker', async () => {
+    const { listCalls } = fakeErpnext({
+      Employee: () => EMPLOYEES.slice(0, 2),
+      Attendance: () => [
+        { employee: 'HR-EMP-00001', status: 'Present' },
+        { employee: 'HR-EMP-00001', status: 'Present' },
+        { employee: 'HR-EMP-00002', status: 'Absent' },
+      ],
+    });
+    const rows = await api().list('', 'active', BUSINESS, TODAY);
+    expect(rows.map((r) => r.today)).toEqual([
+      { marked: true, status: 'Present' },
+      { marked: true, status: 'Absent' },
+    ]);
+    expect(listCalls.find((c) => c.doctype === 'Attendance')!.query.limit).toBeUndefined();
+  });
+
+  it('counts a day once whatever its shifts, and converts advances to the company currency', async () => {
+    fakeErpnext(
+      {
+        Attendance: (q) =>
+          q.fields.includes('employee')
+            ? []
+            : [
+                { attendance_date: '2026-10-01', status: 'Present' },
+                { attendance_date: '2026-10-01', status: 'Half Day' },
+                { attendance_date: '2026-10-02', status: 'Half Day' },
+              ],
+        'Employee Advance': () => [
+          {
+            paid_amount: 100,
+            claimed_amount: 0,
+            return_amount: 0,
+            currency: 'USD',
+            exchange_rate: 3.7,
+          },
+          {
+            paid_amount: 50,
+            claimed_amount: 0,
+            return_amount: 0,
+            currency: 'ILS',
+            exchange_rate: 1,
+          },
+        ],
+      },
+      {},
+      { 'Employee/HR-EMP-00001': { ...EMPLOYEES[0], date_of_joining: '2025-03-03' } },
+    );
+    const worker = await api().worker('HR-EMP-00001', BUSINESS, TODAY);
+    expect(worker.presentThisMonth).toBe(1.5);
+    expect(worker.advanceToRepay).toBeCloseTo(420);
+  });
+});

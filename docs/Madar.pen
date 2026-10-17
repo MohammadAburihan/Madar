@@ -108738,6 +108738,19 @@
                   "content": "Mark attendance"
                 }
               }
+            },
+            {
+              "id": "S6mGG",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Leave requests",
+              "context": "Role: button. Accessible name: Leave requests. Route specification: CEskZ (/workers/leave).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Leave requests"
+                }
+              }
             }
           ]
         },
@@ -109071,7 +109084,7 @@
               "ref": "Ab7yc",
               "name": "Request leave",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: Request leave. Route specification: /workers/:id/leave (H3). Starts a leave application for this worker.",
+              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new?worker=:id).",
               "descendants": {
                 "JgY9L": {
                   "content": "Request leave"
@@ -109753,6 +109766,22 @@
                   "textAlign": "right"
                 }
               }
+            },
+            {
+              "id": "gQh6F",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Leave requests",
+              "context": "Role: button. Accessible name: طلبات الإجازة. Route specification: xtIVr (/workers/leave).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "طلبات الإجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
             }
           ]
         },
@@ -110117,7 +110146,7 @@
               "ref": "S1PTe",
               "name": "Request leave",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: طلب إجازة. Route specification: /workers/:id/leave (H3). Starts a leave application for this worker.",
+              "context": "Role: button. Accessible name: طلب إجازة. Route specification: X4z11j (/workers/leave/new?worker=:id).",
               "descendants": {
                 "yHiIx": {
                   "content": "طلب إجازة",
@@ -111738,7 +111767,7 @@
               "ref": "Ab7yc",
               "name": "Language switch",
               "width": 120,
-              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: YNLq6. Preserve business, current route, input and focused control.",
+              "context": "Role: button. Accessible name: change language. Route specification: W6xF3V. Preserves business, route, input and focused control.",
               "descendants": {
                 "JgY9L": {
                   "content": "العربية",
@@ -111750,7 +111779,7 @@
               "type": "frame",
               "id": "PJawv",
               "name": "Back navigation",
-              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "context": "Role: button. Accessible name: Back. Route specification: ILlnI.",
               "height": 48,
               "gap": 6,
               "alignItems": "center",
@@ -112045,7 +112074,7 @@
               "ref": "S1PTe",
               "name": "Language switch",
               "width": 120,
-              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: h5hAM. Preserve business, current route, input and focused control.",
+              "context": "Role: button. Accessible name: change language. Route specification: B9L1Dy. Preserves business, route, input and focused control.",
               "descendants": {
                 "yHiIx": {
                   "content": "English"
@@ -112056,7 +112085,7 @@
               "type": "frame",
               "id": "UtLB0",
               "name": "Back navigation",
-              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "context": "Role: button. Accessible name: Back. Route specification: pkBhQ.",
               "gap": 6,
               "padding": 12,
               "alignItems": "center",
@@ -112233,6 +112262,2065 @@
               "descendants": {
                 "c6rXZg": {
                   "content": "حفظ الحضور · عاملان",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "CqHE0",
+      "x": 6040,
+      "y": 25560,
+      "name": "04 Mobile / Workers 05 Request leave",
+      "context": "Route /workers/leave/new (?worker=). Handoff: English LTR; counterpart X4z11j.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "vuULq",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "S426p",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "aZiRP",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Fgxpl",
+          "name": "Leave request / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "avrLd",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U0HtLh",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YpNZu",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "i60jaV",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Xsmor",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "WG6gP",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: X4z11j. Preserves business, route, input and focused control.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "p03SB0",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "C9n6pw",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "X34W4B",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "CFDBB",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Request leave",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "c3nR0",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Sent to the leave approver; it counts once approved.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "PwV70",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Worker. Preselected when opened from a worker's page.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Khaled Omar ▾"
+                }
+              }
+            },
+            {
+              "id": "HKhR2",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Leave type *",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Leave type. Each type shows the days left from Frappe HR.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Leave type *"
+                },
+                "sedCr": {
+                  "content": "Privilege Leave · 14 days left ▾"
+                }
+              }
+            },
+            {
+              "id": "LV8cC",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "From *",
+              "width": "fill_container",
+              "context": "Role: textbox (date). Accessible name: From.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "From *"
+                },
+                "sedCr": {
+                  "content": "26 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "FGfB0",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "To *",
+              "width": "fill_container",
+              "context": "Role: textbox (date). Accessible name: To.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "To *"
+                },
+                "sedCr": {
+                  "content": "28 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "sqlS9",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Reason",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: Reason.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Reason"
+                },
+                "sedCr": {
+                  "content": "Family visit"
+                }
+              }
+            },
+            {
+              "id": "SMAUy",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Days",
+              "width": "fill_container",
+              "context": "Read only: Frappe HR's count of leave days in the range, without holidays.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Days"
+                },
+                "sedCr": {
+                  "content": "3 days · 11 left after"
+                }
+              }
+            },
+            {
+              "id": "on68W",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Send leave request",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Send leave request. Creates an open ERPNext Leave Application (LEV-… reference in its description).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Send leave request"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "X4z11j",
+      "x": 20050,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 05 Request leave",
+      "context": "Route /workers/leave/new (?worker=). Handoff: Arabic RTL; counterpart CqHE0.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "r5hDBu",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AINBZ",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "FTuSZ",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "akttV",
+          "name": "Leave request / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hMmRs",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "DQERq",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "znZLQ",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "k4e0Oj",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Yt4aw",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "lyScs",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: CqHE0. Preserves business, route, input and focused control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "ZAetn",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "jLumu",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "bS3cw",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "NR4QC",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "طلب إجازة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "TQ9mS",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "يُرسل إلى معتمد الإجازات، ويُحتسب بعد الاعتماد.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "h74W4",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "العامل *",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "خالد عمر ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "mgMq1",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "نوع الإجازة *",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: نوع الإجازة.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "نوع الإجازة *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "Privilege Leave · متبقٍ 14 يوماً ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "cadpS",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "من *",
+              "context": "Role: textbox (date). Accessible name: من.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "من *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "26 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "rDsVB",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "إلى *",
+              "width": "fill_container",
+              "context": "Role: textbox (date). Accessible name: إلى.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "إلى *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "28 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "PPlNb",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "السبب",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: السبب.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "السبب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "زيارة عائلية",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "HVbvq",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "الأيام",
+              "width": "fill_container",
+              "context": "Read only.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الأيام",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "3 أيام · يتبقى 11 بعدها",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "uGoJF",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Send leave request",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إرسال طلب الإجازة.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "إرسال طلب الإجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "CEskZ",
+      "x": 6590,
+      "y": 25560,
+      "name": "04 Mobile / Workers 06 Leave requests",
+      "context": "Route /workers/leave. Counterpart xtIVr. Approve/Reject shown to HR User/HR Manager and the worker's Leave Approver.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "ML9Qx",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "PD8wM",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "oPayG",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pdJFh",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "rj3L2",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Tod1Z",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nT1OS",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "x6ISG",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "KivPd",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "vKRbT",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: xtIVr. Preserves business, route, input and focused control.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "t2D5Y",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Leave requests",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "tu2CX",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Workers & HR · Rehan Nursery · To approve",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "f0d9KN",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search workers",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: Search. Filters the list by name, job title or phone as you type.",
+              "height": "fit_content",
+              "padding": 0,
+              "descendants": {
+                "zjtuK": {
+                  "content": "Search worker or leave type"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "S4je70",
+              "name": "Contact type filters",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "id": "w1hES",
+                  "type": "ref",
+                  "ref": "OB83Y",
+                  "name": "Waiting",
+                  "fill": "$md-tint",
+                  "height": "fit_content",
+                  "justifyContent": "center",
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "context": "Role: tab, selected. Accessible name: Waiting. Open leave applications.",
+                  "descendants": {
+                    "ynIiO": {
+                      "content": "Waiting",
+                      "fill": "$md-primary"
+                    }
+                  }
+                },
+                {
+                  "id": "qIvAc",
+                  "type": "ref",
+                  "ref": "OB83Y",
+                  "name": "Decided",
+                  "fill": "$md-tint",
+                  "height": 48,
+                  "justifyContent": "center",
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "context": "Role: tab. Accessible name: Decided. Approved and rejected applications.",
+                  "descendants": {
+                    "ynIiO": {
+                      "content": "Decided",
+                      "fill": "$md-primary"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "V8Qzf",
+              "type": "ref",
+              "ref": "lIIqs",
+              "name": "Request Khaled Omar",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Khaled Omar leave request. Route specification: jCnt2 (/workers/leave/:id).",
+              "descendants": {
+                "mwtRW": {
+                  "content": "Khaled Omar"
+                },
+                "rsREK": {
+                  "content": "Privilege Leave · 26–28 Oct 2026"
+                },
+                "TQSOO": {
+                  "content": "3 days · Waiting for approval"
+                }
+              }
+            },
+            {
+              "id": "uqeTS",
+              "type": "ref",
+              "ref": "lIIqs",
+              "name": "Request Yousef Darwish",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Yousef Darwish leave request. Route specification: jCnt2.",
+              "descendants": {
+                "mwtRW": {
+                  "content": "Yousef Darwish"
+                },
+                "rsREK": {
+                  "content": "Sick Leave · 19 Oct 2026"
+                },
+                "TQSOO": {
+                  "content": "1 day · Waiting for approval"
+                }
+              }
+            },
+            {
+              "id": "nZk6b",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Request leave"
+                }
+              }
+            },
+            {
+              "id": "Tki5T",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: ILlnI (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back to workers"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "uk1hN",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "zV6t8",
+              "type": "ref",
+              "ref": "H3AT9w",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "kyQJu": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Home. Route specification: Lqpaw. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "i4H0c": {
+                  "fill": "$md-muted"
+                },
+                "W7M2mb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "ZHpcp": {
+                  "fill": "$md-muted"
+                },
+                "h1Rv3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Stock. Route specification: NTybC. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "jfsLn": {
+                  "fill": "$md-muted"
+                },
+                "W5nhJn": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "n3DGL": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "xtIVr",
+      "x": 19500,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 06 Leave requests",
+      "context": "Route /workers/leave. Counterpart CEskZ. Approve/Reject shown to HR User/HR Manager and the worker's Leave Approver.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "H5rpKX",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "YOY3y",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Cfsao",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "UEf96",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gDino",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "RtbeX",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "q2WX2c",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "xcw5A",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "blxAD",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "POxBH",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aC70x",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: CEskZ. Preserves business, route, input and focused control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "M7PPqC",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "طلبات الإجازة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "sWq7h",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "بانتظار الاعتماد · مشتل ريحان للنباتات والحدائق",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "jTDNz",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search workers",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: بحث. Filters the list by name, job title or phone as you type.",
+              "height": "fit_content",
+              "padding": 0,
+              "descendants": {
+                "AHy2k": {
+                  "content": "البحث بالعامل أو نوع الإجازة"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "GtrR8",
+              "name": "Contact type filters",
+              "width": "fill_container",
+              "gap": 12,
+              "children": [
+                {
+                  "id": "BwmXI",
+                  "type": "ref",
+                  "ref": "SxuzC",
+                  "name": "Decided",
+                  "fill": "$md-tint",
+                  "height": 48,
+                  "justifyContent": "center",
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "context": "Role: tab. Accessible name: Decided. Approved and rejected applications.",
+                  "descendants": {
+                    "OOgtT": {
+                      "content": "تم البت فيها",
+                      "fill": "$md-primary",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "cC3hI",
+                  "type": "ref",
+                  "ref": "SxuzC",
+                  "name": "Waiting",
+                  "fill": "$md-tint",
+                  "height": "fit_content",
+                  "justifyContent": "center",
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "context": "Role: tab, selected. Accessible name: Waiting. Open leave applications.",
+                  "descendants": {
+                    "OOgtT": {
+                      "content": "بانتظار الاعتماد",
+                      "fill": "$md-primary",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": "h0ULB",
+              "type": "ref",
+              "ref": "dT1Kf",
+              "name": "Request Khaled Omar",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Khaled Omar leave request. Route specification: ValYO (/workers/leave/:id).",
+              "descendants": {
+                "v62MUh": {
+                  "content": "خالد عمر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "pDYnv": {
+                  "content": "Privilege Leave · 26–28 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "ysT02": {
+                  "content": "3 أيام · بانتظار الاعتماد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Sueye",
+              "type": "ref",
+              "ref": "dT1Kf",
+              "name": "Request Yousef Darwish",
+              "width": "fill_container",
+              "context": "Role: link. Accessible name: Yousef Darwish leave request. Route specification: ValYO.",
+              "descendants": {
+                "v62MUh": {
+                  "content": "يوسف درويش",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "pDYnv": {
+                  "content": "Sick Leave · 19 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "ysT02": {
+                  "content": "يوم واحد · بانتظار الاعتماد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "fEwrh",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: X4z11j (/workers/leave/new).",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "طلب إجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "tqbwR",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: pkBhQ (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "العودة إلى العمال",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "h98Jue",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "TrCCI",
+              "type": "ref",
+              "ref": "WaFGl",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "oHf5n": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: المزيد. Route specification: gGafI. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "UVGWb": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                },
+                "c3UIOS": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المخزون. Route specification: h0Bmm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "lYc9B": {
+                  "fill": "$md-muted"
+                },
+                "Z0WdPb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "z5QTU": {
+                  "fill": "$md-muted"
+                },
+                "p74FW3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "jsBhC": {
+                  "fill": "$md-muted"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "jCnt2",
+      "x": 7140,
+      "y": 25560,
+      "name": "04 Mobile / Workers 07 Leave request",
+      "context": "Route /workers/leave/:id. Counterpart ValYO. Approve/Reject shown to HR User/HR Manager and the worker's Leave Approver.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "JxKSt",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Swd96",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Qiv1D",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "d6XjB",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "WOF4d",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aryq3",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UKsxO",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "KvZjM",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "N7IVfo",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "A0JyPQ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: ValYO. Preserves business, route, input and focused control.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "I7YiY",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: CEskZ.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "XIAn9",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "U1lr9",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "epDqN",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Khaled Omar",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "xEMVp",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Privilege Leave · HR-LAP-2026-00004",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "AKRcj",
+              "name": "Contact details",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "26 Oct 2026 – 28 Oct 2026 · 3 days\nReason: Family visit\nRequested 17 Oct 2026",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "vmPTo",
+              "type": "ref",
+              "ref": "zJO73",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "oq9tr": {
+                  "content": "Days requested"
+                },
+                "m86csx": {
+                  "content": "3 days"
+                },
+                "PR2zR": {
+                  "content": "Left after approval"
+                },
+                "ZjtQe": {
+                  "content": "11 days"
+                },
+                "RH6Qt": {
+                  "content": "Leave left now"
+                },
+                "O5eeva": {
+                  "content": "14 days"
+                }
+              }
+            },
+            {
+              "id": "cuq9B",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Latest sale · SI-1042",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Waiting for approval",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "Approving submits it in ERPNext and marks those days as leave."
+                }
+              }
+            },
+            {
+              "id": "kHLlt",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Approve leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Approve leave. Sets the Leave Application to Approved and submits it.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Approve leave"
+                }
+              }
+            },
+            {
+              "id": "eiXj3",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Reject leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Reject. Sets the Leave Application to Rejected and submits it.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Reject"
+                }
+              }
+            },
+            {
+              "id": "vce2D",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Open worker",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open the worker's page. Route specification: oDReh.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Open Khaled's page"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ValYO",
+      "x": 18950,
+      "y": 26160,
+      "name": "Arabic / 04 Mobile / Workers 07 Leave request",
+      "context": "Route /workers/leave/:id. Counterpart jCnt2. Approve/Reject shown to HR User/HR Manager and the worker's Leave Approver.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "E5NfVx",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "hXInR",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ZLrLw",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "a4oS3",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "LwK4r",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "di3Y0",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mdm8l",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "fIkAC",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "nEpO6",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CyIjn",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "P9pFcS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: jCnt2. Preserves business, route, input and focused control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "qKlfk",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: xtIVr.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SIWOy",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "gHCJz",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n9gbl2",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "خالد عمر",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Xw3sm",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Privilege Leave · HR-LAP-2026-00004",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "f04UBN",
+              "name": "Contact details",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "26 أكتوبر 2026 – 28 أكتوبر 2026 · 3 أيام\nالسبب: زيارة عائلية\nطُلبت في 17 أكتوبر 2026",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "pvHSH",
+              "type": "ref",
+              "ref": "X9euW",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "qPLQI": {
+                  "content": "3 أيام",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "K2G6X": {
+                  "content": "الأيام المطلوبة"
+                },
+                "qPnyV": {
+                  "content": "11 يوماً",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "mM5Gt": {
+                  "content": "المتبقي بعد الاعتماد"
+                },
+                "hNuBn": {
+                  "content": "14 يوماً",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "T47Qf1": {
+                  "content": "الإجازة المتبقية الآن"
+                }
+              }
+            },
+            {
+              "id": "qZj76",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Latest sale · SI-1042",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "بانتظار الاعتماد",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "الاعتماد يرحّله في ERPNext ويسجّل تلك الأيام إجازة.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "rZxt9",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Approve leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Approve leave. Sets the Leave Application to Approved and submits it.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "اعتماد الإجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "OpHAm",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Reject leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Reject. Sets the Leave Application to Rejected and submits it.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "رفض",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Y20vV",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Open worker",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open the worker's page. Route specification: H37hW.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "فتح صفحة خالد",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
