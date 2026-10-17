@@ -30,6 +30,9 @@ import { shiftLabel } from './shift-view';
 
 type Failure = 'permission' | 'offline' | 'overlap' | 'error';
 
+const sameShift = (a: ShiftFormValue, b: ShiftFormValue) =>
+  a.worker === b.worker && a.shift === b.shift && a.from === b.from && a.until === b.until;
+
 /** "Assign shift": the shift a worker works from a date, as a submitted Shift Assignment. */
 @Component({
   selector: 'app-shift-form',
@@ -125,13 +128,6 @@ type Failure = 'permission' | 'offline' | 'overlap' | 'error';
           {{ checking() ? txt.checking : txt.check }}
         </button>
       } @else {
-        @if (notCreated()) {
-          <app-feedback-card
-            tone="warning"
-            [title]="txt.notCreated.title"
-            [message]="txt.notCreated.message"
-          />
-        }
         <button type="button" class="md-btn md-btn--primary" [disabled]="saving()" (click)="save()">
           {{ saving() ? txt.saving : txt.save }}
         </button>
@@ -167,7 +163,6 @@ export class ShiftFormContainer {
   protected readonly unresolved = signal(false);
   protected readonly checking = signal(false);
   protected readonly pending = signal(false);
-  protected readonly notCreated = signal(false);
   /** The change being made: after a lost answer or a failed resume, applying it again finishes it. */
   private plan: ShiftPlan | null = null;
   /** The new shift is saved but the regular one couldn't be resumed after it. */
@@ -209,7 +204,6 @@ export class ShiftFormContainer {
       checking: t('sale.checking.checkingNow'),
       pending: t('sale.checking.pending'),
       noAccess: block('workers.noAccess'),
-      notCreated: block('workers.shift.form.notCreated'),
       unresolved: block('workers.shift.form.unresolved'),
       incomplete: block('workers.shift.form.incomplete'),
       failed: {
@@ -272,7 +266,6 @@ export class ShiftFormContainer {
     }
     this.saving.set(true);
     this.failed.set(null);
-    this.notCreated.set(false);
     const value: ShiftFormValue = {
       worker: this.worker(),
       shift: this.shift(),
@@ -284,7 +277,13 @@ export class ShiftFormContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      this.plan = await this.api.plan(value);
+      // A plan kept from a failed try still knows the running shifts' old end dates: reuse it for the same change,
+      // and put them back before planning a different one.
+      if (this.plan && !sameShift(this.plan.value, value)) {
+        await this.api.restore(this.plan);
+        this.plan = null;
+      }
+      this.plan ??= await this.api.plan(value);
       await this.api.apply(this.plan, business);
       void this.router.navigate(['/workers', value.worker], { replaceUrl: true });
     } catch (error) {

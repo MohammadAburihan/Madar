@@ -2981,10 +2981,6 @@
             "message": "ERPNext refused it. Check the details and try again."
           }
         },
-        "notCreated": {
-          "title": "The shift wasn't assigned",
-          "message": "Nothing was saved. Check the details and try again."
-        },
         "unresolved": {
           "title": "Saving not yet resolved",
           "message": "The request timed out. Check the result: the change is finished, and nothing is saved twice."

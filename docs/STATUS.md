@@ -294,6 +294,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   before (the hours rule missed night shifts and left old shifts running; concurrent shifts at other hours stay a Desk
   setup); the running shift is put back only when ERPNext itself refuses the new one, never after another error on a
   retry; a lost shift is looked up among active assignments only.
+  Review pass 5 (1 high, 2 medium, 1 low) fixed: ending a running shift goes through `confirmRequest` (a lost answer is
+  unresolved, not "no connection"); the plan, with the running shifts' old end dates, is kept after a failure and reused
+  for the same change, and put back before a different one is planned; any definite refusal (refused, forbidden,
+  signed out) restores them, and a failed restore is reported, not swallowed; the dead "not created" card is gone.
 
 ## End-to-end happy paths: merged (#26)
 

@@ -202,4 +202,28 @@ describe('ShiftApiService', () => {
       ),
     ).rejects.toBeInstanceOf(ShiftIncompleteError);
   });
+
+  it('puts the running shift back on any definite refusal, and says when that fails', async () => {
+    const { postCalls } = fakeErpnext(
+      { 'Shift Assignment': assignments([]) },
+      { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 403 })) },
+    );
+    const plan: ShiftPlan = {
+      value: VALUE,
+      running: [{ name: 'SA-M', shift_type: 'Morning', end_date: null }],
+      resume: [],
+    };
+    await expect(api().apply(plan, BUSINESS)).rejects.toMatchObject({ kind: 'forbidden' });
+    expect(postCalls.at(-1)!.body).toMatchObject({ name: 'SA-M', value: '' });
+    TestBed.resetTestingModule();
+    let calls = 0;
+    fakeErpnext(
+      {},
+      {
+        'frappe.client.set_value': () =>
+          ++calls > 0 ? throwError(() => new HttpErrorResponse({ status: 417 })) : {},
+      },
+    );
+    await expect(api().restore(plan)).rejects.toBeTruthy();
+  });
 });

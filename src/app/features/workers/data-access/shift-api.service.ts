@@ -180,8 +180,8 @@ export class ShiftApiService {
           this.insert(value.worker, value.shift, value.from, value.until, business),
         );
       } catch (error) {
-        // Only ERPNext refusing the new shift proves it doesn't exist; anything else is left for a retry.
-        if (!(error instanceof UnresolvedError) && ErpnextError.from(error).kind === 'server') {
+        // A definite answer (refused, forbidden, signed out) proves it doesn't exist; a lost one is left for a retry.
+        if (!(error instanceof UnresolvedError)) {
           await this.restore(plan);
         }
         throw error;
@@ -209,7 +209,7 @@ export class ShiftApiService {
   /** Puts the running shifts' end dates back, when the new shift was never made. */
   async restore(plan: ShiftPlan): Promise<void> {
     for (const r of plan.running) {
-      await this.setEnd(r.name, r.end_date).catch(() => undefined);
+      await this.setEnd(r.name, r.end_date);
     }
   }
 
@@ -230,7 +230,7 @@ export class ShiftApiService {
 
   private setEnd(name: string, end: string | null) {
     // End date stays editable on a submitted assignment.
-    return firstValueFrom(
+    return confirmRequest(
       this.erpnext.post('frappe.client.set_value', {
         doctype: 'Shift Assignment',
         name,
