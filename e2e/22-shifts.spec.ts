@@ -44,9 +44,30 @@ test.describe('shifts @phone', () => {
     );
     expect(assignment).toMatchObject({ shift_type: 'Evening', docstatus: 1 });
 
+    // A change from a later day ends the current shift the day before, and shows as the next shift.
     await page.getByRole('button', { name: 'Assign shift' }).click();
-    await page.getByLabel('Shift *').selectOption('Evening');
-    await page.getByLabel('From *').fill('2026-10-05');
+    await page.getByLabel('Shift *').selectOption('Morning');
+    await page.getByLabel('From *').fill('2099-01-05');
+    await page.getByRole('button', { name: 'Assign shift' }).click();
+    await expect(page).toHaveURL(new RegExp(`/workers/${id}$`));
+    await expect(
+      page.getByText(named('From', '5 Jan 2099', ':', 'Morning · ', '07:00–15:00')),
+    ).toBeVisible();
+    const assignments = await erp(page).list<{ shift_type: string; end_date: string | null }>(
+      'Shift Assignment',
+      ['shift_type', 'end_date'],
+      [['employee', '=', id]],
+      { order_by: 'start_date asc' },
+    );
+    expect(assignments).toEqual([
+      { shift_type: 'Evening', end_date: '2099-01-04' },
+      { shift_type: 'Morning', end_date: null },
+    ]);
+
+    // One starting the same day as another can't be replaced: Frappe HR refuses the overlap.
+    await page.getByRole('button', { name: 'Assign shift' }).click();
+    await page.getByLabel('Shift *').selectOption('Morning');
+    await page.getByLabel('From *').fill('2099-01-05');
     await page.getByRole('button', { name: 'Assign shift' }).click();
     await expect(page.getByText('The worker already has a shift then')).toBeVisible();
   });

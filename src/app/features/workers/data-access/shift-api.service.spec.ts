@@ -57,11 +57,41 @@ describe('ShiftApiService', () => {
     );
     await expect(api().assign(VALUE, BUSINESS)).rejects.toBeInstanceOf(UnresolvedError);
     expect(await api().find(VALUE)).toBe('SA-1');
-    expect(listCalls[0].query.filters).toEqual([
+    expect(listCalls.at(-1)!.query.filters).toEqual([
       ['employee', '=', 'E1'],
       ['shift_type', '=', 'Morning'],
       ['start_date', '=', '2026-10-19'],
       ['docstatus', '=', 1],
     ]);
+  });
+
+  it('ends the shift worked until now the day before the new one starts', async () => {
+    const { postCalls, listCalls } = fakeErpnext(
+      { 'Shift Assignment': () => [{ name: 'SA-0' }] },
+      { 'frappe.client.insert': () => ({ name: 'SA-1' }) },
+    );
+    await api().assign({ ...VALUE, from: '2026-03-01' }, BUSINESS);
+    expect(listCalls[0].query.filters).toContainEqual(['start_date', '<', '2026-03-01']);
+    expect(postCalls[0]).toEqual({
+      method: 'frappe.client.set_value',
+      body: {
+        doctype: 'Shift Assignment',
+        name: 'SA-0',
+        fieldname: 'end_date',
+        value: '2026-02-28',
+      },
+    });
+    expect(postCalls[1].method).toBe('frappe.client.insert');
+  });
+
+  it("reads the worker's next shift after a day", async () => {
+    fakeErpnext({
+      'Shift Type': () => [{ name: 'Evening', start_time: '13:00:00', end_time: '21:00:00' }],
+      'Shift Assignment': () => [{ shift_type: 'Evening', start_date: '2026-10-26' }],
+    });
+    expect(await api().next('E1', '2026-10-17')).toEqual({
+      shift: { name: 'Evening', start: '13:00', end: '21:00' },
+      from: '2026-10-26',
+    });
   });
 });

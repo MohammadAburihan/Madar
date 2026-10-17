@@ -2950,7 +2950,7 @@
       "assign": "Assign shift",
       "form": {
         "title": "Assign shift",
-        "subtitle": "The shift the worker works from this date; attendance follows it.",
+        "subtitle": "The shift the worker works from this date; the current one ends the day before.",
         "worker": "Worker *",
         "workerError": "Choose the worker.",
         "shift": "Shift *",
@@ -2989,7 +2989,9 @@
           "title": "Saving not yet resolved",
           "message": "The request timed out. The shift may already be assigned. Check before saving again."
         }
-      }
+      },
+      "next": "From {{date}}: {{shift}}",
+      "loadFailed": "The worker's shift couldn't load."
     }
   }
 }

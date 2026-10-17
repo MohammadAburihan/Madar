@@ -61,12 +61,6 @@ const SEARCH_DELAY_MS = 250;
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="txt.subtitle">
         @if (allowed()) {
-          <button type="button" class="md-btn" (click)="leaveRequests()">
-            {{ txt.leaveRequests }}
-          </button>
-          <button type="button" class="md-btn" (click)="markAttendance()">
-            {{ txt.markAttendance }}
-          </button>
           <button type="button" class="md-btn md-btn--primary" (click)="add()">
             {{ txt.addDesktop }}
           </button>
@@ -102,6 +96,9 @@ const SEARCH_DELAY_MS = 250;
               [empty]="emptyText()"
               (opened)="selected.set($event)"
             />
+            <button type="button" class="md-btn" (click)="leaveRequests()">
+              {{ txt.leaveRequests }}
+            </button>
           </div>
           <section class="panel" [attr.aria-label]="txt.title">
             @if (panel(); as p) {
@@ -113,7 +110,15 @@ const SEARCH_DELAY_MS = 250;
               @if (p.recent.length) {
                 <p class="lines muted">{{ p.recent.join('\\n') }}</p>
               }
-              <button type="button" class="md-btn md-btn--primary" (click)="openDetail(p.id)">
+              @if (p.active) {
+                <button type="button" class="md-btn md-btn--primary" (click)="markAttendance()">
+                  {{ txt.markAttendance }}
+                </button>
+                <button type="button" class="md-btn" (click)="requestLeave(p.id)">
+                  {{ txt.requestLeave }}
+                </button>
+              }
+              <button type="button" class="md-btn" (click)="openDetail(p.id)">
                 {{ txt.openDetail }}
               </button>
             } @else if (panelFailed()) {
@@ -198,6 +203,7 @@ export class WorkersContainer {
       add: t('workers.add'),
       addDesktop: t('workers.addDesktop'),
       markAttendance: t('workers.markAttendance'),
+      requestLeave: t('workers.requestLeave'),
       leaveRequests: t('workers.leaveRequests'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
@@ -260,6 +266,7 @@ export class WorkersContainer {
       name: detail.name,
       lines: [workerSubtitle(detail, tr), workerLines(detail, language, tr)].join('\n'),
       card: view.card,
+      active: detail.status === 'Active',
       recent: view.recent,
     };
   });
@@ -338,6 +345,10 @@ export class WorkersContainer {
 
   protected markAttendance(): void {
     void this.router.navigate(['/workers/attendance']);
+  }
+
+  protected requestLeave(worker: string): void {
+    void this.router.navigate(['/workers/leave/new'], { queryParams: { worker } });
   }
 
   protected leaveRequests(): void {

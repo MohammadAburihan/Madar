@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { toIsoDate } from '../../../core/format/format';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
@@ -23,7 +24,7 @@ import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ShiftApiService } from '../data-access/shift-api.service';
 import { WorkersApiService } from '../data-access/workers-api.service';
 import { ShiftType, WorkerDetail } from '../data-access/workers.models';
-import { shiftLine } from './shift-view';
+import { nextShiftLine, shiftLine } from './shift-view';
 import { workerLines, workerSubtitle, workerView } from './workers-view';
 
 /** One worker: how to reach them, their month at a glance, latest pay, and what to do next. */
@@ -62,7 +63,7 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
       <app-page-heading [title]="v.name" [subtitle]="v.subtitle" />
       <p class="lines">{{ v.lines }}</p>
       @if (shiftText(); as s) {
-        <p class="muted">{{ s }}</p>
+        <p class="lines muted">{{ s }}</p>
       }
       @if (v.totals.length) {
         <app-totals-card density="compact" [rows]="v.totals" />
@@ -123,14 +124,24 @@ export class WorkerContainer {
 
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
   private readonly detail = signal<WorkerDetail | null>(null);
-  /** Undefined when it couldn't be read. */
-  private readonly shift = signal<ShiftType | null | undefined>(undefined);
+  /** The shift today and the next one; undefined when the role can't read them, null when the read failed. */
+  private readonly shift = signal<
+    [ShiftType | null, { shift: ShiftType; from: string } | null] | null | undefined
+  >(undefined);
 
   protected readonly shiftText = computed(() => {
     const shift = this.shift();
-    return shift === undefined || this.detail()?.status !== 'Active'
-      ? null
-      : shiftLine(shift, this.i18n.tr());
+    const tr = this.i18n.tr();
+    if (shift === undefined || this.detail()?.status !== 'Active') {
+      return null;
+    }
+    if (shift === null) {
+      return tr.t('workers.shift.loadFailed');
+    }
+    const [current, next] = shift;
+    return [shiftLine(current, tr), next ? nextShiftLine(next, this.i18n.language(), tr) : null]
+      .filter(Boolean)
+      .join('\n');
   });
   protected readonly failed = signal(false);
   private run = 0;
@@ -194,8 +205,10 @@ export class WorkerContainer {
       const today = toIsoDate(this.clock.now());
       const [detail, shift] = await Promise.all([
         this.api.worker(id, business, today),
-        // Shifts are optional on the page: unreadable or failed, the line is left out.
-        this.shifts.current(id, today).catch(() => undefined),
+        // A role that can't read shifts sees no line; any other failure says the shift couldn't load.
+        Promise.all([this.shifts.current(id, today), this.shifts.next(id, today)]).catch(
+          (error: unknown) => (ErpnextError.from(error).kind === 'forbidden' ? undefined : null),
+        ),
       ]);
       if (run === this.run) {
         this.shift.set(shift);

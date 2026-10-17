@@ -274,6 +274,12 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   themselves are set up in ERPNext. Design: Workers 08 Assign shift (mobile EN/AR), the shift line on Workers 02. e2e:
   assign from a worker's page, checked in ERPNext and shown on the page; an overlapping one refused; Arabic; the seeded
   shift on the desktop worker page.
+  Review pass 1 (1 medium, 2 low) fixed: assigning a shift ends the one worked until then the day before (end date is
+  editable after submit), so a shift can be changed without Desk; the worker's page shows the next shift ("From 26 Oct
+  2026: Evening …"), so a future change is visible after saving; a failed shift read says so, only a 403 hides it.
+  Design sync check (asked for on 17 Oct): desktop Workers now matches its mock (Mark attendance and Request leave in the
+  panel, Open worker after them, Leave requests under the table; the heading keeps only + Add worker), and the mocks
+  gained the shift lines and the new subtitle.
 
 ## End-to-end happy paths: merged (#26)
 
