@@ -182,7 +182,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   when read, so a bad or script entry can't break the page or be opened; in the native apps the page says other
   businesses open in a browser (the apps' connection flow is still open). Pass 2 (lows): Cancel clears the form; this
   business's own host is refused whatever scheme is typed; a refused storage write keeps the list for the visit.
-- **Connect your business** (this PR): decided 16 Oct 2026, on the web and in the apps the user types the business's
+- **Connect your business**: merged (#43). decided 16 Oct 2026, on the web and in the apps the user types the business's
   Madar address first (`/connect`, as on the mock). The web confirms it is this site's address, or goes to the other
   business's address (which confirms itself there); the apps check a Madar answers (`/api/method/ping`), keep the
   address and send their requests to it (the business's Madar proxies `/api` to its ERPNext). Until connected, every
@@ -200,7 +200,14 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   signed-in user to Connect; Change business keeps sign-in's return page. Pass 3 (4 low): an unreachable ERPNext never records a
   connection; switching business drops the old business's return page; the previous name is cleared only when another
   address was stored; Change business waits while signing in.
-- Next: step 6.
+- **+ New** (this PR): Home's "+ New" opens **Create something** (`/new`, the New action menu mock): every task the
+  role may start (Quick sale, Create quotation, Buy from supplier, Receive payment, Pay supplier, Receive goods,
+  Record expense, Transfer stock, Supply a project, New project, Add contact), each opening its task. The mock gained
+  the four actions built since (Madar.pen, en and ar). Home's salesperson shortcuts "Customers" and "Catalog" now open
+  Contacts and Inventory instead of a placeholder. e2e: owner's menu starts a quotation; a warehouse worker's, in
+  Arabic, has only their tasks.
+- Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
+  Advanced reports and approvals; then step 6.
 
 ## End-to-end happy paths: merged (#26)
 
