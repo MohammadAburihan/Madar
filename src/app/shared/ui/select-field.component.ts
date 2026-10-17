@@ -12,7 +12,11 @@ export interface SelectOption {
     <label class="field">
       <span class="label">{{ label() }}</span>
       <span class="control">
-        <select [value]="value() ?? ''" (change)="value.set($any($event.target).value || null)">
+        <select
+          [value]="value() ?? ''"
+          [disabled]="disabled()"
+          (change)="value.set($any($event.target).value || null)"
+        >
           @if (placeholder()) {
             <option value="" disabled [selected]="!value()">{{ placeholder() }}</option>
           }
@@ -59,6 +63,11 @@ export interface SelectOption {
       cursor: pointer;
     }
 
+    select:disabled {
+      color: var(--md-muted);
+      cursor: default;
+    }
+
     .arrow {
       position: absolute;
       inset-inline-end: 12px;
@@ -73,4 +82,6 @@ export class SelectFieldComponent {
   readonly options = input.required<readonly SelectOption[]>();
   readonly value = model<string | null>(null);
   readonly placeholder = input<string | null>(null);
+  /** Shown but not changeable, e.g. while a save is unresolved. */
+  readonly disabled = input(false);
 }

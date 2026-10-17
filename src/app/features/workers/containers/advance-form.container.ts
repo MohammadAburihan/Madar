@@ -75,7 +75,8 @@ type Failure = 'permission' | 'offline' | 'error';
         [options]="workerOptions()"
         [placeholder]="txt.worker"
         [value]="worker() || null"
-        (valueChange)="!locked() && worker.set($event ?? '')"
+        [disabled]="locked()"
+        (valueChange)="worker.set($event ?? '')"
       />
       @if (errors?.worker) {
         <p class="muted" role="alert">{{ txt.workerError }}</p>
@@ -94,7 +95,8 @@ type Failure = 'permission' | 'offline' | 'error';
         [label]="txt.account"
         [options]="accountOptions()"
         [value]="mode() || null"
-        (valueChange)="!locked() && mode.set($event ?? '')"
+        [disabled]="unresolved() || saving()"
+        (valueChange)="mode.set($event ?? '')"
       />
       <app-text-field
         [label]="txt.purpose"
@@ -124,10 +126,24 @@ type Failure = 'permission' | 'offline' | 'error';
           [title]="txt.unresolved.title"
           [message]="txt.unresolved.message"
         />
+        @if (pending()) {
+          <p class="muted" role="status">{{ txt.pending }}</p>
+        }
       } @else if (recorded()) {
         <p class="muted">{{ txt.recordedNote }}</p>
+      } @else if (notCreated()) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.notCreated.title"
+          [message]="txt.notCreated.message"
+        />
       }
-      <button type="button" class="md-btn md-btn--primary" [disabled]="saving()" (click)="give()">
+      <button
+        type="button"
+        class="md-btn md-btn--primary"
+        [disabled]="saving()"
+        (click)="unresolved() ? check() : give()"
+      >
         {{
           saving() ? txt.saving : unresolved() ? txt.check : recorded() ? txt.payAgain : payLabel()
         }}
@@ -171,6 +187,8 @@ export class AdvanceFormContainer {
   /** The advance exists in ERPNext: its details can no longer change, only its payment be tried again. */
   protected readonly recorded = signal(false);
   private readonly reference = newReference('ADV');
+  protected readonly pending = signal(false);
+  protected readonly notCreated = signal(false);
 
   private readonly value = computed(() => Number(this.amount().replace(/,/g, '')));
 
@@ -204,6 +222,8 @@ export class AdvanceFormContainer {
       saving: f('saving'),
       check: f('check'),
       payAgain: f('payAgain'),
+      pending: t('sale.checking.pending'),
+      notCreated: block('workers.advance.form.notCreated'),
       recordedNote: f('recordedNote'),
       optionsFailed: f('optionsFailed'),
       loading: t('workers.loading'),
@@ -281,6 +301,33 @@ export class AdvanceFormContainer {
   }
 
   /** Records and pays the advance; after a lost answer the same call checks and finishes it. */
+  /**
+   * After a lost answer: looks the reference up, never records or pays. Done goes to the worker; recorded but not
+   * paid allows paying again; nothing found allows giving again (the same reference keeps it from doubling).
+   */
+  protected async check(): Promise<void> {
+    if (this.saving()) {
+      return;
+    }
+    this.saving.set(true);
+    this.pending.set(false);
+    try {
+      const { advance, paid } = await this.api.status(this.reference);
+      this.unresolved.set(false);
+      if (advance && paid) {
+        void this.router.navigate(['/workers', this.worker()], { replaceUrl: true });
+      } else if (advance) {
+        this.recorded.set(true);
+      } else {
+        this.notCreated.set(true);
+      }
+    } catch {
+      this.pending.set(true);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
   protected async give(): Promise<void> {
     this.showErrors.set(true);
     const account = this.accounts().find((a) => a.mode === this.mode());
@@ -289,6 +336,7 @@ export class AdvanceFormContainer {
     }
     this.saving.set(true);
     this.failed.set(null);
+    this.notCreated.set(false);
     try {
       const business = await this.business.ensure();
       if (!business) {

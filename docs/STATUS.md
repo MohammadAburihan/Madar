@@ -300,7 +300,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   answer and "Pay the advance again" after a failed payment are the same call; once recorded, the details are locked.
   The worker's page then shows the advance to repay. The seed makes ERPNext's Employee Advances account receivable (as
   Frappe HR requires) and pays Khaled ILS 300. Design: Workers 09 Give advance (mobile EN/AR). e2e: an advance given
-  from a worker's page, checked in ERPNext and shown as owed; the form in Arabic; closed to a salesperson. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  from a worker's page, checked in ERPNext and shown as owed; the form in Arabic; closed to a salesperson.
+  Review pass 1 (1 high, 1 medium) fixed: "Check result" only looks the reference up (done, recorded but not paid, or
+  not given), never records or pays; locked selects are disabled (a new `disabled` input on the shared select) rather
+  than ignoring changes, and the paying account stays changeable after a failed payment. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

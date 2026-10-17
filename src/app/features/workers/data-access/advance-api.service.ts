@@ -69,6 +69,18 @@ export class AdvanceApiService {
     }
   }
 
+  /** What a lost answer left behind, found by reference only: nothing is recorded or paid here. */
+  async status(reference: string): Promise<{ advance: string | null; paid: boolean }> {
+    const advance = await this.findAdvance(reference);
+    if (!advance) {
+      return { advance: null, paid: false };
+    }
+    return {
+      advance: advance.name,
+      paid: advance.status === 'Paid' || !!(await this.findPayment(reference)),
+    };
+  }
+
   private async record(
     value: AdvanceFormValue,
     reference: string,

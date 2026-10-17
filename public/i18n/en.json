@@ -3052,6 +3052,10 @@
             "title": "The advance wasn't paid",
             "message": "ERPNext refused it. Check the account and amount, and try again."
           }
+        },
+        "notCreated": {
+          "title": "The advance wasn't given",
+          "message": "Nothing was recorded. Check the details and pay again."
         }
       },
       "give": "Give an advance"
