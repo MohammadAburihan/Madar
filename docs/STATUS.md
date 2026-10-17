@@ -228,7 +228,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   The mock's Mark attendance and Request leave buttons come with H2 and H3.
   Review pass 1 (1 medium, 2 low) fixed: editing keeps ERPNext's first, middle and last names unless the name changed
   (then the middle name is cleared so ERPNext doesn't add it back); today's attendance reads every record of the day
-  (one per shift) and a day counts once; advances in another currency are converted to the company's.
+  (one per shift) and a day counts once; advances in another currency are converted to the company's (by what was paid in it, `base_paid_amount`: Employee Advance has no exchange rate field, and an unknown field fails the whole read).
 
 ## End-to-end happy paths: merged (#26)
 

@@ -139,7 +139,7 @@ export class WorkersApiService {
         ['attendance_date', '<=', today],
       ]).catch(forbiddenAsNull),
       this.leaveLeft(id, today).catch(forbiddenAsNull),
-      this.advanceToRepay(id, business.currency).catch(forbiddenAsNull),
+      this.advanceToRepay(id).catch(forbiddenAsNull),
       this.latestPay(id).catch(forbiddenAsNull),
       // Approved leave is marked ahead for every day it covers; recent means up to today.
       this.attendance(id, [['attendance_date', '<=', today]], RECENT_LIMIT).catch(forbiddenAsNull),
@@ -351,15 +351,14 @@ export class WorkersApiService {
   }
 
   /** What the worker still owes back from advances paid to them, in the company currency. */
-  private async advanceToRepay(id: string, currency: string): Promise<number> {
+  private async advanceToRepay(id: string): Promise<number> {
     const rows = await this.erpnext.listAll<{
       paid_amount: number;
       claimed_amount: number;
       return_amount: number;
-      currency: string;
-      exchange_rate: number;
+      base_paid_amount: number;
     }>('Employee Advance', {
-      fields: ['paid_amount', 'claimed_amount', 'return_amount', 'currency', 'exchange_rate'],
+      fields: ['paid_amount', 'claimed_amount', 'return_amount', 'base_paid_amount'],
       filters: [
         ['employee', '=', id],
         ['docstatus', '=', 1],
@@ -370,10 +369,9 @@ export class WorkersApiService {
         0,
         Number(r.paid_amount || 0) - Number(r.claimed_amount || 0) - Number(r.return_amount || 0),
       );
-      // Advances are kept in the advance's currency; the rate converts them to the company's.
-      return (
-        sum + left * (r.currency && r.currency !== currency ? Number(r.exchange_rate) || 1 : 1)
-      );
+      // Amounts are in the advance's currency; what was paid in the company's gives the rate.
+      const paid = Number(r.paid_amount || 0);
+      return sum + (paid ? left * (Number(r.base_paid_amount || paid) / paid) : 0);
     }, 0);
   }
 
