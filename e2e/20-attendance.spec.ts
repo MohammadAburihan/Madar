@@ -105,7 +105,8 @@ test.describe('attendance @phone', () => {
 test('starts attendance from the workers workspace @desktop', async ({ page }) => {
   await signIn(page, 'owner');
   await page.goto('/workers');
-  await page.getByRole('button', { name: 'Mark attendance' }).click();
+  // Under the table, whoever is selected (the panel has its own).
+  await page.locator('.actions').getByRole('button', { name: 'Mark attendance' }).click();
   await expectHeading(page, 'Mark attendance');
   await expect(
     page.getByRole('group', { name: /Rana Saleh/ }).or(page.getByLabel(/Rana Saleh/)),

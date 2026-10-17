@@ -486,6 +486,25 @@ if (!(await list('Leave Application', { employee: employee.Rana })).length) {
   );
 }
 
+// Shifts for the Assign shift mock: Khaled works mornings.
+for (const [name, start, end] of [
+  ['Morning', '07:00:00', '15:00:00'],
+  ['Evening', '13:00:00', '21:00:00'],
+]) {
+  await ensure('Shift Type', { name }, { __newname: name, name, start_time: start, end_time: end });
+}
+if (!(await list('Shift Assignment', { employee: employee.Khaled, docstatus: 1 })).length) {
+  await insert({
+    doctype: 'Shift Assignment',
+    employee: employee.Khaled,
+    shift_type: 'Morning',
+    start_date: `${today.getFullYear()}-01-01`,
+    company: COMPANY,
+    status: 'Active',
+    docstatus: 1,
+  });
+}
+
 const users = [
   {
     email: 'rehan@rehan.example',

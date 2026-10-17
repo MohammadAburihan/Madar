@@ -250,7 +250,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
   Review pass 3 (3 low) fixed: a refused save names the workers ERPNext refused (often a missing holiday list); a 403
   checks for an expired session; the day can't be changed before the site's today is known.
-- **H3 — Leave and approvals** (this PR): **Leave requests** (`/workers/leave`, from Workers) lists open requests
+- **H3 — Leave and approvals**: merged (#48). **Leave requests** (`/workers/leave`, from Workers) lists open requests
   waiting for approval (oldest first) and decided ones (newest first), searchable by worker or leave type. **Request
   leave** (`/workers/leave/new`, from a worker's page, which preselects them, the list and "+ New") offers the worker's
   allocated leave types with days left (one allocated type is chosen) and unpaid types, counts the days with Frappe HR
@@ -266,6 +266,33 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   can be decided; a 403 checks for an expired session.
   Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
   types at once.
+- **H4 — Shifts**: merged (#49). a worker's page shows their shift on the day ("Shift: Morning · 07:00–15:00", or none
+  assigned) and the next one already saved ("From 26 Oct 2026: Evening …"). **Assign shift** (`/workers/shift/new`, from a
+  worker's page or desktop panel, which preselect them, and "+ New") picks one of the business's Shift Types, a start and
+  an optional end, and submits a Frappe HR Shift Assignment in one write. When the worker has a shift running over the new
+  start, the form says so and offers **End {shift} on {day before}** first (one `set_value` of its end date, which stays
+  editable after submit and is harmless to repeat); Assign shows once nothing runs over the start. A lost answer is
+  looked up among active assignments by worker, shift and start, as Shift Assignment has no field for a reference.
+  Overlaps Frappe HR refuses get their own message. Seed: Morning and Evening shifts, Khaled on mornings; shift types
+  are set up in ERPNext. Design: Workers 08 Assign shift and 08b (a shift running over the start), the shift lines on
+  Workers 02, the desktop workspace (tabs, Mark attendance and Leave requests above the table, Mark attendance, Request
+  leave, Assign shift and Open worker in the panel). e2e: assign from a worker's page (checked in ERPNext, shown on the
+  page), end the running shift then assign a later one (both checked in ERPNext, the next shift shown), a same-day one
+  refused; Arabic; the seeded shift on the desktop worker page.
+  Review: passes 1–5 found the one-save "end the old shift and add the new one" too fragile (partial failures, lost
+  answers, temporary shifts, concurrent shifts); after pass 6 it became the two explicit, repeatable steps above.
+  Review pass 7 (1 high, 1 medium, 2 low) fixed: a temporary shift over a running one ends it the day before and, after
+  saving, reopens the form prefilled to put it back the day after (to its old end), saying so; a shift starting on or
+  after the new start is shown and Save stays hidden until Until ends the new one before it; Save waits for the worker's
+  shifts to load (with an error and retry if they can't); a lost answer when ending a shift says so and that repeating
+  it is harmless. Deferred: concurrent shifts at other hours stay a Desk setup; leaving the form before putting the
+  regular shift back leaves that to the user.
+  Review pass 8 (2 medium, 1 low) fixed: the shift the form ended is tied to that worker and start, and remembered before
+  the write (a lost answer may have ended it), so the put-back form opens for the right worker only; Save is hidden from
+  the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain.
+  Pass 9: only low. Deferred: a shift starting on the chosen From can't be removed in Madar (change it in Desk); the
+  put-back form remembers one ended shift, so ending two concurrent ones (a Desk setting) brings back only the last. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
 

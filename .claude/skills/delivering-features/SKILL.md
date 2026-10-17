@@ -15,7 +15,7 @@ clean" never ends the loop on its own. Stop when further passes stop finding thi
 
 1. **Build** on a feature branch from `development`. First read the `review-lesson` memories in `MEMORY.md`
    that touch the area you're changing, and build so those findings can't recur. Follow CLAUDE.md
-   (container/presenter, specs for every presenter, en + ar, checked against the mocks). Make the same screen changes in `docs/Madar.pen` through the Pencil MCP tools, in English and Arabic, and ask the user to save it in Pencil so it can be committed. Check it end to end on the test site
+   (container/presenter, specs for every presenter, en + ar, checked against the mocks). Design first: make every screen change in `docs/Madar.pen` through the Pencil MCP tools, in English and Arabic, before or with the code, and ask the user to save it in Pencil so it can be committed. Before opening the PR, and again after each review fix that touches a screen, run a design sync check: screenshot every changed screen at 390 and 1440 px in both languages and compare each with its frame. Then fix the `.pen` (or the code) until labels, controls, their order and states match, and list any intended difference in the PR. Check it end to end on the test site
    (`scripts/dev-test-site.sh`), never on `frontend`.
 2. **Add e2e tests** in `e2e/` for every happy path the feature adds or changes, at the widths it supports (`@phone`,
    `@desktop`), with at least one Arabic path when it has new screens. Assert what the screen shows, not only that it

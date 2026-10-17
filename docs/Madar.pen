@@ -109028,7 +109028,7 @@
               "fill": "$md-ink",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "059-000-0177\nField team · Joined 3 Mar 2025",
+              "content": "059-000-0177\nField team · Joined 3 Mar 2025\nShift: Morning · 07:00–15:00\nFrom 26 Oct 2026: Evening · 13:00–21:00",
               "lineHeight": 1.4,
               "fontFamily": "$md-font",
               "fontSize": 16,
@@ -110139,7 +110139,7 @@
               "fill": "$md-ink",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "059-000-0177\nفريق الحقل · انضم في 3 مارس 2025",
+              "content": "059-000-0177\nفريق الحقل · انضم في 3 مارس 2025\nالوردية: صباحية · 07:00–15:00\nمن 26 أكتوبر 2026: مسائية · 13:00–21:00",
               "lineHeight": 1.5,
               "textAlign": "right",
               "fontFamily": "$md-arabic",
@@ -110834,9 +110834,9 @@
                       "id": "rOqPV",
                       "type": "ref",
                       "ref": "wk3Ko",
-                      "name": "+ Add contact",
+                      "name": "+ Add worker",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: + Add contact. Route specification: ylrkE. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host d95Ab and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "context": "Role: button. Accessible name: Add worker. Route specification: h5hAM (/workers/new).",
                       "descendants": {
                         "rPCdT": {
                           "content": "+ Add worker"
@@ -110890,6 +110890,89 @@
                           "content": "Search name, job or phone"
                         }
                       }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "I0rmuj",
+                      "name": "Worker status tabs",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "G7S0m",
+                          "type": "ref",
+                          "ref": "OB83Y",
+                          "name": "Active",
+                          "fill": "$md-tint",
+                          "height": "fit_content",
+                          "justifyContent": "center",
+                          "padding": [
+                            6,
+                            10
+                          ],
+                          "context": "Role: tab, selected. Accessible name: Active. Workers with status Active.",
+                          "descendants": {
+                            "ynIiO": {
+                              "content": "Active",
+                              "fill": "$md-primary"
+                            }
+                          }
+                        },
+                        {
+                          "id": "f8TImr",
+                          "type": "ref",
+                          "ref": "OB83Y",
+                          "name": "Left",
+                          "fill": "$md-tint",
+                          "height": 48,
+                          "justifyContent": "center",
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "context": "Role: tab. Accessible name: Left. Workers with status Left; their history stays readable.",
+                          "descendants": {
+                            "ynIiO": {
+                              "content": "Left",
+                              "fill": "$md-primary"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XH0ZE",
+                      "name": "Workspace actions",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "o8HvJ",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Mark attendance",
+                          "context": "Role: button. Accessible name: Mark attendance. Route specification: B9L1Dy (/workers/attendance).",
+                          "width": 240,
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Mark attendance"
+                            }
+                          }
+                        },
+                        {
+                          "id": "cpS6y",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Leave requests",
+                          "width": 240,
+                          "context": "Role: button. Accessible name: Leave requests. Route specification: CEskZ (/workers/leave).",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Leave requests"
+                            }
+                          }
+                        }
+                      ]
                     },
                     {
                       "type": "frame",
@@ -111175,32 +111258,6 @@
                       }
                     },
                     {
-                      "id": "N6Zrjt",
-                      "type": "ref",
-                      "ref": "wk3Ko",
-                      "name": "Receive payment",
-                      "width": "fill_container",
-                      "context": "Role: button. Accessible name: Receive payment. Route specification: K0MB7. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host d95Ab and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "rPCdT": {
-                          "content": "Mark attendance"
-                        }
-                      }
-                    },
-                    {
-                      "id": "GA00i",
-                      "type": "ref",
-                      "ref": "Ab7yc",
-                      "name": "Sell to Lina",
-                      "width": "fill_container",
-                      "context": "Role: button. Accessible name: Sell to Lina. Route specification: j792NO. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host d95Ab and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "JgY9L": {
-                          "content": "Request leave"
-                        }
-                      }
-                    },
-                    {
                       "type": "text",
                       "id": "T8c7d",
                       "name": "History",
@@ -111212,6 +111269,58 @@
                       "fontFamily": "$md-font",
                       "fontSize": 15,
                       "fontWeight": "normal"
+                    },
+                    {
+                      "id": "N6Zrjt",
+                      "type": "ref",
+                      "ref": "wk3Ko",
+                      "name": "Mark attendance",
+                      "width": "fill_container",
+                      "context": "Role: button. Accessible name: Mark attendance. Route specification: B9L1Dy (/workers/attendance).",
+                      "descendants": {
+                        "rPCdT": {
+                          "content": "Mark attendance"
+                        }
+                      }
+                    },
+                    {
+                      "id": "GA00i",
+                      "type": "ref",
+                      "ref": "Ab7yc",
+                      "name": "Request leave",
+                      "width": "fill_container",
+                      "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new?worker=:id).",
+                      "descendants": {
+                        "JgY9L": {
+                          "content": "Request leave"
+                        }
+                      }
+                    },
+                    {
+                      "id": "gr8FN",
+                      "type": "ref",
+                      "ref": "Ab7yc",
+                      "name": "Assign shift",
+                      "context": "Role: button. Accessible name: Assign shift. Route specification: J1K76u (/workers/shift/new?worker=:id).",
+                      "width": "fill_container",
+                      "descendants": {
+                        "JgY9L": {
+                          "content": "Assign shift"
+                        }
+                      }
+                    },
+                    {
+                      "id": "fFgK3",
+                      "type": "ref",
+                      "ref": "Ab7yc",
+                      "name": "Open worker",
+                      "context": "Role: button. Accessible name: Open worker. Route specification: oDReh (/workers/:id).",
+                      "width": "fill_container",
+                      "descendants": {
+                        "JgY9L": {
+                          "content": "Open worker"
+                        }
+                      }
                     }
                   ]
                 }
@@ -111270,9 +111379,9 @@
                       "id": "poYMt",
                       "type": "ref",
                       "ref": "V1NTE",
-                      "name": "+ Add contact",
+                      "name": "+ Add worker",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: + إضافة جهة اتصال. Route specification: WpA39. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host OsP1D and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "context": "Role: button. Accessible name: إضافة عامل. Route specification: YNLq6.",
                       "descendants": {
                         "c6rXZg": {
                           "content": "+ إضافة عامل",
@@ -111409,12 +111518,26 @@
                       }
                     },
                     {
+                      "type": "text",
+                      "id": "yp85R",
+                      "name": "History",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "17 أكتوبر · حاضر · 07:02\n16 أكتوبر · حاضر · 07:10",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
                       "id": "sHyov",
                       "type": "ref",
                       "ref": "V1NTE",
-                      "name": "Receive payment",
+                      "name": "Mark attendance",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: استلام دفعة. Route specification: ViEoW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host OsP1D and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "context": "Role: button. Accessible name: تسجيل الحضور. Route specification: W6xF3V.",
                       "descendants": {
                         "c6rXZg": {
                           "content": "تسجيل الحضور",
@@ -111428,9 +111551,9 @@
                       "id": "DJ3Xy",
                       "type": "ref",
                       "ref": "S1PTe",
-                      "name": "Sell to Lina",
+                      "name": "Request leave",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: البيع إلى لينا. Route specification: pXJRK. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host OsP1D and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "context": "Role: button. Accessible name: طلب إجازة. Route specification: X4z11j.",
                       "descendants": {
                         "yHiIx": {
                           "content": "طلب إجازة",
@@ -111441,18 +111564,36 @@
                       }
                     },
                     {
-                      "type": "text",
-                      "id": "yp85R",
-                      "name": "History",
-                      "fill": "$md-muted",
-                      "textGrowth": "fixed-width",
+                      "id": "MLmdo",
+                      "type": "ref",
+                      "ref": "S1PTe",
+                      "name": "Assign shift",
+                      "context": "Role: button. Accessible name: تعيين وردية. Route specification: w4kPH9.",
                       "width": "fill_container",
-                      "content": "17 أكتوبر · حاضر · 07:02\n16 أكتوبر · حاضر · 07:10",
-                      "lineHeight": 1.5,
-                      "textAlign": "right",
-                      "fontFamily": "$md-arabic",
-                      "fontSize": 15,
-                      "fontWeight": "normal"
+                      "descendants": {
+                        "yHiIx": {
+                          "content": "تعيين وردية",
+                          "fontFamily": "$md-arabic",
+                          "lineHeight": 1.5,
+                          "textAlign": "right"
+                        }
+                      }
+                    },
+                    {
+                      "id": "E5Ld2",
+                      "type": "ref",
+                      "ref": "S1PTe",
+                      "name": "Open worker",
+                      "context": "Role: button. Accessible name: فتح العامل. Route specification: H37hW.",
+                      "width": "fill_container",
+                      "descendants": {
+                        "yHiIx": {
+                          "content": "فتح العامل",
+                          "fontFamily": "$md-arabic",
+                          "lineHeight": 1.5,
+                          "textAlign": "right"
+                        }
+                      }
                     }
                   ]
                 },
@@ -111478,6 +111619,104 @@
                           "content": "البحث بالاسم أو الوظيفة أو الهاتف"
                         }
                       }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U3NPk",
+                      "name": "Worker status tabs",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "PIgYJ",
+                          "type": "ref",
+                          "ref": "SxuzC",
+                          "name": "Left",
+                          "fill": "$md-tint",
+                          "height": 48,
+                          "justifyContent": "center",
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "context": "Role: tab. Accessible name: غادروا. Workers with status Left; their history stays readable.",
+                          "descendants": {
+                            "OOgtT": {
+                              "content": "غادروا",
+                              "fill": "$md-primary",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Vru3K",
+                          "type": "ref",
+                          "ref": "SxuzC",
+                          "name": "Active",
+                          "fill": "$md-tint",
+                          "height": "fit_content",
+                          "justifyContent": "center",
+                          "padding": [
+                            6,
+                            10
+                          ],
+                          "context": "Role: tab, selected. Accessible name: على رأس العمل. Workers with status Active.",
+                          "descendants": {
+                            "OOgtT": {
+                              "content": "على رأس العمل",
+                              "fill": "$md-primary",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oPu4t",
+                      "name": "Workspace actions",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "QLssp",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Leave requests",
+                          "width": 240,
+                          "context": "Role: button. Accessible name: طلبات الإجازة. Route specification: xtIVr.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "طلبات الإجازة",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "AYneJ",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Mark attendance",
+                          "context": "Role: button. Accessible name: تسجيل الحضور. Route specification: W6xF3V.",
+                          "width": 240,
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "تسجيل الحضور",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        }
+                      ]
                     },
                     {
                       "type": "frame",
@@ -117729,6 +117968,637 @@
               "descendants": {
                 "c6rXZg": {
                   "content": "حفظ الراتب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kJAp0",
+      "x": 7690,
+      "y": 26960,
+      "name": "04 Mobile / Workers 08b Assign shift · end current",
+      "context": "State of J1K76u (/workers/shift/new) when the worker has a shift running over the new start. Counterpart VopT2.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "pkY5H",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Br1SH",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "OO6au",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HKvY9",
+          "name": "Shift assignment / English",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "j2ZfTa",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "E5KVFs",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wnKnI",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "p28OF",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "bc6XH",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "FIBJ2",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: w4kPH9.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "nSeSI",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: oDReh (the worker's page).",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "IxALg",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "hFnyc",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "rST3y",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Assign shift",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "l2JjP0",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "The shift the worker works from this date; attendance follows it.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "yUPqU",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Worker.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Worker *"
+                },
+                "sedCr": {
+                  "content": "Khaled Omar ▾"
+                }
+              }
+            },
+            {
+              "id": "igOAS",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Shift *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Shift.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Shift *"
+                },
+                "sedCr": {
+                  "content": "Morning · 07:00–15:00 ▾"
+                }
+              }
+            },
+            {
+              "id": "nGDE1",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "From *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: From.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "From *"
+                },
+                "sedCr": {
+                  "content": "19 Oct 2026"
+                }
+              }
+            },
+            {
+              "id": "FpTsZ",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Until",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: Until.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Until"
+                },
+                "sedCr": {
+                  "content": "Leave empty to keep it"
+                }
+              }
+            },
+            {
+              "id": "Go3Su",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Running shift",
+              "width": "fill_container",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Khaled Omar works Morning · 07:00–15:00 until further notice"
+                },
+                "RKM9S": {
+                  "content": "A new shift can't start over it. End it the day before first."
+                }
+              }
+            },
+            {
+              "id": "Yg7lJ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "End running shift",
+              "context": "Role: button. Accessible name: End Morning on 18 Oct 2026. Sets the running shift's end date (editable after submit); Assign shift shows once nothing runs over the new start.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "End Morning on 18 Oct 2026"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "VopT2",
+      "x": 18400,
+      "y": 27560,
+      "name": "Arabic / 04 Mobile / Workers 08b Assign shift · end current",
+      "context": "State of w4kPH9 when a shift runs over the new start. Counterpart kJAp0.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "ylrkE",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "Z3l4N",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "eqcqh",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "QFg6Z",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Axdz9",
+          "name": "Shift assignment / Arabic",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "j2JRP",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hpgQG",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "S2drS",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "J4qesY",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "kfjVR",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "GIU4l",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: change language. Route specification: J1K76u.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "gSVZr",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: H37hW (the worker's page).",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XFs4x",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "Yc6pL",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "pVYZt",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تعيين وردية",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "icbw9",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الوردية التي يعمل بها العامل من هذا التاريخ، ويتبعها الحضور.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "TBqVV",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Worker *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: العامل.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "العامل *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "خالد عمر ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "wrPgx",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Shift *",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: الوردية.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الوردية *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "صباحية · 07:00–15:00 ▾",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "j9tnCR",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "From *",
+              "context": "Role: textbox or combobox. Accessible name: من.",
+              "width": "fill_container",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "من *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "19 أكتوبر 2026",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Z8aVzu",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Until",
+              "width": "fill_container",
+              "context": "Role: textbox or combobox. Accessible name: حتى.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "حتى",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "اتركه فارغاً للاستمرار",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "E0bFNa",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Running shift",
+              "width": "fill_container",
+              "descendants": {
+                "v5EFM": {
+                  "content": "خالد عمر يعمل وردية صباحية · 07:00–15:00 حتى إشعار آخر"
+                },
+                "CZQQN": {
+                  "content": "لا يمكن أن تبدأ وردية جديدة فوقها. أنهِها في اليوم السابق أولاً."
+                }
+              }
+            },
+            {
+              "id": "d4teFh",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "End running shift",
+              "context": "Role: button. Accessible name: End Morning on 18 Oct 2026. Sets the running shift's end date (editable after submit); Assign shift shows once nothing runs over the new start.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إنهاء صباحية في 18 أكتوبر 2026",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
