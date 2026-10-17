@@ -69,6 +69,7 @@ import { saveLabel, sheetRowView, statusOptions } from './attendance-view';
         [label]="txt.date"
         type="date"
         [error]="dateInvalid() ? txt.dateError : null"
+        [readonly]="saving()"
         [value]="date()"
         (valueChange)="setDate($event)"
       />
@@ -158,6 +159,7 @@ export class AttendanceContainer {
   protected readonly failed = signal<'permission' | 'offline' | 'error' | null>(null);
   protected readonly unresolved = signal(false);
   private run = 0;
+  private loadedDate = '';
 
   protected readonly dateInvalid = computed(
     () => !this.date() || (!!this.today() && this.date() > this.today()),
@@ -219,6 +221,10 @@ export class AttendanceContainer {
   }
 
   protected setDate(date: string): void {
+    // The day stays put while a save for it runs.
+    if (this.saving() || date === this.date()) {
+      return;
+    }
     this.date.set(date);
     this.saved.set(null);
     this.failed.set(null);
@@ -240,9 +246,12 @@ export class AttendanceContainer {
     const run = ++this.run;
     const date = this.date();
     this.state.set('loading');
-    // Choices belong to the day they were made for.
     this.rows.set([]);
-    this.choices.set({});
+    // Choices belong to the day they were made for; reloading the same day keeps those still to save.
+    if (date !== this.loadedDate) {
+      this.choices.set({});
+    }
+    this.loadedDate = date;
     try {
       const business = await this.business.ensure();
       if (!business) {
@@ -265,7 +274,8 @@ export class AttendanceContainer {
       return;
     }
     const date = this.date();
-    const rows = this.open();
+    // What to send, fixed now: nothing the user does while it runs changes it.
+    const marks = this.open().map((row) => ({ id: row.id, status: this.choice(row.id) }));
     this.saving.set(true);
     this.saved.set(null);
     this.failed.set(null);
@@ -277,9 +287,9 @@ export class AttendanceContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      for (const row of rows) {
+      for (const row of marks) {
         try {
-          const result = await this.api.mark(row.id, date, this.choice(row.id), business);
+          const result = await this.api.mark(row.id, date, row.status, business);
           if (result === 'marked') {
             marked++;
           } else if (result === 'unresolved') {

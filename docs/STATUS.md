@@ -242,6 +242,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   lost answer reads as already marked; Check result reads the day again. Design: Workers 04 Attendance (mobile EN/AR).
   e2e: a past day marked for a worker of the run's own, checked in ERPNext, then shown as marked; future days refused;
   from a worker's page and in Arabic; closed to roles without HR; from the desktop workspace.
+  Review pass 1 (3 medium, 1 low) fixed: a save sends the choices made before it and the day can't change while it
+  runs; reloading the same day keeps the choices of rows still to save (a failed row isn't reset to Present); the day's
+  records are read by company and date, not by a list of worker ids that would outgrow the URL; a past day lists
+  workers who have left since, by relieving date.
 
 ## End-to-end happy paths: merged (#26)
 

@@ -28,16 +28,22 @@ describe('AttendanceApiService', () => {
       ['E2', { kind: 'leave', until: '2026-10-20' }],
       ['E3', { kind: 'open' }],
     ]);
+    // Employed that day: joined by then and not relieved before, so a past day lists those who left since.
     expect(listCalls[0].query.filters).toEqual([
       ['company', '=', 'Rehan Nursery'],
-      ['status', '=', 'Active'],
+      ['status', 'in', ['Active', 'Left']],
       ['date_of_joining', '<=', DAY],
     ]);
-    expect(listCalls.find((c) => c.doctype === 'Attendance')!.query.filters).toContainEqual([
-      'attendance_date',
-      '=',
-      DAY,
+    expect(listCalls[0].query.orFilters).toEqual([
+      ['relieving_date', 'is', 'not set'],
+      ['relieving_date', '>=', DAY],
     ]);
+    // By company and day: no worker ids in the URL, however many workers there are.
+    for (const doctype of ['Attendance', 'Leave Application']) {
+      const filters = listCalls.find((c) => c.doctype === doctype)!.query.filters!;
+      expect(filters).toContainEqual(['company', '=', 'Rehan Nursery']);
+      expect(filters.some((f) => f[0] === 'employee')).toBe(false);
+    }
   });
 
   it('reads nothing more when no one is active', async () => {

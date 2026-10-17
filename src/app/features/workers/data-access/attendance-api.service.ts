@@ -13,7 +13,7 @@ const RANK = ['Present', 'Work From Home', 'Half Day', 'On Leave', 'Absent'];
 export class AttendanceApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Every active worker who had joined by `date`, with what is already recorded for that day. */
+  /** Every worker employed on `date` (joined by then, not yet relieved), with what is already recorded that day. */
   async sheet(date: string, business: Business): Promise<SheetRow[]> {
     const workers = await this.erpnext.listAll<{
       name: string;
@@ -21,22 +21,27 @@ export class AttendanceApiService {
       designation: string | null;
     }>('Employee', {
       fields: ['name', 'employee_name', 'designation'],
+      // A past day still lists those who have left since; inactive and suspended workers aren't marked.
       filters: [
         ['company', '=', business.name],
-        ['status', '=', 'Active'],
+        ['status', 'in', ['Active', 'Left']],
         ['date_of_joining', '<=', date],
+      ],
+      orFilters: [
+        ['relieving_date', 'is', 'not set'],
+        ['relieving_date', '>=', date],
       ],
       orderBy: 'employee_name asc, name asc',
     });
-    const ids = workers.map((w) => w.name);
-    if (!ids.length) {
+    if (!workers.length) {
       return [];
     }
     const [attendance, leave] = await Promise.all([
       this.erpnext.listAll<{ employee: string; status: string }>('Attendance', {
         fields: ['employee', 'status'],
+        // By company and day, not by worker: a long id list would outgrow the GET URL.
         filters: [
-          ['employee', 'in', ids],
+          ['company', '=', business.name],
           ['attendance_date', '=', date],
           ['docstatus', '=', 1],
         ],
@@ -44,7 +49,7 @@ export class AttendanceApiService {
       this.erpnext.listAll<{ employee: string; to_date: string }>('Leave Application', {
         fields: ['employee', 'to_date'],
         filters: [
-          ['employee', 'in', ids],
+          ['company', '=', business.name],
           ['from_date', '<=', date],
           ['to_date', '>=', date],
           ['status', '=', 'Approved'],
