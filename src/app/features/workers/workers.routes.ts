@@ -7,6 +7,11 @@ export const workerRoutes: Route[] = [
     loadComponent: () => import('./containers/workers.container').then((m) => m.WorkersContainer),
   },
   {
+    path: 'workers/attendance',
+    loadComponent: () =>
+      import('./containers/attendance.container').then((m) => m.AttendanceContainer),
+  },
+  {
     path: 'workers/new',
     loadComponent: () =>
       import('./containers/worker-form.container').then((m) => m.WorkerFormContainer),

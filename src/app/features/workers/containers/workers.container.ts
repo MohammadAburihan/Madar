@@ -61,6 +61,9 @@ const SEARCH_DELAY_MS = 250;
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="txt.subtitle">
         @if (allowed()) {
+          <button type="button" class="md-btn" (click)="markAttendance()">
+            {{ txt.markAttendance }}
+          </button>
           <button type="button" class="md-btn md-btn--primary" (click)="add()">
             {{ txt.addDesktop }}
           </button>
@@ -138,6 +141,9 @@ const SEARCH_DELAY_MS = 250;
         <button type="button" class="md-btn md-btn--primary" (click)="add()">
           {{ txt.add }}
         </button>
+        <button type="button" class="md-btn" (click)="markAttendance()">
+          {{ txt.markAttendance }}
+        </button>
       }
     }
   `,
@@ -185,6 +191,7 @@ export class WorkersContainer {
       capped: t('workers.capped', { count: LIST_LIMIT }),
       add: t('workers.add'),
       addDesktop: t('workers.addDesktop'),
+      markAttendance: t('workers.markAttendance'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
     };
@@ -320,6 +327,10 @@ export class WorkersContainer {
 
   protected add(): void {
     void this.router.navigate(['/workers/new']);
+  }
+
+  protected markAttendance(): void {
+    void this.router.navigate(['/workers/attendance']);
   }
 
   protected openDetail(id: string): void {

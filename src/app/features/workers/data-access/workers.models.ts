@@ -52,3 +52,16 @@ export interface WorkerOptions {
   designations: string[];
   departments: { id: string; name: string }[];
 }
+
+export type AttendanceStatus = 'Present' | 'Absent' | 'Half Day' | 'Work From Home';
+
+/** One worker on the day's sheet: open to mark, already marked, or covered by approved leave. */
+export interface SheetRow {
+  id: string;
+  name: string;
+  designation: string | null;
+  state: { kind: 'open' } | { kind: 'marked'; status: string } | { kind: 'leave'; until: string };
+}
+
+/** What saving one worker's attendance came to. */
+export type MarkResult = 'marked' | 'already' | 'unresolved' | 'failed';

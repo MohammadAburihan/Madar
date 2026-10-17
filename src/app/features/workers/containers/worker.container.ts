@@ -65,6 +65,15 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
       @if (v.pay) {
         <app-feedback-card tone="tint" [title]="v.pay.title" [message]="v.pay.message" />
       }
+      @if (v.active) {
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          (click)="router.navigate(['/workers/attendance'])"
+        >
+          {{ txt.markAttendance }}
+        </button>
+      }
       <button type="button" class="md-btn" (click)="router.navigate(['/workers', id(), 'edit'])">
         {{ txt.edit }}
       </button>
@@ -105,6 +114,7 @@ export class WorkerContainer {
       loading: t('workers.loading'),
       retry: t('workers.retry'),
       edit: t('workers.edit'),
+      markAttendance: t('workers.markAttendance'),
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
       loadFailed: {
         title: t('workers.loadFailed.title'),
@@ -127,6 +137,7 @@ export class WorkerContainer {
       lines: workerLines(detail, language, tr),
       totals: view.totals,
       pay: view.pay,
+      active: detail.status === 'Active',
     };
   });
 
