@@ -201,6 +201,9 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 - `frappe/erpnext:v16.50.0`, served at http://localhost:8080.
 - Site `frontend`, login `Administrator` / `admin` (local only; never reuse on AWS).
 - Stop with `docker compose -f pwd.yml down`. Don't add `-v` unless you mean to wipe the local data.
+- After the ERPNext image changes, migrate each site (`docker compose -f pwd.yml exec backend bench --site <site>
+  migrate`, after `bench --site <site> backup`). A site behind its code fails sign-in, sign-out and every request with
+  a server error (16 Oct 2026: `Unknown column 'send_read_receipt'` on `frontend`, after Frappe 16.51).
 - `pwd.yml` pins every request to the `frontend` site (`FRAPPE_SITE_NAME_HEADER`), whatever the Host header.
   Never write to `frontend` for testing: use `scripts/dev-test-site.sh`, which creates `madar-test.localhost`
   behind its own web container on port 8081 and seeds it (users in the README).
