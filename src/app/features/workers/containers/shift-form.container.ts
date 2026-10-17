@@ -8,7 +8,6 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
@@ -25,11 +24,16 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { RunningShift, ShiftApiService, dayBefore } from '../data-access/shift-api.service';
+import {
+  RunningShift,
+  ShiftApiService,
+  dayAfter,
+  dayBefore,
+} from '../data-access/shift-api.service';
 import { ShiftFormValue, ShiftType } from '../data-access/workers.models';
 import { shiftLabel } from './shift-view';
 
-type Failure = 'permission' | 'offline' | 'overlap' | 'error';
+type Failure = 'permission' | 'offline' | 'overlap' | 'endUnresolved' | 'error';
 
 /** "Assign shift": the shift a worker works from a date, as a submitted Shift Assignment. */
 @Component({
@@ -101,11 +105,27 @@ type Failure = 'permission' | 'offline' | 'overlap' | 'error';
         [value]="until()"
         (valueChange)="until.set($event)"
       />
+      @if (runningState() === 'loading') {
+        <p class="muted" role="status">{{ txt.checkingShifts }}</p>
+      } @else if (runningState() === 'error') {
+        <app-feedback-card tone="danger" [title]="txt.shiftsFailed" message="" />
+        <button type="button" class="md-btn" (click)="refreshRunning()">{{ txt.retry }}</button>
+      }
       @for (r of runningView(); track r.name) {
-        <app-feedback-card tone="tint" [title]="r.title" [message]="txt.runningNote" />
-        <button type="button" class="md-btn" [disabled]="ending()" (click)="endRunning(r.name)">
+        <app-feedback-card
+          tone="tint"
+          [title]="r.title"
+          [message]="until() ? txt.runningTemporary : txt.runningNote"
+        />
+        <button type="button" class="md-btn" [disabled]="ending()" (click)="endRunning(r)">
           {{ ending() ? txt.saving : r.end }}
         </button>
+      }
+      @for (l of laterView(); track l.name) {
+        <app-feedback-card tone="tint" [title]="l.title" [message]="txt.laterNote" />
+      }
+      @if (resumeNote(); as n) {
+        <app-feedback-card tone="tint" [title]="n" message="" />
       }
       @if (failed(); as f) {
         <app-feedback-card
@@ -131,7 +151,7 @@ type Failure = 'permission' | 'offline' | 'overlap' | 'error';
         >
           {{ checking() ? txt.checking : txt.check }}
         </button>
-      } @else if (!running().length) {
+      } @else if (runningState() === 'ready' && !running().length && !later().length) {
         @if (notCreated()) {
           <app-feedback-card
             tone="warning"
@@ -179,6 +199,14 @@ export class ShiftFormContainer {
   protected readonly notCreated = signal(false);
   /** Shifts still running when the new one would start: ended first, as Frappe HR refuses an overlap. */
   protected readonly running = signal<RunningShift[]>([]);
+  protected readonly later = signal<(RunningShift & { from: string })[]>([]);
+  protected readonly runningState = signal<'loading' | 'ready' | 'error'>('loading');
+  /** The shift this form ended for a temporary one: after saving, the form opens again to put it back after. */
+  private ended: { shift: string; until: string | null } | null = null;
+  /** Opened to put a shift back after a temporary one. */
+  readonly shiftParam = input<string | undefined>(undefined, { alias: 'shift' });
+  readonly fromParam = input<string | undefined>(undefined, { alias: 'from' });
+  readonly untilParam = input<string | undefined>(undefined, { alias: 'until' });
   protected readonly ending = signal(false);
   private runningRun = 0;
 
@@ -218,6 +246,10 @@ export class ShiftFormContainer {
       checking: t('sale.checking.checkingNow'),
       pending: t('sale.checking.pending'),
       noAccess: block('workers.noAccess'),
+      checkingShifts: f('checkingShifts'),
+      shiftsFailed: f('shiftsFailed'),
+      runningTemporary: f('runningTemporary'),
+      laterNote: f('laterNote'),
       unresolved: block('workers.shift.form.unresolved'),
       notCreated: block('workers.shift.form.notCreated'),
       runningNote: f('runningNote'),
@@ -225,6 +257,7 @@ export class ShiftFormContainer {
         permission: block('workers.shift.form.failed.permission'),
         offline: block('workers.shift.form.failed.offline'),
         overlap: block('workers.shift.form.failed.overlap'),
+        endUnresolved: block('workers.shift.form.failed.endUnresolved'),
         error: block('workers.shift.form.failed.error'),
       },
     };
@@ -244,10 +277,36 @@ export class ShiftFormContainer {
         untracked(() => void this.loadOptions());
       }
     });
+    // Opened again on the same page to put a shift back: the link's details replace the last ones.
+    effect(() => {
+      const worker = this.workerParam();
+      const shift = this.shiftParam();
+      const from = this.fromParam();
+      const until = this.untilParam();
+      if (!shift || !from) {
+        return;
+      }
+      untracked(() => {
+        if (worker) {
+          this.worker.set(worker);
+        }
+        this.shift.set(shift);
+        this.from.set(from);
+        this.until.set(until ?? '');
+        this.failed.set(null);
+        this.notCreated.set(false);
+        this.showErrors.set(false);
+        this.ended = null;
+      });
+    });
     effect((onCleanup) => {
       const worker = this.worker();
       const from = this.from();
-      const timer = setTimeout(() => untracked(() => void this.loadRunning(worker, from)), 250);
+      const until = this.until();
+      const timer = setTimeout(
+        () => untracked(() => void this.loadRunning(worker, from, until)),
+        250,
+      );
       onCleanup(() => clearTimeout(timer));
     });
   }
@@ -267,7 +326,15 @@ export class ShiftFormContainer {
       this.workers.set(workers);
       this.shifts.set(shifts);
       if (!this.from()) {
-        this.from.set(toIsoDate(this.clock.now()));
+        const from = this.fromParam();
+        this.from.set(
+          from && /^\d{4}-\d{2}-\d{2}$/.test(from) ? from : toIsoDate(this.clock.now()),
+        );
+      }
+      const shift = this.shiftParam();
+      if (!this.shift() && shift && shifts.some((s) => s.name === shift)) {
+        this.shift.set(shift);
+        this.until.set(this.untilParam() ?? '');
       }
       const wanted = this.workerParam();
       if (!this.worker() && wanted && workers.some((w) => w.id === wanted)) {
@@ -291,6 +358,8 @@ export class ShiftFormContainer {
       const label = shift ? shiftLabel(shift) : r.shift;
       return {
         name: r.name,
+        shift: r.shift,
+        until: r.until,
         title: r.until
           ? t('workers.shift.form.runningUntil', {
               worker: name,
@@ -306,37 +375,85 @@ export class ShiftFormContainer {
     });
   });
 
-  private async loadRunning(worker: string, from: string): Promise<void> {
+  private async loadRunning(worker: string, from: string, until = this.until()): Promise<void> {
     const run = ++this.runningRun;
     this.running.set([]);
+    this.later.set([]);
     if (!worker || !from) {
+      this.runningState.set('ready');
       return;
     }
+    // Save stays hidden until the worker's shifts around the dates are known.
+    this.runningState.set('loading');
     try {
-      const running = await this.api.running(worker, from);
+      const [running, later] = await Promise.all([
+        this.api.running(worker, from),
+        this.api.later(worker, from, until),
+      ]);
       if (run === this.runningRun) {
         this.running.set(running);
+        this.later.set(later);
+        this.runningState.set('ready');
       }
     } catch {
-      // Unknown: saving still meets Frappe HR's own overlap check.
+      if (run === this.runningRun) {
+        this.runningState.set('error');
+      }
     }
   }
 
+  protected refreshRunning(): void {
+    void this.loadRunning(this.worker(), this.from());
+  }
+
+  /** "Khaled has Morning from 1 Nov 2026": the new shift has to end before it. */
+  protected readonly laterView = computed(() => {
+    const { t } = this.i18n.tr();
+    const types = new Map(this.shifts().map((s) => [s.name, s]));
+    const name = this.workers().find((w) => w.id === this.worker())?.name ?? '';
+    return this.later().map((l) => {
+      const shift = types.get(l.shift);
+      return {
+        name: l.name,
+        title: t('workers.shift.form.later', {
+          worker: name,
+          shift: shift ? shiftLabel(shift) : l.shift,
+          date: formatShortDate(l.from, this.i18n.language()),
+        }),
+      };
+    });
+  });
+
+  /** On a form opened to put a shift back after a temporary one. */
+  protected readonly resumeNote = computed(() =>
+    this.shiftParam() && this.fromParam()
+      ? this.i18n.tr().t('workers.shift.form.resumeNote', {
+          shift: this.shiftParam(),
+          date: formatShortDate(this.fromParam()!, this.i18n.language()),
+        })
+      : null,
+  );
+
   /** Ends the running shift the day before the new one; the same date again is harmless, so a lost answer just retries. */
-  protected async endRunning(name: string): Promise<void> {
+  protected async endRunning(r: {
+    name: string;
+    shift: string;
+    until: string | null;
+  }): Promise<void> {
     if (this.ending() || !this.from()) {
       return;
     }
     this.ending.set(true);
     this.failed.set(null);
     try {
-      await this.api.end(name, dayBefore(this.from()));
+      await this.api.end(r.name, dayBefore(this.from()));
+      this.ended = { shift: r.shift, until: r.until };
     } catch (error) {
-      this.fail(
-        error instanceof UnresolvedError
-          ? ErpnextError.from(new HttpErrorResponse({ status: 0 }))
-          : error,
-      );
+      if (error instanceof UnresolvedError) {
+        this.failed.set('endUnresolved');
+      } else {
+        this.fail(error);
+      }
     } finally {
       this.ending.set(false);
       await this.loadRunning(this.worker(), this.from());
@@ -363,7 +480,7 @@ export class ShiftFormContainer {
         throw new Error('No active business');
       }
       await this.api.assign(value, business);
-      void this.router.navigate(['/workers', value.worker], { replaceUrl: true });
+      this.afterSave(value);
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.sent = value;
@@ -388,7 +505,7 @@ export class ShiftFormContainer {
       const found = await this.api.find(sent);
       this.unresolved.set(false);
       if (found) {
-        void this.router.navigate(['/workers', sent.worker], { replaceUrl: true });
+        this.afterSave(sent);
         return;
       }
       this.notCreated.set(true);
@@ -397,6 +514,27 @@ export class ShiftFormContainer {
     } finally {
       this.checking.set(false);
     }
+  }
+
+  /**
+   * After a temporary shift that replaced a running one, the form opens again to put that shift back the day
+   * after, ending when it used to; otherwise the worker's page.
+   */
+  private afterSave(value: ShiftFormValue): void {
+    const ended = this.ended;
+    if (value.until && ended && (!ended.until || ended.until > value.until)) {
+      void this.router.navigate(['/workers/shift/new'], {
+        replaceUrl: true,
+        queryParams: {
+          worker: value.worker,
+          shift: ended.shift,
+          from: dayAfter(value.until),
+          ...(ended.until ? { until: ended.until } : {}),
+        },
+      });
+      return;
+    }
+    void this.router.navigate(['/workers', value.worker], { replaceUrl: true });
   }
 
   private fail(error: unknown): void {

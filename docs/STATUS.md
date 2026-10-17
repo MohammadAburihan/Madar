@@ -281,8 +281,12 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   refused; Arabic; the seeded shift on the desktop worker page.
   Review: passes 1–5 found the one-save "end the old shift and add the new one" too fragile (partial failures, lost
   answers, temporary shifts, concurrent shifts); after pass 6 it became the two explicit, repeatable steps above.
-  Deferred: a temporary shift over a running one means ending it and re-assigning it after, by hand; concurrent
-  shifts at other hours stay a Desk setup. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  Review pass 7 (1 high, 1 medium, 2 low) fixed: a temporary shift over a running one ends it the day before and, after
+  saving, reopens the form prefilled to put it back the day after (to its old end), saying so; a shift starting on or
+  after the new start is shown and Save stays hidden until Until ends the new one before it; Save waits for the worker's
+  shifts to load (with an error and retry if they can't); a lost answer when ending a shift says so and that repeating
+  it is harmless. Deferred: concurrent shifts at other hours stay a Desk setup; leaving the form before putting the
+  regular shift back leaves that to the user. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

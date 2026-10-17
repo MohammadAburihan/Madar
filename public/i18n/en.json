@@ -2979,6 +2979,10 @@
           "error": {
             "title": "The shift wasn't assigned",
             "message": "ERPNext refused it. Check the details and try again."
+          },
+          "endUnresolved": {
+            "title": "Ending the shift isn't confirmed",
+            "message": "The answer was lost. Try again: ending it on the same day twice is harmless."
           }
         },
         "unresolved": {
@@ -2992,7 +2996,13 @@
         "runningOpen": "{{worker}} works {{shift}} until further notice",
         "runningUntil": "{{worker}} works {{shift}} until {{date}}",
         "runningNote": "A new shift can't start over it. End it the day before first.",
-        "endRunning": "End {{shift}} on {{date}}"
+        "endRunning": "End {{shift}} on {{date}}",
+        "checkingShifts": "Checking the worker's shifts…",
+        "shiftsFailed": "The worker's shifts couldn't load.",
+        "runningTemporary": "End it the day before first. After saving, the form opens again to put it back after the new shift ends.",
+        "laterNote": "Set Until to end the new shift before it.",
+        "later": "{{worker}} has {{shift}} from {{date}}",
+        "resumeNote": "Put {{shift}} back from {{date}}, after the temporary shift."
       },
       "next": "From {{date}}: {{shift}}",
       "loadFailed": "The worker's shift couldn't load."

@@ -69,12 +69,59 @@ test.describe('shifts @phone', () => {
       { shift_type: 'Morning', end_date: null },
     ]);
 
-    // One starting the same day as another is refused by Frappe HR.
+    // One starting the same day as another can't be saved: it has to end before it.
     await page.getByRole('button', { name: 'Assign shift' }).click();
     await page.getByLabel('Shift *').selectOption('Morning');
     await page.getByLabel('From *').fill('2099-01-05');
+    await expect(page.getByText('Set Until to end the new shift before it.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Assign shift' })).toHaveCount(0);
+  });
+
+  test('puts the regular shift back after a temporary one, and stops a shift running into a later one', async ({
+    page,
+  }) => {
+    await signIn(page, 'owner');
+    const id = await newWorker(page);
+    const assign = async (shift: string, from: string, until = '') => {
+      await page.goto(`/workers/shift/new?worker=${id}`);
+      await page.getByLabel('Shift *').selectOption(shift);
+      await page.getByLabel('From *').fill(from);
+      if (until) {
+        await page.getByLabel('Until').fill(until);
+      }
+    };
+    await assign('Morning', '2099-02-01');
     await page.getByRole('button', { name: 'Assign shift' }).click();
-    await expect(page.getByText('The worker already has a shift then')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/workers/${id}$`));
+
+    // A shift from before then, with no end, would run into Morning: it must end first.
+    await assign('Evening', '2099-01-15');
+    await expect(
+      page.locator('app-feedback-card', { hasText: named('from', '1 Feb 2099') }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Assign shift' })).toHaveCount(0);
+
+    // A temporary Evening: Morning ends the day before, then the form opens again to put it back.
+    await assign('Evening', '2099-03-10', '2099-03-12');
+    await page.getByRole('button', { name: named('End', 'Morning', 'on', '9 Mar 2099') }).click();
+    await page.getByRole('button', { name: 'Assign shift' }).click();
+    await expect(page).toHaveURL(/shift=Morning&from=2099-03-13/);
+    await expect(page.getByText(named('Put', 'Morning', 'back from', '13 Mar 2099'))).toBeVisible();
+    await expect(page.getByLabel('Shift *')).toHaveValue('Morning');
+    await page.getByRole('button', { name: 'Assign shift' }).click();
+    await expect(page).toHaveURL(new RegExp(`/workers/${id}$`));
+    const assignments = await erp(page).list<{
+      shift_type: string;
+      start_date: string;
+      end_date: string | null;
+    }>('Shift Assignment', ['shift_type', 'start_date', 'end_date'], [['employee', '=', id]], {
+      order_by: 'start_date asc',
+    });
+    expect(assignments).toEqual([
+      { shift_type: 'Morning', start_date: '2099-02-01', end_date: '2099-03-09' },
+      { shift_type: 'Evening', start_date: '2099-03-10', end_date: '2099-03-12' },
+      { shift_type: 'Morning', start_date: '2099-03-13', end_date: null },
+    ]);
   });
 
   test('shows the shift form in Arabic', async ({ page }) => {

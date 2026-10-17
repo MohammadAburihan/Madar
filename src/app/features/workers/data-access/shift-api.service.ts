@@ -16,6 +16,7 @@ const shiftDay = (iso: string, by: number) => {
   return new Date(Date.UTC(y, m - 1, d + by)).toISOString().slice(0, 10);
 };
 export const dayBefore = (iso: string) => shiftDay(iso, -1);
+export const dayAfter = (iso: string) => shiftDay(iso, 1);
 
 /** A shift the worker is on when the new one would start. */
 export interface RunningShift {
@@ -120,6 +121,39 @@ export class ShiftApiService {
       ),
     );
     return rows.map((r) => ({ name: r.name, shift: r.shift_type, until: r.end_date }));
+  }
+
+  /** The worker's shifts starting on or after `from` (and by `until`, if given): the new one must end before them. */
+  async later(
+    worker: string,
+    from: string,
+    until: string,
+  ): Promise<(RunningShift & { from: string })[]> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        shift_type: string;
+        start_date: string;
+        end_date: string | null;
+      }>('Shift Assignment', {
+        fields: ['name', 'shift_type', 'start_date', 'end_date'],
+        filters: [
+          ['employee', '=', worker],
+          ['docstatus', '=', 1],
+          ['status', '=', 'Active'],
+          ['start_date', '>=', from],
+          ...(until ? ([['start_date', '<=', until]] as [string, string, string][]) : []),
+        ],
+        orderBy: 'start_date asc',
+        limit: 0,
+      }),
+    );
+    return rows.map((r) => ({
+      name: r.name,
+      shift: r.shift_type,
+      until: r.end_date,
+      from: r.start_date,
+    }));
   }
 
   /**

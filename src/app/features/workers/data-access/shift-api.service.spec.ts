@@ -105,4 +105,17 @@ describe('ShiftApiService', () => {
       ['status', '=', 'Active'],
     ]);
   });
+
+  it('lists the shifts starting on or after the new start, within its end', async () => {
+    const { listCalls } = fakeErpnext({
+      'Shift Assignment': () => [
+        { name: 'SA-L', shift_type: 'Morning', start_date: '2026-11-01', end_date: null },
+      ],
+    });
+    expect(await api().later('E1', '2026-10-19', '2026-12-31')).toEqual([
+      { name: 'SA-L', shift: 'Morning', until: null, from: '2026-11-01' },
+    ]);
+    expect(listCalls[0].query.filters).toContainEqual(['start_date', '>=', '2026-10-19']);
+    expect(listCalls[0].query.filters).toContainEqual(['start_date', '<=', '2026-12-31']);
+  });
 });
