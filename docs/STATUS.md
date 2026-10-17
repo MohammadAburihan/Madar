@@ -266,7 +266,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   can be decided; a 403 checks for an expired session.
   Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
   types at once.
-- **H4 — Shifts** (this PR): a worker's page shows their shift on the day ("Shift: Morning · 07:00–15:00", or none
+- **H4 — Shifts**: merged (#49). a worker's page shows their shift on the day ("Shift: Morning · 07:00–15:00", or none
   assigned) and the next one already saved ("From 26 Oct 2026: Evening …"). **Assign shift** (`/workers/shift/new`, from a
   worker's page or desktop panel, which preselect them, and "+ New") picks one of the business's Shift Types, a start and
   an optional end, and submits a Frappe HR Shift Assignment in one write. When the worker has a shift running over the new
@@ -289,7 +289,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   regular shift back leaves that to the user.
   Review pass 8 (2 medium, 1 low) fixed: the shift the form ended is tied to that worker and start, and remembered before
   the write (a lost answer may have ended it), so the put-back form opens for the right worker only; Save is hidden from
-  the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain.
+  Pass 9: only low. Deferred: a shift starting on the chosen From can't be removed in Madar (change it in Desk); the
+  put-back form remembers one ended shift, so ending two concurrent ones (a Desk setting) brings back only the last. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
