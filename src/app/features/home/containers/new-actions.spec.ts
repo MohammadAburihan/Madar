@@ -18,6 +18,7 @@ describe('new actions', () => {
       'Add contact',
       'Add worker',
       'Mark attendance',
+      'Request leave',
     ]);
   });
 

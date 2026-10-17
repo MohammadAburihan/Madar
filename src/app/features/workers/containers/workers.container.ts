@@ -61,6 +61,9 @@ const SEARCH_DELAY_MS = 250;
     @if (desktop()) {
       <app-page-heading layout="desktop" [title]="txt.title" [subtitle]="txt.subtitle">
         @if (allowed()) {
+          <button type="button" class="md-btn" (click)="leaveRequests()">
+            {{ txt.leaveRequests }}
+          </button>
           <button type="button" class="md-btn" (click)="markAttendance()">
             {{ txt.markAttendance }}
           </button>
@@ -144,6 +147,9 @@ const SEARCH_DELAY_MS = 250;
         <button type="button" class="md-btn" (click)="markAttendance()">
           {{ txt.markAttendance }}
         </button>
+        <button type="button" class="md-btn" (click)="leaveRequests()">
+          {{ txt.leaveRequests }}
+        </button>
       }
     }
   `,
@@ -192,6 +198,7 @@ export class WorkersContainer {
       add: t('workers.add'),
       addDesktop: t('workers.addDesktop'),
       markAttendance: t('workers.markAttendance'),
+      leaveRequests: t('workers.leaveRequests'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
     };
@@ -331,6 +338,10 @@ export class WorkersContainer {
 
   protected markAttendance(): void {
     void this.router.navigate(['/workers/attendance']);
+  }
+
+  protected leaveRequests(): void {
+    void this.router.navigate(['/workers/leave']);
   }
 
   protected openDetail(id: string): void {

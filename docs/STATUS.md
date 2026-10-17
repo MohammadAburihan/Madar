@@ -235,7 +235,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   separately when one is forbidden (and "not marked" only when attendance was read); desktop showing Inactive and
   Suspended without readable attendance. Deferred: a user holding only HR User or HR Manager matches no Madar role and
   falls back to the Owner's screens (ERPNext still refuses what they can't do); an HR persona is needed.
-- **H2 — Attendance** (this PR): **Mark attendance** (`/workers/attendance`, from Workers, a worker's page and "+ New")
+- **H2 — Attendance**: merged (#47). **Mark attendance** (`/workers/attendance`, from Workers, a worker's page and "+ New")
   lists the business's active workers who had joined by the chosen day (up to today), each Present, Absent, Half day or
   Working from home (Present preselected). Workers already marked show "Marked: …" and those on approved leave "On leave
   until …"; saving submits one Frappe HR Attendance per open row. Frappe HR allows one record a day, so a repeat after a
@@ -250,6 +250,22 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   of leaving a row that silently can't be saved; a save's notices can't land on another day picked during its reload.
   Review pass 3 (3 low) fixed: a refused save names the workers ERPNext refused (often a missing holiday list); a 403
   checks for an expired session; the day can't be changed before the site's today is known.
+- **H3 — Leave and approvals** (this PR): **Leave requests** (`/workers/leave`, from Workers) lists open requests
+  waiting for approval (oldest first) and decided ones (newest first), searchable by worker or leave type. **Request
+  leave** (`/workers/leave/new`, from a worker's page, which preselects them, the list and "+ New") offers the worker's
+  allocated leave types with days left (one allocated type is chosen) and unpaid types, counts the days with Frappe HR
+  (holidays aside) and shows what is left after; it sends an open Leave Application with an `LEV-…` reference after the
+  reason. Too little leave and overlapping leave get their own messages. A request's page shows days requested, left now
+  and left after approval; **Approve leave** or **Reject** submits it with that status, and a request already decided
+  (elsewhere or by a lost answer) is shown as it stands, never decided again. Leave pages need HR User or HR Manager,
+  like Workers. Design: Workers 05–07 (mobile EN/AR). e2e: request from a worker's page and approve, checked in ERPNext;
+  too much leave refused, then a request rejected from the list and found under Decided; Arabic; desktop entry.
+  Review pass 1 (1 medium, 3 low; one dropped: pages under the shell aren't cached) fixed: a failed read of the leave
+  types shows an error with a retry instead of "no leave allocated" (only a 403 means none); types and balances are
+  read as of the leave's start and follow it; a request given a status in Desk but not submitted waits, says so, and
+  can be decided; a 403 checks for an expired session.
+  Review pass 2 (2 low) fixed: a cancelled request reads Cancelled; switching worker clears the last worker's leave
+  types at once.
 
 ## End-to-end happy paths: merged (#26)
 
