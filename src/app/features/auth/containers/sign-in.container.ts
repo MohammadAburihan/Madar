@@ -41,7 +41,9 @@ import { buildSignInView, NoticeKey } from './sign-in-view';
           [notice]="view().notice"
           (signIn)="signIn($event)"
           (forgotPassword)="forgotPassword($event)"
-          (changeBusiness)="router.navigate(['/connect'])"
+          (changeBusiness)="
+            router.navigate(['/connect'], { queryParams: { returnUrl: returnUrl() } })
+          "
         />
       </div>
     </main>

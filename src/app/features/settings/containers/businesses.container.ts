@@ -182,7 +182,8 @@ export class BusinessesContainer {
     }
     this.openFailed.set(null);
     if (!this.connection.native) {
-      this.document.location.assign(address);
+      // Chosen from the list: that business's Madar confirms its own address instead of asking for it.
+      this.document.location.assign(`${address}/connect?confirm=1`);
       return;
     }
     this.opening.set(true);

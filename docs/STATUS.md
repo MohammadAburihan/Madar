@@ -195,7 +195,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   pass 1 (1 medium, 3 low) fixed: non-Latin domain names (rehan.السعودية) are accepted; the page asked for survives
   connecting and sign-in (e2e); Your businesses in the apps says why an address can't be opened and ignores a second
   tap while connecting; in the apps the connected address wins over a bundled config.json server, so what is used and
-  what is shown agree. The design changes are in docs/Madar.pen (saved in Pencil).
+  what is shown agree. The design changes are in docs/Madar.pen (saved in Pencil). Pass 2 (1 medium, 2 low): opening a
+  saved business on the web lands on its Connect screen already confirmed; an unreachable ERPNext no longer sends a
+  signed-in user to Connect; Change business keeps sign-in's return page.
 - Next: step 6.
 
 ## End-to-end happy paths: merged (#26)
