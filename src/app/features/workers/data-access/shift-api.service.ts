@@ -25,14 +25,36 @@ interface Running {
   end_date: string | null;
 }
 
-/** A running shift to start again after a temporary one. */
-export type Resumed = Running & { from: string };
+/** A shift change, worked out before anything is written (see `ShiftApiService.plan`). */
+export interface ShiftPlan {
+  value: ShiftFormValue;
+  /** Shifts to end the day before the new one, with their end dates as they were. */
+  running: Running[];
+  /** Shifts to start again the day after a temporary one. */
+  resume: { shift_type: string; from: string; until: string | null }[];
+}
 
-/** The new shift's answer was lost; once it is found, `resumed` still has to be started again. */
-export class ShiftUnresolvedError extends UnresolvedError {
-  constructor(readonly resumed: Resumed[]) {
-    super();
+/** The new shift was made, but the regular one couldn't be resumed after it; applying the plan again does. */
+export class ShiftIncompleteError extends Error {
+  constructor(readonly reason: unknown) {
+    super('The regular shift was not resumed');
   }
+}
+
+/** Whether two shifts' hours overlap; one ending before it starts runs past midnight. */
+function overlaps(a: ShiftType, b: ShiftType): boolean {
+  const span = (t: ShiftType): [number, number] => {
+    const minutes = (hhmm: string) => {
+      const [h, m] = hhmm.split(':').map(Number);
+      return h * 60 + m;
+    };
+    const start = minutes(t.start);
+    const end = minutes(t.end);
+    return [start, end <= start ? end + 24 * 60 : end];
+  };
+  const [as, ae] = span(a);
+  const [bs, be] = span(b);
+  return as < be && bs < ae;
 }
 
 /** Shifts (Frappe HR Shift Type) and who works them from when (Shift Assignment). */
@@ -106,13 +128,11 @@ export class ShiftApiService {
   }
 
   /**
-   * Submits the assignment. The shift worked until then ends the day before, and when the new one is temporary
-   * it resumes the day after. A later shift that would overlap is refused before anything changes, and a refused
-   * save puts the running shift back as it was. Shift Assignment has no free-text field for a reference; worker,
-   * shift and start identify it, and `find()` looks a lost one up by them. A lost answer throws
-   * ShiftUnresolvedError, carrying what is left to do once the new shift is found (`resume()`).
+   * Works out the change: the worker's shifts running into the new one's start whose hours overlap it end the day
+   * before, and when the new shift is temporary they resume the day after. A later shift that would overlap is
+   * refused before anything changes.
    */
-  async assign(value: ShiftFormValue, business: Business): Promise<string> {
+  async plan(value: ShiftFormValue): Promise<ShiftPlan> {
     const later = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Shift Assignment', {
         fields: ['name'],
@@ -129,53 +149,92 @@ export class ShiftApiService {
     if (later.length) {
       throw new ErpnextError('server', 'A later shift overlaps', 417, 'OverlappingShiftError');
     }
-    const running = await firstValueFrom(
-      this.erpnext.list<Running>('Shift Assignment', {
-        fields: ['name', 'shift_type', 'end_date'],
-        filters: [
-          ['employee', '=', value.worker],
-          ['docstatus', '=', 1],
-          ['status', '=', 'Active'],
-          ['start_date', '<', value.from],
-        ],
-        orFilters: [
-          ['end_date', 'is', 'not set'],
-          ['end_date', '>=', value.from],
-        ],
-        limit: 0,
-      }),
-    );
-    for (const r of running) {
-      await this.setEnd(r.name, dayBefore(value.from));
-    }
-    const resume = value.until
-      ? running
-          .filter((r) => !r.end_date || r.end_date > value.until)
-          .map((r) => ({ ...r, from: dayAfter(value.until) }))
-      : [];
-    let name: string;
+    const [rows, types] = await Promise.all([
+      firstValueFrom(
+        this.erpnext.list<Running>('Shift Assignment', {
+          fields: ['name', 'shift_type', 'end_date'],
+          filters: [
+            ['employee', '=', value.worker],
+            ['docstatus', '=', 1],
+            ['status', '=', 'Active'],
+            ['start_date', '<', value.from],
+          ],
+          orFilters: [
+            ['end_date', 'is', 'not set'],
+            ['end_date', '>=', value.from],
+          ],
+          limit: 0,
+        }),
+      ),
+      this.shiftTypes(),
+    ]);
+    const hours = new Map(types.map((t) => [t.name, t]));
+    const target = hours.get(value.shift);
+    // Only the shift being replaced: Frappe HR lets a worker hold other shifts at other hours alongside it.
+    const running = rows.filter((r) => {
+      const other = hours.get(r.shift_type);
+      return !target || !other || overlaps(target, other);
+    });
+    return {
+      value,
+      running,
+      resume: value.until
+        ? running
+            .filter((r) => !r.end_date || r.end_date > value.until)
+            .map((r) => ({
+              shift_type: r.shift_type,
+              from: dayAfter(value.until),
+              until: r.end_date,
+            }))
+        : [],
+    };
+  }
+
+  /**
+   * Carries the plan out, every step skipped when already done, so running it again after a lost answer finishes
+   * it without doing anything twice. Until the new shift exists, a refusal puts the running shifts back as they
+   * were; after it, a failed resume throws ShiftIncompleteError and running the plan again finishes it.
+   */
+  async apply(plan: ShiftPlan, business: Business): Promise<void> {
+    const { value } = plan;
     try {
-      const doc = await confirmRequest(
-        this.insert(value.worker, value.shift, value.from, value.until, business),
-      );
-      name = doc.name;
-    } catch (error) {
-      if (error instanceof UnresolvedError) {
-        throw new ShiftUnresolvedError(resume);
+      for (const r of plan.running) {
+        await this.setEnd(r.name, dayBefore(value.from));
       }
-      for (const r of running) {
-        await this.setEnd(r.name, r.end_date).catch(() => undefined);
+      if (!(await this.find(value))) {
+        await confirmRequest(
+          this.insert(value.worker, value.shift, value.from, value.until, business),
+        );
+      }
+    } catch (error) {
+      if (!(error instanceof UnresolvedError)) {
+        await this.restore(plan);
       }
       throw error;
     }
-    await this.resume(value.worker, resume, business);
-    return name;
+    try {
+      for (const r of plan.resume) {
+        const again = {
+          worker: value.worker,
+          shift: r.shift_type,
+          from: r.from,
+          until: r.until ?? '',
+        };
+        if (!(await this.find(again))) {
+          await confirmRequest(
+            this.insert(again.worker, again.shift, again.from, again.until, business),
+          );
+        }
+      }
+    } catch (error) {
+      throw error instanceof UnresolvedError ? error : new ShiftIncompleteError(error);
+    }
   }
 
-  /** The running shift again after a temporary one, as it was before (to its own end, or open-ended). */
-  async resume(worker: string, resume: Resumed[], business: Business): Promise<void> {
-    for (const r of resume) {
-      await firstValueFrom(this.insert(worker, r.shift_type, r.from, r.end_date ?? '', business));
+  /** Puts the running shifts' end dates back, when the new shift was never made. */
+  async restore(plan: ShiftPlan): Promise<void> {
+    for (const r of plan.running) {
+      await this.setEnd(r.name, r.end_date).catch(() => undefined);
     }
   }
 

@@ -2987,7 +2987,11 @@
         },
         "unresolved": {
           "title": "Saving not yet resolved",
-          "message": "The request timed out. The shift may already be assigned. Check before saving again."
+          "message": "The request timed out. Check the result: the change is finished, and nothing is saved twice."
+        },
+        "incomplete": {
+          "title": "Saved, but the regular shift isn't back yet",
+          "message": "The new shift is saved. Try again to start the regular shift again after it."
         }
       },
       "next": "From {{date}}: {{shift}}",

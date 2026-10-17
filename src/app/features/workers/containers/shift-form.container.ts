@@ -24,7 +24,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { Resumed, ShiftApiService, ShiftUnresolvedError } from '../data-access/shift-api.service';
+import { ShiftApiService, ShiftIncompleteError, ShiftPlan } from '../data-access/shift-api.service';
 import { ShiftFormValue, ShiftType } from '../data-access/workers.models';
 import { shiftLabel } from './shift-view';
 
@@ -107,11 +107,11 @@ type Failure = 'permission' | 'offline' | 'overlap' | 'error';
           [message]="txt.failed[f].message"
         />
       }
-      @if (unresolved()) {
+      @if (unresolved() || incomplete()) {
         <app-feedback-card
           tone="warning"
-          [title]="txt.unresolved.title"
-          [message]="txt.unresolved.message"
+          [title]="incomplete() ? txt.incomplete.title : txt.unresolved.title"
+          [message]="incomplete() ? txt.incomplete.message : txt.unresolved.message"
         />
         @if (pending()) {
           <p class="muted" role="status">{{ txt.pending }}</p>
@@ -168,10 +168,10 @@ export class ShiftFormContainer {
   protected readonly checking = signal(false);
   protected readonly pending = signal(false);
   protected readonly notCreated = signal(false);
-  /** What was sent when the answer was lost: checking looks for exactly that. */
-  private sent: ShiftFormValue | null = null;
-  /** The regular shift to start again after a temporary one, still to do when the answer was lost. */
-  private resumed: Resumed[] = [];
+  /** The change being made: after a lost answer or a failed resume, applying it again finishes it. */
+  private plan: ShiftPlan | null = null;
+  /** The new shift is saved but the regular one couldn't be resumed after it. */
+  protected readonly incomplete = signal(false);
 
   protected readonly invalid = computed(() => {
     const errors = {
@@ -211,6 +211,7 @@ export class ShiftFormContainer {
       noAccess: block('workers.noAccess'),
       notCreated: block('workers.shift.form.notCreated'),
       unresolved: block('workers.shift.form.unresolved'),
+      incomplete: block('workers.shift.form.incomplete'),
       failed: {
         permission: block('workers.shift.form.failed.permission'),
         offline: block('workers.shift.form.failed.offline'),
@@ -266,7 +267,7 @@ export class ShiftFormContainer {
 
   protected async save(): Promise<void> {
     this.showErrors.set(true);
-    if (this.invalid() || this.saving() || this.unresolved()) {
+    if (this.invalid() || this.saving() || this.unresolved() || this.incomplete()) {
       return;
     }
     this.saving.set(true);
@@ -283,54 +284,68 @@ export class ShiftFormContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      await this.api.assign(value, business);
+      this.plan = await this.api.plan(value);
+      await this.api.apply(this.plan, business);
       void this.router.navigate(['/workers', value.worker], { replaceUrl: true });
     } catch (error) {
-      if (error instanceof UnresolvedError) {
-        this.sent = value;
-        this.resumed = error instanceof ShiftUnresolvedError ? error.resumed : [];
-        this.unresolved.set(true);
-      } else {
-        const e = ErpnextError.from(error);
-        this.failed.set(
-          e.kind === 'forbidden'
-            ? 'permission'
-            : e.kind === 'offline'
-              ? 'offline'
-              : e.excType === 'OverlappingShiftError' || e.excType === 'MultipleShiftError'
-                ? 'overlap'
-                : 'error',
-        );
-      }
+      this.fail(error);
     } finally {
       this.saving.set(false);
     }
   }
 
+  /** After a lost answer or a failed resume: the same change again, each step done only once. */
   protected async check(): Promise<void> {
-    if (this.checking() || !this.sent) {
+    const plan = this.plan;
+    if (this.checking() || !plan) {
       return;
     }
     this.checking.set(true);
     this.pending.set(false);
+    this.failed.set(null);
     try {
-      const found = await this.api.find(this.sent);
-      this.unresolved.set(false);
-      if (found) {
-        const business = await this.business.ensure();
-        if (business && this.resumed.length) {
-          await this.api.resume(this.sent.worker, this.resumed, business);
-          this.resumed = [];
-        }
-        void this.router.navigate(['/workers', this.sent.worker], { replaceUrl: true });
-        return;
+      const business = await this.business.ensure();
+      if (!business) {
+        throw new Error('No active business');
       }
-      this.notCreated.set(true);
-    } catch {
-      this.pending.set(true);
+      await this.api.apply(plan, business);
+      this.unresolved.set(false);
+      this.incomplete.set(false);
+      void this.router.navigate(['/workers', plan.value.worker], { replaceUrl: true });
+    } catch (error) {
+      if (error instanceof UnresolvedError) {
+        this.pending.set(true);
+      } else {
+        this.unresolved.set(false);
+        this.fail(error);
+      }
     } finally {
       this.checking.set(false);
     }
+  }
+
+  private fail(error: unknown): void {
+    if (error instanceof UnresolvedError) {
+      this.unresolved.set(true);
+      return;
+    }
+    if (error instanceof ShiftIncompleteError) {
+      this.incomplete.set(true);
+      return;
+    }
+    const e = ErpnextError.from(error);
+    if (e.kind === 'forbidden') {
+      void this.session.checkExpired();
+    }
+    this.failed.set(
+      e.kind === 'forbidden'
+        ? 'permission'
+        : e.kind === 'offline'
+          ? 'offline'
+          : e.excType === 'OverlappingShiftError' || e.excType === 'MultipleShiftError'
+            ? 'overlap'
+            : 'error',
+    );
   }
 
   protected back(): void {

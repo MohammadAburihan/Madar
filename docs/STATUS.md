@@ -284,6 +284,12 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   a refused save puts the running shift's end back; a temporary shift (with an end) resumes the regular one the day
   after, also after a lost answer is found; desktop Workers keeps Mark attendance under the table whoever is selected
   (mock updated, EN/AR).
+  Review pass 3 (1 high, 2 medium, 2 low) fixed by planning the change before writing it: the plan (shifts to end, with
+  their old end dates, and shifts to resume) is applied step by step, each step skipped when already done, so "Check
+  result" after a lost answer, or "Try again" after a failed resume, finishes it without doing anything twice; until the
+  new shift exists any refusal puts the running shifts back; only the running shift whose hours overlap the new one is
+  ended (a worker can hold shifts at other hours). Deferred: leaving after a lost answer without checking keeps the
+  running shift ended. Seen once: `runtime-config.spec` failed in a full run and passed twice after (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
 
