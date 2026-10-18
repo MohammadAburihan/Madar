@@ -59,6 +59,8 @@ describe('approvals view', () => {
       approvalView({ ...order, actions: [], lines: [] }, 'ILS', 'en', en, false).totals,
     ).toEqual([]);
     expect(visible(approvalCard(ITEM, 'ILS', 'en', en, false)).balance).toBe('ILS 120.00 · Draft');
+    const payment = { ...ITEM, doctype: 'Payment Entry', name: 'PAY-1', amount: 500 };
+    expect(visible(approvalCard(payment, 'ILS', 'en', en, false)).balance).toBe('Draft');
   });
 
   it('words leave statuses as the Workers pages do', () => {

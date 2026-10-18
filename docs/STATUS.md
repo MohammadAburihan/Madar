@@ -234,6 +234,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Check result (the step may still be running; the steps come back on a fresh visit), never the actions; a state
   field read as forbidden isn't kept for the next user. Known: roles that can't read Workflow use `workflow_state`, so a
   workflow with its own state field shows no state for them.
+  Review pass 5 (1 medium, 2 low) fixed: without `seeCosts` only amounts of non-cost documents (claims, advances,
+  sales documents) are shown, any other doctype's are hidden; an advance in another currency shows no amount rather
+  than the wrong currency. Deferred (low): the inbox still lists a user's own document under a transition without
+  self-approval (the item then offers no steps); workflow actions and states show as named in ERPNext, untranslated.
 - **R1 — Breakdowns**: merged (#55). **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
   Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
   confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with

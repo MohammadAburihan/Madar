@@ -3,18 +3,19 @@ import { Language } from '../../../core/i18n/language.service';
 import { Translator } from '../../../core/i18n/translator';
 import { ApprovalDetail, ApprovalItem } from '../data-access/approvals.models';
 
-/** Buying documents whose amounts are costs: shown only to roles that see costs. */
-const BUYING = new Set([
-  'Purchase Order',
-  'Purchase Invoice',
-  'Purchase Receipt',
-  'Material Request',
-  'Supplier Quotation',
-  'Request for Quotation',
+/** Documents whose amounts aren't costs; any other doctype's amount is shown only to roles that see costs. */
+const NOT_COSTS = new Set([
+  'Expense Claim',
+  'Employee Advance',
+  'Leave Application',
+  'Quotation',
+  'Sales Order',
+  'Sales Invoice',
+  'Delivery Note',
 ]);
 
 function amountShown(item: ApprovalItem, seeCosts: boolean): number | null {
-  return !seeCosts && BUYING.has(item.doctype) ? null : item.amount;
+  return seeCosts || NOT_COSTS.has(item.doctype) ? item.amount : null;
 }
 
 /** The doctype in the user's words where Madar knows it; otherwise as ERPNext names it. */

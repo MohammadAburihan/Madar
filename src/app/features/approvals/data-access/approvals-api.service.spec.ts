@@ -152,6 +152,27 @@ describe('ApprovalsApiService', () => {
     ).toEqual(['Approve', 'Withdraw']);
   });
 
+  it('leaves out an advance amount in another currency', async () => {
+    const advance = {
+      doctype: 'Employee Advance',
+      name: 'ADV-1',
+      employee_name: 'Khaled',
+      advance_amount: 100,
+      currency: 'USD',
+      company: 'Rehan Nursery',
+    };
+    fakeErpnext(
+      {},
+      { 'frappe.model.workflow.get_transitions': () => [] },
+      {
+        'Employee Advance/ADV-1': advance,
+        'Employee Advance/ADV-2': { ...advance, name: 'ADV-2', currency: 'ILS' },
+      },
+    );
+    expect((await api().item('Employee Advance', 'ADV-1', BUSINESS, 'x')).amount).toBeNull();
+    expect((await api().item('Employee Advance', 'ADV-2', BUSINESS, 'x')).amount).toBe(100);
+  });
+
   it('reads an item with the actions the user may take', async () => {
     const { postCalls } = fakeErpnext(
       {},

@@ -26,7 +26,8 @@ function titleOf(doc: Doc): string {
   );
 }
 
-function amountOf(doc: Doc): number | null {
+/** The document's amount in the company currency (`currency`), or null when it has none in it. */
+function amountOf(doc: Doc, currency: string): number | null {
   for (const field of [
     'base_rounded_total',
     'base_grand_total',
@@ -38,6 +39,10 @@ function amountOf(doc: Doc): number | null {
     const value = number(doc[field]);
     // With rounding turned off ERPNext leaves the rounded total at 0: the grand total is owed.
     if (field === 'base_rounded_total' && !value) {
+      continue;
+    }
+    // An advance's amount is in its own currency.
+    if (field === 'advance_amount' && doc['currency'] && doc['currency'] !== currency) {
       continue;
     }
     if (value !== null && !Number.isNaN(value)) {
@@ -111,7 +116,7 @@ export class ApprovalsApiService {
         doctype: action.reference_doctype,
         name: doc.name,
         title: titleOf(doc),
-        amount: amountOf(doc),
+        amount: amountOf(doc, business.currency),
         state: String(doc[fields.get(action.reference_doctype)!] ?? action.workflow_state),
         date: String(doc['posting_date'] ?? doc['transaction_date'] ?? action.creation).slice(
           0,
@@ -177,7 +182,7 @@ export class ApprovalsApiService {
       doctype,
       name: doc.name,
       title: titleOf(doc),
-      amount: amountOf(doc),
+      amount: amountOf(doc, business.currency),
       state: String(doc[field] ?? ''),
       date: String(doc['posting_date'] ?? doc['transaction_date'] ?? doc['creation'] ?? '').slice(
         0,
