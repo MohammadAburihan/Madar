@@ -209,9 +209,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Approvals and advanced reports (in progress, before step 6)
+## Approvals and advanced reports (done: #54, #55)
 
-- **A1 — Approvals**: this PR. **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
+- **A1 — Approvals**: merged (#54). **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
   lists what waits for the user: documents whose ERPNext workflow has an open Workflow Action for one of the user's roles
   (up to 50, with a note when capped), and for HR roles the leave requests still Open. Search by title, document or type.
   A workflow item (`/approvals/:doctype/:name`) shows who asked, what and how much, and the workflow steps the user may
@@ -266,6 +266,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   them to the user's own records otherwise).
   Review pass 4 (1 low) fixed: free-text invoice lines without an item are told apart by their wording. Reviewing
   stops here (nothing above low).
+
+- **Batch review** (after #54 and #55): only low findings, deferred. A workflow with its own state field shows no state
+  to roles that can't read Workflow, and a lost answer there can't be resolved by Check result. A lost answer on a
+  step that ends in the same state stays unresolved (a closed Workflow Action could tell).
 
 ## Workers & HR (done: #46–#53)
 
