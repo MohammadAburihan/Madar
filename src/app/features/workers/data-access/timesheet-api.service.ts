@@ -14,9 +14,14 @@ const forbiddenAsEmpty = (error: unknown): never[] => {
   throw error;
 };
 
-/** "2026-10-17" + 6.5 hours from 08:00, as Frappe's "YYYY-MM-DD HH:mm:ss". */
-function span(date: string, hours: number): { from: string; to: string } {
-  const start = new Date(`${date}T08:00:00Z`);
+/**
+ * The hours as Frappe's "YYYY-MM-DD HH:mm:ss" times: from 08:00, or from where the worker's last log that day ended,
+ * since ERPNext refuses one worker's logs that overlap.
+ */
+function span(date: string, hours: number, after: string | null): { from: string; to: string } {
+  const eight = new Date(`${date}T08:00:00Z`);
+  const last = after ? new Date(`${after.replace(' ', 'T').slice(0, 19)}Z`) : null;
+  const start = last && last > eight ? last : eight;
   const end = new Date(start.getTime() + hours * 3_600_000);
   const fmt = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ');
   return { from: fmt(start), to: fmt(end) };
@@ -59,7 +64,11 @@ export class TimesheetApiService {
    * `find()` tells whether it was made.
    */
   async log(value: HoursFormValue, reference: string, business: Business): Promise<string> {
-    const { from, to } = span(value.date, value.hours);
+    const { from, to } = span(
+      value.date,
+      value.hours,
+      await this.lastEnd(value.worker, value.date),
+    );
     const note = value.note.trim();
     const doc = await confirmRequest(
       this.erpnext.post<{ name: string }>('frappe.client.insert', {
@@ -84,6 +93,23 @@ export class TimesheetApiService {
       }),
     );
     return doc.name;
+  }
+
+  /** Where the worker's latest log on that day ends, if any (drafts too: they would overlap as well). */
+  private async lastEnd(worker: string, date: string): Promise<string | null> {
+    const rows = await this.erpnext.listAll<{ to_time: string | null }>('Timesheet', {
+      fields: ['time_logs.to_time as to_time'],
+      filters: [
+        ['employee', '=', worker],
+        ['docstatus', '<', 2],
+        ['Timesheet Detail', 'from_time', '>=', `${date} 00:00:00`],
+        ['Timesheet Detail', 'from_time', '<=', `${date} 23:59:59`],
+      ],
+    });
+    return rows.reduce<string | null>(
+      (latest, r) => (r.to_time && (!latest || r.to_time > latest) ? r.to_time : latest),
+      null,
+    );
   }
 
   async find(reference: string): Promise<string | null> {

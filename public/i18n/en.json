@@ -3180,8 +3180,7 @@
         "dateError": "Choose a date up to today.",
         "hours": "Hours *",
         "hoursError": "Enter hours between 0 and 24.",
-        "activity": "Activity",
-        "noActivity": "No activity",
+        "activity": "Activity *",
         "project": "Project",
         "noProject": "No project",
         "note": "Note",
@@ -3209,7 +3208,9 @@
             "title": "The hours weren't saved",
             "message": "ERPNext refused them. Check the details and save again."
           }
-        }
+        },
+        "activityError": "Choose an activity.",
+        "noActivities": "There are no activity types your role can use. Add one in ERPNext (Projects › Activity Type) first."
       },
       "lastWeek": "Hours in the last 7 days"
     }

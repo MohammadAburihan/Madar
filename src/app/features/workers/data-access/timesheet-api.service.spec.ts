@@ -53,7 +53,7 @@ describe('TimesheetApiService', () => {
       hours: 6.5,
     });
     expect(await api().find('TIME-1')).toBe('TS-1');
-    expect(listCalls[0].query.filters).toEqual([['note', 'like', '%Madar hours TIME-1%']]);
+    expect(listCalls.at(-1)!.query.filters).toEqual([['note', 'like', '%Madar hours TIME-1%']]);
   });
 
   it('offers activities and open projects, each empty when the role can’t read it', async () => {
@@ -65,5 +65,23 @@ describe('TimesheetApiService', () => {
       activities: [],
       projects: [{ id: 'PROJ-0001', name: 'Garden installation' }],
     });
+  });
+
+  it('starts after the worker’s last log that day, as ERPNext refuses overlapping logs', async () => {
+    const { postCalls, listCalls } = fakeErpnext(
+      { Timesheet: () => [{ to_time: '2026-10-17 12:00:00' }, { to_time: '2026-10-17 10:00:00' }] },
+      { 'frappe.client.insert': () => ({ name: 'TS-2' }) },
+    );
+    await api().log({ ...VALUE, hours: 3 }, 'TIME-2', BUSINESS);
+    expect((postCalls[0].body['doc'] as { time_logs: object[] }).time_logs[0]).toMatchObject({
+      from_time: '2026-10-17 12:00:00',
+      to_time: '2026-10-17 15:00:00',
+    });
+    expect(listCalls[0].query.filters).toContainEqual([
+      'Timesheet Detail',
+      'from_time',
+      '>=',
+      '2026-10-17 00:00:00',
+    ]);
   });
 });

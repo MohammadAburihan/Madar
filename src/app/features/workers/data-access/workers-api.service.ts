@@ -55,13 +55,13 @@ const forbiddenAsNull = (error: unknown): null => {
   throw error;
 };
 
-// Best first: with one record per shift, the day reads as the best of them, as the month's count does.
 /** The day six days before: with `today`, the last seven days. */
 function sixDaysBefore(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d - 6)).toISOString().slice(0, 10);
 }
 
+// Best first: with one record per shift, the day reads as the best of them, as the month's count does.
 const ATTENDANCE = ['Present', 'Work From Home', 'Half Day', 'On Leave', 'Absent'];
 
 const squash = (name: string) => name.trim().replace(/\s+/g, ' ');

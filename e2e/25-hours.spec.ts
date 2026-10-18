@@ -30,7 +30,7 @@ test.describe('hours @phone', () => {
     await page.getByRole('button', { name: 'Save hours' }).click();
     await expect(page.getByText('Enter hours between 0 and 24.')).toBeVisible();
     await page.getByLabel('Hours *').fill('6.5');
-    await page.getByLabel('Activity').selectOption('Execution');
+    await page.getByLabel('Activity *').selectOption('Execution');
     await page.getByLabel('Project').selectOption({ label: 'Garden installation' });
     await page.getByLabel('Note').fill('Front beds');
     await page.getByRole('button', { name: 'Save hours' }).click();
@@ -46,6 +46,16 @@ test.describe('hours @phone', () => {
     );
     expect(sheet).toMatchObject({ docstatus: 1, total_hours: 6.5 });
     expect(sheet.note).toContain('Madar hours TIME-');
+
+    // A second log the same day starts where the first ended: ERPNext refuses overlapping logs.
+    await page.getByRole('button', { name: 'Log hours' }).click();
+    await page.getByLabel('Hours *').fill('2');
+    await page.getByRole('button', { name: 'Save hours' }).click();
+    await expect(page.getByText('Choose an activity.')).toBeVisible();
+    await page.getByLabel('Activity *').selectOption('Planning');
+    await page.getByRole('button', { name: 'Save hours' }).click();
+    await expect(page).toHaveURL(new RegExp(`/workers/${id}$`));
+    await expect(page.locator('app-totals-card')).toContainText(named('8.5'));
   });
 
   test('shows the hours form in Arabic', async ({ page }) => {

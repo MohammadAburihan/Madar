@@ -94,10 +94,16 @@ type Failure = 'permission' | 'offline' | 'error';
         <app-select-field
           [label]="txt.activity"
           [options]="activityOptions()"
-          [value]="activity()"
+          [placeholder]="txt.activity"
+          [value]="activity() || null"
           [disabled]="unresolved()"
           (valueChange)="activity.set($event ?? '')"
         />
+        @if (errors?.activity) {
+          <p class="muted" role="alert">{{ txt.activityError }}</p>
+        }
+      } @else {
+        <app-feedback-card tone="warning" [title]="txt.activity" [message]="txt.noActivities" />
       }
       @if (projects().length) {
         <app-select-field
@@ -196,6 +202,8 @@ export class HoursFormContainer {
       worker: !this.worker(),
       date: !this.date() || (!!this.today() && this.date() > this.today()),
       hours: !(this.amount() > 0 && this.amount() <= 24),
+      // ERPNext submits a timesheet only with an activity on each log.
+      activity: !this.activity(),
     };
     return Object.values(errors).some(Boolean) ? errors : null;
   });
@@ -215,6 +223,8 @@ export class HoursFormContainer {
       hours: f('hours'),
       hoursError: f('hoursError'),
       activity: f('activity'),
+      activityError: f('activityError'),
+      noActivities: f('noActivities'),
       project: f('project'),
       note: f('note'),
       save: f('save'),
@@ -244,10 +254,9 @@ export class HoursFormContainer {
     this.workers().map((w) => ({ value: w.id, label: w.name })),
   );
 
-  protected readonly activityOptions = computed(() => [
-    { value: '', label: this.i18n.tr().t('workers.hours.form.noActivity') },
-    ...this.activities().map((a) => ({ value: a, label: a })),
-  ]);
+  protected readonly activityOptions = computed(() =>
+    this.activities().map((a) => ({ value: a, label: a })),
+  );
 
   protected readonly projectOptions = computed(() => [
     { value: '', label: this.i18n.tr().t('workers.hours.form.noProject') },

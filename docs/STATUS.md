@@ -347,7 +347,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   note, with the `TIME-…` reference after the note; a lost answer is checked by reference only. Activities and projects
   the role can't read are left out. The worker's page adds "Hours in the last 7 days" when there are any. Design:
   Workers 10 Log hours (mobile EN/AR). e2e: hours logged on a project from a worker's page, checked in ERPNext and
-  shown in the worker's totals; the form in Arabic. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  shown in the worker's totals; the form in Arabic.
+  Review pass 1 (1 high, 1 low) fixed: a second log the same day starts where the worker's last one ended (ERPNext
+  refuses overlapping logs; checked in e2e); the activity is required, as ERPNext submits a timesheet only with one, and
+  without readable activity types the form says so; a comment moved back to its declaration. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
