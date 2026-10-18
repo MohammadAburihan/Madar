@@ -226,8 +226,9 @@ describe('WorkersApiService', () => {
   });
 
   it('reports a lost create as unresolved, and finds it by reference', async () => {
+    let landed = false;
     const { listCalls } = fakeErpnext(
-      { Employee: () => [{ name: 'HR-EMP-00005' }] },
+      { Employee: () => (landed ? [{ name: 'HR-EMP-00005' }] : []) },
       { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })) },
     );
     const value = {
@@ -242,8 +243,9 @@ describe('WorkersApiService', () => {
     await expect(api().save(value, null, 'EMP-1', BUSINESS)).rejects.toBeInstanceOf(
       UnresolvedError,
     );
+    landed = true;
     expect(await api().find('EMP-1')).toBe('HR-EMP-00005');
-    expect(listCalls[0].query.filters).toEqual([['bio', 'like', '%EMP-1%']]);
+    expect(listCalls.at(-1)!.query.filters).toEqual([['bio', 'like', '%EMP-1%']]);
   });
 
   it('edits a worker over the latest document, keeping what the form does not show', async () => {
@@ -452,5 +454,30 @@ describe('WorkersApiService review fixes', () => {
       { date: '2026-10-17', status: 'Present' },
       { date: '2026-10-16', status: 'Half Day' },
     ]);
+  });
+
+  it('saves the details over a worker a slow first try made, instead of adding a second', async () => {
+    const { postCalls } = fakeErpnext(
+      { Employee: () => [{ name: 'HR-EMP-00005' }] },
+      { 'frappe.client.save': (body) => body['doc'] },
+      {
+        'Employee/HR-EMP-00005': {
+          name: 'HR-EMP-00005',
+          employee_name: 'Khaled',
+          company: 'Rehan Nursery',
+        },
+      },
+    );
+    const value = {
+      name: 'Khaled',
+      gender: 'Male',
+      birthDate: '1990-05-14',
+      joined: '2026-10-17',
+      designation: '',
+      department: '',
+      phone: '059-2',
+    };
+    expect(await api().save(value, null, 'EMP-1', BUSINESS)).toBe('HR-EMP-00005');
+    expect(postCalls.map((c) => c.method)).toEqual(['frappe.client.save']);
   });
 });

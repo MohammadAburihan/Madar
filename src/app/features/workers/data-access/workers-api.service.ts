@@ -277,6 +277,11 @@ export class WorkersApiService {
       );
       return existing;
     }
+    // Saved again after "not created": a slow first try that landed meanwhile takes these details instead.
+    const landed = await this.find(reference);
+    if (landed) {
+      return this.save(value, landed, reference, business);
+    }
     const doc = await confirmRequest(
       this.erpnext.post<{ name: string }>('frappe.client.insert', {
         doc: {

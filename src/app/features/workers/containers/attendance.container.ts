@@ -98,7 +98,9 @@ import { saveLabel, sheetRowView, statusOptions } from './attendance-view';
             />
           }
         } @empty {
-          <p class="muted">{{ txt.empty }}</p>
+          @if (!dateInvalid()) {
+            <p class="muted">{{ txt.empty }}</p>
+          }
         }
         @if (saved(); as s) {
           <app-feedback-card tone="tint" [title]="txt.saved.title" [message]="s" />
@@ -243,6 +245,11 @@ export class AttendanceContainer {
     this.unresolved.set(false);
     if (!this.dateInvalid()) {
       void this.load();
+    } else {
+      // No sheet for a day that can't be marked; a load still running for the last day is dropped.
+      this.run++;
+      this.rows.set([]);
+      this.state.set('ready');
     }
   }
 
