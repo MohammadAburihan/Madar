@@ -52,7 +52,7 @@ export class BreakdownsApiService {
   /** Net sales per item in the period, returns taken off. */
   async salesByItem(company: string, range: DateRange): Promise<Breakdown> {
     const lines = await this.erpnext.listAll<{
-      item: string;
+      item: string | null;
       item_name: string;
       qty: number;
       amount: number;
@@ -74,15 +74,17 @@ export class BreakdownsApiService {
     });
     const byItem = new Map<string, BreakdownRow>();
     for (const l of lines) {
-      const row = byItem.get(l.item) ?? {
-        key: l.item,
-        label: l.item_name || l.item,
+      // Lines without an item (free text typed in Desk) are told apart by their wording.
+      const key = l.item || `text:${l.item_name}`;
+      const row = byItem.get(key) ?? {
+        key,
+        label: l.item_name || key,
         amount: 0,
         qty: 0,
       };
       row.amount += Number(l.amount || 0);
       row.qty = (row.qty ?? 0) + Number(l.qty || 0);
-      byItem.set(l.item, row);
+      byItem.set(key, row);
     }
     return breakdown([...byItem.values()]);
   }

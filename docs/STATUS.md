@@ -226,6 +226,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 3 (1 medium, 1 low) fixed: an owner whose roles can't read bins or warehouses (accounts roles only) sees
   the breakdowns without stock instead of an error; pay and attendance are read only with an HR role (ERPNext narrows
   them to the user's own records otherwise).
+  Review pass 4 (1 low) fixed: free-text invoice lines without an item are told apart by their wording. Reviewing
+  stops here (nothing above low).
 
 ## Workers & HR (done: #46–#53)
 

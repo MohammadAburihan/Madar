@@ -33,6 +33,20 @@ describe('BreakdownsApiService', () => {
     ]);
   });
 
+  it('keeps free-text lines without an item apart by their wording', async () => {
+    fakeErpnext({
+      'Sales Invoice': () => [
+        { item: null, item_name: 'Delivery charge', qty: 1, amount: 30 },
+        { item: null, item_name: 'Installation', qty: 1, amount: 80 },
+        { item: null, item_name: 'Delivery charge', qty: 1, amount: 30 },
+      ],
+    });
+    expect((await api().salesByItem('Rehan Nursery', RANGE)).rows).toEqual([
+      { key: 'text:Installation', label: 'Installation', amount: 80, qty: 1 },
+      { key: 'text:Delivery charge', label: 'Delivery charge', amount: 60, qty: 2 },
+    ]);
+  });
+
   it('groups sales by customer and purchases by supplier in the company currency', async () => {
     const { listCalls } = fakeErpnext({
       'Sales Invoice': () => [
