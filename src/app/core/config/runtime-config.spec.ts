@@ -23,6 +23,9 @@ function setup(
 }
 
 describe('RuntimeConfigService', () => {
+  // A connection another spec stored would win over the platform default.
+  beforeEach(() => localStorage.clear());
+
   it('uses the loaded URL without a trailing slash', async () => {
     const { service, http } = setup('web');
     const loading = service.load();
