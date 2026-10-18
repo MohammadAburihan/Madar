@@ -2635,7 +2635,8 @@
       "requestLeave": "Request leave",
       "assignShift": "Assign shift",
       "giveAdvance": "Give an advance",
-      "setSalary": "Set salary"
+      "setSalary": "Set salary",
+      "logHours": "Log hours"
     }
   },
   "workers": {
@@ -3167,6 +3168,55 @@
           "message": "{{amount}} from that date. Choose another date for the new salary, or change that one in ERPNext."
         }
       }
+    },
+    "hours": {
+      "log": "Log hours",
+      "form": {
+        "title": "Log hours",
+        "subtitle": "Time a worker spent, optionally on a project.",
+        "worker": "Worker *",
+        "workerError": "Choose the worker.",
+        "date": "Date *",
+        "dateError": "Choose a date up to today.",
+        "hours": "Hours *",
+        "hoursError": "Enter hours between 0 and 24.",
+        "activity": "Activity *",
+        "project": "Project",
+        "noProject": "No project",
+        "note": "Note",
+        "save": "Save hours",
+        "saving": "Saving…",
+        "optionsFailed": "Workers couldn't load. Try again before saving.",
+        "notCreated": {
+          "title": "The hours weren't saved",
+          "message": "Nothing was saved. Check the details and save again."
+        },
+        "unresolved": {
+          "title": "Saving not yet resolved",
+          "message": "The request timed out. The hours may already be saved. Check before saving again (reference {{reference}})."
+        },
+        "failed": {
+          "permission": {
+            "title": "You can't log these hours",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The hours weren't saved. Check the connection and save again."
+          },
+          "error": {
+            "title": "The hours weren't saved",
+            "message": "ERPNext refused them. Check the details and save again."
+          }
+        },
+        "activityError": "Choose an activity.",
+        "noActivities": "There are no activity types your role can use. Add one in ERPNext (Projects › Activity Type) first.",
+        "dontFit": {
+          "title": "These hours don't fit in the day",
+          "message": "After the worker's earlier logs that day, {{hours}} hours are left. Log fewer hours, or log the rest on another day."
+        }
+      },
+      "lastWeek": "Hours in the last 7 days"
     }
   }
 }

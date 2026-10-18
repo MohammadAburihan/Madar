@@ -33,6 +33,8 @@ export interface WorkerDetail extends WorkerRow {
   leaveLeft: number | null;
   advanceToRepay: number | null;
   pay: WorkerPay | null;
+  /** Hours logged in the last seven days; null when timesheets can't be read. */
+  hoursLastWeek: number | null;
   /** The newest attendance, newest first. */
   recent: { date: string; status: string }[];
 }
@@ -144,4 +146,13 @@ export interface PayRow {
   active: boolean;
   hasSalary: boolean;
   slip: { name: string; confirmed: boolean; gross: number; net: number } | null;
+}
+
+export interface HoursFormValue {
+  worker: string;
+  date: string;
+  hours: number;
+  activity: string;
+  project: string;
+  note: string;
 }
