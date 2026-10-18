@@ -47,6 +47,13 @@ export class StockMovedError extends Error {
   }
 }
 
+/** Stock added by a count needs a cost to be booked at, and the item has none yet (never received or valued). */
+export class NoValuationError extends Error {
+  constructor(readonly item: string) {
+    super(`${item} has no valuation rate`);
+  }
+}
+
 const DAMAGE_LABELS = { damaged: 'Damaged', lost: 'Lost', expired: 'Expired' } as const;
 
 /**
@@ -267,6 +274,9 @@ export class InventoryApiService {
       if (now !== request.systemQty) {
         throw new StockMovedError(now);
       }
+      if (adjustChange(request) > 0 && !(await this.hasValuation(request.item))) {
+        throw new NoValuationError(request.item);
+      }
     }
     const fresh = this.adjustDoc(request);
     let entry: EntryDoc;
@@ -342,6 +352,30 @@ export class InventoryApiService {
     };
   }
 
+  /** ERPNext values added stock from the item's earlier stock or its own valuation rate; without either it refuses. */
+  private async hasValuation(item: string): Promise<boolean> {
+    const [bins, [doc]] = await Promise.all([
+      firstValueFrom(
+        this.erpnext.list<{ name: string }>('Bin', {
+          fields: ['name'],
+          filters: [
+            ['item_code', '=', item],
+            ['valuation_rate', '>', 0],
+          ],
+          limit: 1,
+        }),
+      ),
+      firstValueFrom(
+        this.erpnext.list<{ valuation_rate: number }>('Item', {
+          fields: ['valuation_rate'],
+          filters: [['name', '=', item]],
+          limit: 1,
+        }),
+      ),
+    ]);
+    return bins.length > 0 || Number(doc?.valuation_rate ?? 0) > 0;
+  }
+
   private adjustDoc(request: AdjustRequest): Record<string, unknown> {
     const change = adjustChange(request);
     const purpose = change > 0 ? 'Material Receipt' : 'Material Issue';
@@ -352,7 +386,9 @@ export class InventoryApiService {
       stock_entry_type: purpose,
       purpose,
       company: request.company,
-      [change > 0 ? 'to_warehouse' : 'from_warehouse']: request.warehouse,
+      // Both set: a reused draft may have gone the other way.
+      from_warehouse: change > 0 ? null : request.warehouse,
+      to_warehouse: change > 0 ? request.warehouse : null,
       remarks: `${label}: ${request.reason.trim()}\n\nMadar ${request.kind} ${request.reference}`,
       items: [
         {

@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ListQuery } from '../../../core/erpnext/erpnext-client';
-import { InventoryApiService, StockMovedError } from './inventory-api.service';
+import { InventoryApiService, NoValuationError, StockMovedError } from './inventory-api.service';
 import { AdjustRequest } from './inventory.models';
 
 const MAIN = 'Main warehouse - RN';
@@ -113,6 +113,45 @@ describe('InventoryApiService adjustments', () => {
     expect(error).toBeInstanceOf(StockMovedError);
     expect((error as StockMovedError).current).toBe(21);
     expect(postCalls).toEqual([]);
+  });
+
+  it('refuses to add counted stock to an item that has no valuation yet', async () => {
+    const { postCalls } = fakeErpnext(
+      {
+        Bin: (q) =>
+          q.filters?.some((f) => f[0] === 'valuation_rate') ? [] : binsOf({ [MAIN]: 0 })(q),
+        Item: (q) => (q.fields.includes('valuation_rate') ? [{ valuation_rate: 0 }] : ITEMS()),
+        Warehouse: WAREHOUSES,
+      },
+      {},
+    );
+    await expect(api().adjust(count({ systemQty: 0, qty: 5 }), null)).rejects.toBeInstanceOf(
+      NoValuationError,
+    );
+    expect(postCalls).toEqual([]);
+  });
+
+  it('sets both header warehouses, so a reused draft that changed direction keeps none of the old one', async () => {
+    const { postCalls } = fakeErpnext(
+      { Bin: binsOf({ [MAIN]: 22 }), Item: ITEMS, Warehouse: WAREHOUSES },
+      { 'frappe.client.submit': () => ENTRY },
+      {
+        'Stock Entry/MAT-STE-9': {
+          name: 'MAT-STE-9',
+          docstatus: 0,
+          stock_entry_type: 'Material Receipt',
+          to_warehouse: MAIN,
+          items: [{ item_code: 'OLV-20', qty: 3, t_warehouse: MAIN }],
+        },
+      },
+    );
+    await api().adjust(count(), 'MAT-STE-9');
+    expect(postCalls[0].body['doc']).toMatchObject({
+      name: 'MAT-STE-9',
+      stock_entry_type: 'Material Issue',
+      from_warehouse: MAIN,
+      to_warehouse: null,
+    });
   });
 
   it('writes damage off as a material issue labelled with its type', async () => {

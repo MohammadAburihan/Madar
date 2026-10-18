@@ -8,7 +8,7 @@ import {
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
-import { InventoryApiService, StockMovedError } from './inventory-api.service';
+import { InventoryApiService, NoValuationError, StockMovedError } from './inventory-api.service';
 import {
   AdjustKind,
   AdjustRequest,
@@ -22,7 +22,8 @@ import {
 
 export type AdjustState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
-export type AdjustFailure = 'permission' | 'offline' | 'stock' | 'moved' | 'changed' | 'error';
+export type AdjustFailure =
+  'permission' | 'offline' | 'stock' | 'moved' | 'valuation' | 'changed' | 'error';
 
 const PREFIX: Record<AdjustKind, string> = { count: 'CNT', damage: 'DMG' };
 
@@ -194,6 +195,11 @@ export abstract class AdjustStore {
         this.state.set('failed');
         return;
       }
+      if (error instanceof NoValuationError) {
+        this.failure.set('valuation');
+        this.state.set('failed');
+        return;
+      }
       if (error instanceof PostedEarlierError) {
         this.draft.set(null);
         this.reference.set(newReference(PREFIX[this.kind]));
@@ -202,6 +208,9 @@ export abstract class AdjustStore {
         return;
       }
       const erpnextError = ErpnextError.from(error);
+      if (erpnextError.excType === 'NegativeStockError') {
+        void this.refreshItem();
+      }
       this.failure.set(
         erpnextError.kind === 'forbidden'
           ? 'permission'
@@ -240,6 +249,23 @@ export abstract class AdjustStore {
     } catch {
       this.state.set('unresolved');
       return 'pending';
+    }
+  }
+
+  /** Reads the item's balances again, so the form checks the quantity against what the location holds now. */
+  private async refreshItem(): Promise<void> {
+    const item = this.item();
+    if (!item) {
+      return;
+    }
+    const fresh = await this.api
+      .item(
+        item.code,
+        this.warehouses().map((w) => w.id),
+      )
+      .catch(() => null);
+    if (fresh && this.item()?.code === fresh.code) {
+      this.item.set(fresh);
     }
   }
 

@@ -3372,6 +3372,10 @@
       "error": {
         "title": "The adjustment wasn't posted",
         "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "valuation": {
+        "title": "This item has no cost yet",
+        "message": "ERPNext needs a valuation to add stock. Receive it through a purchase, or set its valuation rate in ERPNext, then count again."
       }
     },
     "count": {

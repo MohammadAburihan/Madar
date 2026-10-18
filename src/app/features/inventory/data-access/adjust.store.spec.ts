@@ -142,8 +142,11 @@ describe('AdjustStore', () => {
     api.adjust.mockRejectedValueOnce(
       new HttpErrorResponse({ status: 417, error: { exc_type: 'NegativeStockError' } }),
     );
+    api.item.mockResolvedValueOnce({ ...OLIVE, stock: { ...OLIVE.stock, [SHOP]: 2 } });
     await damage.confirm();
     expect(damage.failure()).toBe('stock');
+    // The form checks the quantity against what the location holds now.
+    await vi.waitFor(() => expect(damage.onHand()).toBe(2));
   });
 
   it('starts over on a fresh visit, deleting a draft a failed try left', async () => {

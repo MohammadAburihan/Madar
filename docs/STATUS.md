@@ -229,6 +229,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   has no field for the reason or Madar's reference. Lost answers are checked by the `CNT-`/`DMG-` reference in the
   remarks, as moves are. Designs: Inventory 05/06 entries gained the item card and location, and their buttons now
   lead to the existing review mocks. e2e: `29-stock-adjust`.
+  Review pass 1 (1 medium, 2 low) fixed: a count that adds stock to an item with no valuation yet (never received) says
+  so instead of failing at ERPNext; a reused draft that changed direction keeps no old warehouse; a write-off refused
+  for stock reads the location's quantity again.
 
 ## Approvals and advanced reports (done: #54, #55)
 
