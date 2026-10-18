@@ -116801,21 +116801,6 @@
               "fontWeight": "normal"
             },
             {
-              "id": "d5xwHl",
-              "type": "ref",
-              "ref": "SeemW",
-              "name": "Search workers",
-              "width": "fill_container",
-              "context": "Role: searchbox. Accessible name: Search. Filters the list by name, job title or phone as you type.",
-              "height": "fit_content",
-              "padding": 0,
-              "descendants": {
-                "zjtuK": {
-                  "content": "Search worker"
-                }
-              }
-            },
-            {
               "type": "frame",
               "id": "y0wB03",
               "name": "Contact type filters",
@@ -116879,7 +116864,7 @@
                   "content": "Gross ILS 4,200.00 · Net ILS 3,900.00"
                 },
                 "TQSOO": {
-                  "content": "Draft slip · Advance repayment ILS 300.00"
+                  "content": "Draft slip"
                 }
               }
             },
@@ -116924,7 +116909,7 @@
               "width": "fill_container",
               "descendants": {
                 "JgY9L": {
-                  "content": "Create salary slips"
+                  "content": "Create 1 salary slip"
                 }
               }
             }
@@ -117164,21 +117149,6 @@
               "fontWeight": "normal"
             },
             {
-              "id": "FTHBd",
-              "type": "ref",
-              "ref": "gMHOU",
-              "name": "Search workers",
-              "width": "fill_container",
-              "context": "Role: searchbox. Accessible name: بحث. Filters the list by name, job title or phone as you type.",
-              "height": "fit_content",
-              "padding": 0,
-              "descendants": {
-                "AHy2k": {
-                  "content": "البحث بالعامل"
-                }
-              }
-            },
-            {
               "type": "frame",
               "id": "t2O2a",
               "name": "Contact type filters",
@@ -117254,7 +117224,7 @@
                   "textAlign": "right"
                 },
                 "ysT02": {
-                  "content": "قسيمة مسودة · سداد سلفة ILS 300.00",
+                  "content": "قسيمة مسودة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -117314,7 +117284,7 @@
               "width": "fill_container",
               "descendants": {
                 "yHiIx": {
-                  "content": "إنشاء قسائم الرواتب",
+                  "content": "إنشاء قسيمة واحدة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -117626,22 +117596,6 @@
               }
             },
             {
-              "id": "FDE8Y",
-              "type": "ref",
-              "ref": "jhYHZ",
-              "name": "Paid into",
-              "width": "fill_container",
-              "context": "Role: textbox or combobox. Accessible name: Until.",
-              "descendants": {
-                "tmtQA": {
-                  "content": "Paid into"
-                },
-                "sedCr": {
-                  "content": "Main cash ▾"
-                }
-              }
-            },
-            {
               "id": "SMB4p",
               "type": "ref",
               "ref": "wk3Ko",
@@ -117937,28 +117891,6 @@
               }
             },
             {
-              "id": "M1EAMM",
-              "type": "ref",
-              "ref": "g9WDP",
-              "name": "Paid into",
-              "width": "fill_container",
-              "context": "Role: textbox or combobox. Accessible name: حتى.",
-              "descendants": {
-                "Ia4Iv": {
-                  "content": "يُدفع إلى",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                },
-                "empG8": {
-                  "content": "الصندوق الرئيسي ▾",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
               "id": "iJJYd",
               "type": "ref",
               "ref": "V1NTE",
@@ -117984,7 +117916,7 @@
       "x": 7690,
       "y": 26960,
       "name": "04 Mobile / Workers 08b Assign shift · end current",
-      "context": "State of J1K76u (/workers/shift/new) when the worker has a shift running over the new start. Counterpart VopT2.",
+      "context": "State of J1K76u (/workers/shift/new). While the worker's shifts load: 'Checking the worker's shifts…' and no Assign button. A shift running over the new start: this card and 'End {shift} on {day before}'; with Until set the card reads 'End it the day before first. After saving, the form opens again to put it back after the new shift ends.' and after saving the form reopens prefilled (shift, from = day after Until, until = the old end) with the card 'Put {shift} back from {date}, after the temporary shift.' A shift starting on/after the new start: card '{worker} has {shift} from {date}' with 'Set Until to end the new shift before it.' and no Assign button. Counterpart VopT2.",
       "clip": true,
       "width": 390,
       "fill": "$md-bg",
@@ -118280,7 +118212,7 @@
       "x": 18400,
       "y": 27560,
       "name": "Arabic / 04 Mobile / Workers 08b Assign shift · end current",
-      "context": "State of w4kPH9 when a shift runs over the new start. Counterpart kJAp0.",
+      "context": "Arabic state of w4kPH9; same states as kJAp0 (جارٍ التحقّق من ورديات العامل… / أعد {shift} من {date}، بعد الوردية المؤقتة. / لدى {worker} وردية {shift} من {date}).",
       "metadata": {
         "type": "madar-localization",
         "source": "ylrkE",

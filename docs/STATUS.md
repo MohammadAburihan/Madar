@@ -292,7 +292,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain.
   Pass 9: only low. Deferred: a shift starting on the chosen From can't be removed in Madar (change it in Desk); the
   put-back form remembers one ended shift, so ending two concurrent ones (a Desk setting) brings back only the last.
-- **H5 — Advances** (this PR): **Give an advance** (`/workers/advance/new`, from a worker's page and "+ New", for roles
+- **H5 — Advances**: merged (#50). **Give an advance** (`/workers/advance/new`, from a worker's page and "+ New", for roles
   with HR, Expense Approver and Accounts User or Manager: the Owner, who now holds Expense Approver) records a submitted
   Employee Advance (company default advance account, `ADV-…` reference after the purpose) and pays it from the chosen
   payment account (company-currency accounts only) with the Payment Entry Frappe HR prepares, `reference_no` = the
@@ -309,7 +309,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   (each business site sets it once; noted in CLAUDE.md). The full suite's desktop Workers test now searches, as runs
   add workers of their own.
   Review pass 3 (1 medium) fixed: once sent, the advance's details stay locked (a slow first try may still land under
-  the same reference); only the paying account can change after a failed payment. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  the same reference); only the paying account can change after a failed payment.
+  Pass 4: only low; fixed the lock after a definite refusal (the details can be fixed). Deferred: opened for a worker who
+  isn't active, the worker field is left empty without saying why. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

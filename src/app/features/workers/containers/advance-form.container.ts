@@ -367,6 +367,9 @@ export class AdvanceFormContainer {
       } else {
         if (error instanceof AdvanceNotPaidError) {
           this.recorded.set(true);
+        } else {
+          // A definite refusal saved nothing under the reference: the details can be fixed.
+          this.sent.set(false);
         }
         const e = ErpnextError.from(error instanceof AdvanceNotPaidError ? error.reason : error);
         if (e.kind === 'forbidden') {
