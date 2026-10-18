@@ -232,6 +232,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (1 medium, 2 low) fixed: a count that adds stock to an item with no valuation yet (never received) says
   so instead of failing at ERPNext; a reused draft that changed direction keeps no old warehouse; a write-off refused
   for stock reads the location's quantity again.
+  Review pass 2 (1 medium, 1 low) fixed: the valuation check asks ERPNext's own rule (`get_incoming_rate` for the
+  location, then the item's rates and buying price) instead of guessing; an item the link named that can't be opened
+  says so above the search.
 
 ## Approvals and advanced reports (done: #54, #55)
 

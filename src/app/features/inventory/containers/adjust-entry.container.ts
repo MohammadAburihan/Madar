@@ -130,6 +130,13 @@ const SEARCH_DELAY_MS = 250;
         </button>
         <p class="muted">{{ txt.footnote }}</p>
       } @else {
+        @if (linkMissing()) {
+          <app-feedback-card
+            tone="warning"
+            [title]="txt.linkMissing.title"
+            [message]="txt.linkMissing.message"
+          />
+        }
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
         @for (item of results(); track item.code) {
           <app-item-card
@@ -159,6 +166,8 @@ export class AdjustEntryContainer implements OnInit {
   protected readonly searching = signal(true);
   protected readonly loaded = signal(false);
   protected readonly loadFailed = signal(false);
+  /** The item the link named couldn't be opened (no longer a stock item, or unreadable). */
+  protected readonly linkMissing = signal(false);
   private searchRun = 0;
 
   protected readonly text = computed(() => {
@@ -180,6 +189,10 @@ export class AdjustEntryContainer implements OnInit {
       review: t(k('review')),
       footnote: t(k('footnote')),
       retry: t('adjust.retry'),
+      linkMissing: {
+        title: t('adjust.linkMissing.title'),
+        message: t('adjust.linkMissing.message'),
+      },
       noAccess: { title: t('adjust.noAccess.title'), message: t('adjust.noAccess.message') },
       loadFailed: { title: t('adjust.loadFailed.title'), message: t('adjust.loadFailed.message') },
     };
@@ -366,9 +379,10 @@ export class AdjustEntryContainer implements OnInit {
       // Only to start the task: back from Review keeps an item the user has since changed.
       if (deepLink && !this.ctx.store.item()) {
         await this.ctx.store.openItem(deepLink, this.warehouse());
+        this.linkMissing.set(!this.ctx.store.item());
       }
     } catch {
-      // The item search is shown instead; the user picks the item there.
+      this.linkMissing.set(true);
     } finally {
       this.loaded.set(true);
     }

@@ -3435,6 +3435,10 @@
       "doneSubtitle": "{{entry}} · Damage",
       "doneMessage": "{{warehouse}} now holds {{qty}} of {{item}}. Company total {{total}}. Known damage remains separate from count variance.",
       "checkingTitle": "Checking your write-off"
+    },
+    "linkMissing": {
+      "title": "That item couldn't be opened",
+      "message": "It isn't a stock item now, or couldn't be read. Search for the item to adjust."
     }
   }
 }

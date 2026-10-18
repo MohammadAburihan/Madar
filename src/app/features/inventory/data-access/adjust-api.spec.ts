@@ -96,9 +96,12 @@ describe('InventoryApiService adjustments', () => {
   });
 
   it('posts a count above the system quantity as a material receipt', async () => {
-    const { postCalls } = erp({ [MAIN]: 22 });
+    const { postCalls } = erp(
+      { [MAIN]: 22 },
+      { 'erpnext.stock.utils.get_incoming_rate': () => 20 },
+    );
     await api().adjust(count({ qty: 25 }), null);
-    expect(postCalls[0].body['doc']).toMatchObject({
+    expect(postCalls[1].body['doc']).toMatchObject({
       stock_entry_type: 'Material Receipt',
       to_warehouse: MAIN,
       items: [{ qty: 3, t_warehouse: MAIN }],
@@ -115,20 +118,16 @@ describe('InventoryApiService adjustments', () => {
     expect(postCalls).toEqual([]);
   });
 
-  it('refuses to add counted stock to an item that has no valuation yet', async () => {
-    const { postCalls } = fakeErpnext(
-      {
-        Bin: (q) =>
-          q.filters?.some((f) => f[0] === 'valuation_rate') ? [] : binsOf({ [MAIN]: 0 })(q),
-        Item: (q) => (q.fields.includes('valuation_rate') ? [{ valuation_rate: 0 }] : ITEMS()),
-        Warehouse: WAREHOUSES,
-      },
-      {},
-    );
+  it('refuses to add counted stock where ERPNext has no rate to value it at', async () => {
+    const { postCalls } = erp({ [MAIN]: 0 }, { 'erpnext.stock.utils.get_incoming_rate': () => 0 });
     await expect(api().adjust(count({ systemQty: 0, qty: 5 }), null)).rejects.toBeInstanceOf(
       NoValuationError,
     );
-    expect(postCalls).toEqual([]);
+    expect(postCalls.map((c) => c.method)).toEqual(['erpnext.stock.utils.get_incoming_rate']);
+    expect(postCalls[0].body).toMatchObject({
+      args: { item_code: 'OLV-20', warehouse: MAIN, qty: -1, company: 'Rehan Nursery' },
+      raise_error_if_no_rate: 0,
+    });
   });
 
   it('sets both header warehouses, so a reused draft that changed direction keeps none of the old one', async () => {

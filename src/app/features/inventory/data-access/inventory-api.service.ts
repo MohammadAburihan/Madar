@@ -274,7 +274,7 @@ export class InventoryApiService {
       if (now !== request.systemQty) {
         throw new StockMovedError(now);
       }
-      if (adjustChange(request) > 0 && !(await this.hasValuation(request.item))) {
+      if (adjustChange(request) > 0 && !(await this.hasValuation(request))) {
         throw new NoValuationError(request.item);
       }
     }
@@ -352,28 +352,27 @@ export class InventoryApiService {
     };
   }
 
-  /** ERPNext values added stock from the item's earlier stock or its own valuation rate; without either it refuses. */
-  private async hasValuation(item: string): Promise<boolean> {
-    const [bins, [doc]] = await Promise.all([
-      firstValueFrom(
-        this.erpnext.list<{ name: string }>('Bin', {
-          fields: ['name'],
-          filters: [
-            ['item_code', '=', item],
-            ['valuation_rate', '>', 0],
-          ],
-          limit: 1,
-        }),
-      ),
-      firstValueFrom(
-        this.erpnext.list<{ valuation_rate: number }>('Item', {
-          fields: ['valuation_rate'],
-          filters: [['name', '=', item]],
-          limit: 1,
-        }),
-      ),
-    ]);
-    return bins.length > 0 || Number(doc?.valuation_rate ?? 0) > 0;
+  /**
+   * Whether ERPNext can value stock added at the location: its own rule (the location's last rate, then the item's
+   * valuation or standard rate, then a buying price), asked as for stock going out so a missing rate reads as 0.
+   */
+  private async hasValuation(request: AdjustRequest): Promise<boolean> {
+    const rate = await firstValueFrom(
+      this.erpnext.post<number>('erpnext.stock.utils.get_incoming_rate', {
+        args: {
+          item_code: request.item,
+          warehouse: request.warehouse,
+          company: request.company,
+          qty: -1,
+          voucher_type: 'Stock Entry',
+          // The latest rate on record, whatever today is on the site.
+          posting_date: '2999-12-31',
+          posting_time: '23:59:59',
+        },
+        raise_error_if_no_rate: 0,
+      }),
+    );
+    return Number(rate ?? 0) > 0;
   }
 
   private adjustDoc(request: AdjustRequest): Record<string, unknown> {
