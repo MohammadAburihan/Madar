@@ -222,6 +222,8 @@ export class ApprovalContainer {
     if (!detail || this.working() || this.unresolved()) {
       return;
     }
+    // The page may move to another document while the step runs: its answer belongs to this one only.
+    const sameDocument = () => this.doctype() === detail.doctype && this.name() === detail.name;
     this.working.set(true);
     this.failed.set(null);
     try {
@@ -236,6 +238,9 @@ export class ApprovalContainer {
         action,
         business,
       );
+      if (!sameDocument()) {
+        return;
+      }
       const { t } = this.i18n.tr();
       this.outcome.set(
         result.moved
@@ -247,6 +252,9 @@ export class ApprovalContainer {
       );
       this.detail.update((d) => (d ? { ...d, state: result.state, actions: [] } : d));
     } catch (error) {
+      if (!sameDocument()) {
+        return;
+      }
       if (error instanceof UnresolvedError) {
         this.sentFrom = detail.state;
         this.unresolved.set(true);

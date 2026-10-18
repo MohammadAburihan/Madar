@@ -224,6 +224,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   document on the same page starts without the last one's outcome or lost answer; Check result compares with the
   state the step was sent from, even after a failed check; the cap note follows ERPNext's open actions and leave
   rows; a leave request under a workflow shows once; buying amounts are hidden from roles that don't see costs.
+  Review pass 2 (1 medium, 3 low) fixed: the seed adds the waiting claim after its approver's user exists (a new site
+  failed); a step's late answer is dropped once the page shows another document; leave rows open the approval page for
+  roles without HR. Deferred: on a workflow without self-approval, ERPNext still lists Approve/Reject to the document's
+  creator (`get_transitions` doesn't filter it) and refuses only when applied, shown as the generic failure.
 
 ## Workers & HR (done: #46–#53)
 

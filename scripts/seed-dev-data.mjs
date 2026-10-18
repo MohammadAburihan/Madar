@@ -623,27 +623,6 @@ await ensure(
     ],
   },
 );
-if (!(await list('Expense Claim', { employee: employee.Rana })).length) {
-  await insert({
-    doctype: 'Expense Claim',
-    employee: employee.Rana,
-    company: COMPANY,
-    expense_approver: 'rehan@rehan.example',
-    payable_account: `Creditors - ${ABBR}`,
-    posting_date: iso(today),
-    expenses: [
-      {
-        expense_date: iso(today),
-        expense_type: 'Travel',
-        amount: 120,
-        sanctioned_amount: 120,
-        cost_center: `Main - ${ABBR}`,
-        description: 'Fuel for the delivery van',
-      },
-    ],
-  });
-}
-
 const users = [
   {
     email: 'rehan@rehan.example',
@@ -710,6 +689,28 @@ for (const u of users) {
     doc.new_password = DEV_PASSWORD;
     await call('frappe.client.save', { doc });
   }
+}
+
+// After the users: the claim's approver must exist.
+if (!(await list('Expense Claim', { employee: employee.Rana })).length) {
+  await insert({
+    doctype: 'Expense Claim',
+    employee: employee.Rana,
+    company: COMPANY,
+    expense_approver: 'rehan@rehan.example',
+    payable_account: `Creditors - ${ABBR}`,
+    posting_date: iso(today),
+    expenses: [
+      {
+        expense_date: iso(today),
+        expense_type: 'Travel',
+        amount: 120,
+        sanctioned_amount: 120,
+        cost_center: `Main - ${ABBR}`,
+        description: 'Fuel for the delivery van',
+      },
+    ],
+  });
 }
 
 // Created as the salesperson so their own sales (ILS 640 of today's ILS 1,280), draft, and

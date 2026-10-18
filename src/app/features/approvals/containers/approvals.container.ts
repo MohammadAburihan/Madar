@@ -183,7 +183,10 @@ export class ApprovalsContainer {
     const [doctype, ...rest] = id.split('/');
     const name = rest.join('/');
     void this.router.navigate(
-      doctype === 'Leave Application' ? ['/workers/leave', name] : ['/approvals', doctype, name],
+      // Leave pages are for HR roles; others act on a leave workflow from the approval page.
+      doctype === 'Leave Application' && this.manageWorkers()
+        ? ['/workers/leave', name]
+        : ['/approvals', doctype, name],
     );
   }
 }
