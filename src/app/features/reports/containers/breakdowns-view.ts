@@ -65,11 +65,9 @@ export function breakdownSummary(
     rows: [
       { label: t('purchases'), value: money(purchases.total) },
       { label: t('stockValue'), value: money(stock.total) },
-      ...(people
-        ? [
-            { label: t('pay'), value: money(people.net) },
-            { label: t('days'), value: qty(people.daysPresent) },
-          ]
+      ...(people?.net != null ? [{ label: t('pay'), value: money(people.net) }] : []),
+      ...(people?.daysPresent != null
+        ? [{ label: t('days'), value: qty(people.daysPresent) }]
         : []),
     ],
   };

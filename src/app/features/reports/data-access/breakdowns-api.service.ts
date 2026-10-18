@@ -18,12 +18,10 @@ export interface Breakdown {
   total: number;
 }
 
-/** Pay and attendance for the period: slips confirmed and days present. */
+/** Pay and attendance for the period; null where the role can't read them. */
 export interface PeopleFigures {
-  gross: number;
-  net: number;
-  slips: number;
-  daysPresent: number;
+  net: number | null;
+  daysPresent: number | null;
 }
 
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -70,6 +68,8 @@ export class BreakdownsApiService {
         ['docstatus', '=', 1],
         ['posting_date', 'between', [range.from, range.to]],
       ],
+      // Paging over invoice lines needs a sort unique per line, not per invoice.
+      orderBy: 'name asc, items.idx asc',
     });
     const byItem = new Map<string, BreakdownRow>();
     for (const l of lines) {
@@ -96,7 +96,8 @@ export class BreakdownsApiService {
           ['docstatus', '=', 1],
           ['posting_date', 'between', [range.from, range.to]],
         ],
-        groupBy: 'customer, customer_name',
+        // By id alone: a customer renamed during the period stays one line.
+        groupBy: 'customer',
         limit: 0,
       }),
     );
@@ -120,7 +121,7 @@ export class BreakdownsApiService {
           ['docstatus', '=', 1],
           ['posting_date', 'between', [range.from, range.to]],
         ],
-        groupBy: 'supplier, supplier_name',
+        groupBy: 'supplier',
         limit: 0,
       }),
     );
@@ -166,8 +167,8 @@ export class BreakdownsApiService {
   async people(company: string, range: DateRange): Promise<PeopleFigures | null> {
     const [slips, attendance] = await Promise.all([
       this.erpnext
-        .listAll<{ base_gross_pay: number; base_net_pay: number }>('Salary Slip', {
-          fields: ['base_gross_pay', 'base_net_pay'],
+        .listAll<{ base_net_pay: number }>('Salary Slip', {
+          fields: ['base_net_pay'],
           filters: [
             ['company', '=', company],
             ['docstatus', '=', 1],
@@ -190,19 +191,19 @@ export class BreakdownsApiService {
       return null;
     }
     return {
-      gross: round((slips ?? []).reduce((s, r) => s + Number(r.base_gross_pay || 0), 0)),
-      net: round((slips ?? []).reduce((s, r) => s + Number(r.base_net_pay || 0), 0)),
-      slips: (slips ?? []).length,
-      daysPresent: (attendance ?? []).reduce(
-        (s, r) =>
-          s +
-          (r.status === 'Present' || r.status === 'Work From Home'
-            ? 1
-            : r.status === 'Half Day'
-              ? 0.5
-              : 0),
-        0,
-      ),
+      net: slips ? round(slips.reduce((s, r) => s + Number(r.base_net_pay || 0), 0)) : null,
+      daysPresent: attendance
+        ? attendance.reduce(
+            (s, r) =>
+              s +
+              (r.status === 'Present' || r.status === 'Work From Home'
+                ? 1
+                : r.status === 'Half Day'
+                  ? 0.5
+                  : 0),
+            0,
+          )
+        : null,
     };
   }
 }

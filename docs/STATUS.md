@@ -218,6 +218,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Net amounts in the company currency, as posted (returns taken off); stock from ERPNext's bins for the company's
   warehouses. Designs: Reports 04 Breakdowns (mobile EN/AR) and the button on the Reports mocks (mobile and desktop,
   EN/AR). e2e: opening from Reports on phone and desktop, the year's figures, Arabic, roles without reports.
+  Review pass 1 (1 medium, 2 low) fixed: invoice lines page in a sort unique per line (no line counted twice or
+  missed over 500 lines); pay or attendance a role can't read is left out rather than shown as zero; a customer or
+  supplier renamed during the period stays one line.
 
 ## Workers & HR (done: #46–#53)
 

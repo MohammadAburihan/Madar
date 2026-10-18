@@ -24,6 +24,7 @@ describe('BreakdownsApiService', () => {
       rows: [{ key: 'POT-30', label: 'Ceramic planter', amount: 420, qty: 6 }],
       total: 420,
     });
+    expect(listCalls[0].query.orderBy).toBe('name asc, items.idx asc');
     expect(listCalls[0].query.filters).toEqual([
       ['company', '=', 'Rehan Nursery'],
       ['docstatus', '=', 1],
@@ -49,10 +50,7 @@ describe('BreakdownsApiService', () => {
       total: 1200.01,
     });
     expect((await api().purchasesBySupplier('Rehan Nursery', RANGE)).total).toBe(1280);
-    expect(listCalls.map((c) => c.query.groupBy)).toEqual([
-      'customer, customer_name',
-      'supplier, supplier_name',
-    ]);
+    expect(listCalls.map((c) => c.query.groupBy)).toEqual(['customer', 'supplier']);
     expect(listCalls[0].query.fields).toContainEqual({ SUM: 'base_net_total' });
   });
 
@@ -79,10 +77,7 @@ describe('BreakdownsApiService', () => {
 
   it('counts confirmed pay in the company currency and days present, half days as half', async () => {
     const { listCalls } = fakeErpnext({
-      'Salary Slip': () => [
-        { base_gross_pay: 4200, base_net_pay: 4000 },
-        { base_gross_pay: 3600, base_net_pay: 3600 },
-      ],
+      'Salary Slip': () => [{ base_net_pay: 4000 }, { base_net_pay: 3600 }],
       Attendance: () => [
         { status: 'Present' },
         { status: 'Half Day' },
@@ -91,13 +86,8 @@ describe('BreakdownsApiService', () => {
         { status: 'On Leave' },
       ],
     });
-    expect(await api().people('Rehan Nursery', RANGE)).toEqual({
-      gross: 7800,
-      net: 7600,
-      slips: 2,
-      daysPresent: 2.5,
-    });
-    expect(listCalls[0].query.fields).toEqual(['base_gross_pay', 'base_net_pay']);
+    expect(await api().people('Rehan Nursery', RANGE)).toEqual({ net: 7600, daysPresent: 2.5 });
+    expect(listCalls[0].query.fields).toEqual(['base_net_pay']);
   });
 
   it('leaves out pay and attendance a role may not read, but keeps other failures', async () => {
@@ -105,7 +95,7 @@ describe('BreakdownsApiService', () => {
     expect(await api().people('Rehan Nursery', RANGE)).toBeNull();
     TestBed.resetTestingModule();
     fakeErpnext({ 'Salary Slip': forbidden, Attendance: () => [{ status: 'Present' }] });
-    expect(await api().people('Rehan Nursery', RANGE)).toMatchObject({ net: 0, daysPresent: 1 });
+    expect(await api().people('Rehan Nursery', RANGE)).toEqual({ net: null, daysPresent: 1 });
     TestBed.resetTestingModule();
     fakeErpnext({ 'Salary Slip': offline, Attendance: () => [] });
     await expect(api().people('Rehan Nursery', RANGE)).rejects.toBeTruthy();

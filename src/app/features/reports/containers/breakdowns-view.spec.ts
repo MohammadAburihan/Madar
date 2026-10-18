@@ -69,13 +69,19 @@ describe('breakdowns view', () => {
       sales,
       of(),
       of(),
-      { gross: 7800, net: 7600, slips: 2, daysPresent: 41.5 },
+      { net: 7600, daysPresent: 41.5 },
       'ILS',
       ar,
     );
     expect(withPeople.rows.slice(2)).toEqual([
       { label: 'صافي الرواتب المؤكدة', value: 'ILS 7,600.00' },
       { label: 'أيام الحضور', value: '41.5' },
+    ]);
+    const noPay = breakdownSummary(sales, of(), of(), { net: null, daysPresent: 3 }, 'ILS', en);
+    expect(noPay.rows.map((r) => r.label)).toEqual([
+      'Purchases',
+      'Stock value today',
+      'Days present',
     ]);
   });
 });
