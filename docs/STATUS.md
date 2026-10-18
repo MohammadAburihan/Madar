@@ -209,7 +209,17 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Workers & HR (in progress, before step 6)
+## Approvals and advanced reports (in progress, before step 6)
+
+- **R1 — Breakdowns**: this PR. **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
+  Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
+  confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with
+  quantity sold), sales by customer, purchases by supplier and stock value by warehouse, each the top 5 and "Other (n)".
+  Net amounts in the company currency, as posted (returns taken off); stock from ERPNext's bins for the company's
+  warehouses. Designs: Reports 04 Breakdowns (mobile EN/AR) and the button on the Reports mocks (mobile and desktop,
+  EN/AR). e2e: opening from Reports on phone and desktop, the year's figures, Arabic, roles without reports.
+
+## Workers & HR (done: #46–#53)
 
 Runs on Frappe HR (`hrms` v16.51.0) added to the local ERPNext image (`scripts/build-erpnext-image.sh`,
 `madar-erpnext:v16.50.0-hrms`); both local sites have it installed (backed up first). Planned as H1 workers, H2
