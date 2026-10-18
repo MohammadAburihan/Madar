@@ -342,7 +342,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   worker who left during the month gets their last one, as Frappe HR allows); cards that can't take a salary open the
   worker's page. Pass 9: one low, fixed (picking a worker who joined later moves the start up to their
   joining date).
-- **H7 — Hours** (this PR): **Log hours** (`/workers/hours/new`, from a worker's page and "+ New") submits an ERPNext
+- **H7 — Hours**: merged (#52). **Log hours** (`/workers/hours/new`, from a worker's page and "+ New") submits an ERPNext
   Timesheet for a worker: date (up to today), hours (0–24, Arabic digits read), optional activity and open project, and a
   note, with the `TIME-…` reference after the note; a lost answer is checked by reference only. Activities and projects
   the role can't read are left out. The worker's page adds "Hours in the last 7 days" when there are any. Design:
@@ -355,7 +355,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   result, not a second log; once sent, the details stay locked (unlocked after a definite refusal); hours that would run
   past midnight after the day's earlier logs are refused with what's left. Pass 3 (1 medium, 1 low) fixed: a day already full
   to midnight refuses any hours (and nothing lands on the next day); after a lost answer the details stay locked even
-  when a later try is refused. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  when a later try is refused. Pass 4 (3 low) fixed: a long day with nothing else logged starts early enough to end by
+  midnight; the hours left are rounded down; PERMISSIONS.md gains the hours row. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

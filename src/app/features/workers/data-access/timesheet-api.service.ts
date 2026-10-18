@@ -15,13 +15,16 @@ const forbiddenAsEmpty = (error: unknown): never[] => {
 };
 
 /**
- * The hours as Frappe's "YYYY-MM-DD HH:mm:ss" times: from 08:00, or from where the worker's last log that day ended,
- * since ERPNext refuses one worker's logs that overlap.
+ * The hours as Frappe's "YYYY-MM-DD HH:mm:ss" times: from 08:00 (earlier when a long day wouldn't fit by midnight),
+ * or from where the worker's last log that day ended, since ERPNext refuses one worker's logs that overlap.
  */
 function span(date: string, hours: number, after: string | null): { from: string; to: string } {
+  const dayStart = new Date(`${date}T00:00:00Z`);
+  const latestStart = new Date(dayStart.getTime() + (24 - hours) * 3_600_000);
   const eight = new Date(`${date}T08:00:00Z`);
+  const preferred = latestStart < eight && latestStart >= dayStart ? latestStart : eight;
   const last = after ? new Date(`${after.replace(' ', 'T').slice(0, 19)}Z`) : null;
-  const start = last && last > eight ? last : eight;
+  const start = last && last > preferred ? last : preferred;
   const end = new Date(start.getTime() + hours * 3_600_000);
   const fmt = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ');
   return { from: fmt(start), to: fmt(end) };
@@ -88,8 +91,12 @@ export class TimesheetApiService {
       const left =
         from.slice(0, 10) !== value.date
           ? 0
-          : 24 - (Number(from.slice(11, 13)) + Number(from.slice(14, 16)) / 60);
-      throw new HoursDontFitError(Math.max(0, left));
+          : 24 -
+            (Number(from.slice(11, 13)) +
+              Number(from.slice(14, 16)) / 60 +
+              Number(from.slice(17, 19)) / 3600);
+      // Rounded down, so the hours offered do fit.
+      throw new HoursDontFitError(Math.max(0, Math.floor(left * 100) / 100));
     }
     const note = value.note.trim();
     const doc = await confirmRequest(

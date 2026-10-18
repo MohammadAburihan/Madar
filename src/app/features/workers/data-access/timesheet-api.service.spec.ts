@@ -120,4 +120,16 @@ describe('TimesheetApiService', () => {
       left: 0,
     });
   });
+
+  it('fits a long day by midnight when nothing else is logged', async () => {
+    const { postCalls } = fakeErpnext(
+      { Timesheet: () => [] },
+      { 'frappe.client.insert': () => ({ name: 'TS-5' }) },
+    );
+    await api().log({ ...VALUE, hours: 20 }, 'TIME-5', BUSINESS);
+    expect((postCalls[0].body['doc'] as { time_logs: object[] }).time_logs[0]).toMatchObject({
+      from_time: '2026-10-17 04:00:00',
+      to_time: '2026-10-18 00:00:00',
+    });
+  });
 });
