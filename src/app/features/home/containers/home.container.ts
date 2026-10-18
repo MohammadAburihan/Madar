@@ -131,6 +131,7 @@ export class HomeContainer {
       supplyProjectShort: ['/projects'],
       receivePayment: ['/money/receive'],
       transferStock: ['/inventory/transfer'],
+      countStock: ['/inventory/count'],
       customers: ['/contacts'],
       catalog: ['/inventory'],
     };

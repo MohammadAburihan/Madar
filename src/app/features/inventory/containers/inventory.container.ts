@@ -370,8 +370,15 @@ export class InventoryContainer implements OnInit {
   }
 
   protected open(action: string): void {
-    // A project is supplied item by item from its page.
-    void this.router.navigate(action === 'supplyProject' ? ['/projects'] : ['/task', action]);
+    if (action === 'supplyProject') {
+      // A project is supplied item by item from its page.
+      void this.router.navigate(['/projects']);
+      return;
+    }
+    const item = this.selected();
+    void this.router.navigate(['/inventory', action === 'countStock' ? 'count' : 'damage'], {
+      queryParams: item ? { item: item.code } : {},
+    });
   }
 
   private async load(): Promise<void> {

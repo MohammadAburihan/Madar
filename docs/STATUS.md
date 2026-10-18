@@ -220,6 +220,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   for example) don't have it until rebuilt with `npm run cap:sync`. Designs: the Workers, Contacts and Inventory
   mocks and the project page (EN/AR). e2e: `28-layout-parity`.
 
+- **S1 — Count stock and Record damage or loss**: this PR. Both start from Inventory (with the selected item), "+ New"
+  and, for the warehouse worker, Home; they work on phones and desktop for the roles that transfer stock. A count picks
+  an item and location, shows the system quantity, takes what was counted and a reason ("Physical count" to start),
+  and posts the difference; it refuses when the location changed since it was read, showing the new quantity. Damage or
+  loss takes a type (damaged, lost, expired), a quantity up to what the location holds, and a reason. Both post as
+  Stock Entries (Material Receipt or Issue, valued by ERPNext, booked to Stock Adjustment): a Stock Reconciliation
+  has no field for the reason or Madar's reference. Lost answers are checked by the `CNT-`/`DMG-` reference in the
+  remarks, as moves are. Designs: Inventory 05/06 entries gained the item card and location, and their buttons now
+  lead to the existing review mocks. e2e: `29-stock-adjust`.
+
 ## Approvals and advanced reports (done: #54, #55)
 
 - **A1 — Approvals**: merged (#54). **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)

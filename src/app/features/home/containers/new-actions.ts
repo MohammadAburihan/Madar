@@ -18,6 +18,8 @@ const ACTIONS: { id: string; allowed: (caps: Capabilities) => boolean; route: st
   { id: 'receiveGoods', allowed: (c) => c.receiveGoods, route: ['/purchases'] },
   { id: 'recordExpense', allowed: (c) => c.recordExpenses, route: ['/money/expense'] },
   { id: 'transferStock', allowed: (c) => c.transferStock, route: ['/inventory/transfer'] },
+  { id: 'countStock', allowed: (c) => c.transferStock, route: ['/inventory/count'] },
+  { id: 'recordDamage', allowed: (c) => c.transferStock, route: ['/inventory/damage'] },
   { id: 'supplyProject', allowed: (c) => c.supplyProjects, route: ['/projects'] },
   { id: 'newProject', allowed: (c) => c.manageProjects, route: ['/projects/new'] },
   {
