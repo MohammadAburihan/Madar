@@ -54,6 +54,10 @@ describe('AdjustStore', () => {
     await count.loadWarehouses();
     count.selectItem(OLIVE);
     expect(count.warehouse()).toBe(MAIN);
+    count.qtyInput.set('7');
+    count.setWarehouse(SHOP);
+    expect(count.qtyInput()).toBe('');
+    count.setWarehouse(MAIN);
     expect(count.reference()).toMatch(/^CNT-/);
     count.qtyInput.set('22');
     expect(count.change()).toBe(0);

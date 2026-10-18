@@ -352,6 +352,7 @@ export class AdjustEntryContainer implements OnInit {
   }
 
   protected changeItem(): void {
+    this.linkMissing.set(false);
     this.ctx.store.item.set(null);
     this.term.set('');
   }

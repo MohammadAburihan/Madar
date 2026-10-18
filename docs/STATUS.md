@@ -242,6 +242,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 4 (1 medium, 2 low): batch and serial items can't be opened by link either (the "couldn't be opened"
   notice shows); the review hides its card while the count is entered again. Deferred: counts, write-offs and moves
   take whole units only, so a fractional balance (2.5 kg) can't be counted exactly.
+  Review pass 5 (3 low; reviewing stops): changing the location clears the typed count; the link notice clears on
+  Change item. Deferred: an item disabled or made batch-tracked between opening and posting reads as "stock changed".
 
 ## Approvals and advanced reports (done: #54, #55)
 

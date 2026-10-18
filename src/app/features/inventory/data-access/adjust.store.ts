@@ -150,6 +150,10 @@ export abstract class AdjustStore {
 
   setWarehouse(warehouse: string | null): void {
     this.clearFailure();
+    if (warehouse !== this.warehouse()) {
+      // A quantity counted at one location is never measured against another's.
+      this.qtyInput.set('');
+    }
     this.warehouse.set(warehouse);
   }
 
