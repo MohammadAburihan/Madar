@@ -142,7 +142,8 @@ export class PayrollApiService {
       return {
         id: w.name,
         name: w.employee_name,
-        active: w.status === 'Active',
+        // Frappe HR refuses slips only for inactive workers; one who left during the month still gets their last.
+        active: w.status !== 'Inactive',
         hasSalary: withSalary.has(w.name),
         slip: slip
           ? {

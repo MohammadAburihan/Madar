@@ -242,9 +242,10 @@ export class PayContainer {
 
   protected open(id: string): void {
     const row = this.rows().find((r) => r.id === id);
+    const setSalary = row && !row.hasSalary && row.active;
     void this.router.navigate(
-      row?.hasSalary ? ['/workers', id] : ['/workers/salary/new'],
-      row?.hasSalary ? {} : { queryParams: { worker: id, from: this.month(), back: 'pay' } },
+      setSalary ? ['/workers/salary/new'] : ['/workers', id],
+      setSalary ? { queryParams: { worker: id, from: this.month(), back: 'pay' } } : {},
     );
   }
 

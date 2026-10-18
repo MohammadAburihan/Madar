@@ -338,7 +338,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   worker joined is refused in the form. Pass 6 (1 medium, 1 low) fixed: back from Set salary, Pay opens on the
   month it came from; a slip cancelled in Desk is refused when confirming, not counted as confirmed. Pass 7 (1 medium, 1 low) fixed: a
   salary counts for a month only if in force at its start (or the joining date), as Frappe HR needs; picking another
-  worker clears the last one's notices. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  worker clears the last one's notices. Pass 8 (1 medium, 1 low) fixed: only inactive workers are left out of slips (a
+  worker who left during the month gets their last one, as Frappe HR allows); cards that can't take a salary open the
+  worker's page. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

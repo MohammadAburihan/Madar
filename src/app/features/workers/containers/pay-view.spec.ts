@@ -52,7 +52,7 @@ describe('pay view', () => {
   it('leaves workers no longer active out of the slips to make', () => {
     const left = { id: 'E7', name: 'Old Worker', active: false, hasSalary: true, slip: null };
     expect(visible(payCard(left, 'ILS', en))).toMatchObject({
-      meta: 'No longer active: no slip can be made',
+      meta: 'Inactive: no slip can be made',
       balance: null,
     });
     expect(payActions([left], en).toMake).toBe(0);
