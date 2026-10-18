@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ApprovalsApiService } from './approvals-api.service';
@@ -158,6 +158,7 @@ describe('ApprovalsApiService', () => {
       name: 'ADV-1',
       employee_name: 'Khaled',
       advance_amount: 100,
+      base_paid_amount: 0,
       currency: 'USD',
       company: 'Rehan Nursery',
     };
@@ -204,6 +205,38 @@ describe('ApprovalsApiService', () => {
     expect(advance).toMatchObject({ amount: 300, lines: ['Tools'] });
     expect((await api().item('Expense Claim', 'HR-EXP-5', BUSINESS, 'x')).amount).toBe(500);
     expect((await api().item('Leave Application', 'LAP-1', BUSINESS, 'x')).lines).toEqual([]);
+  });
+
+  it('shows a claim in another currency at its company-currency amount', async () => {
+    fakeErpnext(
+      {},
+      { 'frappe.model.workflow.get_transitions': () => [] },
+      {
+        'Expense Claim/HR-EXP-6': {
+          ...CLAIM,
+          name: 'HR-EXP-6',
+          currency: 'USD',
+          total_claimed_amount: 100,
+          base_total_claimed_amount: 370,
+        },
+      },
+    );
+    expect((await api().item('Expense Claim', 'HR-EXP-6', BUSINESS, 'x')).amount).toBe(370);
+  });
+
+  it('reads the document when a queued step answers nothing, unresolved while it is unchanged', async () => {
+    let state = 'Draft';
+    fakeErpnext(
+      {},
+      { 'frappe.model.workflow.apply_workflow': () => null },
+      { 'Expense Claim/HR-EXP-1': () => of({ ...CLAIM, workflow_state: state }) },
+    );
+    await expect(
+      api().apply('Expense Claim', 'HR-EXP-1', 'Draft', 'Approve', BUSINESS),
+    ).rejects.toBeInstanceOf(UnresolvedError);
+    const applying = api().apply('Expense Claim', 'HR-EXP-1', 'Draft', 'Approve', BUSINESS);
+    state = 'Approved';
+    expect(await applying).toEqual({ state: 'Approved', moved: false });
   });
 
   it('reads an item with the actions the user may take', async () => {

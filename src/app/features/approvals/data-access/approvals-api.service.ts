@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Business } from '../../../core/business/business.service';
-import { confirmRequest } from '../../../core/erpnext/confirmation';
+import { UnresolvedError, confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { ApprovalDetail, ApprovalItem } from './approvals.models';
@@ -31,29 +31,26 @@ function titleOf(doc: Doc): string {
 
 /** The document's amount in the company currency (`currency`), or null when it has none in it. */
 function amountOf(doc: Doc, currency: string): number | null {
-  // The amount asked for comes first: a claim's grand total is net of advances, and an unpaid advance has paid 0.
-  for (const field of [
-    'total_claimed_amount',
-    'advance_amount',
-    'base_rounded_total',
-    'base_grand_total',
-    'base_paid_amount',
-    'total_amount',
-  ]) {
-    const value = number(doc[field]);
-    // With rounding turned off ERPNext leaves the rounded total at 0: the grand total is owed.
-    if (field === 'base_rounded_total' && !value) {
-      continue;
+  const first = (...fields: string[]) => {
+    for (const field of fields) {
+      const value = number(doc[field]);
+      if (value !== null && !Number.isNaN(value)) {
+        return value;
+      }
     }
-    // An advance's amount is in its own currency.
-    if (field === 'advance_amount' && doc['currency'] && doc['currency'] !== currency) {
-      continue;
-    }
-    if (value !== null && !Number.isNaN(value)) {
-      return value;
-    }
+    return null;
+  };
+  switch (doc.doctype) {
+    // What was claimed, before advances are set off (the grand total is net of them).
+    case 'Expense Claim':
+      return first('base_total_claimed_amount', 'total_claimed_amount');
+    // What was asked for: unpaid, its paid amount is 0. Kept in its own currency, with no rate to convert it.
+    case 'Employee Advance':
+      return !doc['currency'] || doc['currency'] === currency ? first('advance_amount') : null;
   }
-  return null;
+  // With rounding turned off ERPNext leaves the rounded total at 0: the grand total is owed.
+  const rounded = number(doc['base_rounded_total']);
+  return rounded ? rounded : first('base_grand_total', 'base_paid_amount');
 }
 
 /**
@@ -227,7 +224,15 @@ export class ApprovalsApiService {
     const result = await confirmRequest(
       this.erpnext.post<Doc>('frappe.model.workflow.apply_workflow', { doc, action }),
     );
-    return { state: String(result?.[field] ?? ''), moved: false };
+    if (result?.[field]) {
+      return { state: String(result[field]), moved: false };
+    }
+    // Queued in the background, apply_workflow answers nothing: the document tells whether the step went through.
+    const after = String((await this.doc(doctype, name, business))[field] ?? '');
+    if (after === state) {
+      throw new UnresolvedError();
+    }
+    return { state: after, moved: false };
   }
 
   /**

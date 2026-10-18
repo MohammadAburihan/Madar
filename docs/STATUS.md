@@ -240,6 +240,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   self-approval (the item then offers no steps); workflow actions and states show as named in ERPNext, untranslated.
   Review pass 6 (1 medium, 2 low) fixed: amounts show what was asked for (an unpaid advance, a claim before advances
   are set off), not 0 or the net; reasons show without the Madar reference saved after them.
+  Review pass 7 (2 medium, 1 low) fixed: amounts are read per doctype in the company currency (a claim's
+  `base_total_claimed_amount`; an advance in another currency shows none, not 0.00); a step queued in the background
+  (no answer) is checked on the document, unresolved while unchanged.
 - **R1 — Breakdowns**: merged (#55). **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
   Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
   confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with
