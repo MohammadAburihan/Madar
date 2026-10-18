@@ -298,7 +298,11 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     desktopSubtitle: `${isolate(business.name)} · ${roleLabel} · ${date}`,
     roleLabel,
     actions: ACTIONS[persona]
-      .filter((id) => id !== 'transferStock' || (input.capabilities?.transferStock ?? true))
+      .filter(
+        (id) =>
+          (id !== 'transferStock' && id !== 'countStock') ||
+          (input.capabilities?.transferStock ?? true),
+      )
       .filter((id) => id !== 'buy' || (input.capabilities?.orderPurchases ?? true))
       .filter((id) => id !== 'receiveGoods' || (input.capabilities?.receiveGoods ?? true))
       .filter((id) => id !== 'paySupplier' || (input.capabilities?.paySuppliers ?? true))

@@ -191,6 +191,8 @@ export abstract class AdjustStore {
         if (item && warehouse) {
           this.item.set({ ...item, stock: { ...item.stock, [warehouse]: error.current } });
         }
+        // The old count was made against other stock: it is counted again, not posted against the new figure.
+        this.qtyInput.set('');
         this.failure.set('moved');
         this.state.set('failed');
         return;

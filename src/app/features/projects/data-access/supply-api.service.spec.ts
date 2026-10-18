@@ -170,6 +170,10 @@ describe('SupplyApiService', () => {
     expect(await api().find('SUP-ABC1234')).toBe('not-found');
     rows = [{ name: 'STE-1', docstatus: 1 }];
     expect(await api().find('SUP-ABC1234')).toEqual({ entry: 'STE-1' });
-    expect(listCalls[0].query.filters).toContainEqual(['remarks', 'like', '%SUP-ABC1234%']);
+    expect(listCalls.find((c) => c.doctype === 'Stock Entry')?.query.filters).toContainEqual([
+      'remarks',
+      'like',
+      '%SUP-ABC1234%',
+    ]);
   });
 });

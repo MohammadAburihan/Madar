@@ -8,6 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
+import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
   AdjustRequest,
   AdjustResult,
@@ -64,6 +65,7 @@ const DAMAGE_LABELS = { damaged: 'Damaged', lost: 'Lost', expired: 'Expired' } a
 @Injectable({ providedIn: 'root' })
 export class InventoryApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly types = inject(StockEntryTypesService);
 
   async warehouses(company: string): Promise<WarehouseInfo[]> {
     const rows = await firstValueFrom(
@@ -107,6 +109,9 @@ export class InventoryApiService {
           ['disabled', '=', 0],
           ['is_stock_item', '=', 1],
           ['has_variants', '=', 0],
+          // Madar moves and adjusts plain quantities; batches and serial numbers are handled in ERPNext.
+          ['has_batch_no', '=', 0],
+          ['has_serial_no', '=', 0],
         ],
         orFilters: term.trim()
           ? [
@@ -199,7 +204,7 @@ export class InventoryApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<TransferResult> {
-    const fresh = this.entryDoc(request);
+    const fresh = await this.types.withType(this.entryDoc(request));
     const current = draft
       ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
       : null;
@@ -278,7 +283,7 @@ export class InventoryApiService {
         throw new NoValuationError(request.item);
       }
     }
-    const fresh = this.adjustDoc(request);
+    const fresh = await this.types.withType(this.adjustDoc(request));
     let entry: EntryDoc;
     try {
       let doc: EntryDoc;

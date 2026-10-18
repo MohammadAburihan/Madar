@@ -108,7 +108,9 @@ describe('AdjustStore', () => {
     await count.confirm();
     expect(count.failure()).toBe('moved');
     expect(count.onHand()).toBe(21);
-    expect(count.change()).toBe(-1);
+    // Counted again before it can be posted: the old count isn't posted against the new figure.
+    expect(count.qtyInput()).toBe('');
+    expect(count.ready()).toBe(false);
   });
 
   it('checks only once a lost answer gave up, and finds the posted adjustment', async () => {

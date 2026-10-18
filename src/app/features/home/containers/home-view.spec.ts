@@ -77,6 +77,11 @@ describe('buildHomeView', () => {
       realTranslator('en'),
     );
     expect(view.actions.map((a) => a.id)).not.toContain('transferStock');
+    const warehouse = buildHomeView(
+      { ...input(), persona: 'warehouse', capabilities: { transferStock: false } },
+      realTranslator('en'),
+    );
+    expect(warehouse.actions.map((a) => a.id)).not.toContain('countStock');
   });
 
   it('builds the owner home like the mobile and desktop mocks', () => {

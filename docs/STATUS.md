@@ -235,6 +235,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 2 (1 medium, 1 low) fixed: the valuation check asks ERPNext's own rule (`get_incoming_rate` for the
   location, then the item's rates and buying price) instead of guessing; an item the link named that can't be opened
   says so above the search.
+  Review pass 3 (2 medium, 2 low) fixed: every Stock Entry Madar posts (moves, counts, damage, project supply and site
+  use) links to the site's standard Stock Entry Type found by purpose, since setup names them in the site's language;
+  Home's Count stock follows the stock capability; after "stock changed" the count is entered again before it can
+  post; batch and serial items are left out of the stock item search (handled in ERPNext).
 
 ## Approvals and advanced reports (done: #54, #55)
 

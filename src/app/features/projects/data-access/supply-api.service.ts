@@ -10,6 +10,7 @@ import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { SupplyPlan, SupplyRequest } from './project.models';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { ProjectsApiService } from './projects-api.service';
+import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 
 export interface EntryDoc {
   name: string;
@@ -29,6 +30,7 @@ export const round = (value: number) => Math.round(value * 1e6) / 1e6;
 @Injectable({ providedIn: 'root' })
 export class SupplyApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly types = inject(StockEntryTypesService);
   private readonly projects = inject(ProjectsApiService);
 
   /** The supply plan for one item of a project: open requests, stock per warehouse, site stock and open orders. */
@@ -215,6 +217,7 @@ export class SupplyApiService {
     onInserted: (draft: string) => void,
     matches: (entry: EntryDoc) => boolean,
   ): Promise<string> {
+    fresh = await this.types.withType(fresh);
     const current = draft
       ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
       : null;
