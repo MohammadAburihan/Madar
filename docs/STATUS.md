@@ -312,7 +312,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   the same reference); only the paying account can change after a failed payment.
   Pass 4: only low; fixed the lock after a definite refusal (the details can be fixed). Deferred: opened for a worker who
   isn't active, the worker field is left empty without saying why.
-- **H6 — Pay** (this PR): **Set salary** (`/workers/salary/new`, from a worker's page, Pay and "+ New") submits a Salary
+- **H6 — Pay**: merged (#51). **Set salary** (`/workers/salary/new`, from a worker's page, Pay and "+ New") submits a Salary
   Structure Assignment (base = the monthly salary, from a date) on the business's "Madar monthly - {abbr}" structure
   (Basic = base), made the first time a salary is set; a salary already set from that date is found, never set twice,
   and "Check result" only looks it up. **Pay** (`/workers/pay`, from Workers on phone and desktop) shows this month or
@@ -340,7 +340,8 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   salary counts for a month only if in force at its start (or the joining date), as Frappe HR needs; picking another
   worker clears the last one's notices. Pass 8 (1 medium, 1 low) fixed: only inactive workers are left out of slips (a
   worker who left during the month gets their last one, as Frappe HR allows); cards that can't take a salary open the
-  worker's page. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  worker's page. Pass 9: one low, fixed (picking a worker who joined later moves the start up to their
+  joining date). Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

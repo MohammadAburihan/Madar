@@ -358,6 +358,11 @@ export class SalaryFormContainer {
   /** Another worker: the last one's notices don't apply to them. */
   protected setWorker(id: string): void {
     this.worker.set(id);
+    // The default start moves up to the day they joined; ERPNext refuses earlier.
+    const joined = this.workers().find((w) => w.id === id)?.joined ?? '';
+    if (joined > this.from()) {
+      this.from.set(joined);
+    }
     this.exists.set(null);
     this.notCreated.set(false);
     this.failed.set(null);
