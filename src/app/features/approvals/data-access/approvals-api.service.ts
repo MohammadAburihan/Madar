@@ -224,8 +224,9 @@ export class ApprovalsApiService {
     const result = await confirmRequest(
       this.erpnext.post<Doc>('frappe.model.workflow.apply_workflow', { doc, action }),
     );
-    if (result?.[field]) {
-      return { state: String(result[field]), moved: false };
+    // A returned document is the answer, even when its state field couldn't be read for this role.
+    if (result) {
+      return { state: String(result[field] ?? ''), moved: false };
     }
     // Queued in the background, apply_workflow answers nothing: the document tells whether the step went through.
     const after = String((await this.doc(doctype, name, business))[field] ?? '');

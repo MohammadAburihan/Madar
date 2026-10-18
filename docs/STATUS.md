@@ -243,6 +243,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 7 (2 medium, 1 low) fixed: amounts are read per doctype in the company currency (a claim's
   `base_total_claimed_amount`; an advance in another currency shows none, not 0.00); a step queued in the background
   (no answer) is checked on the document, unresolved while unchanged.
+  Review pass 8 (1 medium, 1 low) fixed: a leave request under a workflow is listed once, as a workflow item decided
+  on the approval page (the leave page's decision would bypass the workflow); a returned document counts as the
+  step's answer even when the role can't read the workflow's state field.
 - **R1 — Breakdowns**: merged (#55). **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
   Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
   confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with

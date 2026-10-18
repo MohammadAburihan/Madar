@@ -95,6 +95,8 @@ export class ApprovalsContainer {
   protected readonly term = signal('');
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly items = signal<ApprovalItem[]>([]);
+  /** Leave requests listed from Frappe HR (not a workflow): decided on the leave page. */
+  private readonly leaveRows = signal(new Set<string>());
   protected readonly capped = signal(false);
   private run = 0;
 
@@ -164,13 +166,15 @@ export class ApprovalsContainer {
           : Promise.resolve([]),
       ]);
       if (run === this.run) {
-        // A site with a workflow on leave lists the same request twice: the leave row opens the leave page.
-        const leaveIds = new Set(leave.map((l) => l.name));
-        const others = workflow.items.filter(
-          (w) => w.doctype !== 'Leave Application' || !leaveIds.has(w.name),
+        // A site with a workflow on leave lists the same request twice: its steps are taken on the approval page,
+        // since the leave page's decision would bypass the workflow.
+        const underWorkflow = new Set(
+          workflow.items.filter((w) => w.doctype === 'Leave Application').map((w) => w.name),
         );
         this.capped.set(workflow.capped || leave.length >= APPROVAL_LIMIT);
-        this.items.set([...leave, ...others]);
+        const leaveOnly = leave.filter((l) => !underWorkflow.has(l.name));
+        this.leaveRows.set(new Set(leaveOnly.map((l) => l.name)));
+        this.items.set([...leaveOnly, ...workflow.items]);
         this.state.set('ready');
       }
     } catch {
@@ -184,8 +188,8 @@ export class ApprovalsContainer {
     const [doctype, ...rest] = id.split('/');
     const name = rest.join('/');
     void this.router.navigate(
-      // Leave pages are for HR roles; others act on a leave workflow from the approval page.
-      doctype === 'Leave Application' && this.manageWorkers()
+      // Leave under a workflow is decided on the approval page.
+      doctype === 'Leave Application' && this.leaveRows().has(name)
         ? ['/workers/leave', name]
         : ['/approvals', doctype, name],
     );
