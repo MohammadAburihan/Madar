@@ -27,6 +27,7 @@ describe('capabilitiesFor', () => {
       addSuppliers: true,
       editSuppliers: true,
       manageWorkers: true,
+      giveAdvances: true,
     });
   });
 
@@ -57,6 +58,7 @@ describe('capabilitiesFor', () => {
         addSuppliers: false,
         editSuppliers: false,
         manageWorkers: false,
+        giveAdvances: false,
       });
     }
   });
@@ -258,5 +260,23 @@ describe('capabilitiesFor', () => {
       capabilitiesFor('storeAssociate', ['Sales User', 'Stock User', 'HR User']).manageWorkers,
     ).toBe(true);
     expect(capabilitiesFor('warehouse', ['Stock User']).manageWorkers).toBe(false);
+  });
+
+  it('gives advances only with HR, Expense Approver and an accounts role, and only as the Owner', () => {
+    expect(
+      capabilitiesFor('owner', [
+        'System Manager',
+        'HR Manager',
+        'Expense Approver',
+        'Accounts Manager',
+      ]).giveAdvances,
+    ).toBe(true);
+    expect(
+      capabilitiesFor('owner', ['System Manager', 'HR Manager', 'Accounts Manager']).giveAdvances,
+    ).toBe(false);
+    expect(
+      capabilitiesFor('salesperson', ['Sales User', 'Accounts User', 'HR User', 'Expense Approver'])
+        .giveAdvances,
+    ).toBe(false);
   });
 });

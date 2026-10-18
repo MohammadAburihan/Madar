@@ -119,3 +119,13 @@ export interface ShiftFormValue {
   /** Empty to keep it with no end. */
   until: string;
 }
+
+export interface AdvanceFormValue {
+  worker: string;
+  amount: number;
+  /** Mode of Payment it is paid from. */
+  mode: string;
+  account: string;
+  purpose: string;
+  date: string;
+}

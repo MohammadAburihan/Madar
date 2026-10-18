@@ -87,6 +87,10 @@ describe('Sale presenters', () => {
     select.value = 'Garden - RN';
     select.dispatchEvent(new Event('change'));
     expect(fixture.componentInstance.value()).toBe('Garden - RN');
+
+    fixture.componentRef.setInput('disabled', true);
+    await fixture.whenStable();
+    expect(select.disabled).toBe(true);
   });
 
   it('TextField binds its value and shows an error before the hint', async () => {

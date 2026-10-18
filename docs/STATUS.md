@@ -291,7 +291,27 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   the write (a lost answer may have ended it), so the put-back form opens for the right worker only; Save is hidden from
   the moment the worker or dates change until their shifts are read again, and refuses while later shifts remain.
   Pass 9: only low. Deferred: a shift starting on the chosen From can't be removed in Madar (change it in Desk); the
-  put-back form remembers one ended shift, so ending two concurrent ones (a Desk setting) brings back only the last. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  put-back form remembers one ended shift, so ending two concurrent ones (a Desk setting) brings back only the last.
+- **H5 — Advances**: merged (#50). **Give an advance** (`/workers/advance/new`, from a worker's page and "+ New", for roles
+  with HR, Expense Approver and Accounts User or Manager: the Owner, who now holds Expense Approver) records a submitted
+  Employee Advance (company default advance account, `ADV-…` reference after the purpose) and pays it from the chosen
+  payment account (company-currency accounts only) with the Payment Entry Frappe HR prepares, `reference_no` = the
+  reference. Giving the same advance again finds what was done and finishes the rest, so "Check result" after a lost
+  answer and "Pay the advance again" after a failed payment are the same call; once recorded, the details are locked.
+  The worker's page then shows the advance to repay. The seed makes ERPNext's Employee Advances account receivable (as
+  Frappe HR requires) and pays Khaled ILS 300. Design: Workers 09 Give advance (mobile EN/AR). e2e: an advance given
+  from a worker's page, checked in ERPNext and shown as owed; the form in Arabic; closed to a salesperson.
+  Review pass 1 (1 high, 1 medium) fixed: "Check result" only looks the reference up (done, recorded but not paid, or
+  not given), never records or pays; locked selects are disabled (a new `disabled` input on the shared select) rather
+  than ignoring changes, and the paying account stays changeable after a failed payment.
+  Review pass 2 (2 medium) fixed: amounts typed with Arabic digits are read (`parseNumber`, here and in the later HR
+  forms); an Employee Advances account that isn't receivable is reported as a setup step before anything is recorded
+  (each business site sets it once; noted in CLAUDE.md). The full suite's desktop Workers test now searches, as runs
+  add workers of their own.
+  Review pass 3 (1 medium) fixed: once sent, the advance's details stay locked (a slow first try may still land under
+  the same reference); only the paying account can change after a failed payment.
+  Pass 4: only low; fixed the lock after a definite refusal (the details can be fixed). Deferred: opened for a worker who
+  isn't active, the worker field is left empty without saying why. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

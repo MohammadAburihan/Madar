@@ -93,6 +93,15 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
         >
           {{ txt.assignShift }}
         </button>
+        @if (canGiveAdvances()) {
+          <button
+            type="button"
+            class="md-btn"
+            (click)="router.navigate(['/workers/advance/new'], { queryParams: { worker: id() } })"
+          >
+            {{ txt.giveAdvance }}
+          </button>
+        }
       }
       <button type="button" class="md-btn" (click)="router.navigate(['/workers', id(), 'edit'])">
         {{ txt.edit }}
@@ -123,6 +132,7 @@ export class WorkerContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
+  protected readonly canGiveAdvances = computed(() => this.session.capabilities().giveAdvances);
   private readonly detail = signal<WorkerDetail | null>(null);
   /** The shift today and the next one; undefined when the role can't read them, null when the read failed. */
   private readonly shift = signal<
@@ -157,6 +167,7 @@ export class WorkerContainer {
       markAttendance: t('workers.markAttendance'),
       requestLeave: t('workers.requestLeave'),
       assignShift: t('workers.shift.assign'),
+      giveAdvance: t('workers.advance.give'),
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
       loadFailed: {
         title: t('workers.loadFailed.title'),

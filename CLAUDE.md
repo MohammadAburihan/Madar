@@ -148,6 +148,8 @@ src/app/
 - Default `Sales User` can't read Sales Invoices in v16; Home hides whatever a role can't read.
 - Frappe HR v16 reads holiday lists from submitted `Holiday List Assignment`s, not the company default; attendance and
   leave fail without one. Approved leave marks "On Leave" attendance ahead for every day it covers.
+  Advances need the company's Employee Advances account to be of type Receivable (ERPNext's chart leaves it untyped;
+  set it per business site).
 - `apply_price_list` takes `ctx`; give each item `parenttype: 'Sales Invoice'`, `uom`, `stock_uom` and
   `conversion_factor`, or ERPNext silently returns no price. Sales roles can't read Item Price directly.
 - Frappe checks CSRF only when the session holds a `csrf_token`, which `/api/method/login` never sets (Desk

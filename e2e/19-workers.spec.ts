@@ -99,15 +99,20 @@ test.describe('workers @phone', () => {
 
     const khaled = await employee(page, 'Khaled Omar');
     const rana = await employee(page, 'Rana Saleh');
+    // Earlier runs add workers of their own: search, so the seeded ones stay on the first page.
+    const search = page.locator('app-search-field input');
+    await search.fill('Khaled Omar');
     const khaledCard = page.locator('app-person-card', { hasText: 'Khaled Omar' });
     await expect(khaledCard).toContainText('Gardener · Field team');
     await expect(khaledCard).toContainText(
       named(...(await todayText(page, khaled.name)).split(' ')),
     );
+    await search.fill('Rana Saleh');
     await expect(page.locator('app-person-card', { hasText: 'Rana Saleh' })).toContainText(
       named(...(await todayText(page, rana.name)).split(' ')),
     );
     // Those who left are on their own tab.
+    await search.fill('Huda Nasser');
     await expect(page.locator('app-person-card', { hasText: 'Huda Nasser' })).toHaveCount(0);
     await page.getByRole('radio', { name: 'Left' }).click();
     await expect(page.locator('app-person-card', { hasText: 'Huda Nasser' })).toContainText('Left');
@@ -117,7 +122,7 @@ test.describe('workers @phone', () => {
     await expect(page.getByRole('radio', { name: 'Left' })).toBeChecked();
 
     await page.getByRole('radio', { name: 'Active' }).click();
-    await page.locator('app-search-field input').fill('Garden');
+    await search.fill('Khaled Omar');
     await expect(page.locator('app-person-card')).toHaveCount(1);
     await page.locator('app-person-card', { hasText: 'Khaled Omar' }).click();
     await expect(page).toHaveURL(new RegExp(`/workers/${khaled.name}$`));
@@ -214,6 +219,7 @@ test.describe('workers @phone', () => {
     await expectHeading(page, 'العمال');
     await expect(page.getByRole('radio', { name: 'على رأس العمل' })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'غادروا' })).toBeVisible();
+    await page.locator('app-search-field input').fill('Khaled Omar');
     const khaled = page.locator('app-person-card', { hasText: 'Khaled Omar' });
     await expect(khaled).toContainText(/حاضر اليوم|لم يُسجَّل اليوم|في إجازة/);
     await page.getByRole('button', { name: 'إضافة عامل' }).click();
@@ -233,6 +239,8 @@ test('works through the workers table and panel @desktop', async ({ page }) => {
   const table = page.locator('app-data-table');
   await expect(table.locator('th')).toHaveText(['Worker', 'Job title', 'Today']);
   const rana = await employee(page, 'Rana Saleh');
+  // Earlier runs add workers of their own; searching keeps Rana on the first page.
+  await page.locator('app-search-field input').fill('Rana Saleh');
   const row = table.locator('tbody tr').filter({ hasText: 'Rana Saleh' });
   await expect(row).toContainText('Cashier');
   const status = await todayText(page, rana.name);
