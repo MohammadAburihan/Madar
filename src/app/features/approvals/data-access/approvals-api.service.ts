@@ -143,7 +143,8 @@ export class ApprovalsApiService {
           ['company', '=', business.name],
           ['docstatus', '=', 0],
         ],
-        orderBy: 'from_date asc, name asc',
+        // Newest first, as the cap note says.
+        orderBy: 'creation desc',
         limit: APPROVAL_LIMIT,
       }),
     );

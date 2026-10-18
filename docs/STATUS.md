@@ -246,6 +246,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 8 (1 medium, 1 low) fixed: a leave request under a workflow is listed once, as a workflow item decided
   on the approval page (the leave page's decision would bypass the workflow); a returned document counts as the
   step's answer even when the role can't read the workflow's state field.
+  Review pass 9 (1 low fixed: waiting leave is listed newest first, as the cap note says). Deferred, outside this PR: on
+  a site with a workflow on Leave Application, Madar's leave pages decide with a plain submit and don't follow it;
+  leave requests a user has no open workflow step on still open there. Reviewing stops here.
 - **R1 — Breakdowns**: merged (#55). **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
   Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
   confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with
