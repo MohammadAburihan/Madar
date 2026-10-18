@@ -209,7 +209,27 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Workers & HR (in progress, before step 6)
+## Approvals and advanced reports (in progress, before step 6)
+
+- **R1 — Breakdowns**: this PR. **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
+  Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
+  confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with
+  quantity sold), sales by customer, purchases by supplier and stock value by warehouse, each the top 5 and "Other (n)".
+  Net amounts in the company currency, as posted (returns taken off); stock from ERPNext's bins for the company's
+  warehouses. Designs: Reports 04 Breakdowns (mobile EN/AR) and the button on the Reports mocks (mobile and desktop,
+  EN/AR). e2e: opening from Reports on phone and desktop, the year's figures, Arabic, roles without reports.
+  Review pass 1 (1 medium, 2 low) fixed: invoice lines page in a sort unique per line (no line counted twice or
+  missed over 500 lines); pay or attendance a role can't read is left out rather than shown as zero; a customer or
+  supplier renamed during the period stays one line.
+  Review pass 2 (1 medium, 1 low) fixed: opening invoices (balances brought in) aren't counted as the period's sales
+  or purchases; Retry reads the site's date again, as Reports does.
+  Review pass 3 (1 medium, 1 low) fixed: an owner whose roles can't read bins or warehouses (accounts roles only) sees
+  the breakdowns without stock instead of an error; pay and attendance are read only with an HR role (ERPNext narrows
+  them to the user's own records otherwise).
+  Review pass 4 (1 low) fixed: free-text invoice lines without an item are told apart by their wording. Reviewing
+  stops here (nothing above low).
+
+## Workers & HR (done: #46–#53)
 
 Runs on Frappe HR (`hrms` v16.51.0) added to the local ERPNext image (`scripts/build-erpnext-image.sh`,
 `madar-erpnext:v16.50.0-hrms`); both local sites have it installed (backed up first). Planned as H1 workers, H2

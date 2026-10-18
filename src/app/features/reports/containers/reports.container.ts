@@ -192,6 +192,9 @@ import {
           [row]="desktop()"
           (opened)="router.navigate(['/reports', $event])"
         />
+        <button type="button" class="md-btn" (click)="router.navigate(['/reports/breakdowns'])">
+          {{ txt.breakdowns }}
+        </button>
         <p class="muted">{{ txt.note }}</p>
       } @else if (!rangeError()) {
         <p class="muted" role="status">{{ txt.loading }}</p>
@@ -266,6 +269,7 @@ export class ReportsContainer {
       note: t('reports.note'),
       capped: t('reports.capped'),
       statements: t('statements.statements'),
+      breakdowns: t('reports.breakdowns.open'),
       loading: t('reports.loading'),
       retry: t('reports.retry'),
       noAccess: { title: t('reports.noAccess.title'), message: t('reports.noAccess.message') },

@@ -98365,6 +98365,18 @@
               }
             },
             {
+              "id": "x3XMP",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Breakdowns link",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Breakdowns: sales by item and customer, purchases, stock"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "Cl5Gk",
               "name": "Source note",
@@ -100148,7 +100160,7 @@
       "context": " | Handoff: English LTR; counterpart sIyxx. Owner only (PERMISSIONS.md). Figures from ERPNext posted accounting; drafts excluded. Runtime: not run—requires runnable application. States: loading TFjfF; no posted records hbp1s; connection loss TRVcK with retry keeping the period; other roles never see Reports and a direct link shows fRNi2. Custom range: From must not be after To, To must not be after today (SuNbt).",
       "clip": true,
       "width": 1440,
-      "height": 1000,
+      "height": 1080,
       "fill": "$md-bg",
       "children": [
         {
@@ -101421,6 +101433,18 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "iz21o",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Breakdowns link",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Breakdowns: sales by item and customer, purchases, stock"
+                }
+              }
             },
             {
               "type": "text",
@@ -103966,6 +103990,18 @@
               }
             },
             {
+              "id": "r7hlu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Breakdowns link",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "التفاصيل: المبيعات حسب الصنف والعميل، المشتريات، المخزون"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "faXPx",
               "name": "Source note",
@@ -105820,7 +105856,7 @@
       },
       "clip": true,
       "width": 1440,
-      "height": 1000,
+      "height": 1080,
       "fill": "$md-bg",
       "children": [
         {
@@ -107029,6 +107065,18 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "OLPsZ",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Breakdowns link",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "التفاصيل: المبيعات حسب الصنف والعميل، المشتريات، المخزون"
+                }
+              }
             },
             {
               "type": "text",
@@ -119540,11 +119588,17 @@
                 "m86csx": {
                   "content": "ILS 120.00"
                 },
+                "CLHYL": {
+                  "enabled": false
+                },
                 "PR2zR": {
                   "content": "Expense type"
                 },
                 "ZjtQe": {
                   "content": "Travel"
+                },
+                "hlvnF": {
+                  "enabled": false
                 },
                 "RH6Qt": {
                   "content": "Lines"
@@ -119856,6 +119910,9 @@
                 "K2G6X": {
                   "content": "المبلغ"
                 },
+                "YOxtn": {
+                  "enabled": false
+                },
                 "qPnyV": {
                   "content": "Travel",
                   "fontFamily": "$md-arabic",
@@ -119864,6 +119921,9 @@
                 },
                 "mM5Gt": {
                   "content": "نوع المصروف"
+                },
+                "N0qlS7": {
+                  "enabled": false
                 },
                 "hNuBn": {
                   "content": "1",
@@ -119946,6 +120006,2215 @@
                   "textAlign": "right"
                 }
               }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "k2TUF",
+      "x": 5490,
+      "y": 23484,
+      "name": "04 Mobile / Reports 04 Breakdowns",
+      "context": "Route /reports/breakdowns (Owner, seeReports). Period as on Reports. Cards: sales by item, sales by customer, purchases by supplier (each top 5 then 'Other'), stock value by warehouse (today), and for HR roles pay and attendance for the period. Counterpart i6caGt.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "IqpAs",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "RWaYL",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "H0Ieav",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "E3KgW7",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "BFXPD",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CFi0K",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ceiTW",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "VTgvC",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "m05kzI",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "iTpLe",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: tBvvI. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "Qvi4w",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back to Reports. Route specification: LmHj5. Keeps the selected period.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "z3BTRN",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "nGQ6V",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "h2Bzhl",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Breakdowns",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "I7f0oc",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Rehan Nursery · 1 Oct – 17 Oct 2026",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "TpB9G",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Period",
+              "context": "Role: button (opens period sheet). Accessible name: Period. Keeps the period chosen on LmHj5; shown here as This month with the two months before it. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Period"
+                },
+                "sedCr": {
+                  "content": "This month  ▾"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "FRC5b",
+              "name": "Period total",
+              "context": "Role: link. Accessible name: Profit ILS 6,270.00 this month; profit by month. Route specification: NziRK with the selected period. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Fowui",
+                  "name": "Profit label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Sales for the period",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "z1nDRV",
+                  "name": "Profit value",
+                  "fill": "$md-primary",
+                  "content": "ILS 4,280.00",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "C8Im66",
+                  "name": "Profit breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KIRea",
+                      "name": "Purchases",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rSgZ5",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Purchases",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "G8bfTl",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,280.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TEgEX",
+                      "name": "Stock value today",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wlGdY",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Stock value today",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Ns7KS",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 9,640.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M0Omh",
+                      "name": "Net pay confirmed",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DdJF0",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Net pay confirmed",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NcjPH",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 7,800.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MmLMx",
+                      "name": "Days present",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Yu0YQ",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Days present",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uEvz0",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "42",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RT02g",
+              "name": "Sales by item",
+              "context": "Role: link. Accessible name: October 2026, profit ILS 6,270.00. Opens that month's posted sales invoices, expenses and stock cost entries.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "B4Lb3E",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mU9uE",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Sales by item · ILS 4,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zlh8I",
+                      "x": 172,
+                      "y": 0,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 4,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "Gmqzo",
+                      "x": 298,
+                      "y": 2.5,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Uw0UX",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Km6LV",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PjCMW",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Olive tree · 20 sold",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VWgeB",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,700.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vQqNh",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "e9jF6Q",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Ceramic planter · 24 sold",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yPb0q",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,680.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WiVnY",
+                      "name": "Expenses",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Zmo0W",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Garden consultation · 3 sold",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "dApIf",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 900.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "jtyHG",
+              "name": "Sales by customer",
+              "context": "Role: link. Accessible name: September 2026, profit ILS 7,680.00. Opens that month's posted sales invoices, expenses and stock cost entries.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yAlgD",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "G4V9u",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Sales by customer · ILS 4,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CcUfE",
+                      "x": 172,
+                      "y": 0,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 4,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "sSqP9",
+                      "x": 298,
+                      "y": 2.5,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "iENVX",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "h5Zsk",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Vkd7R",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Lina Haddad",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "x4xa8",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,960.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pp40k",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w4nB9B",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Samir Nasser",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RmF9i",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,460.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XszPC",
+                      "name": "Expenses",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wmd0a",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Walk-in Customer",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "U5f1a1",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 860.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "N4t6af",
+              "name": "Purchases by supplier",
+              "context": "Role: link. Accessible name: August 2026, profit ILS 6,510.00. Opens that month's posted sales invoices, expenses and stock cost entries.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qJbZ3",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "L4Tcj",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Purchases by supplier · ILS 1,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "P5xJCZ",
+                      "x": 176,
+                      "y": 9.5,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 1,280.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "PPDLg",
+                      "x": 298,
+                      "y": 12,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SoW6z",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "c8q0bO",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LxEhm",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Green Clay",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mW45g",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,280.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TmEiv",
+              "name": "Stock value by warehouse",
+              "context": "Role: link. Accessible name: August 2026, profit ILS 6,510.00. Opens that month's posted sales invoices, expenses and stock cost entries.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cg3LK",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "FfjSW",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Stock value by warehouse · ILS 9,640.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "x2a7a",
+                      "x": 172,
+                      "y": 9.5,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 9,640.00",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "G3RpP",
+                      "x": 298,
+                      "y": 12,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b89RkX",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "z0XxBT",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "B62V6W",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Main warehouse",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "I1Fgyw",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 7,320.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Bvu0h",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GgWTi",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Garden shop",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "S9Y0Z",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 2,320.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "WRIeN",
+              "name": "Source note",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Totals as posted in ERPNext for the period; stock value is today's. Each list shows the top 5, then the rest.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "i6caGt",
+      "x": 20600,
+      "y": 24034,
+      "name": "Arabic / 04 Mobile / Reports 04 Breakdowns",
+      "context": "Route /reports/breakdowns (Owner, seeReports). Period as on Reports. Cards: sales by item, sales by customer, purchases by supplier (each top 5 then 'Other'), stock value by warehouse (today), and for HR roles pay and attendance for the period. Counterpart k2TUF.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "oLs2q",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "tTaNQ",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "TNS2E",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "cEKeI",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "S3i1pX",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "amXUh",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "k5KsqY",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "pXSiP",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "dLCR9",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xQN1h",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "SFVVu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: NziRK. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "t2BdqN",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع إلى التقارير. Route specification: uuUcY. Keeps the selected period.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Yhlpx",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "LzLEk",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Wd9If",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "التفاصيل",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "yu8HD",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مشتل ريحان للنباتات والحدائق · 1 أكتوبر – 17 أكتوبر 2026",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "NURNi",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Period",
+              "context": "Role: button. Accessible name: الفترة. Keeps the period chosen on uuUcY. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الفترة"
+                },
+                "empG8": {
+                  "content": "هذا الشهر  ▾"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "uLrpe",
+              "name": "Period total",
+              "context": "Role: link. Accessible name: الربح حسب الشهر. Route specification: tBvvI with the selected period. Month-by-month views cover the selected period; when it is a single month they also show the two months before it for comparison.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "jRv5Y",
+                  "name": "Profit label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "المبيعات للفترة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "gpGuc",
+                  "name": "Profit value",
+                  "fill": "$md-primary",
+                  "content": "ILS 4,280.00",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "O3m8zw",
+                  "name": "Profit breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "epN8d",
+                      "name": "المشتريات",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GwRx0",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,280.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qNgTG",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "المشتريات",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kpa6u",
+                      "name": "قيمة المخزون اليوم",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FHTxV",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 9,640.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YjF7g",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "قيمة المخزون اليوم",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "F3OD1O",
+                      "name": "صافي الرواتب المؤكدة",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "o0wCDc",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 7,800.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VP9mE",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "صافي الرواتب المؤكدة",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WgjUK",
+                      "name": "أيام الحضور",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "T5QY1H",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "42",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "OBQ3Q",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "أيام الحضور",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "XPFgA",
+              "name": "Sales by item",
+              "context": "Role: link. Accessible name: أكتوبر 2026 · حتى اليوم، الربح ILS 6,270.00.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZnqNJ",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "D6r7s",
+                      "x": 0,
+                      "y": 3.5,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-left",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SpvPr",
+                      "x": 32,
+                      "y": 0,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 4,280.00",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "gavuh",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المبيعات حسب الصنف · ILS 4,280.00",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n7BXiM",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "OhKpY",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gDZxO",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,700.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "i8k1YE",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "شجرة زيتون · بيع 20",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RtIzH",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TdX62",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,680.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p3QxA7",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "أصيص خزفي · بيع 24",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eRKhv",
+                      "name": "Expenses",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "c00je",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 900.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "P85h5",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "استشارة تنسيق الحدائق · بيع 3",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "INRjz",
+              "name": "Sales by customer",
+              "context": "Role: link. Accessible name: سبتمبر 2026، الربح ILS 7,680.00.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sQhf6",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Avyc1",
+                      "x": 0,
+                      "y": 3.5,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-left",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sxqZM",
+                      "x": 32,
+                      "y": 0,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 4,280.00",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oxmf0",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المبيعات حسب العميل · ILS 4,280.00",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HQsE1",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "l1ixa",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KEcSq",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,960.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Tifbe",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "لينا الحداد",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UE4sE",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xJZSo",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,460.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aw4zd",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "سمير ناصر",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E2VJs",
+                      "name": "Expenses",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "S5cBd6",
+                          "name": "Expenses value",
+                          "fill": "$md-ink",
+                          "content": "ILS 860.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RpZwO",
+                          "name": "Expenses label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "عميل نقدي",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "P7yQu",
+              "name": "Purchases by supplier",
+              "context": "Role: link. Accessible name: أغسطس 2026، الربح ILS 6,510.00.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kChrN",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "WFZOd",
+                      "x": 0,
+                      "y": 3.5,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-left",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "n6xRR",
+                      "x": 32,
+                      "y": 0,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 1,280.00",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ov2Mn",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المشتريات حسب المورّد · ILS 1,280.00",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HBgDi",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KPHUj",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "A10EjX",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 1,280.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "FQRT9",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Green Clay",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "psYLg",
+              "name": "Stock value by warehouse",
+              "context": "Role: link. Accessible name: أغسطس 2026، الربح ILS 6,510.00.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U9ygp",
+                  "name": "Month heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "xNnTD",
+                      "x": 0,
+                      "y": 14,
+                      "name": "Row chevron",
+                      "enabled": false,
+                      "width": 20,
+                      "height": 20,
+                      "icon": "chevron-left",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "b1Rjrt",
+                      "x": 32,
+                      "y": 10.5,
+                      "name": "Month profit",
+                      "enabled": false,
+                      "fill": "$md-primary",
+                      "content": "ILS 9,640.00",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pVDMo",
+                      "name": "Month",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "قيمة المخزون حسب المستودع · ILS 9,640.00",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qznE9",
+                  "name": "Breakdown",
+                  "width": "fill_container",
+                  "stroke": "$md-line",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "nUh7b",
+                      "name": "Sales income",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p7C1T3",
+                          "name": "Sales income value",
+                          "fill": "$md-ink",
+                          "content": "ILS 7,320.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fF6HZ",
+                          "name": "Sales income label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "المستودع الرئيسي",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "juYIk",
+                      "name": "Cost of goods sold",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "V27fN",
+                          "name": "Cost of goods sold value",
+                          "fill": "$md-ink",
+                          "content": "ILS 2,320.00",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "d0KKZ6",
+                          "name": "Cost of goods sold label",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "متجر الحديقة",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "uVg4M",
+              "name": "Source note",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الإجماليات كما هي مرحّلة في ERPNext للفترة؛ قيمة المخزون لليوم. كل قائمة تعرض أعلى 5 ثم الباقي.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         }
