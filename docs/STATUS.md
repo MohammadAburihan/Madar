@@ -230,6 +230,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 3 (1 medium, 3 low) fixed: states are read from the field each workflow keeps them in (roles that
   can't read Workflow use the standard one); steps ERPNext would refuse as self-approval aren't offered; leave rows
   show their status in the user's language; search matches the doctype as shown.
+  Review pass 4 (1 medium, 1 low) fixed: after a lost answer, Check result finding the state unchanged keeps only
+  Check result (the step may still be running; the steps come back on a fresh visit), never the actions; a state
+  field read as forbidden isn't kept for the next user. Known: roles that can't read Workflow use `workflow_state`, so a
+  workflow with its own state field shows no state for them.
 
 ## Workers & HR (done: #46–#53)
 

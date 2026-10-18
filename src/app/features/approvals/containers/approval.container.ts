@@ -210,7 +210,11 @@ export class ApprovalContainer {
         return;
       }
       this.detail.set(detail);
-      if (this.sentFrom !== null && detail.state !== this.sentFrom) {
+      if (this.sentFrom !== null) {
+        // The lost step may still be running: an unchanged state proves nothing, so only Check result stays.
+        if (detail.state === this.sentFrom) {
+          return;
+        }
         this.outcome.set(this.done(detail.state));
       }
       this.unresolved.set(false);

@@ -240,6 +240,8 @@ export class ApprovalsApiService {
       ).then(
         ([row]) => row?.workflow_state_field || 'workflow_state',
         (error: unknown) => {
+          // Not kept: the next user signed in on this device may read it.
+          this.stateFields.delete(doctype);
           if (ErpnextError.from(error).kind === 'forbidden') {
             return 'workflow_state';
           }
@@ -247,7 +249,6 @@ export class ApprovalsApiService {
         },
       );
       this.stateFields.set(doctype, field);
-      field.catch(() => this.stateFields.delete(doctype));
     }
     return field;
   }
