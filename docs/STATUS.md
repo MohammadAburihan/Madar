@@ -311,7 +311,37 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 3 (1 medium) fixed: once sent, the advance's details stay locked (a slow first try may still land under
   the same reference); only the paying account can change after a failed payment.
   Pass 4: only low; fixed the lock after a definite refusal (the details can be fixed). Deferred: opened for a worker who
-  isn't active, the worker field is left empty without saying why. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  isn't active, the worker field is left empty without saying why.
+- **H6 — Pay**: merged (#51). **Set salary** (`/workers/salary/new`, from a worker's page, Pay and "+ New") submits a Salary
+  Structure Assignment (base = the monthly salary, from a date) on the business's "Madar monthly - {abbr}" structure
+  (Basic = base), made the first time a salary is set; a salary already set from that date is found, never set twice,
+  and "Check result" only looks it up. **Pay** (`/workers/pay`, from Workers on phone and desktop) shows this month or
+  last: each worker employed in it with their slip (gross, net, Draft or Confirmed), "No slip yet", or "No salary set"
+  (which opens Set salary). **Create N salary slips** makes a draft Salary Slip per worker with a salary and none yet
+  (Frappe HR works the pay out; one per worker and month); **Confirm N draft slips** submits them; refused workers are
+  named, a lost answer reads the month again. Paying slips out stays in ERPNext. Seed: the structure, Khaled ILS 4,200 and
+  Rana ILS 3,600. Design: Workers 11 Pay, 12 Set salary (mobile EN/AR), Pay in the desktop actions. e2e: a salary set
+  from a worker's page, last month's slip made and confirmed (checked in ERPNext); a worker without a salary sent to Set
+  salary; Arabic.
+  Review pass 1 (1 medium-high, 4 low) fixed: a different salary on a date that already has one is refused with the
+  amount set (a submitted assignment is changed in ERPNext), also when checking after a lost answer; a Madar structure
+  left unsubmitted in Desk gets its own message; Pay shows workers no longer active only for a salary or slip they had,
+  and Set salary says when it's opened for a worker who isn't active; PERMISSIONS.md gains the Pay row (HR roles, as in
+  ERPNext); a 403 on Pay says it isn't open to the role (after checking for an expired session).
+  Review pass 2 (1 medium, 1 low) fixed: salaries are rounded to the cent before saving and comparing, as ERPNext stores
+  them; an amended structure (`…-1`) is used, and a cancelled one gets its own message.
+  Review pass 3 (2 medium, 1 low; one dropped: pages under the shell aren't cached) fixed: workers no longer active are
+  left out of "Create slips" (ERPNext refuses them) and say so; the structure is looked up for this company, by its exact
+  name or an amendment of it.
+  Review pass 4 (1 medium, 2 low) fixed: Set salary opened from Pay starts from the month Pay showed, and never before
+  the worker joined, and Back returns to Pay; an inactive Madar structure isn't used and gets its own message. Pass 5 (1 medium) fixed: a start before the chosen
+  worker joined is refused in the form. Pass 6 (1 medium, 1 low) fixed: back from Set salary, Pay opens on the
+  month it came from; a slip cancelled in Desk is refused when confirming, not counted as confirmed. Pass 7 (1 medium, 1 low) fixed: a
+  salary counts for a month only if in force at its start (or the joining date), as Frappe HR needs; picking another
+  worker clears the last one's notices. Pass 8 (1 medium, 1 low) fixed: only inactive workers are left out of slips (a
+  worker who left during the month gets their last one, as Frappe HR allows); cards that can't take a salary open the
+  worker's page. Pass 9: one low, fixed (picking a worker who joined later moves the start up to their
+  joining date). Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

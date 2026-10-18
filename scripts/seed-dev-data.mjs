@@ -518,6 +518,41 @@ if (!(await list('Employee Advance', { employee: employee.Khaled, docstatus: 1 }
   });
 }
 
+// Pay: the Madar salary structure (Basic = the monthly salary); Khaled and Rana have salaries, Yousef not yet.
+const structure = await ensure(
+  'Salary Structure',
+  { name: `Madar monthly - ${ABBR}` },
+  {
+    __newname: `Madar monthly - ${ABBR}`,
+    name: `Madar monthly - ${ABBR}`,
+    company: COMPANY,
+    payroll_frequency: 'Monthly',
+    currency: 'ILS',
+    is_active: 'Yes',
+    earnings: [{ salary_component: 'Basic', amount_based_on_formula: 1, formula: 'base' }],
+    docstatus: 1,
+  },
+);
+for (const [first, base] of [
+  ['Khaled', 4200],
+  ['Rana', 3600],
+]) {
+  if (
+    !(await list('Salary Structure Assignment', { employee: employee[first], docstatus: 1 })).length
+  ) {
+    await insert({
+      doctype: 'Salary Structure Assignment',
+      employee: employee[first],
+      salary_structure: structure,
+      from_date: `${today.getFullYear()}-01-01`,
+      base,
+      company: COMPANY,
+      currency: 'ILS',
+      docstatus: 1,
+    });
+  }
+}
+
 // Shifts for the Assign shift mock: Khaled works mornings.
 for (const [name, start, end] of [
   ['Morning', '07:00:00', '15:00:00'],

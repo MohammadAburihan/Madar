@@ -64,6 +64,7 @@ to the Owner.
 | Create or edit items and prices | ✅ | — | — | — | ✅ | — |
 | See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 | Give workers an advance, paid from a payment account (needs HR, Expense Approver and Accounts User or Manager) | ✅ | — | — | — | — | — |
+| See and set salaries, make and confirm salary slips (Pay; needs HR User or HR Manager, as in ERPNext) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 
 ## Enforcement
 

@@ -28,6 +28,15 @@ export const workerRoutes: Route[] = [
       import('./containers/leave-request.container').then((m) => m.LeaveRequestContainer),
   },
   {
+    path: 'workers/pay',
+    loadComponent: () => import('./containers/pay.container').then((m) => m.PayContainer),
+  },
+  {
+    path: 'workers/salary/new',
+    loadComponent: () =>
+      import('./containers/salary-form.container').then((m) => m.SalaryFormContainer),
+  },
+  {
     path: 'workers/advance/new',
     loadComponent: () =>
       import('./containers/advance-form.container').then((m) => m.AdvanceFormContainer),

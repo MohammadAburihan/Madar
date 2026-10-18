@@ -108,16 +108,20 @@ export class LeaveApiService {
   }
 
   /** The business's active workers, for the form's worker picker. */
-  async workers(business: Business): Promise<{ id: string; name: string }[]> {
-    const rows = await this.erpnext.listAll<{ name: string; employee_name: string }>('Employee', {
-      fields: ['name', 'employee_name'],
+  async workers(business: Business): Promise<{ id: string; name: string; joined: string }[]> {
+    const rows = await this.erpnext.listAll<{
+      name: string;
+      employee_name: string;
+      date_of_joining: string;
+    }>('Employee', {
+      fields: ['name', 'employee_name', 'date_of_joining'],
       filters: [
         ['company', '=', business.name],
         ['status', '=', 'Active'],
       ],
       orderBy: 'employee_name asc, name asc',
     });
-    return rows.map((r) => ({ id: r.name, name: r.employee_name }));
+    return rows.map((r) => ({ id: r.name, name: r.employee_name, joined: r.date_of_joining }));
   }
 
   /** The leave types the worker can take on `date`: allocated ones with their days left, then unpaid ones. */

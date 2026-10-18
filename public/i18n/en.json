@@ -2634,7 +2634,8 @@
       "markAttendance": "Mark attendance",
       "requestLeave": "Request leave",
       "assignShift": "Assign shift",
-      "giveAdvance": "Give an advance"
+      "giveAdvance": "Give an advance",
+      "setSalary": "Set salary"
     }
   },
   "workers": {
@@ -3063,6 +3064,109 @@
         }
       },
       "give": "Give an advance"
+    },
+    "payroll": {
+      "title": "Pay · {{month}}",
+      "subtitle": "Workers & HR · {{business}} · Salary slips",
+      "loading": "Loading the month's pay…",
+      "empty": "No workers were employed this month.",
+      "grossNet": "Gross {{gross}} · Net {{net}}",
+      "noSlip": "No slip yet",
+      "noSalary": "No salary set",
+      "setSalary": "Set a salary to make a slip",
+      "draft": "Draft slip",
+      "confirmed": "Confirmed",
+      "make": {
+        "one": "Create 1 salary slip",
+        "other": "Create {{count}} salary slips"
+      },
+      "confirm": {
+        "one": "Confirm 1 draft slip",
+        "other": "Confirm {{count}} draft slips"
+      },
+      "working": "Working…",
+      "done": {
+        "made": "Salary slips made. Check them, then confirm.",
+        "confirmed": "Salary slips confirmed."
+      },
+      "error": {
+        "title": "The month's pay couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "failed": {
+        "title": "Some slips weren't done",
+        "message": "ERPNext refused the slips for {{workers}}. Check their salary and setup there, then try again."
+      },
+      "unresolved": {
+        "title": "Not yet resolved",
+        "message": "Some answers were lost. The month is read again: nothing is made or confirmed twice."
+      },
+      "note": "Slips are worked out by Frappe HR from each worker's salary and days. Confirmed slips are submitted in ERPNext; paying them out is done there.",
+      "open": "Pay",
+      "forbidden": {
+        "title": "Pay isn't open to your role",
+        "message": "ERPNext doesn't let your role read salaries or salary slips."
+      },
+      "notActive": "Inactive: no slip can be made"
+    },
+    "salary": {
+      "set": "Set salary",
+      "form": {
+        "title": "Set salary",
+        "subtitle": "Salary slips are made from this monthly salary, from this date.",
+        "worker": "Worker *",
+        "workerError": "Choose the worker.",
+        "monthly": "Monthly salary *",
+        "monthlyError": "Enter a salary above zero.",
+        "from": "From *",
+        "fromError": "Choose a date, on or after the day the worker joined.",
+        "save": "Save salary",
+        "saving": "Saving…",
+        "optionsFailed": "Workers couldn't load. Try again before saving.",
+        "failed": {
+          "permission": {
+            "title": "You can't set this salary",
+            "message": "ERPNext didn't allow it for your role."
+          },
+          "offline": {
+            "title": "No connection",
+            "message": "The salary wasn't saved. Check the connection and try again."
+          },
+          "setup": {
+            "title": "Salary setup is missing",
+            "message": "ERPNext has no basic salary component. Add one in ERPNext first."
+          },
+          "error": {
+            "title": "The salary wasn't saved",
+            "message": "ERPNext refused it. Check the date and amount, and try again."
+          },
+          "structure": {
+            "title": "The Madar salary structure isn't ready",
+            "message": "It exists in ERPNext but isn't submitted. Submit it there, then try again."
+          },
+          "structureCancelled": {
+            "title": "The Madar salary structure is cancelled",
+            "message": "Amend it in ERPNext (or delete it so Madar makes a new one), then try again."
+          },
+          "structureInactive": {
+            "title": "The Madar salary structure is inactive",
+            "message": "Set it active again in ERPNext, then try again."
+          }
+        },
+        "unresolved": {
+          "title": "Saving not yet resolved",
+          "message": "The request timed out. The salary may already be set. Check before saving again."
+        },
+        "notCreated": {
+          "title": "The salary wasn't saved",
+          "message": "Nothing was saved. Check the details and save again."
+        },
+        "missingWorker": "This worker isn't active, so no salary can be set here.",
+        "exists": {
+          "title": "A salary is already set from that date",
+          "message": "{{amount}} from that date. Choose another date for the new salary, or change that one in ERPNext."
+        }
+      }
     }
   }
 }
