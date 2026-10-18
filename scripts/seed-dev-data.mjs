@@ -572,6 +572,78 @@ if (!(await list('Shift Assignment', { employee: employee.Khaled, docstatus: 1 }
   });
 }
 
+// Approvals: an ERPNext workflow on Expense Claim (approved or rejected by Expense Approver) and one waiting claim.
+for (const state of ['Draft', 'Approved', 'Rejected']) {
+  await ensure('Workflow State', { name: state }, { workflow_state_name: state });
+}
+for (const action of ['Approve', 'Reject']) {
+  await ensure('Workflow Action Master', { name: action }, { workflow_action_name: action });
+}
+await ensure(
+  'Workflow',
+  { name: 'Madar expense claim approval' },
+  {
+    workflow_name: 'Madar expense claim approval',
+    document_type: 'Expense Claim',
+    is_active: 1,
+    workflow_state_field: 'workflow_state',
+    send_email_alert: 0,
+    states: [
+      { state: 'Draft', doc_status: '0', allow_edit: 'Employee' },
+      {
+        state: 'Approved',
+        doc_status: '1',
+        allow_edit: 'Expense Approver',
+        update_field: 'approval_status',
+        update_value: 'Approved',
+      },
+      {
+        state: 'Rejected',
+        doc_status: '0',
+        allow_edit: 'Expense Approver',
+        update_field: 'approval_status',
+        update_value: 'Rejected',
+      },
+    ],
+    transitions: [
+      {
+        state: 'Draft',
+        action: 'Approve',
+        next_state: 'Approved',
+        allowed: 'Expense Approver',
+        allow_self_approval: 1,
+      },
+      {
+        state: 'Draft',
+        action: 'Reject',
+        next_state: 'Rejected',
+        allowed: 'Expense Approver',
+        allow_self_approval: 1,
+      },
+    ],
+  },
+);
+if (!(await list('Expense Claim', { employee: employee.Rana })).length) {
+  await insert({
+    doctype: 'Expense Claim',
+    employee: employee.Rana,
+    company: COMPANY,
+    expense_approver: 'rehan@rehan.example',
+    payable_account: `Creditors - ${ABBR}`,
+    posting_date: iso(today),
+    expenses: [
+      {
+        expense_date: iso(today),
+        expense_type: 'Travel',
+        amount: 120,
+        sanctioned_amount: 120,
+        cost_center: `Main - ${ABBR}`,
+        description: 'Fuel for the delivery van',
+      },
+    ],
+  });
+}
+
 const users = [
   {
     email: 'rehan@rehan.example',

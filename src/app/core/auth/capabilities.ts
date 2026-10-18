@@ -49,6 +49,8 @@ export interface Capabilities {
   manageWorkers: boolean;
   /** Pay workers an advance from the business's payment accounts. */
   giveAdvances: boolean;
+  /** The Approvals inbox: steps ERPNext's workflows let the user's roles take. */
+  approve: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -77,6 +79,7 @@ const SALES_ROLE: Capabilities = {
   editSuppliers: false,
   manageWorkers: false,
   giveAdvances: false,
+  approve: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -106,6 +109,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editSuppliers: true,
     manageWorkers: true,
     giveAdvances: true,
+    approve: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -135,6 +139,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editSuppliers: false,
     manageWorkers: false,
     giveAdvances: false,
+    approve: false,
   },
   projectManager: {
     sell: false,
@@ -162,6 +167,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editSuppliers: false,
     manageWorkers: false,
     giveAdvances: false,
+    approve: false,
   },
   purchasing: {
     sell: false,
@@ -190,6 +196,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editSuppliers: true,
     manageWorkers: false,
     giveAdvances: false,
+    approve: false,
   },
 };
 
@@ -378,5 +385,7 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     giveAdvances:
       caps.giveAdvances &&
       GIVE_ADVANCES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    // HR roles decide leave there; ERPNext's workflows decide what else each role may approve.
+    approve: caps.approve || HR_ROLES.some((role) => roles.includes(role)),
   };
 }

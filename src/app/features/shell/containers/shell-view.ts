@@ -1,6 +1,7 @@
 import {
   LucideBoxes,
   LucideChartColumn,
+  LucideCheckCheck,
   LucideHouse,
   LucideIdCard,
   LucideLayers,
@@ -46,6 +47,12 @@ const DESKTOP_NAV: NavDefinition[] = [
     shownIf: (caps) => caps.manageWorkers,
   },
   {
+    id: 'approvals',
+    icon: LucideCheckCheck,
+    route: '/approvals',
+    shownIf: (caps) => caps.approve,
+  },
+  {
     id: 'money',
     icon: LucideWallet,
     route: '/money',
@@ -85,6 +92,7 @@ const MOBILE_NAV: NavDefinition[] = [
       '/purchases',
       '/contacts',
       '/workers',
+      '/approvals',
       '/projects',
       '/reports',
       '/settings',

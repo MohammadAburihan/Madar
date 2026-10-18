@@ -209,7 +209,19 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Workers & HR (in progress, before step 6)
+## Approvals and advanced reports (in progress, before step 6)
+
+- **A1 — Approvals**: this PR. **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
+  lists what waits for the user: documents whose ERPNext workflow has an open Workflow Action for one of the user's roles
+  (up to 50, with a note when capped), and for HR roles the leave requests still Open. Search by title, document or type.
+  A workflow item (`/approvals/:doctype/:name`) shows who asked, what and how much, and the workflow steps the user may
+  take (`get_transitions`); a step runs through `apply_workflow`, refuses a document of another company, and after a lost
+  answer only "Check result" re-reads the document (a moved state is the result). Leave requests open the leave page.
+  Designs: Approvals 01 Inbox and 02 Item (mobile EN/AR), Approvals in the sidebars and More. The seed adds an Expense
+  Claim workflow and a claim waiting for approval. e2e: approving and rejecting a claim from the inbox, Arabic, roles
+  without approvals, the desktop sidebar.
+
+## Workers & HR (done: #46–#53)
 
 Runs on Frappe HR (`hrms` v16.51.0) added to the local ERPNext image (`scripts/build-erpnext-image.sh`,
 `madar-erpnext:v16.50.0-hrms`); both local sites have it installed (backed up first). Planned as H1 workers, H2

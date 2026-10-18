@@ -28,6 +28,7 @@ describe('capabilitiesFor', () => {
       editSuppliers: true,
       manageWorkers: true,
       giveAdvances: true,
+      approve: true,
     });
   });
 
@@ -59,6 +60,7 @@ describe('capabilitiesFor', () => {
         editSuppliers: false,
         manageWorkers: false,
         giveAdvances: false,
+        approve: false,
       });
     }
   });
@@ -278,5 +280,11 @@ describe('capabilitiesFor', () => {
       capabilitiesFor('salesperson', ['Sales User', 'Accounts User', 'HR User', 'Expense Approver'])
         .giveAdvances,
     ).toBe(false);
+  });
+
+  it('opens Approvals to the Owner and to roles holding HR, not to the other roles alone', () => {
+    expect(capabilitiesFor('owner', ['System Manager']).approve).toBe(true);
+    expect(capabilitiesFor('salesperson', ['Sales User', 'Accounts User']).approve).toBe(false);
+    expect(capabilitiesFor('warehouse', ['Stock User', 'HR User']).approve).toBe(true);
   });
 });

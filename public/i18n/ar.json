@@ -26,7 +26,8 @@
     "userMeta": "{{role}} · العربية",
     "drafts": "المسودات",
     "new": "جديد",
-    "workers": "العمال"
+    "workers": "العمال",
+    "approvals": "الموافقات"
   },
   "home": {
     "greeting": {
@@ -3317,6 +3318,75 @@
         }
       },
       "lastWeek": "الساعات في آخر 7 أيام"
+    }
+  },
+  "approvals": {
+    "title": "الموافقات",
+    "subtitle": "{{business}} · بانتظارك",
+    "search": "بحث",
+    "placeholder": "البحث بالاسم أو الرقم",
+    "loading": "جارٍ تحميل ما ينتظرك…",
+    "empty": "لا يوجد ما ينتظرك.",
+    "noResults": "لا يوجد ما يطابق البحث.",
+    "capped": "يتم عرض أحدث {{count}}.",
+    "error": {
+      "title": "تعذّر تحميل الموافقات",
+      "message": "تحقّق من الاتصال وحاول مرة أخرى."
+    },
+    "leaveRequests": "فتح طلبات الإجازة",
+    "backHome": "العودة إلى الرئيسية",
+    "doctypes": {
+      "Expense Claim": "مطالبة مصروفات",
+      "Purchase Order": "أمر شراء",
+      "Leave Application": "إجازة",
+      "Material Request": "طلب مواد",
+      "Employee Advance": "سلفة",
+      "Sales Order": "أمر بيع",
+      "Quotation": "عرض سعر"
+    },
+    "leave": "إجازة",
+    "leaveMeta": "{{type}} · {{range}}",
+    "dated": "بتاريخ {{date}}",
+    "stateLine": "الحالة: {{state}}",
+    "amount": "المبلغ",
+    "waiting": "بانتظارك",
+    "actionsNote": "الإجراءات من سير عمل ERPNext؛ يمكن لدورك اتخاذ هذه.",
+    "noActions": "لا يمكن لدورك اتخاذ خطوة في هذا الآن.",
+    "moved": {
+      "title": "تم البت فيه مسبقاً",
+      "message": "قرّر فيه شخص آخر قبلك؛ حالته الآن {{state}}."
+    },
+    "done": {
+      "title": "تم",
+      "message": "حالته الآن {{state}}."
+    },
+    "back": "العودة إلى الموافقات",
+    "check": "التحقّق من النتيجة",
+    "unresolved": {
+      "title": "غير محسوم بعد",
+      "message": "انتهت مهلة الطلب. تحقّق من النتيجة: يُعاد قراءته ولا يُتخذ الإجراء مرتين."
+    },
+    "failed": {
+      "permission": {
+        "title": "لا يمكنك اتخاذ هذه الخطوة",
+        "message": "لم يسمح ERPNext بذلك لدورك."
+      },
+      "offline": {
+        "title": "لا يوجد اتصال",
+        "message": "لم يتم شيء. تحقّق من الاتصال وحاول مرة أخرى."
+      },
+      "error": {
+        "title": "لم يقبل ERPNext الخطوة",
+        "message": "اقرأه مجدداً وحاول مرة أخرى."
+      }
+    },
+    "loadFailed": {
+      "title": "تعذّر تحميل هذا البند",
+      "message": "تحقّق من الاتصال وحاول مرة أخرى."
+    },
+    "noAccess": {
+      "title": "الموافقات غير متاحة لدورك",
+      "message": "الموافقات للمالك وأدوار الموارد البشرية."
     }
   }
 }
