@@ -156,7 +156,7 @@ export class SalaryFormContainer {
 
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
   protected readonly currency = computed(() => this.business.active()?.currency ?? '');
-  private readonly workers = signal<{ id: string; name: string }[]>([]);
+  private readonly workers = signal<{ id: string; name: string; joined: string }[]>([]);
   protected readonly worker = signal('');
   protected readonly monthly = signal('');
   protected readonly from = signal('');
@@ -174,13 +174,18 @@ export class SalaryFormContainer {
   protected readonly missingWorker = signal(false);
   protected readonly notCreated = signal(false);
 
+  private readonly joined = computed(
+    () => this.workers().find((w) => w.id === this.worker())?.joined ?? '',
+  );
+
   private readonly amount = computed(() => parseNumber(this.monthly()));
 
   protected readonly invalid = computed(() => {
     const errors = {
       worker: !this.worker(),
       monthly: !(this.amount() > 0),
-      from: !this.from(),
+      // ERPNext refuses a salary starting before the worker joined.
+      from: !this.from() || this.from() < this.joined(),
     };
     return Object.values(errors).some(Boolean) ? errors : null;
   });

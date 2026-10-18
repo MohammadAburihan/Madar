@@ -3119,7 +3119,7 @@
         "monthly": "Monthly salary *",
         "monthlyError": "Enter a salary above zero.",
         "from": "From *",
-        "fromError": "Choose the date it starts.",
+        "fromError": "Choose a date, on or after the day the worker joined.",
         "save": "Save salary",
         "saving": "Saving…",
         "optionsFailed": "Workers couldn't load. Try again before saving.",
