@@ -58,6 +58,12 @@ import { monthLabel, payActions, payCard } from './pay-view';
       }
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
+      } @else if (state() === 'forbidden') {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.forbidden.title"
+          [message]="txt.forbidden.message"
+        />
       } @else if (state() === 'error') {
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
         <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
@@ -124,7 +130,7 @@ export class PayContainer {
   /** This month and the last, by the site's clock. */
   protected readonly months = signal<string[]>([]);
   protected readonly month = signal<string>('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly state = signal<'loading' | 'ready' | 'error' | 'forbidden'>('loading');
   private readonly rows = signal<PayRow[]>([]);
   protected readonly working = signal(false);
   protected readonly done = signal<string | null>(null);
@@ -150,6 +156,7 @@ export class PayContainer {
       failed: { title: t('workers.payroll.failed.title') },
       unresolved: block('workers.payroll.unresolved'),
       noAccess: block('workers.noAccess'),
+      forbidden: block('workers.payroll.forbidden'),
     };
   });
 
@@ -214,9 +221,13 @@ export class PayContainer {
         this.rows.set(rows);
         this.state.set('ready');
       }
-    } catch {
+    } catch (error) {
       if (run === this.run) {
-        this.state.set('error');
+        const forbidden = ErpnextError.from(error).kind === 'forbidden';
+        if (forbidden) {
+          void this.session.checkExpired();
+        }
+        this.state.set(forbidden ? 'forbidden' : 'error');
       }
     }
   }

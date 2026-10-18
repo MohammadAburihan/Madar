@@ -13,7 +13,7 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { toIsoDate } from '../../../core/format/format';
+import { formatMoney, toIsoDate } from '../../../core/format/format';
 import { parseNumber } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -25,10 +25,10 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { PayrollApiService } from '../data-access/payroll-api.service';
+import { PayrollApiService, SalaryExistsError } from '../data-access/payroll-api.service';
 import { SalaryFormValue } from '../data-access/workers.models';
 
-type Failure = 'permission' | 'offline' | 'setup' | 'error';
+type Failure = 'permission' | 'offline' | 'setup' | 'structure' | 'error';
 
 /** "Set salary": the monthly salary a worker's slips are made from, from a date. */
 @Component({
@@ -70,6 +70,9 @@ type Failure = 'permission' | 'offline' | 'setup' | 'error';
         [disabled]="unresolved()"
         (valueChange)="worker.set($event ?? '')"
       />
+      @if (missingWorker()) {
+        <p class="muted" role="status">{{ txt.missingWorker }}</p>
+      }
       @if (errors?.worker) {
         <p class="muted" role="alert">{{ txt.workerError }}</p>
       }
@@ -91,6 +94,9 @@ type Failure = 'permission' | 'offline' | 'setup' | 'error';
         [value]="from()"
         (valueChange)="from.set($event)"
       />
+      @if (exists() !== null) {
+        <app-feedback-card tone="warning" [title]="txt.exists.title" [message]="existsText()" />
+      }
       @if (failed(); as f) {
         <app-feedback-card
           tone="danger"
@@ -152,6 +158,10 @@ export class SalaryFormContainer {
   /** A lost answer: saving again finds a salary already set from that date instead of a second. */
   protected readonly unresolved = signal(false);
   protected readonly pending = signal(false);
+  /** A different salary already set from that date. */
+  protected readonly exists = signal<number | null>(null);
+  /** Opened for a worker who isn't active: say so instead of an empty field. */
+  protected readonly missingWorker = signal(false);
   protected readonly notCreated = signal(false);
 
   private readonly amount = computed(() => parseNumber(this.monthly()));
@@ -183,6 +193,8 @@ export class SalaryFormContainer {
       saving: f('saving'),
       check: t('sale.checking.check'),
       pending: t('sale.checking.pending'),
+      missingWorker: f('missingWorker'),
+      exists: { title: f('exists.title') },
       notCreated: block('workers.salary.form.notCreated'),
       optionsFailed: f('optionsFailed'),
       loading: t('workers.loading'),
@@ -194,10 +206,17 @@ export class SalaryFormContainer {
         permission: block('workers.salary.form.failed.permission'),
         offline: block('workers.salary.form.failed.offline'),
         setup: block('workers.salary.form.failed.setup'),
+        structure: block('workers.salary.form.failed.structure'),
         error: block('workers.salary.form.failed.error'),
       },
     };
   });
+
+  protected readonly existsText = computed(() =>
+    this.i18n.tr().t('workers.salary.form.exists.message', {
+      amount: formatMoney(this.exists() ?? 0, this.currency()),
+    }),
+  );
 
   protected readonly workerOptions = computed(() =>
     this.workers().map((w) => ({ value: w.id, label: w.name })),
@@ -229,6 +248,7 @@ export class SalaryFormContainer {
       if (!this.worker() && wanted && workers.some((w) => w.id === wanted)) {
         this.worker.set(wanted);
       }
+      this.missingWorker.set(!!wanted && !workers.some((w) => w.id === wanted));
     } catch {
       this.loadFailed.set(true);
     } finally {
@@ -246,7 +266,9 @@ export class SalaryFormContainer {
     try {
       const found = await this.api.salaryFrom(this.worker(), this.from());
       this.unresolved.set(false);
-      if (found) {
+      if (found && found.base !== this.amount()) {
+        this.exists.set(found.base);
+      } else if (found) {
         void this.router.navigate(['/workers/pay'], { replaceUrl: true });
       } else {
         this.notCreated.set(true);
@@ -266,6 +288,7 @@ export class SalaryFormContainer {
     this.saving.set(true);
     this.failed.set(null);
     this.notCreated.set(false);
+    this.exists.set(null);
     const value: SalaryFormValue = {
       worker: this.worker(),
       monthly: this.amount(),
@@ -282,6 +305,8 @@ export class SalaryFormContainer {
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.unresolved.set(true);
+      } else if (error instanceof SalaryExistsError) {
+        this.exists.set(error.base);
       } else {
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {
@@ -294,7 +319,9 @@ export class SalaryFormContainer {
               ? 'offline'
               : e.excType === 'NoBasicComponent'
                 ? 'setup'
-                : 'error',
+                : e.excType === 'StructureNotSubmitted'
+                  ? 'structure'
+                  : 'error',
         );
       }
     } finally {

@@ -15,6 +15,13 @@ interface SlipDoc {
   [key: string]: unknown;
 }
 
+/** A different salary is already set from that date; a submitted assignment is changed in ERPNext. */
+export class SalaryExistsError extends Error {
+  constructor(readonly base: number) {
+    super(`A salary of ${base} is already set from that date`);
+  }
+}
+
 /** The month's last day, for a `YYYY-MM-01` month. */
 export function monthEnd(month: string): string {
   const [y, m] = month.split('-').map(Number);
@@ -29,11 +36,17 @@ export function monthEnd(month: string): string {
 export class PayrollApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Sets the worker's monthly salary from a date; the same worker and date again finds the one already set. */
+  /**
+   * Sets the worker's monthly salary from a date. The same salary on that date again finds the one already set; a
+   * different one on the same date is refused with SalaryExistsError (a submitted assignment can't be changed here).
+   */
   async setSalary(value: SalaryFormValue, business: Business): Promise<string> {
     const existing = await this.salaryFrom(value.worker, value.from);
     if (existing) {
-      return existing;
+      if (existing.base !== value.monthly) {
+        throw new SalaryExistsError(existing.base);
+      }
+      return existing.name;
     }
     const structure = await this.structure(business);
     const doc = await confirmRequest(
@@ -54,10 +67,10 @@ export class PayrollApiService {
   }
 
   /** The salary assignment starting on that date, if one was made (by a lost answer, say). */
-  async salaryFrom(worker: string, from: string): Promise<string | null> {
+  async salaryFrom(worker: string, from: string): Promise<{ name: string; base: number } | null> {
     const [row] = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Salary Structure Assignment', {
-        fields: ['name'],
+      this.erpnext.list<{ name: string; base: number }>('Salary Structure Assignment', {
+        fields: ['name', 'base'],
         filters: [
           ['employee', '=', worker],
           ['from_date', '=', from],
@@ -66,28 +79,28 @@ export class PayrollApiService {
         limit: 1,
       }),
     );
-    return row?.name ?? null;
+    return row ? { name: row.name, base: Number(row.base || 0) } : null;
   }
 
   /** The month's pay: every worker employed in it, with their slip or that they have no salary yet. */
   async month(month: string, business: Business): Promise<PayRow[]> {
     const end = monthEnd(month);
-    const workers = await this.erpnext.listAll<{ name: string; employee_name: string }>(
-      'Employee',
-      {
-        fields: ['name', 'employee_name'],
-        filters: [
-          ['company', '=', business.name],
-          ['status', 'in', ['Active', 'Left']],
-          ['date_of_joining', '<=', end],
-        ],
-        orFilters: [
-          ['relieving_date', 'is', 'not set'],
-          ['relieving_date', '>=', month],
-        ],
-        orderBy: 'employee_name asc, name asc',
-      },
-    );
+    const workers = await this.erpnext.listAll<{
+      name: string;
+      employee_name: string;
+      status: string;
+    }>('Employee', {
+      fields: ['name', 'employee_name', 'status'],
+      filters: [
+        ['company', '=', business.name],
+        ['date_of_joining', '<=', end],
+      ],
+      orFilters: [
+        ['relieving_date', 'is', 'not set'],
+        ['relieving_date', '>=', month],
+      ],
+      orderBy: 'employee_name asc, name asc',
+    });
     const [salaries, slips] = await Promise.all([
       this.erpnext.listAll<{ employee: string }>('Salary Structure Assignment', {
         fields: ['employee'],
@@ -108,7 +121,11 @@ export class PayrollApiService {
     ]);
     const withSalary = new Set(salaries.map((s) => s.employee));
     const slipOf = new Map(slips.map((s) => [s.employee, s]));
-    return workers.map((w) => {
+    // Workers no longer active show only for a salary or slip they had; there is nothing to set for them here.
+    const shown = workers.filter(
+      (w) => w.status === 'Active' || withSalary.has(w.name) || slipOf.has(w.name),
+    );
+    return shown.map((w) => {
       const slip = slipOf.get(w.name);
       return {
         id: w.name,
@@ -218,9 +235,19 @@ export class PayrollApiService {
         }),
       );
     } catch (error) {
-      // Made meanwhile by another save: use it.
       if (ErpnextError.from(error).excType !== 'DuplicateEntryError') {
         throw error;
+      }
+      // Made meanwhile by another save, or left unsubmitted in Desk: only a submitted one can be used.
+      const [made] = await firstValueFrom(
+        this.erpnext.list<{ docstatus: number }>('Salary Structure', {
+          fields: ['docstatus'],
+          filters: [['name', '=', name]],
+          limit: 1,
+        }),
+      );
+      if (made?.docstatus !== 1) {
+        throw new ErpnextError('server', `${name} isn't submitted`, 417, 'StructureNotSubmitted');
       }
     }
     return name;

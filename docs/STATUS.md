@@ -322,7 +322,12 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   named, a lost answer reads the month again. Paying slips out stays in ERPNext. Seed: the structure, Khaled ILS 4,200 and
   Rana ILS 3,600. Design: Workers 11 Pay, 12 Set salary (mobile EN/AR), Pay in the desktop actions. e2e: a salary set
   from a worker's page, last month's slip made and confirmed (checked in ERPNext); a worker without a salary sent to Set
-  salary; Arabic. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  salary; Arabic.
+  Review pass 1 (1 medium-high, 4 low) fixed: a different salary on a date that already has one is refused with the
+  amount set (a submitted assignment is changed in ERPNext), also when checking after a lost answer; a Madar structure
+  left unsubmitted in Desk gets its own message; Pay shows workers no longer active only for a salary or slip they had,
+  and Set salary says when it's opened for a worker who isn't active; PERMISSIONS.md gains the Pay row (HR roles, as in
+  ERPNext); a 403 on Pay says it isn't open to the role (after checking for an expired session). Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

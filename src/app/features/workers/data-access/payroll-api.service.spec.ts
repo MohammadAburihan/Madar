@@ -41,16 +41,23 @@ describe('PayrollApiService', () => {
   });
 
   it('finds a salary already set from that date instead of setting it twice', async () => {
-    const { postCalls } = fakeErpnext({ 'Salary Structure Assignment': () => [{ name: 'SSA-1' }] });
+    const { postCalls } = fakeErpnext({
+      'Salary Structure Assignment': () => [{ name: 'SSA-1', base: 3000 }],
+    });
     expect(await api().setSalary(VALUE, BUSINESS)).toBe('SSA-1');
+    await expect(api().setSalary({ ...VALUE, monthly: 3500 }, BUSINESS)).rejects.toMatchObject({
+      base: 3000,
+    });
     expect(postCalls).toEqual([]);
   });
 
   it('reads the month: who is employed, who has a salary, and each slip', async () => {
     const { listCalls } = fakeErpnext({
       Employee: () => [
-        { name: 'E1', employee_name: 'Khaled Omar' },
-        { name: 'E3', employee_name: 'Yousef Darwish' },
+        { name: 'E1', employee_name: 'Khaled Omar', status: 'Active' },
+        { name: 'E3', employee_name: 'Yousef Darwish', status: 'Active' },
+        // Left with nothing for the month: not shown.
+        { name: 'E4', employee_name: 'Huda Nasser', status: 'Left' },
       ],
       'Salary Structure Assignment': () => [{ employee: 'E1' }],
       'Salary Slip': () => [
