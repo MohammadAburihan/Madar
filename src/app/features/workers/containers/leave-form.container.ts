@@ -77,7 +77,9 @@ type Failure = 'permission' | 'offline' | 'balance' | 'overlap' | 'error';
       @if (worker()) {
         @if (balancesFailed()) {
           <app-feedback-card tone="danger" [title]="txt.type" [message]="txt.typesFailed" />
-          <button type="button" class="md-btn" (click)="loadBalances()">{{ txt.retry }}</button>
+          <button type="button" class="md-btn" [disabled]="locked()" (click)="loadBalances()">
+            {{ txt.retry }}
+          </button>
         } @else if (balances()?.length === 0) {
           <app-feedback-card tone="warning" [title]="txt.type" [message]="txt.noTypes" />
         } @else {
@@ -197,7 +199,7 @@ export class LeaveFormContainer {
   private balanceRun = 0;
   /** An answer was lost under this reference: that try may still land, so the details stay as sent. */
   private readonly lost = signal(false);
-  protected readonly locked = computed(() => this.unresolved() || this.lost());
+  protected readonly locked = computed(() => this.unresolved() || this.lost() || this.sending());
   protected readonly balancesFailed = signal(false);
 
   protected readonly invalid = computed(() => {
@@ -349,6 +351,10 @@ export class LeaveFormContainer {
 
   /** The worker's leave types as of the leave's start: allocations cover their own period. */
   protected async loadBalances(worker = this.worker(), from = this.from()): Promise<void> {
+    // The type sent stays as sent.
+    if (this.locked()) {
+      return;
+    }
     const run = ++this.balanceRun;
     this.balances.set(null);
     this.balancesFailed.set(false);

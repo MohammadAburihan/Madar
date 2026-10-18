@@ -98,7 +98,9 @@ import { saveLabel, sheetRowView, statusOptions } from './attendance-view';
             />
           }
         } @empty {
-          <p class="muted">{{ txt.empty }}</p>
+          @if (!dateInvalid()) {
+            <p class="muted">{{ txt.empty }}</p>
+          }
         }
         @if (saved(); as s) {
           <app-feedback-card tone="tint" [title]="txt.saved.title" [message]="s" />
