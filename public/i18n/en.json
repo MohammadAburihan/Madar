@@ -1844,7 +1844,30 @@
     },
     "back": "Back",
     "costs": "Cost of goods sold and expenses",
-    "capped": "The table lists the last 12 months; the total covers the whole period."
+    "capped": "The table lists the last 12 months; the total covers the whole period.",
+    "breakdowns": {
+      "title": "Breakdowns",
+      "subtitle": "{{business}} · {{period}}",
+      "open": "Breakdowns: sales by item and customer, purchases, stock",
+      "items": "Sales by item",
+      "customers": "Sales by customer",
+      "suppliers": "Purchases by supplier",
+      "stock": "Stock value by warehouse",
+      "sold": "{{item}} · {{qty}} sold",
+      "other": "Other ({{count}})",
+      "none": "Nothing in this period.",
+      "salesTotal": "Sales for the period",
+      "note": "Totals as posted in ERPNext for the period; stock value is today's. Each list shows the top 5, then the rest.",
+      "loading": "Loading the breakdowns…",
+      "error": {
+        "title": "The breakdowns couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "purchases": "Purchases",
+      "stockValue": "Stock value today",
+      "pay": "Net pay confirmed",
+      "days": "Days present"
+    }
   },
   "statements": {
     "customerTitle": "Customer statement",
