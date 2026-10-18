@@ -164,6 +164,11 @@ export class LeaveApiService {
     today: string,
     business: Business,
   ): Promise<string> {
+    // Sent again after "not created": a slow first try that landed meanwhile is the request, not a second one.
+    const landed = await this.find(reference);
+    if (landed) {
+      return landed;
+    }
     const reason = value.reason.trim();
     const doc = await confirmRequest(
       this.erpnext.post<{ name: string }>('frappe.client.insert', {

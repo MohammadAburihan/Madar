@@ -359,6 +359,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   midnight; the hours left are rounded down; PERMISSIONS.md gains the hours row. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
+- **Workers & HR batch review** (this PR, after #46–#52; suite 102/102 on development): fixed adding a worker and
+  sending leave after "not created" looking the reference up first (a slow first try that landed takes the details,
+  never a second record), leave and advance forms keeping their details locked once an answer was lost, and the
+  attendance sheet clearing when an unusable day is picked.
 ## End-to-end happy paths: merged (#26)
 
 `npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site, through its own dev server on :4321

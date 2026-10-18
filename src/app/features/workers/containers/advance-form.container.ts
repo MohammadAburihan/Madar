@@ -189,6 +189,8 @@ export class AdvanceFormContainer {
   );
   /** Sent once with this reference: its details stay as sent, since a slow first try may still land. */
   private readonly sent = signal(false);
+  /** An answer was lost under this reference: that try may still land, so the details never unlock again. */
+  private lost = false;
   /** The advance exists in ERPNext: its details can no longer change, only its payment be tried again. */
   protected readonly recorded = signal(false);
   private readonly reference = newReference('ADV');
@@ -363,13 +365,14 @@ export class AdvanceFormContainer {
       void this.router.navigate(['/workers', this.worker()], { replaceUrl: true });
     } catch (error) {
       if (error instanceof UnresolvedError) {
+        this.lost = true;
         this.unresolved.set(true);
       } else {
         if (error instanceof AdvanceNotPaidError) {
           this.recorded.set(true);
         } else {
           // A definite refusal saved nothing under the reference: the details can be fixed.
-          this.sent.set(false);
+          this.sent.set(this.lost);
         }
         const e = ErpnextError.from(error instanceof AdvanceNotPaidError ? error.reason : error);
         if (e.kind === 'forbidden') {

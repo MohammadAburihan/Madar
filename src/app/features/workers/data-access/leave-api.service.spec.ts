@@ -76,11 +76,13 @@ describe('LeaveApiService', () => {
   });
 
   it('sends an open request with the reference after the reason, and finds a lost one', async () => {
+    let landed = false;
     const { postCalls, listCalls } = fakeErpnext(
-      { 'Leave Application': () => [{ name: 'HR-LAP-1' }] },
+      { 'Leave Application': () => (landed ? [{ name: 'HR-LAP-1' }] : []) },
       { 'frappe.client.insert': () => ({ name: 'HR-LAP-1' }) },
     );
     expect(await api().requestLeave(VALUE, 'LEV-1', '2026-10-17', BUSINESS)).toBe('HR-LAP-1');
+    landed = true;
     expect(postCalls[0].body['doc']).toEqual({
       doctype: 'Leave Application',
       employee: 'E1',
@@ -93,7 +95,12 @@ describe('LeaveApiService', () => {
       description: 'Family visit\n\nMadar leave LEV-1',
     });
     expect(await api().find('LEV-1')).toBe('HR-LAP-1');
-    expect(listCalls[0].query.filters).toEqual([['description', 'like', '%Madar leave LEV-1%']]);
+    expect(listCalls.at(-1)!.query.filters).toEqual([
+      ['description', 'like', '%Madar leave LEV-1%'],
+    ]);
+    // Sent again: the request that landed is the result, not a second one.
+    expect(await api().requestLeave(VALUE, 'LEV-1', '2026-10-17', BUSINESS)).toBe('HR-LAP-1');
+    expect(postCalls).toHaveLength(1);
   });
 
   it('reports a lost request as unresolved', async () => {

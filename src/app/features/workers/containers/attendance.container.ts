@@ -243,6 +243,11 @@ export class AttendanceContainer {
     this.unresolved.set(false);
     if (!this.dateInvalid()) {
       void this.load();
+    } else {
+      // No sheet for a day that can't be marked; a load still running for the last day is dropped.
+      this.run++;
+      this.rows.set([]);
+      this.state.set('ready');
     }
   }
 

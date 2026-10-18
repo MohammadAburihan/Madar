@@ -68,6 +68,7 @@ type Failure = 'permission' | 'offline' | 'balance' | 'overlap' | 'error';
         [options]="workerOptions()"
         [placeholder]="txt.worker"
         [value]="worker() || null"
+        [disabled]="locked()"
         (valueChange)="setWorker($event ?? '')"
       />
       @if (errors?.worker) {
@@ -85,6 +86,7 @@ type Failure = 'permission' | 'offline' | 'balance' | 'overlap' | 'error';
             [options]="typeOptions()"
             [placeholder]="txt.type"
             [value]="leaveType() || null"
+            [disabled]="locked()"
             (valueChange)="leaveType.set($event ?? '')"
           />
           @if (errors?.leaveType) {
@@ -94,18 +96,25 @@ type Failure = 'permission' | 'offline' | 'balance' | 'overlap' | 'error';
       }
       <app-text-field
         [label]="txt.from"
+        [readonly]="locked()"
         type="date"
         [value]="from()"
         (valueChange)="from.set($event)"
       />
       <app-text-field
         [label]="txt.to"
+        [readonly]="locked()"
         type="date"
         [error]="errors?.dates ? txt.datesError : null"
         [value]="to()"
         (valueChange)="to.set($event)"
       />
-      <app-text-field [label]="txt.reason" [value]="reason()" (valueChange)="reason.set($event)" />
+      <app-text-field
+        [label]="txt.reason"
+        [readonly]="locked()"
+        [value]="reason()"
+        (valueChange)="reason.set($event)"
+      />
       @if (summary(); as s) {
         <app-text-field [label]="txt.days" [readonly]="true" [value]="s" />
       }
@@ -186,6 +195,9 @@ export class LeaveFormContainer {
   protected readonly notCreated = signal(false);
   private readonly reference = newReference('LEV');
   private balanceRun = 0;
+  /** An answer was lost under this reference: that try may still land, so the details stay as sent. */
+  private readonly lost = signal(false);
+  protected readonly locked = computed(() => this.unresolved() || this.lost());
   protected readonly balancesFailed = signal(false);
 
   protected readonly invalid = computed(() => {
@@ -325,7 +337,7 @@ export class LeaveFormContainer {
 
   /** A worker's leave types are their own: choosing another clears the type until theirs are read. */
   protected setWorker(id: string): void {
-    if (this.unresolved() || id === this.worker()) {
+    if (this.locked() || id === this.worker()) {
       return;
     }
     this.worker.set(id);
@@ -394,6 +406,7 @@ export class LeaveFormContainer {
       void this.router.navigate(['/workers/leave', id], { replaceUrl: true });
     } catch (error) {
       if (error instanceof UnresolvedError) {
+        this.lost.set(true);
         this.unresolved.set(true);
       } else {
         const e = ErpnextError.from(error);
