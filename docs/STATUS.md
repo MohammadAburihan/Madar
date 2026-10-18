@@ -211,7 +211,45 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 
 ## Approvals and advanced reports (in progress, before step 6)
 
-- **R1 — Breakdowns**: this PR. **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
+- **A1 — Approvals**: this PR. **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
+  lists what waits for the user: documents whose ERPNext workflow has an open Workflow Action for one of the user's roles
+  (up to 50, with a note when capped), and for HR roles the leave requests still Open. Search by title, document or type.
+  A workflow item (`/approvals/:doctype/:name`) shows who asked, what and how much, and the workflow steps the user may
+  take (`get_transitions`); a step runs through `apply_workflow`, refuses a document of another company, and after a lost
+  answer only "Check result" re-reads the document (a moved state is the result). Leave requests open the leave page.
+  Designs: Approvals 01 Inbox and 02 Item (mobile EN/AR), Approvals in the sidebars and More. The seed adds an Expense
+  Claim workflow and a claim waiting for approval. e2e: approving and rejecting a claim from the inbox, Arabic, roles
+  without approvals, the desktop sidebar.
+  Review pass 1 (2 medium, 5 low) fixed: a zero rounded total (rounding off) falls back to the grand total; another
+  document on the same page starts without the last one's outcome or lost answer; Check result compares with the
+  state the step was sent from, even after a failed check; the cap note follows ERPNext's open actions and leave
+  rows; a leave request under a workflow shows once; buying amounts are hidden from roles that don't see costs.
+  Review pass 2 (1 medium, 3 low) fixed: the seed adds the waiting claim after its approver's user exists (a new site
+  failed); a step's late answer is dropped once the page shows another document; leave rows open the approval page for
+  roles without HR.
+  Review pass 3 (1 medium, 3 low) fixed: states are read from the field each workflow keeps them in (roles that
+  can't read Workflow use the standard one); steps ERPNext would refuse as self-approval aren't offered; leave rows
+  show their status in the user's language; search matches the doctype as shown.
+  Review pass 4 (1 medium, 1 low) fixed: after a lost answer, Check result finding the state unchanged keeps only
+  Check result (the step may still be running; the steps come back on a fresh visit), never the actions; a state
+  field read as forbidden isn't kept for the next user. Known: roles that can't read Workflow use `workflow_state`, so a
+  workflow with its own state field shows no state for them.
+  Review pass 5 (1 medium, 2 low) fixed: without `seeCosts` only amounts of non-cost documents (claims, advances,
+  sales documents) are shown, any other doctype's are hidden; an advance in another currency shows no amount rather
+  than the wrong currency. Deferred (low): the inbox still lists a user's own document under a transition without
+  self-approval (the item then offers no steps); workflow actions and states show as named in ERPNext, untranslated.
+  Review pass 6 (1 medium, 2 low) fixed: amounts show what was asked for (an unpaid advance, a claim before advances
+  are set off), not 0 or the net; reasons show without the Madar reference saved after them.
+  Review pass 7 (2 medium, 1 low) fixed: amounts are read per doctype in the company currency (a claim's
+  `base_total_claimed_amount`; an advance in another currency shows none, not 0.00); a step queued in the background
+  (no answer) is checked on the document, unresolved while unchanged.
+  Review pass 8 (1 medium, 1 low) fixed: a leave request under a workflow is listed once, as a workflow item decided
+  on the approval page (the leave page's decision would bypass the workflow); a returned document counts as the
+  step's answer even when the role can't read the workflow's state field.
+  Review pass 9 (1 low fixed: waiting leave is listed newest first, as the cap note says). Deferred, outside this PR: on
+  a site with a workflow on Leave Application, Madar's leave pages decide with a plain submit and don't follow it;
+  leave requests a user has no open workflow step on still open there. Reviewing stops here.
+- **R1 — Breakdowns**: merged (#55). **Breakdowns** (`/reports/breakdowns`, from a button under the statements on Reports;
   Owner only, like every report) shows, for a chosen period: sales for the period with purchases, today's stock value,
   confirmed net pay and days present (pay and attendance only where the role can read them); then sales by item (with
   quantity sold), sales by customer, purchases by supplier and stock value by warehouse, each the top 5 and "Other (n)".

@@ -26,7 +26,8 @@
     "userMeta": "{{role}} · English / العربية",
     "drafts": "Drafts",
     "new": "New",
-    "workers": "Workers"
+    "workers": "Workers",
+    "approvals": "Approvals"
   },
   "home": {
     "greeting": {
@@ -3240,6 +3241,74 @@
         }
       },
       "lastWeek": "Hours in the last 7 days"
+    }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "{{business}} · Waiting for you",
+    "search": "Search",
+    "placeholder": "Search name or number",
+    "loading": "Loading what waits for you…",
+    "empty": "Nothing is waiting for you.",
+    "noResults": "Nothing waiting matches your search.",
+    "capped": "Showing the newest {{count}}.",
+    "error": {
+      "title": "Approvals couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "leaveRequests": "Open leave requests",
+    "backHome": "Back to Home",
+    "doctypes": {
+      "Expense Claim": "Expense claim",
+      "Purchase Order": "Purchase order",
+      "Leave Application": "Leave",
+      "Material Request": "Material request",
+      "Employee Advance": "Advance",
+      "Sales Order": "Sales order",
+      "Quotation": "Quotation"
+    },
+    "leave": "Leave",
+    "dated": "Dated {{date}}",
+    "stateLine": "State: {{state}}",
+    "amount": "Amount",
+    "waiting": "Waiting for you",
+    "actionsNote": "Actions come from the ERPNext workflow; your role can take these.",
+    "noActions": "Your role can't take a step on this one now.",
+    "moved": {
+      "title": "Already moved on",
+      "message": "Someone decided it before you; it now reads {{state}}."
+    },
+    "done": {
+      "title": "Done",
+      "message": "It now reads {{state}}."
+    },
+    "back": "Back to approvals",
+    "check": "Check result",
+    "unresolved": {
+      "title": "Not yet resolved",
+      "message": "The request timed out. Check the result: it is read again, and never acted on twice."
+    },
+    "failed": {
+      "permission": {
+        "title": "You can't take this step",
+        "message": "ERPNext didn't allow it for your role."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "Nothing was done. Check the connection and try again."
+      },
+      "error": {
+        "title": "ERPNext didn't take the step",
+        "message": "Read it again and try once more."
+      }
+    },
+    "loadFailed": {
+      "title": "This item couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "Approvals aren't open to your role",
+      "message": "Approvals are for the Owner and HR roles."
     }
   }
 }
