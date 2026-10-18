@@ -267,6 +267,13 @@ const LEDGER_LIMIT = 5;
       >
         <app-totals-card density="compact" [rows]="v.linked" />
       </app-project-section>
+      @if (v.records.some((r) => r.openable)) {
+        <app-record-links
+          [heading]="txt.records"
+          [links]="v.records"
+          (opened)="openRecord($event)"
+        />
+      }
       @if (caps().supplyProjects && v.nextItem) {
         <button type="button" class="md-btn md-btn--primary" (click)="supply(v.nextItem)">
           {{ txt.supply }}

@@ -127,6 +127,14 @@ const SEARCH_DELAY_MS = 250;
               @if (p.recent.length) {
                 <p class="lines muted">{{ p.recent.join('\\n') }}</p>
               }
+              <button type="button" class="md-btn" (click)="openDetail(p.id, 'history')">
+                {{ txt.history }}
+              </button>
+              @if (editable()) {
+                <button type="button" class="md-btn" (click)="openDetail(p.id, 'edit')">
+                  {{ current() === 'customers' ? txt.editCustomer : txt.editSupplier }}
+                </button>
+              }
               <button type="button" class="md-btn" (click)="openDetail(p.id)">
                 {{ txt.openDetail }}
               </button>
@@ -191,7 +199,11 @@ export class ContactsContainer {
   private run = 0;
   private detailRun = 0;
 
-  private readonly current = computed(() =>
+  protected readonly editable = computed(() =>
+    editableKinds(this.caps(), 'edit').includes(this.current()),
+  );
+
+  protected readonly current = computed(() =>
     this.kinds().includes(this.kind() as ContactKind)
       ? (this.kind() as ContactKind)
       : (this.kinds()[0] ?? 'customers'),
@@ -216,6 +228,9 @@ export class ContactsContainer {
       retry: t('contacts.retry'),
       choose: t('contacts.choose'),
       openDetail: t('contacts.openDetail'),
+      history: t('contacts.viewTransactions'),
+      editCustomer: t('contacts.editContact'),
+      editSupplier: t('contacts.editSupplier'),
       panelFailed: t('contacts.panelFailed'),
       capped: t('contacts.capped', { count: LIST_LIMIT }),
       add: t('contacts.add'),
@@ -383,8 +398,8 @@ export class ContactsContainer {
     void this.router.navigate(['/contacts/new'], { queryParams: { type: this.current() } });
   }
 
-  protected openDetail(id: string): void {
-    void this.router.navigate(['/contacts', this.current(), id]);
+  protected openDetail(id: string, page?: 'history' | 'edit'): void {
+    void this.router.navigate(['/contacts', this.current(), id, ...(page ? [page] : [])]);
   }
 
   protected act(route: string[], query: Record<string, string>): void {
