@@ -24,6 +24,16 @@ export function doctypeLabel(doctype: string, tr: Translator): string {
   return label === key ? doctype : label;
 }
 
+/** Leave requests carry Frappe HR's status, worded as on the Workers pages; workflow states as ERPNext names them. */
+function stateLabel(item: ApprovalItem, tr: Translator): string {
+  if (item.doctype !== 'Leave Application') {
+    return item.state;
+  }
+  const key = `workers.leave.status.${item.state}`;
+  const label = tr.t(key);
+  return label === key ? item.state : label;
+}
+
 /** "Expense claim · Rana Saleh", "HR-EXP-2026-00003 · 17 Oct 2026", "ILS 120.00 · Draft". */
 export function approvalCard(
   item: ApprovalItem,
@@ -37,7 +47,7 @@ export function approvalCard(
     id: `${item.doctype}/${item.name}`,
     title: `${doctypeLabel(item.doctype, tr)} · ${item.title}`,
     meta: item.date ? `${item.name} · ${formatShortDate(item.date, language)}` : item.name,
-    balance: [amount === null ? null : formatMoney(amount, currency), item.state]
+    balance: [amount === null ? null : formatMoney(amount, currency), stateLabel(item, tr)]
       .filter(Boolean)
       .join(' · '),
   };

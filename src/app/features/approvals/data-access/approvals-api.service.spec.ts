@@ -98,7 +98,58 @@ describe('ApprovalsApiService', () => {
         },
       },
     );
-    expect((await api().item('Purchase Order', 'PO-9', BUSINESS)).amount).toBe(412.5);
+    expect(
+      (await api().item('Purchase Order', 'PO-9', BUSINESS, 'rehan@rehan.example')).amount,
+    ).toBe(412.5);
+  });
+
+  it('reads the state from the field the workflow keeps it in', async () => {
+    fakeErpnext(
+      { Workflow: () => [{ workflow_state_field: 'approval_state' }] },
+      {
+        'frappe.model.workflow.get_transitions': () => [],
+        'frappe.model.workflow.apply_workflow': (body) => ({
+          ...(body['doc'] as object),
+          approval_state: 'Approved',
+        }),
+      },
+      {
+        'Expense Claim/HR-EXP-1': { ...CLAIM, workflow_state: undefined, approval_state: 'Draft' },
+      },
+    );
+    expect((await api().item('Expense Claim', 'HR-EXP-1', BUSINESS, 'x')).state).toBe('Draft');
+    expect(await api().apply('Expense Claim', 'HR-EXP-1', 'Draft', 'Approve', BUSINESS)).toEqual({
+      state: 'Approved',
+      moved: false,
+    });
+  });
+
+  it('falls back to the standard state field for roles that can’t read workflows', async () => {
+    fakeErpnext(
+      { Workflow: () => throwError(() => new HttpErrorResponse({ status: 403 })) },
+      { 'frappe.model.workflow.get_transitions': () => [] },
+      { 'Expense Claim/HR-EXP-1': CLAIM },
+    );
+    expect((await api().item('Expense Claim', 'HR-EXP-1', BUSINESS, 'x')).state).toBe('Draft');
+  });
+
+  it('leaves out steps ERPNext refuses as self-approval', async () => {
+    fakeErpnext(
+      {},
+      {
+        'frappe.model.workflow.get_transitions': () => [
+          { action: 'Approve', allow_self_approval: 0 },
+          { action: 'Withdraw', allow_self_approval: 1 },
+        ],
+      },
+      { 'Expense Claim/HR-EXP-1': { ...CLAIM, owner: 'rana@rehan.example' } },
+    );
+    expect(
+      (await api().item('Expense Claim', 'HR-EXP-1', BUSINESS, 'rana@rehan.example')).actions,
+    ).toEqual(['Withdraw']);
+    expect(
+      (await api().item('Expense Claim', 'HR-EXP-1', BUSINESS, 'rehan@rehan.example')).actions,
+    ).toEqual(['Approve', 'Withdraw']);
   });
 
   it('reads an item with the actions the user may take', async () => {
@@ -113,7 +164,9 @@ describe('ApprovalsApiService', () => {
       },
       { 'Expense Claim/HR-EXP-1': CLAIM },
     );
-    expect(await api().item('Expense Claim', 'HR-EXP-1', BUSINESS)).toMatchObject({
+    expect(
+      await api().item('Expense Claim', 'HR-EXP-1', BUSINESS, 'rehan@rehan.example'),
+    ).toMatchObject({
       title: 'Rana Saleh',
       amount: 120,
       state: 'Draft',
@@ -158,7 +211,7 @@ describe('ApprovalsApiService', () => {
     await expect(
       api().apply('Expense Claim', 'HR-EXP-1', 'Draft', 'Approve', BUSINESS),
     ).rejects.toBeInstanceOf(UnresolvedError);
-    await expect(api().item('Expense Claim', 'X', BUSINESS)).rejects.toMatchObject({
+    await expect(api().item('Expense Claim', 'X', BUSINESS, 'x')).rejects.toMatchObject({
       excType: 'DoesNotExistError',
     });
   });

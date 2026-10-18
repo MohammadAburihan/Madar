@@ -54,6 +54,7 @@ function amountOf(doc: Doc): number | null {
 @Injectable({ providedIn: 'root' })
 export class ApprovalsApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly stateFields = new Map<string, Promise<string>>();
 
   /**
    * Documents waiting for the user, newest first; another company's are left out. `capped` when ERPNext had as many
@@ -79,6 +80,13 @@ export class ApprovalsApiService {
       const key = `${a.reference_doctype}/${a.reference_name}`;
       return seen.has(key) ? false : (seen.add(key), true);
     });
+    const fields = new Map(
+      await Promise.all(
+        [...new Set(unique.map((a) => a.reference_doctype))].map(
+          async (d) => [d, await this.stateField(d)] as const,
+        ),
+      ),
+    );
     const docs = await Promise.all(
       unique.map((a) =>
         firstValueFrom(this.erpnext.doc<Doc>(a.reference_doctype, a.reference_name)).catch(
@@ -104,7 +112,7 @@ export class ApprovalsApiService {
         name: doc.name,
         title: titleOf(doc),
         amount: amountOf(doc),
-        state: String(doc['workflow_state'] ?? action.workflow_state),
+        state: String(doc[fields.get(action.reference_doctype)!] ?? action.workflow_state),
         date: String(doc['posting_date'] ?? doc['transaction_date'] ?? action.creation).slice(
           0,
           10,
@@ -143,23 +151,39 @@ export class ApprovalsApiService {
     }));
   }
 
-  /** One document with the actions the user may take on it now. */
-  async item(doctype: string, name: string, business: Business): Promise<ApprovalDetail> {
-    const doc = await this.doc(doctype, name, business);
+  /**
+   * One document with the actions the user (`user`, their login) may take on it now. Steps ERPNext would refuse as
+   * self-approval are left out: `get_transitions` lists them, `apply_workflow` refuses them.
+   */
+  async item(
+    doctype: string,
+    name: string,
+    business: Business,
+    user: string,
+  ): Promise<ApprovalDetail> {
+    const [doc, field] = await Promise.all([
+      this.doc(doctype, name, business),
+      this.stateField(doctype),
+    ]);
     const transitions = await firstValueFrom(
-      this.erpnext.post<{ action: string }[]>('frappe.model.workflow.get_transitions', { doc }),
+      this.erpnext.post<{ action: string; allow_self_approval?: number }[]>(
+        'frappe.model.workflow.get_transitions',
+        { doc },
+      ),
     );
+    const mayApprove = (t: { allow_self_approval?: number }) =>
+      !!t.allow_self_approval || doc['owner'] !== user || user === 'Administrator';
     return {
       doctype,
       name: doc.name,
       title: titleOf(doc),
       amount: amountOf(doc),
-      state: String(doc['workflow_state'] ?? ''),
+      state: String(doc[field] ?? ''),
       date: String(doc['posting_date'] ?? doc['transaction_date'] ?? doc['creation'] ?? '').slice(
         0,
         10,
       ),
-      actions: [...new Set((transitions ?? []).map((t) => t.action))],
+      actions: [...new Set((transitions ?? []).filter(mayApprove).map((t) => t.action))],
       lines: [
         text(doc['remark']),
         text(doc['purpose']),
@@ -183,15 +207,49 @@ export class ApprovalsApiService {
     action: string,
     business: Business,
   ): Promise<{ state: string; moved: boolean }> {
-    const doc = await this.doc(doctype, name, business);
-    const current = String(doc['workflow_state'] ?? '');
+    const [doc, field] = await Promise.all([
+      this.doc(doctype, name, business),
+      this.stateField(doctype),
+    ]);
+    const current = String(doc[field] ?? '');
     if (current !== state) {
       return { state: current, moved: true };
     }
     const result = await confirmRequest(
       this.erpnext.post<Doc>('frappe.model.workflow.apply_workflow', { doc, action }),
     );
-    return { state: String(result?.['workflow_state'] ?? ''), moved: false };
+    return { state: String(result?.[field] ?? ''), moved: false };
+  }
+
+  /**
+   * The field the doctype's workflow keeps its state in (`workflow_state` unless set otherwise), read once per doctype.
+   * Only some roles may read Workflow; others get the standard field.
+   */
+  private stateField(doctype: string): Promise<string> {
+    let field = this.stateFields.get(doctype);
+    if (!field) {
+      field = firstValueFrom(
+        this.erpnext.list<{ workflow_state_field: string }>('Workflow', {
+          fields: ['workflow_state_field'],
+          filters: [
+            ['document_type', '=', doctype],
+            ['is_active', '=', 1],
+          ],
+          limit: 1,
+        }),
+      ).then(
+        ([row]) => row?.workflow_state_field || 'workflow_state',
+        (error: unknown) => {
+          if (ErpnextError.from(error).kind === 'forbidden') {
+            return 'workflow_state';
+          }
+          throw error;
+        },
+      );
+      this.stateFields.set(doctype, field);
+      field.catch(() => this.stateFields.delete(doctype));
+    }
+    return field;
   }
 
   private async doc(doctype: string, name: string, business: Business): Promise<Doc> {

@@ -3345,7 +3345,6 @@
       "Quotation": "عرض سعر"
     },
     "leave": "إجازة",
-    "leaveMeta": "{{type}} · {{range}}",
     "dated": "بتاريخ {{date}}",
     "stateLine": "الحالة: {{state}}",
     "amount": "المبلغ",

@@ -200,7 +200,12 @@ export class ApprovalContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      const detail = await this.api.item(this.doctype(), this.name(), business);
+      const detail = await this.api.item(
+        this.doctype(),
+        this.name(),
+        business,
+        this.session.user()?.id ?? '',
+      );
       if (run !== this.run) {
         return;
       }

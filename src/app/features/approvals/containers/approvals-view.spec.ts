@@ -60,4 +60,16 @@ describe('approvals view', () => {
     ).toEqual([]);
     expect(visible(approvalCard(ITEM, 'ILS', 'en', en, false)).balance).toBe('ILS 120.00 · Draft');
   });
+
+  it('words leave statuses as the Workers pages do', () => {
+    const leave = {
+      ...ITEM,
+      doctype: 'Leave Application',
+      name: 'HR-LAP-1',
+      amount: null,
+      state: 'Open',
+    };
+    expect(visible(approvalCard(leave, 'ILS', 'ar', ar, true)).balance).toBe('مفتوحة');
+    expect(visible(approvalCard(ITEM, 'ILS', 'ar', ar, true)).balance).toBe('ILS 120.00 · Draft');
+  });
 });

@@ -3245,7 +3245,6 @@
       "Quotation": "Quotation"
     },
     "leave": "Leave",
-    "leaveMeta": "{{type}} · {{range}}",
     "dated": "Dated {{date}}",
     "stateLine": "State: {{state}}",
     "amount": "Amount",

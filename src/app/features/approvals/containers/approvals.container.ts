@@ -120,8 +120,8 @@ export class ApprovalsContainer {
 
   protected readonly cards = computed(() => {
     const term = this.term().trim().toLowerCase();
+    // Searched as shown, so the doctype matches in the user's language.
     return this.items()
-      .filter((i) => !term || `${i.title} ${i.name} ${i.doctype}`.toLowerCase().includes(term))
       .map((i) =>
         approvalCard(
           i,
@@ -130,7 +130,8 @@ export class ApprovalsContainer {
           this.i18n.tr(),
           this.session.capabilities().seeCosts,
         ),
-      );
+      )
+      .filter((c) => !term || `${c.title} ${c.meta}`.toLowerCase().includes(term));
   });
 
   constructor() {
