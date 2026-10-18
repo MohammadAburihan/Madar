@@ -66,6 +66,7 @@ export class BreakdownsApiService {
       filters: [
         ['company', '=', company],
         ['docstatus', '=', 1],
+        ['is_opening', '!=', 'Yes'],
         ['posting_date', 'between', [range.from, range.to]],
       ],
       // Paging over invoice lines needs a sort unique per line, not per invoice.
@@ -94,6 +95,8 @@ export class BreakdownsApiService {
         filters: [
           ['company', '=', company],
           ['docstatus', '=', 1],
+          // Balances brought in with the opening tool aren't the period's sales or purchases.
+          ['is_opening', '!=', 'Yes'],
           ['posting_date', 'between', [range.from, range.to]],
         ],
         // By id alone: a customer renamed during the period stays one line.
@@ -119,6 +122,8 @@ export class BreakdownsApiService {
         filters: [
           ['company', '=', company],
           ['docstatus', '=', 1],
+          // Balances brought in with the opening tool aren't the period's sales or purchases.
+          ['is_opening', '!=', 'Yes'],
           ['posting_date', 'between', [range.from, range.to]],
         ],
         groupBy: 'supplier',

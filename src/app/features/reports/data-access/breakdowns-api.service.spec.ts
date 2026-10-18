@@ -28,6 +28,7 @@ describe('BreakdownsApiService', () => {
     expect(listCalls[0].query.filters).toEqual([
       ['company', '=', 'Rehan Nursery'],
       ['docstatus', '=', 1],
+      ['is_opening', '!=', 'Yes'],
       ['posting_date', 'between', ['2026-10-01', '2026-10-17']],
     ]);
   });
@@ -52,6 +53,9 @@ describe('BreakdownsApiService', () => {
     expect((await api().purchasesBySupplier('Rehan Nursery', RANGE)).total).toBe(1280);
     expect(listCalls.map((c) => c.query.groupBy)).toEqual(['customer', 'supplier']);
     expect(listCalls[0].query.fields).toContainEqual({ SUM: 'base_net_total' });
+    for (const call of listCalls) {
+      expect(call.query.filters).toContainEqual(['is_opening', '!=', 'Yes']);
+    }
   });
 
   it('values stock per warehouse of the company only', async () => {

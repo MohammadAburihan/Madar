@@ -99,7 +99,7 @@ interface Figures {
       }
       @if (state() === 'error') {
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
-        <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
+        <button type="button" class="md-btn" (click)="reload()">{{ txt.retry }}</button>
       } @else if (view(); as v) {
         <app-profit-card
           [label]="v.summary.label"
@@ -196,7 +196,15 @@ export class BreakdownsContainer {
     });
   }
 
-  protected async load(): Promise<void> {
+  /** Reads the site's today again; the new date reloads the figures. */
+  protected reload(): void {
+    void this.clock
+      .ensure()
+      .then(() => this.today.set(this.clock.now()))
+      .catch(() => this.state.set('error'));
+  }
+
+  private async load(): Promise<void> {
     const run = ++this.run;
     const range = this.period.range();
     this.state.set('loading');

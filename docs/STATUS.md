@@ -221,6 +221,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 1 (1 medium, 2 low) fixed: invoice lines page in a sort unique per line (no line counted twice or
   missed over 500 lines); pay or attendance a role can't read is left out rather than shown as zero; a customer or
   supplier renamed during the period stays one line.
+  Review pass 2 (1 medium, 1 low) fixed: opening invoices (balances brought in) aren't counted as the period's sales
+  or purchases; Retry reads the site's date again, as Reports does.
 
 ## Workers & HR (done: #46–#53)
 
