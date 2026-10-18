@@ -92,6 +92,9 @@ export function workerView(
     worker.advanceToRepay
       ? { label: tr.t('workers.advanceToRepay'), value: money(worker.advanceToRepay) }
       : null,
+    worker.hoursLastWeek
+      ? { label: tr.t('workers.hours.lastWeek'), value: num(worker.hoursLastWeek) }
+      : null,
   ].filter((r) => !!r);
   const pay = worker.pay
     ? {

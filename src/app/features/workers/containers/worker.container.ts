@@ -100,6 +100,13 @@ import { workerLines, workerSubtitle, workerView } from './workers-view';
         >
           {{ txt.setSalary }}
         </button>
+        <button
+          type="button"
+          class="md-btn"
+          (click)="router.navigate(['/workers/hours/new'], { queryParams: { worker: id() } })"
+        >
+          {{ txt.logHours }}
+        </button>
         @if (canGiveAdvances()) {
           <button
             type="button"
@@ -176,6 +183,7 @@ export class WorkerContainer {
       assignShift: t('workers.shift.assign'),
       giveAdvance: t('workers.advance.give'),
       setSalary: t('workers.salary.set'),
+      logHours: t('workers.hours.log'),
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
       loadFailed: {
         title: t('workers.loadFailed.title'),

@@ -31,6 +31,7 @@ const DETAIL: WorkerDetail = {
   leaveLeft: 9,
   advanceToRepay: 300,
   pay: { start: '2026-10-01', draft: true, gross: 4200, net: 3900, currency: 'ILS' },
+  hoursLastWeek: null,
   recent: [
     { date: '2026-10-17', status: 'Present' },
     { date: '2026-10-16', status: 'Half Day' },
@@ -93,6 +94,16 @@ describe('workers view', () => {
       message: '14 days present this month · ILS 300.00 advance to repay',
     });
     expect(view.recent).toEqual(['17 Oct 2026 · Present', '16 Oct 2026 · Half day']);
+  });
+
+  it('adds the hours of the last seven days when there are any', () => {
+    expect(
+      visible(workerView({ ...DETAIL, hoursLastWeek: 12.5 }, 'ILS', 'en', en)).totals.at(-1),
+    ).toEqual({
+      label: 'Hours in the last 7 days',
+      value: '12.5',
+    });
+    expect(workerView({ ...DETAIL, hoursLastWeek: 0 }, 'ILS', 'en', en).totals).toHaveLength(3);
   });
 
   it('leaves out what the role may not read, and nothing owed', () => {

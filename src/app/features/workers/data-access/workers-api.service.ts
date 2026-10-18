@@ -56,6 +56,12 @@ const forbiddenAsNull = (error: unknown): null => {
 };
 
 // Best first: with one record per shift, the day reads as the best of them, as the month's count does.
+/** The day six days before: with `today`, the last seven days. */
+function sixDaysBefore(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d - 6)).toISOString().slice(0, 10);
+}
+
 const ATTENDANCE = ['Present', 'Work From Home', 'Half Day', 'On Leave', 'Absent'];
 
 const squash = (name: string) => name.trim().replace(/\s+/g, ' ');
@@ -150,7 +156,7 @@ export class WorkersApiService {
       this.departmentNames(business),
     ]);
     const monthStart = `${today.slice(0, 8)}01`;
-    const [todayMap, month, leaveLeft, advance, pay, recent] = await Promise.all([
+    const [todayMap, month, leaveLeft, advance, pay, recent, hours] = await Promise.all([
       this.todayFor([id], today).catch(forbiddenAsNull),
       this.attendance(id, [
         ['attendance_date', '>=', monthStart],
@@ -164,6 +170,7 @@ export class WorkersApiService {
       this.attendance(id, [['attendance_date', '<=', today]], RECENT_LIMIT * 4).catch(
         forbiddenAsNull,
       ),
+      this.hoursFrom(id, sixDaysBefore(today), today).catch(forbiddenAsNull),
     ]);
     return {
       ...this.row(doc, departments),
@@ -180,7 +187,22 @@ export class WorkersApiService {
       advanceToRepay: advance,
       pay,
       recent: bestPerDay(recent ?? []).slice(0, RECENT_LIMIT),
+      hoursLastWeek: hours,
     };
+  }
+
+  /** Hours logged in submitted timesheets starting from `from` to `to`. */
+  private async hoursFrom(id: string, from: string, to: string): Promise<number> {
+    const rows = await this.erpnext.listAll<{ total_hours: number }>('Timesheet', {
+      fields: ['total_hours'],
+      filters: [
+        ['employee', '=', id],
+        ['docstatus', '=', 1],
+        ['start_date', '>=', from],
+        ['start_date', '<=', to],
+      ],
+    });
+    return rows.reduce((sum, r) => sum + Number(r.total_hours || 0), 0);
   }
 
   /** Genders, job titles and the business's departments for the form. */

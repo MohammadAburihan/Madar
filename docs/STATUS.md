@@ -341,7 +341,13 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   worker clears the last one's notices. Pass 8 (1 medium, 1 low) fixed: only inactive workers are left out of slips (a
   worker who left during the month gets their last one, as Frappe HR allows); cards that can't take a salary open the
   worker's page. Pass 9: one low, fixed (picking a worker who joined later moves the start up to their
-  joining date). Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  joining date).
+- **H7 — Hours** (this PR): **Log hours** (`/workers/hours/new`, from a worker's page and "+ New") submits an ERPNext
+  Timesheet for a worker: date (up to today), hours (0–24, Arabic digits read), optional activity and open project, and a
+  note, with the `TIME-…` reference after the note; a lost answer is checked by reference only. Activities and projects
+  the role can't read are left out. The worker's page adds "Hours in the last 7 days" when there are any. Design:
+  Workers 10 Log hours (mobile EN/AR). e2e: hours logged on a project from a worker's page, checked in ERPNext and
+  shown in the worker's totals; the form in Arabic. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
