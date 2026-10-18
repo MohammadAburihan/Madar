@@ -3147,6 +3147,10 @@
           "structureCancelled": {
             "title": "The Madar salary structure is cancelled",
             "message": "Amend it in ERPNext (or delete it so Madar makes a new one), then try again."
+          },
+          "structureInactive": {
+            "title": "The Madar salary structure is inactive",
+            "message": "Set it active again in ERPNext, then try again."
           }
         },
         "unresolved": {

@@ -3247,6 +3247,10 @@
           "structureCancelled": {
             "title": "هيكل رواتب مدار ملغى",
             "message": "عدّله بنسخة معدّلة في ERPNext (أو احذفه ليُنشئ مدار هيكلاً جديداً)، ثم حاول مرة أخرى."
+          },
+          "structureInactive": {
+            "title": "هيكل رواتب مدار غير نشط",
+            "message": "فعّله مجدداً في ERPNext، ثم حاول مرة أخرى."
           }
         },
         "unresolved": {

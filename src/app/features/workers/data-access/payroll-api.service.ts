@@ -200,6 +200,7 @@ export class PayrollApiService {
         filters: [
           ['company', '=', business.name],
           ['docstatus', '=', 1],
+          ['is_active', '=', 'Yes'],
         ],
         orFilters: [
           ['name', '=', name],
@@ -249,8 +250,8 @@ export class PayrollApiService {
       }
       // Made meanwhile by another save, or left unsubmitted in Desk: only a submitted one can be used.
       const [made] = await firstValueFrom(
-        this.erpnext.list<{ docstatus: number }>('Salary Structure', {
-          fields: ['docstatus'],
+        this.erpnext.list<{ docstatus: number; is_active: string }>('Salary Structure', {
+          fields: ['docstatus', 'is_active'],
           filters: [['name', '=', name]],
           limit: 1,
         }),
@@ -260,6 +261,9 @@ export class PayrollApiService {
       }
       if (made?.docstatus !== 1) {
         throw new ErpnextError('server', `${name} is cancelled`, 417, 'StructureCancelled');
+      }
+      if (made.is_active !== 'Yes') {
+        throw new ErpnextError('server', `${name} is inactive`, 417, 'StructureInactive');
       }
     }
     return name;

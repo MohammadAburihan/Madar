@@ -28,7 +28,14 @@ import { LeaveApiService } from '../data-access/leave-api.service';
 import { PayrollApiService, SalaryExistsError } from '../data-access/payroll-api.service';
 import { SalaryFormValue } from '../data-access/workers.models';
 
-type Failure = 'permission' | 'offline' | 'setup' | 'structure' | 'structureCancelled' | 'error';
+type Failure =
+  | 'permission'
+  | 'offline'
+  | 'setup'
+  | 'structure'
+  | 'structureCancelled'
+  | 'structureInactive'
+  | 'error';
 
 /** "Set salary": the monthly salary a worker's slips are made from, from a date. */
 @Component({
@@ -134,6 +141,9 @@ type Failure = 'permission' | 'offline' | 'setup' | 'structure' | 'structureCanc
 export class SalaryFormContainer {
   /** Optional: the worker it was opened for. */
   readonly workerParam = input<string | undefined>(undefined, { alias: 'worker' });
+  /** Opened from Pay: the month it was showing, and to go back there. */
+  readonly fromParam = input<string | undefined>(undefined, { alias: 'from' });
+  readonly backParam = input<string | undefined>(undefined, { alias: 'back' });
 
   private readonly api = inject(PayrollApiService);
   private readonly leave = inject(LeaveApiService);
@@ -208,6 +218,7 @@ export class SalaryFormContainer {
         setup: block('workers.salary.form.failed.setup'),
         structure: block('workers.salary.form.failed.structure'),
         structureCancelled: block('workers.salary.form.failed.structureCancelled'),
+        structureInactive: block('workers.salary.form.failed.structureInactive'),
         error: block('workers.salary.form.failed.error'),
       },
     };
@@ -243,7 +254,12 @@ export class SalaryFormContainer {
       this.workers.set(workers);
       if (!this.from()) {
         const now = this.clock.now();
-        this.from.set(toIsoDate(new Date(now.getFullYear(), now.getMonth(), 1)));
+        const month = toIsoDate(new Date(now.getFullYear(), now.getMonth(), 1));
+        const from = this.fromParam();
+        // The month Pay was showing, or this one; never before the worker joined (ERPNext refuses that).
+        const start = from && /^\d{4}-\d{2}-\d{2}$/.test(from) ? from : month;
+        const joined = workers.find((w) => w.id === this.workerParam())?.joined ?? '';
+        this.from.set(joined > start ? joined : start);
       }
       const wanted = this.workerParam();
       if (!this.worker() && wanted && workers.some((w) => w.id === wanted)) {
@@ -324,7 +340,9 @@ export class SalaryFormContainer {
                   ? 'structure'
                   : e.excType === 'StructureCancelled'
                     ? 'structureCancelled'
-                    : 'error',
+                    : e.excType === 'StructureInactive'
+                      ? 'structureInactive'
+                      : 'error',
         );
       }
     } finally {
@@ -334,6 +352,8 @@ export class SalaryFormContainer {
 
   protected back(): void {
     const worker = this.workerParam();
-    void this.router.navigate(worker ? ['/workers', worker] : ['/workers/pay']);
+    void this.router.navigate(
+      worker && this.backParam() !== 'pay' ? ['/workers', worker] : ['/workers/pay'],
+    );
   }
 }

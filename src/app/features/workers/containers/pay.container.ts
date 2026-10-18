@@ -236,7 +236,7 @@ export class PayContainer {
     const row = this.rows().find((r) => r.id === id);
     void this.router.navigate(
       row?.hasSalary ? ['/workers', id] : ['/workers/salary/new'],
-      row?.hasSalary ? {} : { queryParams: { worker: id } },
+      row?.hasSalary ? {} : { queryParams: { worker: id, from: this.month(), back: 'pay' } },
     );
   }
 

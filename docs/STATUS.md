@@ -332,7 +332,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   them; an amended structure (`…-1`) is used, and a cancelled one gets its own message.
   Review pass 3 (2 medium, 1 low; one dropped: pages under the shell aren't cached) fixed: workers no longer active are
   left out of "Create slips" (ERPNext refuses them) and say so; the structure is looked up for this company, by its exact
-  name or an amendment of it. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  name or an amendment of it.
+  Review pass 4 (1 medium, 2 low) fixed: Set salary opened from Pay starts from the month Pay showed, and never before
+  the worker joined, and Back returns to Pay; an inactive Madar structure isn't used and gets its own message. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
