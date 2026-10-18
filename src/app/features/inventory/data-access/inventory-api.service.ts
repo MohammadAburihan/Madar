@@ -6,11 +6,15 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
+import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
+  AdjustRequest,
+  AdjustResult,
   InventoryOverview,
   Movement,
+  adjustChange,
   StockItem,
   TransferRequest,
   TransferResult,
@@ -37,10 +41,31 @@ function batches<T>(values: T[]): T[][] {
   return chunks;
 }
 
-/** Stock balances, movement history, and warehouse transfers (Stock Entry, Material Transfer). */
+/** The location no longer holds what the count was made against; it must be counted again. */
+export class StockMovedError extends Error {
+  constructor(readonly current: number) {
+    super(`The location now holds ${current}`);
+  }
+}
+
+/** Stock added by a count needs a cost to be booked at, and the item has none yet (never received or valued). */
+export class NoValuationError extends Error {
+  constructor(readonly item: string) {
+    super(`${item} has no valuation rate`);
+  }
+}
+
+const DAMAGE_LABELS = { damaged: 'Damaged', lost: 'Lost', expired: 'Expired' } as const;
+
+/**
+ * Stock balances, movement history, warehouse transfers (Stock Entry, Material Transfer), and adjustments: counts
+ * and damage or loss post as Material Receipt or Issue, whose remarks keep the reason and the Madar reference (a
+ * Stock Reconciliation has no field for either).
+ */
 @Injectable({ providedIn: 'root' })
 export class InventoryApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly types = inject(StockEntryTypesService);
 
   async warehouses(company: string): Promise<WarehouseInfo[]> {
     const rows = await firstValueFrom(
@@ -84,6 +109,9 @@ export class InventoryApiService {
           ['disabled', '=', 0],
           ['is_stock_item', '=', 1],
           ['has_variants', '=', 0],
+          // Madar moves and adjusts plain quantities; batches and serial numbers are handled in ERPNext.
+          ['has_batch_no', '=', 0],
+          ['has_serial_no', '=', 0],
         ],
         orFilters: term.trim()
           ? [
@@ -176,7 +204,7 @@ export class InventoryApiService {
     draft: string | null,
     onInserted: (draft: string) => void = () => undefined,
   ): Promise<TransferResult> {
-    const fresh = this.entryDoc(request);
+    const fresh = await this.types.withType(this.entryDoc(request));
     const current = draft
       ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
       : null;
@@ -227,6 +255,77 @@ export class InventoryApiService {
     return this.result(entry, request);
   }
 
+  /**
+   * Posts a count or a write-off at one location. A count posts the difference from the quantity the user saw, so
+   * stock that moved since throws StockMovedError. A timeout throws UnresolvedError: look it up with findAdjustment().
+   */
+  async adjust(
+    request: AdjustRequest,
+    draft: string | null,
+    onInserted: (draft: string) => void = () => undefined,
+  ): Promise<AdjustResult> {
+    const current = draft
+      ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
+      : null;
+    if (current?.docstatus === 1) {
+      if (!sameAdjustment(current, request)) {
+        throw new PostedEarlierError(current.name);
+      }
+      return this.adjustResult(current, request);
+    }
+    if (request.kind === 'count') {
+      const item = await this.item(request.item, [request.warehouse]);
+      const now = item?.stock[request.warehouse] ?? 0;
+      if (now !== request.systemQty) {
+        throw new StockMovedError(now);
+      }
+      if (adjustChange(request) > 0 && !(await this.hasValuation(request))) {
+        throw new NoValuationError(request.item);
+      }
+    }
+    const fresh = await this.types.withType(this.adjustDoc(request));
+    let entry: EntryDoc;
+    try {
+      let doc: EntryDoc;
+      if (current) {
+        doc = { ...current, ...fresh, name: current.name, modified: current['modified'] };
+      } else {
+        doc = await confirmRequest(
+          this.erpnext.post<EntryDoc>('frappe.client.insert', { doc: fresh }),
+        );
+        onInserted(doc.name);
+      }
+      entry = await confirmRequest(this.erpnext.post<EntryDoc>('frappe.client.submit', { doc }));
+    } catch (error) {
+      throw unresolvedOr(error);
+    }
+    return this.adjustResult(entry, request);
+  }
+
+  /** Looks an adjustment up by its Madar reference after an unresolved confirmation. */
+  async findAdjustment(
+    request: AdjustRequest,
+  ): Promise<AdjustResult | 'not-found' | { draft: string }> {
+    const [entry] = await firstValueFrom(
+      this.erpnext.list<EntryDoc>('Stock Entry', {
+        fields: ['name', 'docstatus', 'posting_date', 'posting_time'],
+        filters: [
+          ['remarks', 'like', `%${request.reference}%`],
+          ['docstatus', '!=', 2],
+        ],
+        orderBy: 'docstatus desc',
+        limit: 1,
+      }),
+    );
+    if (!entry) {
+      return 'not-found';
+    }
+    if (entry.docstatus === 0) {
+      return { draft: entry.name };
+    }
+    return this.adjustResult(entry, request);
+  }
+
   /** Deletes a draft a failed confirmation left behind. */
   async discard(draft: string): Promise<void> {
     await firstValueFrom(
@@ -256,6 +355,79 @@ export class InventoryApiService {
         },
       ],
     };
+  }
+
+  /**
+   * Whether ERPNext can value stock added at the location: its own rule (the location's last rate, then the item's
+   * valuation or standard rate, then a buying price), asked as for stock going out so a missing rate reads as 0.
+   */
+  private async hasValuation(request: AdjustRequest): Promise<boolean> {
+    const rate = await firstValueFrom(
+      this.erpnext.post<number>('erpnext.stock.utils.get_incoming_rate', {
+        args: {
+          item_code: request.item,
+          warehouse: request.warehouse,
+          company: request.company,
+          qty: -1,
+          voucher_type: 'Stock Entry',
+          // The latest rate on record, whatever today is on the site.
+          posting_date: '2999-12-31',
+          posting_time: '23:59:59',
+        },
+        raise_error_if_no_rate: 0,
+      }),
+    );
+    return Number(rate ?? 0) > 0;
+  }
+
+  private adjustDoc(request: AdjustRequest): Record<string, unknown> {
+    const change = adjustChange(request);
+    const purpose = change > 0 ? 'Material Receipt' : 'Material Issue';
+    const side = change > 0 ? 't_warehouse' : 's_warehouse';
+    const label = request.damageType ? DAMAGE_LABELS[request.damageType] : 'Count';
+    return {
+      doctype: 'Stock Entry',
+      stock_entry_type: purpose,
+      purpose,
+      company: request.company,
+      // Both set: a reused draft may have gone the other way.
+      from_warehouse: change > 0 ? null : request.warehouse,
+      to_warehouse: change > 0 ? request.warehouse : null,
+      remarks: `${label}: ${request.reason.trim()}\n\nMadar ${request.kind} ${request.reference}`,
+      items: [
+        {
+          item_code: request.item,
+          qty: Math.abs(change),
+          uom: request.uom,
+          stock_uom: request.uom,
+          conversion_factor: 1,
+          [side]: request.warehouse,
+        },
+      ],
+    };
+  }
+
+  private async adjustResult(entry: EntryDoc, request: AdjustRequest): Promise<AdjustResult> {
+    const base = {
+      entry: entry.name,
+      postingDate: entry.posting_date,
+      postingTime: entry.posting_time,
+    };
+    try {
+      const warehouses = await this.movableWarehouses(request.company);
+      const item = await this.item(
+        request.item,
+        warehouses.map((w) => w.id),
+      );
+      const stock = item?.stock ?? {};
+      return {
+        ...base,
+        warehouseQty: stock[request.warehouse] ?? 0,
+        totalQty: Object.values(stock).reduce((sum, qty) => sum + qty, 0),
+      };
+    } catch {
+      return { ...base, warehouseQty: null, totalQty: null };
+    }
   }
 
   /** Where a plain move can take stock: every location but the project sites, whose stock only project flows move. */
@@ -328,6 +500,10 @@ export class InventoryApiService {
               filters: [
                 ['name', 'in', chunk],
                 ['is_stock_item', '=', 1],
+                // Items picked for a task (search, links) are plain quantities only, as the search offers.
+                ...(includeEmpty
+                  ? [['has_batch_no', '=', 0] as Filter, ['has_serial_no', '=', 0] as Filter]
+                  : []),
               ],
               limit: 0,
             }),
@@ -383,5 +559,16 @@ function sameTransfer(entry: EntryDoc, request: TransferRequest): boolean {
     Number(rows[0]['qty']) === request.qty &&
     rows[0]['s_warehouse'] === request.from &&
     rows[0]['t_warehouse'] === request.to
+  );
+}
+
+function sameAdjustment(entry: EntryDoc, request: AdjustRequest): boolean {
+  const rows = (entry['items'] as Record<string, unknown>[] | undefined) ?? [];
+  const change = adjustChange(request);
+  return (
+    rows.length === 1 &&
+    rows[0]['item_code'] === request.item &&
+    Number(rows[0]['qty']) === Math.abs(change) &&
+    rows[0][change > 0 ? 't_warehouse' : 's_warehouse'] === request.warehouse
   );
 }

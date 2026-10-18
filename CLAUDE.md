@@ -160,6 +160,9 @@ src/app/
   have none either, so theirs (`QUO-…`, …) go in the hidden `utm_content`. Run confirming
   requests through `confirmRequest`, which turns timeouts and 504s into `UnresolvedError`; then look the
   reference up instead of resubmitting, and submit the leftover draft if one exists.
+- Stock counts and damage post as Stock Entries (Material Receipt or Issue) with `Count:`/`Lost:` … and the
+  `CNT-`/`DMG-` reference in `remarks`; Stock Reconciliation has no field for either. Every Stock Entry links its
+  type through `StockEntryTypesService` (by purpose): setup names the standard types in the site's language.
 - Templates from `get_payment_entry` are new documents (`__islocal`, no name). Never spread one over an existing
   draft as-is: `frappe.client.submit` would insert a second document.
 - Routed pages need the `ion-page` class, which forces a column flex layout; override per layout.

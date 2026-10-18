@@ -13,6 +13,8 @@ describe('new actions', () => {
       'Receive goods',
       'Record expense',
       'Transfer stock',
+      'Count stock',
+      'Record damage or loss',
       'Supply a project',
       'New project',
       'Add contact',
@@ -29,7 +31,13 @@ describe('new actions', () => {
   it('offers each role only what it may start, each to its own task', () => {
     const ids = (persona: Parameters<typeof capabilitiesFor>[0]) =>
       newActions(capabilitiesFor(persona), realTranslator('en')).map((a) => a.id);
-    expect(ids('warehouse')).toEqual(['receiveGoods', 'transferStock', 'supplyProject']);
+    expect(ids('warehouse')).toEqual([
+      'receiveGoods',
+      'transferStock',
+      'countStock',
+      'recordDamage',
+      'supplyProject',
+    ]);
     expect(ids('salesperson')).toEqual(['sell', 'quote', 'receivePayment', 'addContact']);
     expect(
       newActions(

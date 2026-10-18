@@ -55,3 +55,38 @@ export interface TransferResult {
 export function totalStock(item: Pick<StockItem, 'stock'>): number {
   return Object.values(item.stock).reduce((sum, qty) => sum + qty, 0);
 }
+
+/** A stock count sets a location's quantity to what was counted; damage or loss writes some off. */
+export type AdjustKind = 'count' | 'damage';
+
+export type DamageType = 'damaged' | 'lost' | 'expired';
+
+export interface AdjustRequest {
+  kind: AdjustKind;
+  reference: string;
+  company: string;
+  item: string;
+  uom: string;
+  warehouse: string;
+  /** The location's quantity as the user saw it; a count posts the difference from it. */
+  systemQty: number;
+  /** Count: the quantity counted. Damage: the quantity written off. */
+  qty: number;
+  /** Damage or loss only. */
+  damageType: DamageType | null;
+  reason: string;
+}
+
+export interface AdjustResult {
+  entry: string;
+  postingDate: string;
+  postingTime: string;
+  /** Balances after the adjustment, read back from ERPNext; null when they couldn't be read. */
+  warehouseQty: number | null;
+  totalQty: number | null;
+}
+
+/** What a request changes at its location: positive adds stock, negative takes it out. */
+export function adjustChange(request: Pick<AdjustRequest, 'kind' | 'qty' | 'systemQty'>): number {
+  return request.kind === 'count' ? request.qty - request.systemQty : -request.qty;
+}

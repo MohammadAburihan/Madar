@@ -37,4 +37,62 @@ export const inventoryRoutes: Route[] = [
       },
     ],
   },
+  {
+    path: 'inventory/count',
+    data: { kind: 'count' },
+    loadComponent: () =>
+      import('./containers/adjust-flow.container').then((m) => m.AdjustFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/adjust-entry.container').then((m) => m.AdjustEntryContainer),
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./containers/adjust-review.container').then((m) => m.AdjustReviewContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/adjust-done.container').then((m) => m.AdjustDoneContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/adjust-checking.container').then((m) => m.AdjustCheckingContainer),
+      },
+    ],
+  },
+  {
+    path: 'inventory/damage',
+    data: { kind: 'damage' },
+    loadComponent: () =>
+      import('./containers/adjust-flow.container').then((m) => m.AdjustFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/adjust-entry.container').then((m) => m.AdjustEntryContainer),
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./containers/adjust-review.container').then((m) => m.AdjustReviewContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/adjust-done.container').then((m) => m.AdjustDoneContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/adjust-checking.container').then((m) => m.AdjustCheckingContainer),
+      },
+    ],
+  },
 ];

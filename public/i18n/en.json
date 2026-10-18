@@ -2651,6 +2651,8 @@
       "receiveGoods": "Receive goods",
       "recordExpense": "Record expense",
       "transferStock": "Transfer stock",
+      "countStock": "Count stock",
+      "recordDamage": "Record damage or loss",
       "supplyProject": "Supply a project",
       "newProject": "New project",
       "addContact": "Add contact",
@@ -3309,6 +3311,134 @@
     "noAccess": {
       "title": "Approvals aren't open to your role",
       "message": "Approvals are for the Owner and HR roles."
+    }
+  },
+  "adjust": {
+    "location": "Location",
+    "chooseLocation": "Choose a location",
+    "locationOption": "{{warehouse}} · {{qty}} on hand",
+    "itemDetail": "{{qty}} on hand · {{warehouse}}",
+    "reason": "Reason *",
+    "reasonRequired": "Enter a reason.",
+    "invalidQty": "Enter a whole number above zero.",
+    "companyTotal": "Company total",
+    "beforeAfter": "{{before}} → {{after}}",
+    "noResults": "No stock items match.",
+    "placeholder": "Search name, code or barcode",
+    "confirming": "Posting…",
+    "reference": "Reference {{reference}} · traceable by item and location.",
+    "posted": "Posted",
+    "openStock": "Open stock",
+    "doneUnread": "Posted. The new balances couldn't be read; open the stock to see them.",
+    "planned": "Planned adjustment",
+    "checkingCard": {
+      "title": "Check before trying again",
+      "message": "Your request timed out. The adjustment may already be posted. Do not post it again."
+    },
+    "notCreated": {
+      "title": "The adjustment wasn't posted",
+      "message": "Review it and post again."
+    },
+    "noAccess": {
+      "title": "You can't adjust stock",
+      "message": "Your role doesn't include stock counts or write-offs. Ask your business owner for access."
+    },
+    "loadFailed": {
+      "title": "Locations couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "retry": "Try again",
+    "failed": {
+      "permission": {
+        "title": "You can't post this adjustment",
+        "message": "ERPNext didn't allow it for your role. Nothing changed."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "The adjustment wasn't sent. Check the connection and post again."
+      },
+      "stock": {
+        "title": "Not enough stock",
+        "message": "The location no longer holds that much. Check the quantity and try again."
+      },
+      "moved": {
+        "title": "Stock changed since you looked",
+        "message": "The system quantity is updated. Check your count against it and review again."
+      },
+      "changed": {
+        "title": "An earlier version was already posted",
+        "message": "It was posted before your latest changes. Check the stock before posting again; posting now makes a new adjustment."
+      },
+      "error": {
+        "title": "The adjustment wasn't posted",
+        "message": "ERPNext rejected it. Check the details and try again."
+      },
+      "valuation": {
+        "title": "This item has no cost yet",
+        "message": "ERPNext needs a valuation to add stock. Receive it through a purchase, or set its valuation rate in ERPNext, then count again."
+      }
+    },
+    "count": {
+      "title": "Stock count",
+      "subtitle": "Set a location to what you counted",
+      "chip": "Count correction",
+      "search": "Item to count",
+      "system": "System quantity",
+      "counted": "Counted on hand *",
+      "difference": "Difference",
+      "invalidQty": "Enter a whole number, zero or more.",
+      "defaultReason": "Physical count",
+      "fall": "Company stock will fall by {{qty}}",
+      "rise": "Company stock will rise by {{qty}}",
+      "effect": "{{warehouse}} changes from {{before}} to {{after}}. Company total changes from {{totalBefore}} to {{totalAfter}}.",
+      "same": {
+        "title": "Matches the system",
+        "message": "The count equals what ERPNext holds: there is nothing to post."
+      },
+      "review": "Review count adjustment",
+      "footnote": "This records a count variance. Use Damage or loss for a known write-off.",
+      "reviewTitle": "Review stock count",
+      "variance": "Count variance {{change}}",
+      "reviewMessage": "System {{system}}, counted {{counted}}. {{warehouse}} {{before}} → {{after}}. Company total {{totalBefore}} → {{totalAfter}}. Reason: {{reason}}.",
+      "confirm": "Post count adjustment",
+      "edit": "Edit count",
+      "doneTitle": "Count adjustment posted",
+      "doneSubtitle": "{{entry}} · Count correction",
+      "doneMessage": "{{warehouse}} now holds {{qty}} of {{item}}. Company total {{total}}. This adjustment is separate from damage.",
+      "checkingTitle": "Checking your count"
+    },
+    "damage": {
+      "title": "Damage or loss",
+      "subtitle": "Write off stock that can't be sold",
+      "chip": "Separate adjustment",
+      "search": "Item to write off",
+      "type": "Adjustment type",
+      "types": {
+        "damaged": "Damaged",
+        "lost": "Lost",
+        "expired": "Expired"
+      },
+      "qty": "Quantity written off *",
+      "tooMuch": "Only {{qty}} on hand in {{warehouse}}.",
+      "effect": {
+        "title": "This lowers on-hand stock now",
+        "message": "Confirm posts a separate damage/loss movement and updates the balances."
+      },
+      "review": "Review damage write-off",
+      "footnote": "Count corrections and known damage remain separate movement reasons.",
+      "reviewTitle": "Review damage write-off",
+      "heading": "Write off {{qty}} · {{type}}",
+      "reviewMessage": "{{reason}}. {{warehouse}} {{before}} → {{after}}. Company total {{totalBefore}} → {{totalAfter}}.",
+      "confirm": "Confirm damage write-off",
+      "edit": "Edit damage",
+      "doneTitle": "Damage write-off posted",
+      "doneSubtitle": "{{entry}} · Damage",
+      "doneMessage": "{{warehouse}} now holds {{qty}} of {{item}}. Company total {{total}}. Known damage remains separate from count variance.",
+      "checkingTitle": "Checking your write-off"
+    },
+    "linkMissing": {
+      "title": "That item couldn't be opened",
+      "message": "It isn't a stock item now, or couldn't be read. Search for the item to adjust."
     }
   }
 }

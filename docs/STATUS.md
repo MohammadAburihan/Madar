@@ -220,6 +220,31 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   for example) don't have it until rebuilt with `npm run cap:sync`. Designs: the Workers, Contacts and Inventory
   mocks and the project page (EN/AR). e2e: `28-layout-parity`.
 
+- **S1 — Count stock and Record damage or loss**: this PR. Both start from Inventory (with the selected item), "+ New"
+  and, for the warehouse worker, Home; they work on phones and desktop for the roles that transfer stock. A count picks
+  an item and location, shows the system quantity, takes what was counted and a reason ("Physical count" to start),
+  and posts the difference; it refuses when the location changed since it was read, showing the new quantity. Damage or
+  loss takes a type (damaged, lost, expired), a quantity up to what the location holds, and a reason. Both post as
+  Stock Entries (Material Receipt or Issue, valued by ERPNext, booked to Stock Adjustment): a Stock Reconciliation
+  has no field for the reason or Madar's reference. Lost answers are checked by the `CNT-`/`DMG-` reference in the
+  remarks, as moves are. Designs: Inventory 05/06 entries gained the item card and location, and their buttons now
+  lead to the existing review mocks. e2e: `29-stock-adjust`.
+  Review pass 1 (1 medium, 2 low) fixed: a count that adds stock to an item with no valuation yet (never received) says
+  so instead of failing at ERPNext; a reused draft that changed direction keeps no old warehouse; a write-off refused
+  for stock reads the location's quantity again.
+  Review pass 2 (1 medium, 1 low) fixed: the valuation check asks ERPNext's own rule (`get_incoming_rate` for the
+  location, then the item's rates and buying price) instead of guessing; an item the link named that can't be opened
+  says so above the search.
+  Review pass 3 (2 medium, 2 low) fixed: every Stock Entry Madar posts (moves, counts, damage, project supply and site
+  use) links to the site's standard Stock Entry Type found by purpose, since setup names them in the site's language;
+  Home's Count stock follows the stock capability; after "stock changed" the count is entered again before it can
+  post; batch and serial items are left out of the stock item search (handled in ERPNext).
+  Review pass 4 (1 medium, 2 low): batch and serial items can't be opened by link either (the "couldn't be opened"
+  notice shows); the review hides its card while the count is entered again. Deferred: counts, write-offs and moves
+  take whole units only, so a fractional balance (2.5 kg) can't be counted exactly.
+  Review pass 5 (3 low; reviewing stops): changing the location clears the typed count; the link notice clears on
+  Change item. Deferred: an item disabled or made batch-tracked between opening and posting reads as "stock changed".
+
 ## Approvals and advanced reports (done: #54, #55)
 
 - **A1 — Approvals**: merged (#54). **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
