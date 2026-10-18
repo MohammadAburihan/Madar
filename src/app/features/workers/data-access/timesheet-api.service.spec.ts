@@ -110,4 +110,14 @@ describe('TimesheetApiService', () => {
     });
     expect(postCalls).toEqual([]);
   });
+
+  it('refuses any hours when the day is full to midnight', async () => {
+    fakeErpnext({
+      Timesheet: (q) =>
+        q.filters?.[0]?.[0] === 'note' ? [] : [{ to_time: '2026-10-18 00:00:00' }],
+    });
+    await expect(api().log({ ...VALUE, hours: 24 }, 'TIME-4', BUSINESS)).rejects.toMatchObject({
+      left: 0,
+    });
+  });
 });

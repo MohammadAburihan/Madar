@@ -81,10 +81,18 @@ export class TimesheetApiService {
       value.hours,
       await this.lastEnd(value.worker, value.date),
     );
-    if (to.slice(0, 10) !== value.date && to.slice(11) !== '00:00:00') {
-      throw new HoursDontFitError(
-        Math.max(0, 24 - (Number(from.slice(11, 13)) + Number(from.slice(14, 16)) / 60)),
-      );
+    // The log must start on the chosen day and end by its midnight.
+    const nextDay = new Date(
+      Date.UTC(...(value.date.split('-').map(Number) as [number, number, number])),
+    );
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const midnight = `${nextDay.toISOString().slice(0, 10)} 00:00:00`;
+    if (from.slice(0, 10) !== value.date || to > midnight) {
+      const left =
+        from.slice(0, 10) !== value.date
+          ? 0
+          : 24 - (Number(from.slice(11, 13)) + Number(from.slice(14, 16)) / 60);
+      throw new HoursDontFitError(Math.max(0, left));
     }
     const note = value.note.trim();
     const doc = await confirmRequest(

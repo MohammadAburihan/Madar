@@ -199,6 +199,8 @@ export class HoursFormContainer {
   private sent: string | null = null;
   /** Sent once with this reference: the details stay as sent, since a slow first try may still land. */
   private readonly sentOnce = signal(false);
+  /** An answer was lost under this reference: that try may still land, so the details stay as sent. */
+  private lost = false;
   protected readonly locked = computed(() => this.unresolved() || this.saving() || this.sentOnce());
   /** The hours left in the day after the worker's earlier logs, when the entered ones don't fit. */
   protected readonly dontFit = signal<number | null>(null);
@@ -347,14 +349,15 @@ export class HoursFormContainer {
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.sent = value.worker;
+        this.lost = true;
         this.unresolved.set(true);
       } else if (error instanceof HoursDontFitError) {
-        // Nothing was sent: the hours can be corrected.
-        this.sentOnce.set(false);
+        // Nothing was sent this time; the details unlock only if no earlier try may still land.
+        this.sentOnce.set(this.lost);
         this.dontFit.set(error.left);
       } else {
-        // A definite refusal saved nothing under the reference: the details can be fixed.
-        this.sentOnce.set(false);
+        // A definite refusal saved nothing under the reference, unless an earlier lost try still lands.
+        this.sentOnce.set(this.lost);
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {
           void this.session.checkExpired();

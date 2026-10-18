@@ -353,7 +353,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   without readable activity types the form says so; a comment moved back to its declaration.
   Review pass 2 (2 medium, 1 low) fixed: saving looks the reference up first, so a slow first try that landed is the
   result, not a second log; once sent, the details stay locked (unlocked after a definite refusal); hours that would run
-  past midnight after the day's earlier logs are refused with what's left. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  past midnight after the day's earlier logs are refused with what's left. Pass 3 (1 medium, 1 low) fixed: a day already full
+  to midnight refuses any hours (and nothing lands on the next day); after a lost answer the details stay locked even
+  when a later try is refused. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)
