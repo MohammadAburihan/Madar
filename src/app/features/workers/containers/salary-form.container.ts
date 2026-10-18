@@ -291,7 +291,7 @@ export class SalaryFormContainer {
       if (found && round2(found.base) !== round2(this.amount())) {
         this.exists.set(found.base);
       } else if (found) {
-        void this.router.navigate(['/workers/pay'], { replaceUrl: true });
+        this.toPay();
       } else {
         this.notCreated.set(true);
       }
@@ -323,7 +323,7 @@ export class SalaryFormContainer {
       }
       await this.api.setSalary(value, business);
       this.unresolved.set(false);
-      void this.router.navigate(['/workers/pay'], { replaceUrl: true });
+      this.toPay();
     } catch (error) {
       if (error instanceof UnresolvedError) {
         this.unresolved.set(true);
@@ -355,10 +355,21 @@ export class SalaryFormContainer {
     }
   }
 
+  /** Pay, on the month it was showing when it opened this form. */
+  private toPay(replaceUrl = true): void {
+    const month = this.backParam() === 'pay' ? this.fromParam() : undefined;
+    void this.router.navigate(['/workers/pay'], {
+      replaceUrl,
+      queryParams: month ? { month } : {},
+    });
+  }
+
   protected back(): void {
     const worker = this.workerParam();
-    void this.router.navigate(
-      worker && this.backParam() !== 'pay' ? ['/workers', worker] : ['/workers/pay'],
-    );
+    if (worker && this.backParam() !== 'pay') {
+      void this.router.navigate(['/workers', worker]);
+    } else {
+      this.toPay(false);
+    }
   }
 }

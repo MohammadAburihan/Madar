@@ -82,7 +82,7 @@ test.describe('pay @phone', () => {
       new RegExp(`/workers/salary/new\\?worker=${worker.id}&from=\\d{4}-\\d{2}-01&back=pay$`),
     );
     await page.getByRole('button', { name: 'Back' }).click();
-    await expect(page).toHaveURL(/\/workers\/pay$/);
+    await expect(page).toHaveURL(/\/workers\/pay\?month=\d{4}-\d{2}-01$/);
     await page.goto('/workers/pay');
     await toArabic(page);
     await expect(page.locator('app-person-card', { hasText: worker.name })).toContainText(

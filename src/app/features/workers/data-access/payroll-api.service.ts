@@ -184,8 +184,11 @@ export class PayrollApiService {
   /** Confirms a draft slip; one confirmed already (elsewhere, or by a lost answer) is left as it is. */
   async confirmSlip(name: string): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<SlipDoc>('Salary Slip', name));
-    if (doc.docstatus !== 0) {
+    if (doc.docstatus === 1) {
       return;
+    }
+    if (doc.docstatus === 2) {
+      throw new ErpnextError('server', `Salary Slip ${name} is cancelled`, 417, 'SlipCancelled');
     }
     await confirmRequest(this.erpnext.post('frappe.client.submit', { doc }));
   }

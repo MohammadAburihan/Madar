@@ -7,7 +7,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
@@ -123,6 +123,7 @@ export class PayContainer {
   private readonly clock = inject(SiteClockService);
   private readonly session = inject(SessionService);
   protected readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
@@ -201,8 +202,15 @@ export class PayContainer {
     const current = toIsoDate(new Date(now.getFullYear(), now.getMonth(), 1));
     const last = toIsoDate(new Date(now.getFullYear(), now.getMonth() - 1, 1));
     this.months.set([current, last]);
+    // Back from Set salary: the month it was opened from.
+    const wanted = this.route.snapshot.queryParamMap.get('month');
     if (!this.month()) {
-      this.month.set(current);
+      this.month.set(
+        wanted && /^\d{4}-\d{2}-01$/.test(wanted) && wanted <= current ? wanted : current,
+      );
+    }
+    if (!this.months().includes(this.month())) {
+      this.months.update((months) => [...months, this.month()]);
     }
   }
 
