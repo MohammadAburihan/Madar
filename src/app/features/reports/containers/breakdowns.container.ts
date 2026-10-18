@@ -36,7 +36,7 @@ interface Figures {
   items: Breakdown;
   customers: Breakdown;
   suppliers: Breakdown;
-  stock: Breakdown;
+  stock: Breakdown | null;
   people: PeopleFigures | null;
 }
 
@@ -178,7 +178,7 @@ export class BreakdownsContainer {
         breakdownCard('items', f.items, currency, tr),
         breakdownCard('customers', f.customers, currency, tr),
         breakdownCard('suppliers', f.suppliers, currency, tr),
-        breakdownCard('stock', f.stock, currency, tr),
+        ...(f.stock ? [breakdownCard('stock', f.stock, currency, tr)] : []),
       ],
     };
   });
@@ -219,7 +219,8 @@ export class BreakdownsContainer {
         this.api.salesByCustomer(company, range),
         this.api.purchasesBySupplier(company, range),
         this.api.stockByWarehouse(company),
-        this.api.people(company, range),
+        // Without an HR role ERPNext narrows slips and attendance to the user's own: not the business's.
+        this.caps().manageWorkers ? this.api.people(company, range) : Promise.resolve(null),
       ]);
       if (run === this.run) {
         this.figures.set({ range, items, customers, suppliers, stock, people });

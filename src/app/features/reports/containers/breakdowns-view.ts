@@ -52,7 +52,7 @@ export function breakdownCard(
 export function breakdownSummary(
   sales: Breakdown,
   purchases: Breakdown,
-  stock: Breakdown,
+  stock: Breakdown | null,
   people: PeopleFigures | null,
   currency: string,
   tr: Translator,
@@ -64,7 +64,7 @@ export function breakdownSummary(
     amount: money(sales.total),
     rows: [
       { label: t('purchases'), value: money(purchases.total) },
-      { label: t('stockValue'), value: money(stock.total) },
+      ...(stock ? [{ label: t('stockValue'), value: money(stock.total) }] : []),
       ...(people?.net != null ? [{ label: t('pay'), value: money(people.net) }] : []),
       ...(people?.daysPresent != null
         ? [{ label: t('days'), value: qty(people.daysPresent) }]

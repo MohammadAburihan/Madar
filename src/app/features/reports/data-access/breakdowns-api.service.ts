@@ -140,9 +140,9 @@ export class BreakdownsApiService {
     );
   }
 
-  /** Stock value per warehouse today, from ERPNext's bins. */
-  async stockByWarehouse(company: string): Promise<Breakdown> {
-    const [bins, warehouses] = await Promise.all([
+  /** Stock value per warehouse today, from ERPNext's bins; null when the role can't read them (accounts-only owner). */
+  async stockByWarehouse(company: string): Promise<Breakdown | null> {
+    const read = await Promise.all([
       firstValueFrom(
         this.erpnext.list<Record<string, unknown>>('Bin', {
           fields: ['warehouse', { SUM: 'stock_value' }],
@@ -154,7 +154,11 @@ export class BreakdownsApiService {
         fields: ['name', 'warehouse_name'],
         filters: [['company', '=', company]],
       }),
-    ]);
+    ]).catch(forbiddenAsNull);
+    if (!read) {
+      return null;
+    }
+    const [bins, warehouses] = read;
     const names = new Map(warehouses.map((w) => [w.name, w.warehouse_name]));
     return breakdown(
       bins

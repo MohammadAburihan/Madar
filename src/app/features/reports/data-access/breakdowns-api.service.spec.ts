@@ -79,6 +79,14 @@ describe('BreakdownsApiService', () => {
     });
   });
 
+  it('leaves stock out for a role that can’t read bins, but keeps other failures', async () => {
+    fakeErpnext({ Bin: forbidden, Warehouse: () => [] });
+    expect(await api().stockByWarehouse('Rehan Nursery')).toBeNull();
+    TestBed.resetTestingModule();
+    fakeErpnext({ Bin: offline, Warehouse: () => [] });
+    await expect(api().stockByWarehouse('Rehan Nursery')).rejects.toBeTruthy();
+  });
+
   it('counts confirmed pay in the company currency and days present, half days as half', async () => {
     const { listCalls } = fakeErpnext({
       'Salary Slip': () => [{ base_net_pay: 4000 }, { base_net_pay: 3600 }],
