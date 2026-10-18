@@ -91,8 +91,9 @@ export class PayrollApiService {
       name: string;
       employee_name: string;
       status: string;
+      date_of_joining: string;
     }>('Employee', {
-      fields: ['name', 'employee_name', 'status'],
+      fields: ['name', 'employee_name', 'status', 'date_of_joining'],
       filters: [
         ['company', '=', business.name],
         ['date_of_joining', '<=', end],
@@ -104,8 +105,8 @@ export class PayrollApiService {
       orderBy: 'employee_name asc, name asc',
     });
     const [salaries, slips] = await Promise.all([
-      this.erpnext.listAll<{ employee: string }>('Salary Structure Assignment', {
-        fields: ['employee'],
+      this.erpnext.listAll<{ employee: string; from_date: string }>('Salary Structure Assignment', {
+        fields: ['employee', 'from_date'],
         filters: [
           ['company', '=', business.name],
           ['from_date', '<=', end],
@@ -121,7 +122,16 @@ export class PayrollApiService {
         ],
       }),
     ]);
-    const withSalary = new Set(salaries.map((s) => s.employee));
+    // Frappe HR makes a month's slip from a salary in force at its start (or when the worker joined, if later).
+    const joined = new Map(workers.map((w) => [w.name, w.date_of_joining]));
+    const withSalary = new Set(
+      salaries
+        .filter((s) => {
+          const joinedOn = joined.get(s.employee) ?? '';
+          return s.from_date <= (joinedOn > month ? joinedOn : month);
+        })
+        .map((s) => s.employee),
+    );
     const slipOf = new Map(slips.map((s) => [s.employee, s]));
     // Workers no longer active show only for a salary or slip they had; there is nothing to set for them here.
     const shown = workers.filter(

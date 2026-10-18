@@ -75,7 +75,7 @@ type Failure =
         [placeholder]="txt.worker"
         [value]="worker() || null"
         [disabled]="unresolved()"
-        (valueChange)="worker.set($event ?? '')"
+        (valueChange)="setWorker($event ?? '')"
       />
       @if (missingWorker()) {
         <p class="muted" role="status">{{ txt.missingWorker }}</p>
@@ -353,6 +353,14 @@ export class SalaryFormContainer {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Another worker: the last one's notices don't apply to them. */
+  protected setWorker(id: string): void {
+    this.worker.set(id);
+    this.exists.set(null);
+    this.notCreated.set(false);
+    this.failed.set(null);
   }
 
   /** Pay, on the month it was showing when it opened this form. */

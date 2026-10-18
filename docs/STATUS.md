@@ -336,7 +336,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 4 (1 medium, 2 low) fixed: Set salary opened from Pay starts from the month Pay showed, and never before
   the worker joined, and Back returns to Pay; an inactive Madar structure isn't used and gets its own message. Pass 5 (1 medium) fixed: a start before the chosen
   worker joined is refused in the form. Pass 6 (1 medium, 1 low) fixed: back from Set salary, Pay opens on the
-  month it came from; a slip cancelled in Desk is refused when confirming, not counted as confirmed. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  month it came from; a slip cancelled in Desk is refused when confirming, not counted as confirmed. Pass 7 (1 medium, 1 low) fixed: a
+  salary counts for a month only if in force at its start (or the joining date), as Frappe HR needs; picking another
+  worker clears the last one's notices. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

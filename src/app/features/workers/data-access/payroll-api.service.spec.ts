@@ -56,12 +56,26 @@ describe('PayrollApiService', () => {
   it('reads the month: who is employed, who has a salary, and each slip', async () => {
     const { listCalls } = fakeErpnext({
       Employee: () => [
-        { name: 'E1', employee_name: 'Khaled Omar', status: 'Active' },
-        { name: 'E3', employee_name: 'Yousef Darwish', status: 'Active' },
+        {
+          name: 'E1',
+          employee_name: 'Khaled Omar',
+          status: 'Active',
+          date_of_joining: '2025-03-03',
+        },
+        {
+          name: 'E3',
+          employee_name: 'Yousef Darwish',
+          status: 'Active',
+          date_of_joining: '2023-04-01',
+        },
         // Left with nothing for the month: not shown.
         { name: 'E4', employee_name: 'Huda Nasser', status: 'Left' },
       ],
-      'Salary Structure Assignment': () => [{ employee: 'E1' }],
+      // E3's salary starts mid-month: Frappe HR can't make October's slip from it.
+      'Salary Structure Assignment': () => [
+        { employee: 'E1', from_date: '2026-01-01' },
+        { employee: 'E3', from_date: '2026-10-15' },
+      ],
       'Salary Slip': () => [
         { name: 'S1', employee: 'E1', docstatus: 0, gross_pay: 4200, net_pay: 3900 },
       ],
