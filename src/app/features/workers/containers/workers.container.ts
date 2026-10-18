@@ -133,7 +133,19 @@ const SEARCH_DELAY_MS = 250;
                 <button type="button" class="md-btn" (click)="assignShift(p.id)">
                   {{ txt.assignShift }}
                 </button>
+                <button type="button" class="md-btn" (click)="withWorker('salary', p.id)">
+                  {{ txt.setSalary }}
+                </button>
+                <button type="button" class="md-btn" (click)="withWorker('hours', p.id)">
+                  {{ txt.logHours }}
+                </button>
+                @if (canGiveAdvances()) {
+                  <button type="button" class="md-btn" (click)="withWorker('advance', p.id)">
+                    {{ txt.giveAdvance }}
+                  </button>
+                }
               }
+              <button type="button" class="md-btn" (click)="edit(p.id)">{{ txt.edit }}</button>
               <button type="button" class="md-btn" (click)="openDetail(p.id)">
                 {{ txt.openDetail }}
               </button>
@@ -188,6 +200,7 @@ export class WorkersContainer {
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
+  protected readonly canGiveAdvances = computed(() => this.session.capabilities().giveAdvances);
   protected readonly tab = signal<string>('active');
   protected readonly term = signal('');
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
@@ -222,6 +235,10 @@ export class WorkersContainer {
       markAttendance: t('workers.markAttendance'),
       requestLeave: t('workers.requestLeave'),
       assignShift: t('workers.shift.assign'),
+      setSalary: t('workers.salary.set'),
+      logHours: t('workers.hours.log'),
+      giveAdvance: t('workers.advance.give'),
+      edit: t('workers.edit'),
       leaveRequests: t('workers.leaveRequests'),
       pay: t('workers.payroll.open'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
@@ -372,6 +389,14 @@ export class WorkersContainer {
 
   protected assignShift(worker: string): void {
     void this.router.navigate(['/workers/shift/new'], { queryParams: { worker } });
+  }
+
+  protected withWorker(task: 'salary' | 'hours' | 'advance', worker: string): void {
+    void this.router.navigate(['/workers', task, 'new'], { queryParams: { worker } });
+  }
+
+  protected edit(worker: string): void {
+    void this.router.navigate(['/workers', worker, 'edit']);
   }
 
   protected pay(): void {

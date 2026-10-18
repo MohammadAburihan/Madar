@@ -173,7 +173,7 @@ import {
           <button type="button" class="md-btn md-btn--primary" (click)="move()">
             {{ txt.move }}
           </button>
-          @for (action of mobileActions(); track action.id) {
+          @for (action of stockActions(); track action.id) {
             <button type="button" class="md-btn" (click)="open(action.id)">
               {{ action.label }}
             </button>
@@ -333,13 +333,11 @@ export class InventoryContainer implements OnInit {
     return [
       { id: 'countStock', label: t('inventory.actions.count') },
       { id: 'recordDamage', label: t('inventory.actions.damage') },
-      { id: 'supplyProject', label: t('inventory.actions.supply') },
+      ...(this.caps().supplyProjects
+        ? [{ id: 'supplyProject', label: t('inventory.actions.supply') }]
+        : []),
     ];
   });
-
-  protected readonly mobileActions = computed(() =>
-    this.stockActions().filter((a) => a.id !== 'supplyProject'),
-  );
 
   constructor() {
     effect(() => {
@@ -372,7 +370,8 @@ export class InventoryContainer implements OnInit {
   }
 
   protected open(action: string): void {
-    void this.router.navigate(['/task', action]);
+    // A project is supplied item by item from its page.
+    void this.router.navigate(action === 'supplyProject' ? ['/projects'] : ['/task', action]);
   }
 
   private async load(): Promise<void> {

@@ -209,6 +209,17 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
+## Stock tasks and layout parity (in progress, before step 6)
+
+- **P1 — Layout parity**: this PR. An audit of every page with separate phone and desktop layouts: Inventory's "Supply
+  a project" opens Projects on both (it was a placeholder, hidden on phones); a project's purchase orders and sales
+  open from its page on phones as on the desktop workspace; the desktop Workers panel adds Set salary, Log hours, Give
+  an advance and Edit worker, and the Contacts panel View transactions and Edit, as on their full pages. Left as they
+  are: the desktop Reports page shows profit by month inline (no link to the phone's month page) and reaches Money
+  from the sidebar; Home's drafts link opens the drafts placeholder. Phone apps installed before a feature (shifts,
+  for example) don't have it until rebuilt with `npm run cap:sync`. Designs: the Workers, Contacts and Inventory
+  mocks and the project page (EN/AR). e2e: `28-layout-parity`.
+
 ## Approvals and advanced reports (done: #54, #55)
 
 - **A1 — Approvals**: merged (#54). **Approvals** (`/approvals`, in the sidebar and More for the Owner and HR roles, `approve`)
