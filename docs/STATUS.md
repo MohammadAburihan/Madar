@@ -327,7 +327,9 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   amount set (a submitted assignment is changed in ERPNext), also when checking after a lost answer; a Madar structure
   left unsubmitted in Desk gets its own message; Pay shows workers no longer active only for a salary or slip they had,
   and Set salary says when it's opened for a worker who isn't active; PERMISSIONS.md gains the Pay row (HR roles, as in
-  ERPNext); a 403 on Pay says it isn't open to the role (after checking for an expired session). Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  ERPNext); a 403 on Pay says it isn't open to the role (after checking for an expired session).
+  Review pass 2 (1 medium, 1 low) fixed: salaries are rounded to the cent before saving and comparing, as ERPNext stores
+  them; an amended structure (`…-1`) is used, and a cancelled one gets its own message. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

@@ -4,6 +4,7 @@ import { Business } from '../../../core/business/business.service';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { round2 } from '../../../core/format/number';
 import { PayRow, SalaryFormValue } from './workers.models';
 
 interface SlipDoc {
@@ -43,7 +44,8 @@ export class PayrollApiService {
   async setSalary(value: SalaryFormValue, business: Business): Promise<string> {
     const existing = await this.salaryFrom(value.worker, value.from);
     if (existing) {
-      if (existing.base !== value.monthly) {
+      // ERPNext keeps the amount to the cent: compare as it was stored.
+      if (round2(existing.base) !== round2(value.monthly)) {
         throw new SalaryExistsError(existing.base);
       }
       return existing.name;
@@ -56,7 +58,7 @@ export class PayrollApiService {
           employee: value.worker,
           salary_structure: structure,
           from_date: value.from,
-          base: value.monthly,
+          base: round2(value.monthly),
           company: business.name,
           currency: business.currency,
           docstatus: 1,
@@ -190,13 +192,15 @@ export class PayrollApiService {
   /** The business's Madar salary structure, made the first time a salary is set. */
   private async structure(business: Business): Promise<string> {
     const name = `Madar monthly - ${business.abbr}`;
+    // An amended structure (cancelled in Desk, then amended) is named "<name>-1": use the newest submitted one.
     const [found] = await firstValueFrom(
       this.erpnext.list<{ name: string }>('Salary Structure', {
         fields: ['name'],
         filters: [
-          ['name', '=', name],
+          ['name', 'like', `${name}%`],
           ['docstatus', '=', 1],
         ],
+        orderBy: 'creation desc',
         limit: 1,
       }),
     );
@@ -246,8 +250,11 @@ export class PayrollApiService {
           limit: 1,
         }),
       );
-      if (made?.docstatus !== 1) {
+      if (made?.docstatus === 0) {
         throw new ErpnextError('server', `${name} isn't submitted`, 417, 'StructureNotSubmitted');
+      }
+      if (made?.docstatus !== 1) {
+        throw new ErpnextError('server', `${name} is cancelled`, 417, 'StructureCancelled');
       }
     }
     return name;

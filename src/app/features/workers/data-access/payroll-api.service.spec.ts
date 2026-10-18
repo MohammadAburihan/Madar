@@ -45,6 +45,8 @@ describe('PayrollApiService', () => {
       'Salary Structure Assignment': () => [{ name: 'SSA-1', base: 3000 }],
     });
     expect(await api().setSalary(VALUE, BUSINESS)).toBe('SSA-1');
+    // Typed to a fraction of a cent, kept as ERPNext stored it.
+    expect(await api().setSalary({ ...VALUE, monthly: 3000.001 }, BUSINESS)).toBe('SSA-1');
     await expect(api().setSalary({ ...VALUE, monthly: 3500 }, BUSINESS)).rejects.toMatchObject({
       base: 3000,
     });

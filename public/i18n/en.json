@@ -3142,6 +3142,10 @@
           "structure": {
             "title": "The Madar salary structure isn't ready",
             "message": "It exists in ERPNext but isn't submitted. Submit it there, then try again."
+          },
+          "structureCancelled": {
+            "title": "The Madar salary structure is cancelled",
+            "message": "Amend it in ERPNext (or delete it so Madar makes a new one), then try again."
           }
         },
         "unresolved": {

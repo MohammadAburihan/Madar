@@ -14,7 +14,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { formatMoney, toIsoDate } from '../../../core/format/format';
-import { parseNumber } from '../../../core/format/number';
+import { parseNumber, round2 } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
@@ -28,7 +28,7 @@ import { LeaveApiService } from '../data-access/leave-api.service';
 import { PayrollApiService, SalaryExistsError } from '../data-access/payroll-api.service';
 import { SalaryFormValue } from '../data-access/workers.models';
 
-type Failure = 'permission' | 'offline' | 'setup' | 'structure' | 'error';
+type Failure = 'permission' | 'offline' | 'setup' | 'structure' | 'structureCancelled' | 'error';
 
 /** "Set salary": the monthly salary a worker's slips are made from, from a date. */
 @Component({
@@ -207,6 +207,7 @@ export class SalaryFormContainer {
         offline: block('workers.salary.form.failed.offline'),
         setup: block('workers.salary.form.failed.setup'),
         structure: block('workers.salary.form.failed.structure'),
+        structureCancelled: block('workers.salary.form.failed.structureCancelled'),
         error: block('workers.salary.form.failed.error'),
       },
     };
@@ -266,7 +267,7 @@ export class SalaryFormContainer {
     try {
       const found = await this.api.salaryFrom(this.worker(), this.from());
       this.unresolved.set(false);
-      if (found && found.base !== this.amount()) {
+      if (found && round2(found.base) !== round2(this.amount())) {
         this.exists.set(found.base);
       } else if (found) {
         void this.router.navigate(['/workers/pay'], { replaceUrl: true });
@@ -321,7 +322,9 @@ export class SalaryFormContainer {
                 ? 'setup'
                 : e.excType === 'StructureNotSubmitted'
                   ? 'structure'
-                  : 'error',
+                  : e.excType === 'StructureCancelled'
+                    ? 'structureCancelled'
+                    : 'error',
         );
       }
     } finally {
