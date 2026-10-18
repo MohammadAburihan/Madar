@@ -12,6 +12,9 @@ export const APPROVAL_LIMIT = 50;
 type Doc = Record<string, unknown> & { name: string; doctype: string };
 
 const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+/** Text as written, without the Madar reference saved after it ("Madar leave LEV-…"). */
+const prose = (v: unknown) =>
+  text(typeof v === 'string' ? v.replace(/\s*Madar [a-z]+ [A-Z]+-[0-9A-Z]+\s*$/, '') : v);
 const number = (v: unknown) => (v === undefined || v === null || v === '' ? null : Number(v));
 
 /** Who or what a document is about, from the fields the common doctypes carry. */
@@ -28,12 +31,13 @@ function titleOf(doc: Doc): string {
 
 /** The document's amount in the company currency (`currency`), or null when it has none in it. */
 function amountOf(doc: Doc, currency: string): number | null {
+  // The amount asked for comes first: a claim's grand total is net of advances, and an unpaid advance has paid 0.
   for (const field of [
+    'total_claimed_amount',
+    'advance_amount',
     'base_rounded_total',
     'base_grand_total',
-    'total_claimed_amount',
     'base_paid_amount',
-    'advance_amount',
     'total_amount',
   ]) {
     const value = number(doc[field]);
@@ -190,9 +194,9 @@ export class ApprovalsApiService {
       ),
       actions: [...new Set((transitions ?? []).filter(mayApprove).map((t) => t.action))],
       lines: [
-        text(doc['remark']),
-        text(doc['purpose']),
-        text(doc['description']),
+        prose(doc['remark']),
+        prose(doc['purpose']),
+        prose(doc['description']),
         ...((doc['expenses'] as Record<string, unknown>[] | undefined) ?? [])
           .map((e) => text(e['description']))
           .filter((d): d is string => !!d),

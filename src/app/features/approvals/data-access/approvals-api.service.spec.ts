@@ -173,6 +173,39 @@ describe('ApprovalsApiService', () => {
     expect((await api().item('Employee Advance', 'ADV-2', BUSINESS, 'x')).amount).toBe(100);
   });
 
+  it('shows the amount asked for and the reason without the Madar reference', async () => {
+    fakeErpnext(
+      {},
+      { 'frappe.model.workflow.get_transitions': () => [] },
+      {
+        'Employee Advance/ADV-3': {
+          doctype: 'Employee Advance',
+          name: 'ADV-3',
+          advance_amount: 300,
+          base_paid_amount: 0,
+          purpose: 'Tools\n\nMadar advance ADV-K3J9Q',
+          company: 'Rehan Nursery',
+        },
+        'Expense Claim/HR-EXP-5': {
+          ...CLAIM,
+          name: 'HR-EXP-5',
+          total_claimed_amount: 500,
+          base_grand_total: 200,
+        },
+        'Leave Application/LAP-1': {
+          doctype: 'Leave Application',
+          name: 'LAP-1',
+          description: 'Madar leave LEV-AB12C',
+          company: 'Rehan Nursery',
+        },
+      },
+    );
+    const advance = await api().item('Employee Advance', 'ADV-3', BUSINESS, 'x');
+    expect(advance).toMatchObject({ amount: 300, lines: ['Tools'] });
+    expect((await api().item('Expense Claim', 'HR-EXP-5', BUSINESS, 'x')).amount).toBe(500);
+    expect((await api().item('Leave Application', 'LAP-1', BUSINESS, 'x')).lines).toEqual([]);
+  });
+
   it('reads an item with the actions the user may take', async () => {
     const { postCalls } = fakeErpnext(
       {},
