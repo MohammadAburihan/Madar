@@ -3210,7 +3210,11 @@
           }
         },
         "activityError": "Choose an activity.",
-        "noActivities": "There are no activity types your role can use. Add one in ERPNext (Projects › Activity Type) first."
+        "noActivities": "There are no activity types your role can use. Add one in ERPNext (Projects › Activity Type) first.",
+        "dontFit": {
+          "title": "These hours don't fit in the day",
+          "message": "After the worker's earlier logs that day, {{hours}} hours are left. Log fewer hours, or log the rest on another day."
+        }
       },
       "lastWeek": "Hours in the last 7 days"
     }

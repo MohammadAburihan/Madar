@@ -25,7 +25,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { LeaveApiService } from '../data-access/leave-api.service';
-import { TimesheetApiService } from '../data-access/timesheet-api.service';
+import { HoursDontFitError, TimesheetApiService } from '../data-access/timesheet-api.service';
 import { HoursFormValue } from '../data-access/workers.models';
 
 type Failure = 'permission' | 'offline' | 'error';
@@ -67,7 +67,7 @@ type Failure = 'permission' | 'offline' | 'error';
         [options]="workerOptions()"
         [placeholder]="txt.worker"
         [value]="worker() || null"
-        [disabled]="unresolved()"
+        [disabled]="locked()"
         (valueChange)="worker.set($event ?? '')"
       />
       @if (errors?.worker) {
@@ -76,7 +76,7 @@ type Failure = 'permission' | 'offline' | 'error';
       <app-text-field
         [label]="txt.date"
         type="date"
-        [readonly]="unresolved()"
+        [readonly]="locked()"
         [error]="errors?.date ? txt.dateError : null"
         [value]="date()"
         (valueChange)="date.set($event)"
@@ -85,7 +85,7 @@ type Failure = 'permission' | 'offline' | 'error';
         [label]="txt.hours"
         inputmode="decimal"
         [ltr]="true"
-        [readonly]="unresolved()"
+        [readonly]="locked()"
         [error]="errors?.hours ? txt.hoursError : null"
         [value]="hours()"
         (valueChange)="hours.set($event)"
@@ -96,7 +96,7 @@ type Failure = 'permission' | 'offline' | 'error';
           [options]="activityOptions()"
           [placeholder]="txt.activity"
           [value]="activity() || null"
-          [disabled]="unresolved()"
+          [disabled]="locked()"
           (valueChange)="activity.set($event ?? '')"
         />
         @if (errors?.activity) {
@@ -110,16 +110,19 @@ type Failure = 'permission' | 'offline' | 'error';
           [label]="txt.project"
           [options]="projectOptions()"
           [value]="project()"
-          [disabled]="unresolved()"
+          [disabled]="locked()"
           (valueChange)="project.set($event ?? '')"
         />
       }
       <app-text-field
         [label]="txt.note"
-        [readonly]="unresolved()"
+        [readonly]="locked()"
         [value]="note()"
         (valueChange)="note.set($event)"
       />
+      @if (dontFit() !== null) {
+        <app-feedback-card tone="warning" [title]="txt.dontFit.title" [message]="dontFitText()" />
+      }
       @if (failed(); as f) {
         <app-feedback-card
           tone="danger"
@@ -194,6 +197,11 @@ export class HoursFormContainer {
   protected readonly notCreated = signal(false);
   private readonly reference = newReference('TIME');
   private sent: string | null = null;
+  /** Sent once with this reference: the details stay as sent, since a slow first try may still land. */
+  private readonly sentOnce = signal(false);
+  protected readonly locked = computed(() => this.unresolved() || this.saving() || this.sentOnce());
+  /** The hours left in the day after the worker's earlier logs, when the entered ones don't fit. */
+  protected readonly dontFit = signal<number | null>(null);
 
   private readonly amount = computed(() => parseNumber(this.hours().replace(',', '.')));
 
@@ -238,6 +246,7 @@ export class HoursFormContainer {
       pending: t('sale.checking.pending'),
       noAccess: block('workers.noAccess'),
       notCreated: block('workers.hours.form.notCreated'),
+      dontFit: { title: f('dontFit.title') },
       unresolved: {
         title: f('unresolved.title'),
         message: t('workers.hours.form.unresolved.message', { reference: this.reference }),
@@ -249,6 +258,14 @@ export class HoursFormContainer {
       },
     };
   });
+
+  protected readonly dontFitText = computed(() =>
+    this.i18n.tr().t('workers.hours.form.dontFit.message', {
+      hours: new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(
+        this.dontFit() ?? 0,
+      ),
+    }),
+  );
 
   protected readonly workerOptions = computed(() =>
     this.workers().map((w) => ({ value: w.id, label: w.name })),
@@ -310,6 +327,8 @@ export class HoursFormContainer {
     this.saving.set(true);
     this.failed.set(null);
     this.notCreated.set(false);
+    this.dontFit.set(null);
+    this.sentOnce.set(true);
     const value: HoursFormValue = {
       worker: this.worker(),
       date: this.date(),
@@ -329,7 +348,13 @@ export class HoursFormContainer {
       if (error instanceof UnresolvedError) {
         this.sent = value.worker;
         this.unresolved.set(true);
+      } else if (error instanceof HoursDontFitError) {
+        // Nothing was sent: the hours can be corrected.
+        this.sentOnce.set(false);
+        this.dontFit.set(error.left);
       } else {
+        // A definite refusal saved nothing under the reference: the details can be fixed.
+        this.sentOnce.set(false);
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {
           void this.session.checkExpired();

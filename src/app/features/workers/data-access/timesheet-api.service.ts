@@ -27,6 +27,13 @@ function span(date: string, hours: number, after: string | null): { from: string
   return { from: fmt(start), to: fmt(end) };
 }
 
+/** The hours would run past midnight after the worker's earlier logs that day; `left` is what still fits. */
+export class HoursDontFitError extends Error {
+  constructor(readonly left: number) {
+    super(`Only ${left} hours left in the day`);
+  }
+}
+
 /** Hours worked (ERPNext Timesheet), optionally on an activity and a project. */
 @Injectable({ providedIn: 'root' })
 export class TimesheetApiService {
@@ -64,11 +71,21 @@ export class TimesheetApiService {
    * `find()` tells whether it was made.
    */
   async log(value: HoursFormValue, reference: string, business: Business): Promise<string> {
+    // Saved again after "not created": a slow first try that landed meanwhile is the result, not a second log.
+    const existing = await this.find(reference);
+    if (existing) {
+      return existing;
+    }
     const { from, to } = span(
       value.date,
       value.hours,
       await this.lastEnd(value.worker, value.date),
     );
+    if (to.slice(0, 10) !== value.date && to.slice(11) !== '00:00:00') {
+      throw new HoursDontFitError(
+        Math.max(0, 24 - (Number(from.slice(11, 13)) + Number(from.slice(14, 16)) / 60)),
+      );
+    }
     const note = value.note.trim();
     const doc = await confirmRequest(
       this.erpnext.post<{ name: string }>('frappe.client.insert', {
