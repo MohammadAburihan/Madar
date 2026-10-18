@@ -131,6 +131,8 @@ export class ApprovalContainer {
   protected readonly unresolved = signal(false);
   /** What a step came to: done, or decided by someone else first. */
   protected readonly outcome = signal<{ title: string; message: string } | null>(null);
+  /** The state a step was sent from when its answer was lost; Check result compares with it. */
+  private sentFrom: string | null = null;
   private run = 0;
 
   protected readonly text = computed(() => {
@@ -165,6 +167,7 @@ export class ApprovalContainer {
           this.business.active()?.currency ?? '',
           this.i18n.language(),
           this.i18n.tr(),
+          this.session.capabilities().seeCosts,
         )
       : null;
   });
@@ -174,7 +177,14 @@ export class ApprovalContainer {
       this.doctype();
       this.name();
       if (this.allowed()) {
-        untracked(() => void this.load());
+        untracked(() => {
+          // Another document on the same page starts fresh.
+          this.outcome.set(null);
+          this.unresolved.set(false);
+          this.failed.set(null);
+          this.sentFrom = null;
+          void this.load();
+        });
       }
     });
   }
@@ -182,8 +192,6 @@ export class ApprovalContainer {
   /** Reads the document as ERPNext has it; after a lost answer this is the check. */
   protected async load(): Promise<void> {
     const run = ++this.run;
-    const shownState = this.detail()?.state;
-    const wasUnresolved = this.unresolved();
     this.detail.set(null);
     this.loadFailed.set(false);
     this.failed.set(null);
@@ -197,10 +205,11 @@ export class ApprovalContainer {
         return;
       }
       this.detail.set(detail);
-      this.unresolved.set(false);
-      if (wasUnresolved && shownState !== undefined && detail.state !== shownState) {
+      if (this.sentFrom !== null && detail.state !== this.sentFrom) {
         this.outcome.set(this.done(detail.state));
       }
+      this.unresolved.set(false);
+      this.sentFrom = null;
     } catch {
       if (run === this.run) {
         this.loadFailed.set(true);
@@ -239,6 +248,7 @@ export class ApprovalContainer {
       this.detail.update((d) => (d ? { ...d, state: result.state, actions: [] } : d));
     } catch (error) {
       if (error instanceof UnresolvedError) {
+        this.sentFrom = detail.state;
         this.unresolved.set(true);
       } else {
         const e = ErpnextError.from(error);

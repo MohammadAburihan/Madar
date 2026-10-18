@@ -220,6 +220,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Designs: Approvals 01 Inbox and 02 Item (mobile EN/AR), Approvals in the sidebars and More. The seed adds an Expense
   Claim workflow and a claim waiting for approval. e2e: approving and rejecting a claim from the inbox, Arabic, roles
   without approvals, the desktop sidebar.
+  Review pass 1 (2 medium, 5 low) fixed: a zero rounded total (rounding off) falls back to the grand total; another
+  document on the same page starts without the last one's outcome or lost answer; Check result compares with the
+  state the step was sent from, even after a failed check; the cap note follows ERPNext's open actions and leave
+  rows; a leave request under a workflow shows once; buying amounts are hidden from roles that don't see costs.
 
 ## Workers & HR (done: #46–#53)
 

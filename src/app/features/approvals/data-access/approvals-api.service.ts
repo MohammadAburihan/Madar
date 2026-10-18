@@ -36,6 +36,10 @@ function amountOf(doc: Doc): number | null {
     'total_amount',
   ]) {
     const value = number(doc[field]);
+    // With rounding turned off ERPNext leaves the rounded total at 0: the grand total is owed.
+    if (field === 'base_rounded_total' && !value) {
+      continue;
+    }
     if (value !== null && !Number.isNaN(value)) {
       return value;
     }
@@ -51,8 +55,11 @@ function amountOf(doc: Doc): number | null {
 export class ApprovalsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Documents waiting for the user, newest first; another company's are left out. */
-  async inbox(business: Business): Promise<ApprovalItem[]> {
+  /**
+   * Documents waiting for the user, newest first; another company's are left out. `capped` when ERPNext had as many
+   * open actions as were asked for, so there may be more.
+   */
+  async inbox(business: Business): Promise<{ items: ApprovalItem[]; capped: boolean }> {
     const actions = await firstValueFrom(
       this.erpnext.list<{
         reference_doctype: string;
@@ -86,7 +93,7 @@ export class ApprovalsApiService {
         ),
       ),
     );
-    return docs
+    const items = docs
       .map((doc, i) => ({ doc, action: unique[i] }))
       .filter(
         (x): x is { doc: Doc; action: (typeof unique)[number] } =>
@@ -103,6 +110,7 @@ export class ApprovalsApiService {
           10,
         ),
       }));
+    return { items, capped: actions.length >= APPROVAL_LIMIT };
   }
 
   /** Leave requests waiting for a decision (decided on the Leave requests pages under Workers). */

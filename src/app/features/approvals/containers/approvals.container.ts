@@ -95,7 +95,7 @@ export class ApprovalsContainer {
   protected readonly term = signal('');
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly items = signal<ApprovalItem[]>([]);
-  private readonly workflowCount = signal(0);
+  protected readonly capped = signal(false);
   private run = 0;
 
   protected readonly text = computed(() => {
@@ -128,11 +128,10 @@ export class ApprovalsContainer {
           this.business.active()?.currency ?? '',
           this.i18n.language(),
           this.i18n.tr(),
+          this.session.capabilities().seeCosts,
         ),
       );
   });
-
-  protected readonly capped = computed(() => this.workflowCount() >= APPROVAL_LIMIT);
 
   constructor() {
     effect(() => {
@@ -164,8 +163,13 @@ export class ApprovalsContainer {
           : Promise.resolve([]),
       ]);
       if (run === this.run) {
-        this.workflowCount.set(workflow.length);
-        this.items.set([...leave, ...workflow]);
+        // A site with a workflow on leave lists the same request twice: the leave row opens the leave page.
+        const leaveIds = new Set(leave.map((l) => l.name));
+        const others = workflow.items.filter(
+          (w) => w.doctype !== 'Leave Application' || !leaveIds.has(w.name),
+        );
+        this.capped.set(workflow.capped || leave.length >= APPROVAL_LIMIT);
+        this.items.set([...leave, ...others]);
         this.state.set('ready');
       }
     } catch {

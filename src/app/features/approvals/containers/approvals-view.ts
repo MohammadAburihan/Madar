@@ -3,6 +3,20 @@ import { Language } from '../../../core/i18n/language.service';
 import { Translator } from '../../../core/i18n/translator';
 import { ApprovalDetail, ApprovalItem } from '../data-access/approvals.models';
 
+/** Buying documents whose amounts are costs: shown only to roles that see costs. */
+const BUYING = new Set([
+  'Purchase Order',
+  'Purchase Invoice',
+  'Purchase Receipt',
+  'Material Request',
+  'Supplier Quotation',
+  'Request for Quotation',
+]);
+
+function amountShown(item: ApprovalItem, seeCosts: boolean): number | null {
+  return !seeCosts && BUYING.has(item.doctype) ? null : item.amount;
+}
+
 /** The doctype in the user's words where Madar knows it; otherwise as ERPNext names it. */
 export function doctypeLabel(doctype: string, tr: Translator): string {
   const key = `approvals.doctypes.${doctype}`;
@@ -16,12 +30,14 @@ export function approvalCard(
   currency: string,
   language: Language,
   tr: Translator,
+  seeCosts: boolean,
 ) {
+  const amount = amountShown(item, seeCosts);
   return {
     id: `${item.doctype}/${item.name}`,
     title: `${doctypeLabel(item.doctype, tr)} · ${item.title}`,
     meta: item.date ? `${item.name} · ${formatShortDate(item.date, language)}` : item.name,
-    balance: [item.amount === null ? null : formatMoney(item.amount, currency), item.state]
+    balance: [amount === null ? null : formatMoney(amount, currency), item.state]
       .filter(Boolean)
       .join(' · '),
   };
@@ -32,7 +48,9 @@ export function approvalView(
   currency: string,
   language: Language,
   tr: Translator,
+  seeCosts: boolean,
 ) {
+  const amount = amountShown(detail, seeCosts);
   return {
     title: detail.title,
     subtitle: `${doctypeLabel(detail.doctype, tr)} · ${detail.name}`,
@@ -46,8 +64,8 @@ export function approvalView(
       .filter(Boolean)
       .join('\n'),
     totals:
-      detail.amount === null
+      amount === null
         ? []
-        : [{ label: tr.t('approvals.amount'), value: formatMoney(detail.amount, currency) }],
+        : [{ label: tr.t('approvals.amount'), value: formatMoney(amount, currency) }],
   };
 }

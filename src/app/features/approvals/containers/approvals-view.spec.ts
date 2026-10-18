@@ -15,13 +15,15 @@ const ITEM = {
 
 describe('approvals view', () => {
   it('shows the inbox card like the mock', () => {
-    expect(visible(approvalCard(ITEM, 'ILS', 'en', en))).toEqual({
+    expect(visible(approvalCard(ITEM, 'ILS', 'en', en, true))).toEqual({
       id: 'Expense Claim/HR-EXP-2026-00003',
       title: 'Expense claim · Rana Saleh',
       meta: 'HR-EXP-2026-00003 · 17 Oct 2026',
       balance: 'ILS 120.00 · Draft',
     });
-    expect(visible(approvalCard({ ...ITEM, amount: null }, 'ILS', 'en', en)).balance).toBe('Draft');
+    expect(visible(approvalCard({ ...ITEM, amount: null }, 'ILS', 'en', en, true)).balance).toBe(
+      'Draft',
+    );
   });
 
   it('names known doctypes in the user’s words and others as ERPNext does', () => {
@@ -38,6 +40,7 @@ describe('approvals view', () => {
           'ILS',
           'en',
           en,
+          true,
         ),
       ),
     ).toEqual({
@@ -46,5 +49,15 @@ describe('approvals view', () => {
       lines: 'Fuel for the delivery van\nDated 17 Oct 2026\nState: Draft',
       totals: [{ label: 'Amount', value: 'ILS 120.00' }],
     });
+  });
+
+  it('hides buying amounts from roles that don’t see costs', () => {
+    const order = { ...ITEM, doctype: 'Purchase Order', name: 'PO-9', amount: 900 };
+    expect(visible(approvalCard(order, 'ILS', 'en', en, false)).balance).toBe('Draft');
+    expect(visible(approvalCard(order, 'ILS', 'en', en, true)).balance).toBe('ILS 900.00 · Draft');
+    expect(
+      approvalView({ ...order, actions: [], lines: [] }, 'ILS', 'en', en, false).totals,
+    ).toEqual([]);
+    expect(visible(approvalCard(ITEM, 'ILS', 'en', en, false)).balance).toBe('ILS 120.00 · Draft');
   });
 });

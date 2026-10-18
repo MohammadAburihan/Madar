@@ -56,17 +56,49 @@ describe('ApprovalsApiService', () => {
         'Purchase Order/PO-9': () => throwError(() => new HttpErrorResponse({ status: 403 })),
       },
     );
-    expect(await api().inbox(BUSINESS)).toEqual([
-      {
-        doctype: 'Expense Claim',
-        name: 'HR-EXP-1',
-        title: 'Rana Saleh',
-        amount: 120,
-        state: 'Draft',
-        date: '2026-10-17',
-      },
-    ]);
+    expect(await api().inbox(BUSINESS)).toEqual({
+      items: [
+        {
+          doctype: 'Expense Claim',
+          name: 'HR-EXP-1',
+          title: 'Rana Saleh',
+          amount: 120,
+          state: 'Draft',
+          date: '2026-10-17',
+        },
+      ],
+      capped: false,
+    });
     expect(listCalls[0].query.filters).toEqual([['status', '=', 'Open']]);
+  });
+
+  it('says the inbox is capped by the actions ERPNext returned, not those left after filtering', async () => {
+    const actions = Array.from({ length: 50 }, (_, i) => ({
+      reference_doctype: 'Expense Claim',
+      reference_name: `HR-EXP-${i}`,
+      workflow_state: 'Draft',
+      creation: '2026-10-17 10:00:00',
+    }));
+    fakeErpnext({ 'Workflow Action': () => actions }, {}, {});
+    expect(await api().inbox(BUSINESS)).toEqual({ items: [], capped: true });
+  });
+
+  it('takes the grand total when rounding is off (rounded total 0)', async () => {
+    fakeErpnext(
+      {},
+      { 'frappe.model.workflow.get_transitions': () => [] },
+      {
+        'Purchase Order/PO-9': {
+          doctype: 'Purchase Order',
+          name: 'PO-9',
+          supplier_name: 'Green Clay',
+          base_rounded_total: 0,
+          base_grand_total: 412.5,
+          company: 'Rehan Nursery',
+        },
+      },
+    );
+    expect((await api().item('Purchase Order', 'PO-9', BUSINESS)).amount).toBe(412.5);
   });
 
   it('reads an item with the actions the user may take', async () => {
