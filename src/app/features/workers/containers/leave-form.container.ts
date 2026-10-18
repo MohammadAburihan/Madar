@@ -351,8 +351,8 @@ export class LeaveFormContainer {
 
   /** The worker's leave types as of the leave's start: allocations cover their own period. */
   protected async loadBalances(worker = this.worker(), from = this.from()): Promise<void> {
-    // The type sent stays as sent.
-    if (this.locked()) {
+    // The type sent stays as sent once an answer was lost; a send still running doesn't stop a reload.
+    if (this.unresolved() || this.lost()) {
       return;
     }
     const run = ++this.balanceRun;
