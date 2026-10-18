@@ -311,7 +311,18 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   Review pass 3 (1 medium) fixed: once sent, the advance's details stay locked (a slow first try may still land under
   the same reference); only the paying account can change after a failed payment.
   Pass 4: only low; fixed the lock after a definite refusal (the details can be fixed). Deferred: opened for a worker who
-  isn't active, the worker field is left empty without saying why. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  isn't active, the worker field is left empty without saying why.
+- **H6 — Pay** (this PR): **Set salary** (`/workers/salary/new`, from a worker's page, Pay and "+ New") submits a Salary
+  Structure Assignment (base = the monthly salary, from a date) on the business's "Madar monthly - {abbr}" structure
+  (Basic = base), made the first time a salary is set; a salary already set from that date is found, never set twice,
+  and "Check result" only looks it up. **Pay** (`/workers/pay`, from Workers on phone and desktop) shows this month or
+  last: each worker employed in it with their slip (gross, net, Draft or Confirmed), "No slip yet", or "No salary set"
+  (which opens Set salary). **Create N salary slips** makes a draft Salary Slip per worker with a salary and none yet
+  (Frappe HR works the pay out; one per worker and month); **Confirm N draft slips** submits them; refused workers are
+  named, a lost answer reads the month again. Paying slips out stays in ERPNext. Seed: the structure, Khaled ILS 4,200 and
+  Rana ILS 3,600. Design: Workers 11 Pay, 12 Set salary (mobile EN/AR), Pay in the desktop actions. e2e: a salary set
+  from a worker's page, last month's slip made and confirmed (checked in ERPNext); a worker without a salary sent to Set
+  salary; Arabic. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

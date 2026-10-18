@@ -93,6 +93,7 @@ const SEARCH_DELAY_MS = 250;
           <button type="button" class="md-btn" (click)="leaveRequests()">
             {{ txt.leaveRequests }}
           </button>
+          <button type="button" class="md-btn" (click)="pay()">{{ txt.pay }}</button>
         </div>
       }
       @if (state() === 'loading') {
@@ -170,6 +171,7 @@ const SEARCH_DELAY_MS = 250;
         <button type="button" class="md-btn" (click)="leaveRequests()">
           {{ txt.leaveRequests }}
         </button>
+        <button type="button" class="md-btn" (click)="pay()">{{ txt.pay }}</button>
       }
     }
   `,
@@ -221,6 +223,7 @@ export class WorkersContainer {
       requestLeave: t('workers.requestLeave'),
       assignShift: t('workers.shift.assign'),
       leaveRequests: t('workers.leaveRequests'),
+      pay: t('workers.payroll.open'),
       error: { title: t('workers.error.title'), message: t('workers.error.message') },
       noAccess: { title: t('workers.noAccess.title'), message: t('workers.noAccess.message') },
     };
@@ -369,6 +372,10 @@ export class WorkersContainer {
 
   protected assignShift(worker: string): void {
     void this.router.navigate(['/workers/shift/new'], { queryParams: { worker } });
+  }
+
+  protected pay(): void {
+    void this.router.navigate(['/workers/pay']);
   }
 
   protected leaveRequests(): void {

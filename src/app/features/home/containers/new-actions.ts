@@ -30,6 +30,7 @@ const ACTIONS: { id: string; allowed: (caps: Capabilities) => boolean; route: st
   { id: 'requestLeave', allowed: (c) => c.manageWorkers, route: ['/workers/leave/new'] },
   { id: 'assignShift', allowed: (c) => c.manageWorkers, route: ['/workers/shift/new'] },
   { id: 'giveAdvance', allowed: (c) => c.giveAdvances, route: ['/workers/advance/new'] },
+  { id: 'setSalary', allowed: (c) => c.manageWorkers, route: ['/workers/salary/new'] },
 ];
 
 /** "Create something": only what the user's role may start (docs/PERMISSIONS.md), as on the New action menu. */

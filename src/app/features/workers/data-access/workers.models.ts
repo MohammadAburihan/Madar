@@ -129,3 +129,17 @@ export interface AdvanceFormValue {
   purpose: string;
   date: string;
 }
+
+export interface SalaryFormValue {
+  worker: string;
+  monthly: number;
+  from: string;
+}
+
+/** A worker on the month's pay: their salary slip, or that they have no salary to make one from. */
+export interface PayRow {
+  id: string;
+  name: string;
+  hasSalary: boolean;
+  slip: { name: string; confirmed: boolean; gross: number; net: number } | null;
+}

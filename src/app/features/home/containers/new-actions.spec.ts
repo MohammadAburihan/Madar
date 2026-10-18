@@ -21,6 +21,7 @@ describe('new actions', () => {
       'Request leave',
       'Assign shift',
       'Give an advance',
+      'Set salary',
     ]);
   });
 
