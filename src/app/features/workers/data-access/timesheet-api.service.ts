@@ -82,11 +82,8 @@ export class TimesheetApiService {
       await this.lastEnd(value.worker, value.date),
     );
     // The log must start on the chosen day and end by its midnight.
-    const nextDay = new Date(
-      Date.UTC(...(value.date.split('-').map(Number) as [number, number, number])),
-    );
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-    const midnight = `${nextDay.toISOString().slice(0, 10)} 00:00:00`;
+    const [y, m, d] = value.date.split('-').map(Number);
+    const midnight = `${new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10)} 00:00:00`;
     if (from.slice(0, 10) !== value.date || to > midnight) {
       const left =
         from.slice(0, 10) !== value.date
