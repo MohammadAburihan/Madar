@@ -132,6 +132,7 @@ export class PayrollApiService {
       return {
         id: w.name,
         name: w.employee_name,
+        active: w.status === 'Active',
         hasSalary: withSalary.has(w.name),
         slip: slip
           ? {
@@ -197,8 +198,12 @@ export class PayrollApiService {
       this.erpnext.list<{ name: string }>('Salary Structure', {
         fields: ['name'],
         filters: [
-          ['name', 'like', `${name}%`],
+          ['company', '=', business.name],
           ['docstatus', '=', 1],
+        ],
+        orFilters: [
+          ['name', '=', name],
+          ['name', 'like', `${name}-%`],
         ],
         orderBy: 'creation desc',
         limit: 1,

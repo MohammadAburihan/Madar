@@ -3106,7 +3106,8 @@
       "forbidden": {
         "title": "Pay isn't open to your role",
         "message": "ERPNext doesn't let your role read salaries or salary slips."
-      }
+      },
+      "notActive": "No longer active: no slip can be made"
     },
     "salary": {
       "set": "Set salary",

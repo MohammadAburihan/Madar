@@ -242,7 +242,7 @@ export class PayContainer {
 
   protected makeSlips(): Promise<void> {
     return this.each(
-      this.rows().filter((r) => r.hasSalary && !r.slip),
+      this.rows().filter((r) => r.active && r.hasSalary && !r.slip),
       (row, month, business) => this.api.makeSlip(row.id, month, business),
       'workers.payroll.done.made',
     );

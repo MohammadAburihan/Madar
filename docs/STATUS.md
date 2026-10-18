@@ -329,7 +329,10 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
   and Set salary says when it's opened for a worker who isn't active; PERMISSIONS.md gains the Pay row (HR roles, as in
   ERPNext); a 403 on Pay says it isn't open to the role (after checking for an expired session).
   Review pass 2 (1 medium, 1 low) fixed: salaries are rounded to the cent before saving and comparing, as ERPNext stores
-  them; an amended structure (`…-1`) is used, and a cancelled one gets its own message. Seen once: `runtime-config.spec` failed in a full run and passed twice after
+  them; an amended structure (`…-1`) is used, and a cancelled one gets its own message.
+  Review pass 3 (2 medium, 1 low; one dropped: pages under the shell aren't cached) fixed: workers no longer active are
+  left out of "Create slips" (ERPNext refuses them) and say so; the structure is looked up for this company, by its exact
+  name or an amendment of it. Seen once: `runtime-config.spec` failed in a full run and passed twice after
   (flaky, untouched).
 
 ## End-to-end happy paths: merged (#26)

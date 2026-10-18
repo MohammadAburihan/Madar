@@ -70,10 +70,11 @@ describe('PayrollApiService', () => {
       {
         id: 'E1',
         name: 'Khaled Omar',
+        active: true,
         hasSalary: true,
         slip: { name: 'S1', confirmed: false, gross: 4200, net: 3900 },
       },
-      { id: 'E3', name: 'Yousef Darwish', hasSalary: false, slip: null },
+      { id: 'E3', name: 'Yousef Darwish', active: true, hasSalary: false, slip: null },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['date_of_joining', '<=', '2026-10-31']);
     expect(listCalls.find((c) => c.doctype === 'Salary Slip')!.query.filters).toContainEqual([

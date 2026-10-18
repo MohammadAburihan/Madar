@@ -140,6 +140,8 @@ export interface SalaryFormValue {
 export interface PayRow {
   id: string;
   name: string;
+  /** ERPNext makes slips for active workers only. */
+  active: boolean;
   hasSalary: boolean;
   slip: { name: string; confirmed: boolean; gross: number; net: number } | null;
 }

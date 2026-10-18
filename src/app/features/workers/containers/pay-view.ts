@@ -20,12 +20,14 @@ export function payCard(row: PayRow, currency: string, tr: Translator) {
     title: row.name,
     meta: row.slip
       ? tr.t('workers.payroll.grossNet', { gross: money(row.slip.gross), net: money(row.slip.net) })
-      : row.hasSalary
-        ? tr.t('workers.payroll.noSlip')
-        : tr.t('workers.payroll.noSalary'),
+      : !row.active
+        ? tr.t('workers.payroll.notActive')
+        : row.hasSalary
+          ? tr.t('workers.payroll.noSlip')
+          : tr.t('workers.payroll.noSalary'),
     balance: row.slip
       ? tr.t(row.slip.confirmed ? 'workers.payroll.confirmed' : 'workers.payroll.draft')
-      : row.hasSalary
+      : row.hasSalary || !row.active
         ? null
         : tr.t('workers.payroll.setSalary'),
   };
@@ -33,7 +35,7 @@ export function payCard(row: PayRow, currency: string, tr: Translator) {
 
 /** "Create 2 salary slips", "Confirm 1 draft slip". */
 export function payActions(rows: PayRow[], tr: Translator) {
-  const toMake = rows.filter((r) => r.hasSalary && !r.slip).length;
+  const toMake = rows.filter((r) => r.active && r.hasSalary && !r.slip).length;
   const drafts = rows.filter((r) => r.slip && !r.slip.confirmed).length;
   return {
     toMake,
