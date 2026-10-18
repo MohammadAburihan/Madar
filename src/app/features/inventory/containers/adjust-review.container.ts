@@ -37,7 +37,9 @@ import { reviewCard } from './adjust-view';
       @if (notice(); as n) {
         <app-feedback-card [tone]="n.tone" [title]="n.title" [message]="n.message" />
       }
-      <app-feedback-card [title]="v.card.title" [message]="v.card.message" />
+      @if (v.card; as card) {
+        <app-feedback-card [title]="card.title" [message]="card.message" />
+      }
       <button
         type="button"
         class="md-btn md-btn--primary"
@@ -71,16 +73,19 @@ export class AdjustReviewContainer implements OnInit {
       back: t('sale.back'),
       title: t(k('reviewTitle')),
       subtitle: `${item.code} · ${warehouse.name}`,
-      card: reviewCard(
-        this.ctx.kind,
-        item,
-        warehouse,
-        store.qty(),
-        store.change(),
-        store.damageType(),
-        store.reason().trim(),
-        tr,
-      ),
+      // Cleared after "stock changed": the count is entered again before anything is shown as posting.
+      card: !store.qtyValid()
+        ? null
+        : reviewCard(
+            this.ctx.kind,
+            item,
+            warehouse,
+            store.qty(),
+            store.change(),
+            store.damageType(),
+            store.reason().trim(),
+            tr,
+          ),
       confirm: t(k('confirm')),
       confirming: t('adjust.confirming'),
       edit: t(k('edit')),

@@ -184,6 +184,17 @@ describe('InventoryApiService adjustments', () => {
     await expect(api().adjust(damage(), 'MAT-STE-9')).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
+  it('opens only plain-quantity items for a task, never batch or serial ones', async () => {
+    const { listCalls } = erp({ [MAIN]: 22 });
+    await api().item('OLV-20', [MAIN]);
+    expect(listCalls.find((c) => c.doctype === 'Item')?.query.filters).toEqual(
+      expect.arrayContaining([
+        ['has_batch_no', '=', 0],
+        ['has_serial_no', '=', 0],
+      ]),
+    );
+  });
+
   it('finds an adjustment by its reference: posted, a draft, or nothing', async () => {
     fakeErpnext({
       'Stock Entry': (q) =>

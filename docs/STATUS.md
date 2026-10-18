@@ -239,6 +239,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   use) links to the site's standard Stock Entry Type found by purpose, since setup names them in the site's language;
   Home's Count stock follows the stock capability; after "stock changed" the count is entered again before it can
   post; batch and serial items are left out of the stock item search (handled in ERPNext).
+  Review pass 4 (1 medium, 2 low): batch and serial items can't be opened by link either (the "couldn't be opened"
+  notice shows); the review hides its card while the count is entered again. Deferred: counts, write-offs and moves
+  take whole units only, so a fractional balance (2.5 kg) can't be counted exactly.
 
 ## Approvals and advanced reports (done: #54, #55)
 

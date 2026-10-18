@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { ITEM, MAIN, choose, expectHeading, signIn } from './support';
+import { ITEM, MAIN, choose, expectHeading, signIn, topUp } from './support';
 
 // Receipts land in Stores and sales take from Main: this move keeps Main stocked for the sales that follow.
 test('moves stock between warehouses @phone', async ({ page }) => {
   await signIn(page, 'owner');
+  // Repeated runs move Stores' stock away; keep enough for this move.
+  await topUp(page, ITEM.code, 'Stores', 5);
   await page.goto('/inventory/transfer');
   await expectHeading(page, 'Move stock');
   await page.locator('app-search-field input').fill(ITEM.code);

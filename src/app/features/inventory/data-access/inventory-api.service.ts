@@ -6,7 +6,7 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
-import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
@@ -500,6 +500,10 @@ export class InventoryApiService {
               filters: [
                 ['name', 'in', chunk],
                 ['is_stock_item', '=', 1],
+                // Items picked for a task (search, links) are plain quantities only, as the search offers.
+                ...(includeEmpty
+                  ? [['has_batch_no', '=', 0] as Filter, ['has_serial_no', '=', 0] as Filter]
+                  : []),
               ],
               limit: 0,
             }),
