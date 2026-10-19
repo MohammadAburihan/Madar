@@ -26,8 +26,10 @@ test.describe('adding a new item while buying @phone', () => {
     await choose(selects.nth(2), 'Unit');
     await page.locator('app-text-field', { hasText: 'Opening cost' }).locator('input').fill('12');
     await page.getByRole('button', { name: 'Save item' }).click();
-    await expect(page).toHaveURL(/\/purchases\/new\?/, { timeout: 60_000 });
+    await expect(page).toHaveURL(/\/purchases\/new/, { timeout: 60_000 });
     await expectHeading(page, 'New purchase order');
+    // Used once, then taken off the address.
+    await expect(page).not.toHaveURL(/added=/);
     await expect(page.locator('app-select-field select').first()).toHaveValue(/Green Clay/);
     await expect(page.locator('.line').filter({ hasText: ITEM.name })).toBeVisible();
     await expect(page.locator('.line').filter({ hasText: name })).toBeVisible();

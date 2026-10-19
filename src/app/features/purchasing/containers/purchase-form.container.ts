@@ -264,8 +264,15 @@ export class PurchaseFormContainer implements OnInit {
     this.deepSupplier = params.get('supplier');
     const added = params.get('added');
     if (added) {
-      // Back from "Add item" with the item made: it joins the order once the supplier is known.
+      // Back from "Add item" with the item made: it joins the order once the supplier is known. Taken off the
+      // address, so going back to it doesn't add the item again after it was removed.
       store.queueNewItem(added);
+      void this.ctx.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { added: null, from: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
     }
     void this.load();
   }
@@ -303,6 +310,7 @@ export class PurchaseFormContainer implements OnInit {
     this.missingSupplier.set(null);
     this.ctx.store.setSupplier(supplier);
     void this.ctx.store.applyPrefill().catch(() => undefined);
+    void this.ctx.store.applyAdded().catch(() => undefined);
   }
 
   protected setRate(index: number, code: string, input: string): void {
@@ -330,7 +338,7 @@ export class PurchaseFormContainer implements OnInit {
       }
     }
     this.loaded.set(true);
-    void store.applyPrefill().catch(() => undefined);
+    void store.applyAdded().catch(() => undefined);
   }
 
   /** Opens "Add item or service" with what was searched for, keeping this order for the way back. */

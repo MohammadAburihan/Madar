@@ -80,6 +80,7 @@ export class PurchaseOrderStore {
     this.project.set(null);
     this.prefill.set(null);
     this.prefillMissing.set(null);
+    this.added.set(null);
     this.draft.set(null);
     this.state.set('idle');
     this.failure.set(null);
@@ -113,10 +114,39 @@ export class PurchaseOrderStore {
     }
   }
 
+  /** The item just added to the catalog for this order, waiting apart from a project's queued item. */
+  private readonly added = signal<string | null>(null);
+
   /** The item just added to the catalog for this order: it joins the order at the supplier's price. */
   queueNewItem(code: string): void {
-    this.prefill.set({ item: code, qty: 1 });
-    this.prefillMissing.set(null);
+    this.added.set(code);
+  }
+
+  /** Once a supplier is chosen, adds the item just made, at that supplier's buying price. */
+  async applyAdded(): Promise<void> {
+    const code = this.added();
+    const supplier = this.supplier();
+    if (!code || !supplier) {
+      return;
+    }
+    const business = await this.business.ensure();
+    await this.clock.ensure();
+    if (!business) {
+      return;
+    }
+    const match = await this.api.item(code, {
+      company: business.name,
+      supplier,
+      currency: business.currency,
+      date: toIsoDate(this.clock.now()),
+    });
+    if (this.supplier() !== supplier || this.added() !== code) {
+      return;
+    }
+    this.added.set(null);
+    if (match && !this.lines().some((l) => l.item.code === match.code)) {
+      this.lines.update((lines) => [...lines, { item: match, qty: 1, rate: match.rate }]);
+    }
   }
 
   async loadSuppliers(): Promise<void> {

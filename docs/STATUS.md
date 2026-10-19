@@ -216,6 +216,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   saving comes back to the same order, supplier and lines kept, with the new item added at the supplier's price, and
   Cancel comes back to it unchanged. The order is held for that one trip only: a fresh visit still starts over.
   Designs: the button on Purchase 01 Create PO (shared EN/AR body, phone and desktop). e2e: `32-purchase-add-item`.
+  Review pass 1 (2 low; reviewing stops) fixed: the new item waits apart from a project's queued shortfall item; the
+  return address drops `added` once used, so going back doesn't re-add a removed line.
 
 ## Items & services and contact deactivation (done: #59, #60)
 

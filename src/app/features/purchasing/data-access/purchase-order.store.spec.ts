@@ -66,8 +66,11 @@ describe('PurchaseOrderStore', () => {
     expect(store.lines()).toHaveLength(1);
     const added: PurchaseItem = { ...PLANTER, code: 'NEW-1', name: 'New pot', rate: 12 };
     api.item.mockResolvedValueOnce(added);
+    store.forProject('PROJ-1', 'POT-40', 5);
     store.queueNewItem('NEW-1');
-    await store.applyPrefill();
+    await store.applyAdded();
+    // A project's queued item waits apart: the new item doesn't take its place.
+    expect(store.prefill()).toEqual({ item: 'POT-40', qty: 5 });
     expect(store.lines().map((l) => [l.item.code, l.qty, l.rate])).toEqual([
       ['POT-30', 10, 45],
       ['NEW-1', 1, 12],
