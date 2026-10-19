@@ -59,7 +59,7 @@ describe('ItemsApiService', () => {
       },
       SELLING,
     );
-    expect(await api().catalog('olive', 'all', 'Rehan Nursery', '2026-10-19')).toEqual([
+    expect((await api().catalog('olive', 'all', 'Rehan Nursery', '2026-10-19')).items).toEqual([
       {
         code: 'OLV-20',
         name: 'Olive tree',
@@ -97,7 +97,7 @@ describe('ItemsApiService', () => {
       { Item: () => [ROWS[0]], Warehouse: WAREHOUSES, Bin: forbidden },
       { 'frappe.client.get_value': forbidden },
     );
-    expect(await api().catalog('', 'product', 'Rehan Nursery', '2026-10-19')).toEqual([
+    expect((await api().catalog('', 'product', 'Rehan Nursery', '2026-10-19')).items).toEqual([
       expect.objectContaining({ code: 'OLV-20', price: null, onHand: null }),
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['is_stock_item', '=', 1]);
@@ -250,7 +250,9 @@ describe('ItemsApiService', () => {
       },
       SELLING,
     );
-    const [olive] = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19');
+    const {
+      items: [olive],
+    } = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19');
     expect(olive.price).toBe(85);
     expect(listCalls.find((c) => c.doctype === 'Item Price')?.query.filters).toEqual(
       expect.arrayContaining([
@@ -262,7 +264,22 @@ describe('ItemsApiService', () => {
 
   it('lists an item once even when two of its barcodes match', async () => {
     fakeErpnext({ Item: () => [ROWS[0], ROWS[0]], Warehouse: WAREHOUSES, Bin: () => [] }, SELLING);
-    expect(await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).toHaveLength(1);
+    expect((await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).items).toHaveLength(
+      1,
+    );
+    TestBed.resetTestingModule();
+    fakeErpnext(
+      {
+        Item: () => Array.from({ length: 50 }, () => ROWS[0]),
+        Warehouse: WAREHOUSES,
+        Bin: () => [],
+      },
+      SELLING,
+    );
+    // Fifty rows from ERPNext, one item: there may be more, though only one is shown.
+    expect(await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).toMatchObject({
+      capped: true,
+    });
   });
 
   it("keeps a service's barcodes when it is saved", async () => {

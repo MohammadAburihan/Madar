@@ -200,7 +200,7 @@ export class CatalogContainer {
   protected readonly rows = computed(() =>
     this.items().map((i) => catalogRow(i, this.currency(), this.i18n.tr())),
   );
-  protected readonly capped = computed(() => this.items().length >= CATALOG_LIMIT);
+  protected readonly capped = signal(false);
 
   /** The row picked, else the first; never one the current list doesn't hold. */
   private readonly shownCode = computed(() => {
@@ -245,9 +245,15 @@ export class CatalogContainer {
         throw new Error('No active business');
       }
       const today = toIsoDate(this.clock.now());
-      const items = await this.api.catalog(term, kind as ItemKind | 'all', business.name, today);
+      const { items, capped } = await this.api.catalog(
+        term,
+        kind as ItemKind | 'all',
+        business.name,
+        today,
+      );
       if (run === this.run) {
         this.items.set(items);
+        this.capped.set(capped);
         this.state.set('ready');
       }
     } catch {

@@ -215,6 +215,8 @@ export class ItemFormContainer {
   private loadedModified = '';
   /** Saving again after a lost add found nothing: a "duplicate" then may be that first add finishing. */
   private afterLostAnswer = false;
+  /** An edit whose answer was lost may have saved: its own save then shows as a newer version. */
+  private editLost = false;
   protected readonly loading = signal(false);
   protected readonly loadFailed = signal(false);
   protected readonly saving = signal(false);
@@ -430,6 +432,25 @@ export class ItemFormContainer {
         void this.router.navigate(['/catalog', created], { replaceUrl: true });
       }
     } catch (error) {
+      if (
+        editing &&
+        this.editLost &&
+        ErpnextError.from(error).excType === 'TimestampMismatchError'
+      ) {
+        // The newer version is that lost save: build on it, once, rather than blame someone else.
+        this.editLost = false;
+        try {
+          this.loadedModified = await this.api.modifiedOf(editing);
+          this.saving.set(false);
+          await this.save();
+          return;
+        } catch {
+          // Shown below as the change it is.
+        }
+      }
+      if (editing && error instanceof UnresolvedError) {
+        this.editLost = true;
+      }
       if (error instanceof UnresolvedError && !editing) {
         // ERPNext may still be adding it: look the code up before saving again, so it isn't added twice.
         this.unresolved.set(true);

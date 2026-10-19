@@ -68,7 +68,7 @@ export class ItemsApiService {
     kind: ItemKind | 'all',
     company: string,
     today: string,
-  ): Promise<CatalogItem[]> {
+  ): Promise<{ items: CatalogItem[]; capped: boolean }> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
@@ -98,11 +98,15 @@ export class ItemsApiService {
         company,
       ),
     ]);
-    return unique.map((r) => ({
-      ...item(r),
-      price: prices?.get(r.name)?.price_list_rate ?? null,
-      onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
-    }));
+    return {
+      items: unique.map((r) => ({
+        ...item(r),
+        price: prices?.get(r.name)?.price_list_rate ?? null,
+        onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
+      })),
+      // ERPNext's rows were capped, before duplicates came out.
+      capped: rows.length >= CATALOG_LIMIT,
+    };
   }
 
   /** One item by its exact code, with its price, buying cost and stock per location. */
@@ -219,6 +223,12 @@ export class ItemsApiService {
     if (setPrice && value.price !== null) {
       await this.setPrice(doc, round2(value.price), today);
     }
+  }
+
+  /** When ERPNext last saved the item: after a lost edit, what saving again must build on. */
+  async modifiedOf(code: string): Promise<string> {
+    const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
+    return String(doc['modified'] ?? '');
   }
 
   /** Whether an item with this code exists, and its name: after a lost answer, whether the add went through. */
