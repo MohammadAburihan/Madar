@@ -244,6 +244,8 @@ export class ContactsContainer {
   protected readonly switchOutcome = signal<
     'deactivated' | 'reactivated' | 'permission' | 'offline' | 'error' | null
   >(null);
+  /** The contact the outcome is about: after deactivating, the panel shows another one. */
+  private switchName = '';
   private run = 0;
   private detailRun = 0;
 
@@ -396,6 +398,8 @@ export class ContactsContainer {
       const kind = this.current();
       const term = this.term();
       this.status();
+      // A notice about the last deactivate doesn't stay over a different list.
+      untracked(() => this.switchOutcome.set(null));
       if (!this.kinds().length) {
         return;
       }
@@ -479,13 +483,16 @@ export class ContactsContainer {
       return null;
     }
     const { t } = this.i18n.tr();
+    const done = outcome === 'deactivated' || outcome === 'reactivated';
     return {
-      tone:
-        outcome === 'deactivated' || outcome === 'reactivated'
-          ? ('tint' as const)
-          : ('danger' as const),
-      title: t(`contacts.activation.outcome.${outcome}.title`),
-      message: t(`contacts.activation.outcome.${outcome}.message`),
+      tone: done ? ('tint' as const) : ('danger' as const),
+      // Named, and pointing at the list they're in now: the panel may show someone else by then.
+      title: done
+        ? t(`contacts.activation.panel.${outcome}.title`, { name: this.switchName })
+        : t(`contacts.activation.outcome.${outcome}.title`),
+      message: done
+        ? t(`contacts.activation.panel.${outcome}.message`)
+        : t(`contacts.activation.outcome.${outcome}.message`),
     };
   });
 
@@ -514,6 +521,7 @@ export class ContactsContainer {
     }
     this.switching.set(true);
     this.switchOutcome.set(null);
+    this.switchName = detail.name;
     const active = !detail.active;
     let outcome: NonNullable<ReturnType<typeof this.switchOutcome>>;
     try {

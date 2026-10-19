@@ -315,12 +315,12 @@ export class ContactContainer {
       if (e.kind === 'forbidden') {
         void this.session.checkExpired();
       }
-      this.outcome.set(
-        e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error',
-      );
       if (!here()) {
         return;
       }
+      this.outcome.set(
+        e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error',
+      );
       // The value may have been set before the answer was lost: show what ERPNext holds.
       void this.load(kind, detail.id, true);
     } finally {

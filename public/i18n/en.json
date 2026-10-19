@@ -2623,7 +2623,17 @@
         }
       },
       "partialBalance": "You may not see all of what they owe: check with the owner first.",
-      "noneInactive": "No inactive contacts."
+      "noneInactive": "No inactive contacts.",
+      "panel": {
+        "deactivated": {
+          "title": "{{name}} deactivated",
+          "message": "They're under Inactive now, where they can be reactivated."
+        },
+        "reactivated": {
+          "title": "{{name}} reactivated",
+          "message": "They're back under Active."
+        }
+      }
     }
   },
   "settings": {
