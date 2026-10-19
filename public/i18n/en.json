@@ -711,7 +711,8 @@
       "transfer": "Transfer stock",
       "count": "Count stock",
       "damage": "Record damage or loss",
-      "supply": "Supply a project"
+      "supply": "Supply a project",
+      "catalog": "Items & services"
     },
     "empty": "No stock recorded yet.",
     "noResults": "No items match.",
@@ -2718,6 +2719,7 @@
       "countStock": "Count stock",
       "recordDamage": "Record damage or loss",
       "supplyProject": "Supply a project",
+      "addItem": "Add item or service",
       "newProject": "New project",
       "addContact": "Add contact",
       "addWorker": "Add worker",
@@ -3504,5 +3506,135 @@
       "title": "That item couldn't be opened",
       "message": "It isn't a stock item now, or couldn't be read. Search for the item to adjust."
     }
+  },
+  "items": {
+    "title": "Items & services",
+    "subtitle": "Catalog · {{business}}",
+    "workspaceSubtitle": "Inventory · Catalog · {{business}}",
+    "search": "Search",
+    "placeholder": "Search name, code or barcode",
+    "filters": {
+      "all": "All",
+      "product": "Products",
+      "service": "Services"
+    },
+    "kinds": {
+      "product": "Product",
+      "service": "Service"
+    },
+    "headers": {
+      "name": "Name / code",
+      "kind": "Type / category",
+      "price": "Price"
+    },
+    "available": "{{qty}} available",
+    "noStock": "No stock tracking",
+    "loading": "Loading the catalog…",
+    "empty": "No items or services yet.",
+    "noResults": "No items or services match.",
+    "capped": "Showing the first {{count}}. Search to find others.",
+    "note": "Prices are the selling price list's; products show stock across your locations. Select a row to inspect.",
+    "add": "Add item or service",
+    "addDesktop": "+ Add item",
+    "editItem": "Edit item",
+    "editService": "Edit service",
+    "openItem": "Open item",
+    "panelFailed": "This item couldn't load.",
+    "retry": "Try again",
+    "back": "Back",
+    "error": {
+      "title": "The catalog couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "sellingPrice": "Selling price",
+    "noPrice": "Not set",
+    "perUnit": "{{price}} / {{uom}}",
+    "cost": "Opening cost",
+    "stockHeading": "Stock by warehouse",
+    "stockUnread": "Your role can't see stock balances.",
+    "barcodeLine": "Barcode {{barcode}}",
+    "unitLine": "Unit: {{uom}}",
+    "serviceCard": {
+      "title": "Service",
+      "message": "No warehouse or stock quantity: selling it doesn't take stock."
+    },
+    "loadFailed": {
+      "title": "This item couldn't load",
+      "message": "Check the connection and try again."
+    },
+    "missing": {
+      "title": "Item not found",
+      "message": "It may have been renamed or deleted in ERPNext."
+    },
+    "form": {
+      "newTitle": "Add item or service",
+      "newSubtitle": "Choose the type first.",
+      "editItem": "Edit item",
+      "editService": "Edit service",
+      "type": "Type *",
+      "types": {
+        "product": "Stocked product",
+        "service": "Service"
+      },
+      "name": "Name *",
+      "serviceName": "Service name *",
+      "code": "Code *",
+      "serviceCode": "Service code *",
+      "codeFixed": "The code can't change once the item exists.",
+      "codeError": "Enter a code, without “/”, other than “new”.",
+      "barcode": "Barcode",
+      "group": "Category *",
+      "uom": "Unit *",
+      "price": "Selling price",
+      "cost": "Opening cost",
+      "costHint": "What one unit cost to start with; ERPNext values stock by it until purchases set the cost.",
+      "choose": "Choose",
+      "required": "Required.",
+      "amountError": "Enter an amount, zero or more.",
+      "saveItem": "Save item",
+      "saveService": "Save service",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "noAccess": {
+        "title": "You can't add or edit items",
+        "message": "ERPNext needs the Item Manager role for this. Ask your business owner."
+      },
+      "optionsFailed": {
+        "title": "Categories and units couldn't load",
+        "message": "Check the connection and try again."
+      },
+      "notCreated": {
+        "title": "The item wasn't added",
+        "message": "Nothing with this code was found. Save again to add it."
+      },
+      "unresolved": {
+        "title": "Not sure it was added",
+        "message": "The answer was lost. Check whether {{code}} now exists before saving again."
+      },
+      "failed": {
+        "permission": {
+          "title": "You can't save this",
+          "message": "ERPNext didn't allow it for your role. Nothing was saved."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "It wasn't saved. Check the connection and save again."
+        },
+        "duplicate": {
+          "title": "That code is taken",
+          "message": "Another item already uses this code. Choose a different one."
+        },
+        "changed": {
+          "title": "Changed by someone else",
+          "message": "The item was changed since you opened it. Go back and open it again."
+        },
+        "error": {
+          "title": "It wasn't saved",
+          "message": "ERPNext rejected it. Check the details and try again."
+        }
+      },
+      "priceError": "Enter a price above zero."
+    },
+    "noStockYet": "None in stock yet."
   }
 }

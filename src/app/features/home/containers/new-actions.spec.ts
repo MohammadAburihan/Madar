@@ -16,6 +16,7 @@ describe('new actions', () => {
       'Count stock',
       'Record damage or loss',
       'Supply a project',
+      'Add item or service',
       'New project',
       'Add contact',
       'Add worker',
