@@ -25,7 +25,7 @@ test.describe('items and services @phone', () => {
     await expect(page).toHaveURL(new RegExp(`/catalog/${code}$`), { timeout: 60_000 });
     await expectHeading(page, 'E2E planter');
     await expect(page.locator('app-totals-card')).toContainText(named('Selling price', ils(45)));
-    await expect(page.locator('app-totals-card')).toContainText(named('Buying cost', ils(22.5)));
+    await expect(page.locator('app-totals-card')).toContainText(named('Opening cost', ils(22.5)));
     await expect(page.getByRole('heading', { name: 'Stock by warehouse' })).toBeVisible();
     const item = await erp(page).doc<{ is_stock_item: number; valuation_rate: number }>(
       'Item',
@@ -88,7 +88,7 @@ test.describe('items and services @phone', () => {
   test('lets the purchasing officer add items but not set selling prices', async ({ page }) => {
     await signIn(page, 'purchasing');
     await page.goto('/catalog/new');
-    await expect(page.locator('app-text-field', { hasText: 'Buying cost' })).toBeVisible();
+    await expect(page.locator('app-text-field', { hasText: 'Opening cost' })).toBeVisible();
     await expect(page.locator('app-text-field', { hasText: 'Selling price' })).toHaveCount(0);
   });
 

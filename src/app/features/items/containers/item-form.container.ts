@@ -213,6 +213,8 @@ export class ItemFormContainer {
   private loadedPrice = '';
   private loadedCost = '';
   private loadedModified = '';
+  /** Saving again after a lost add found nothing: a "duplicate" then may be that first add finishing. */
+  private afterLostAnswer = false;
   protected readonly loading = signal(false);
   protected readonly loadFailed = signal(false);
   protected readonly saving = signal(false);
@@ -410,7 +412,18 @@ export class ItemFormContainer {
       await this.clock.ensure();
       const today = toIsoDate(this.clock.now());
       if (editing) {
-        await this.api.update(editing, value, this.canSetPrice(), this.loadedModified, today);
+        await this.api.update(
+          editing,
+          value,
+          this.canSetPrice(),
+          this.loadedModified,
+          today,
+          (modified) => {
+            this.loadedModified = modified;
+            // Saved with the item: a retry only sends the price.
+            this.loadedCost = this.cost();
+          },
+        );
         void this.router.navigate(['/catalog', editing], { replaceUrl: true });
       } else {
         const created = await this.api.create(value);
@@ -422,6 +435,7 @@ export class ItemFormContainer {
         this.unresolved.set(true);
       } else if (
         !editing &&
+        this.afterLostAnswer &&
         ErpnextError.from(error).excType === 'DuplicateEntryError' &&
         (await this.api.exists(value.code).catch(() => null)) === value.name.trim()
       ) {
@@ -469,6 +483,7 @@ export class ItemFormContainer {
         return;
       }
       this.notCreated.set(true);
+      this.afterLostAnswer = true;
     } catch {
       this.pending.set(true);
     } finally {

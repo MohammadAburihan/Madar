@@ -123534,7 +123534,21 @@
       "name": "Arabic / Dialog / Deactivate customer",
       "x": 33400,
       "y": 5900,
-      "width": 400
+      "width": 400,
+      "descendants": {
+        "t6syd8": {
+          "content": "إيقاف تنشيط لينا الحداد؟"
+        },
+        "J3G9QW": {
+          "content": "تخرج من قوائم جهات الاتصال ولا يمكن البيع لها حتى تعيد تنشيطها. يبقى سجلّها. ما زال عليها ILS 200.00."
+        },
+        "xTqUC": {
+          "content": "إيقاف التنشيط"
+        },
+        "DJBFT": {
+          "content": "إبقاء نشطاً"
+        }
+      }
     }
   ],
   "variables": {

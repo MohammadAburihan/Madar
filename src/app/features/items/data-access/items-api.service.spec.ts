@@ -171,7 +171,11 @@ describe('ItemsApiService', () => {
           },
         ],
       },
-      { ...SELLING, 'frappe.client.save': () => ({}), 'frappe.client.set_value': () => ({}) },
+      {
+        ...SELLING,
+        'frappe.client.save': () => ({ modified: '2026-10-19 09:00:00' }),
+        'frappe.client.set_value': () => ({}),
+      },
       {
         'Item/POT-30': {
           doctype: 'Item',
@@ -186,7 +190,17 @@ describe('ItemsApiService', () => {
         },
       },
     );
-    await api().update('POT-30', value({ price: 49 }), true, '2026-10-19 07:00:00', '2026-10-19');
+    const saved: string[] = [];
+    await api().update(
+      'POT-30',
+      value({ price: 49 }),
+      true,
+      '2026-10-19 07:00:00',
+      '2026-10-19',
+      (m) => saved.push(m),
+    );
+    // A price that then fails is saved again on this version, not refused as changed by someone else.
+    expect(saved).toEqual(['2026-10-19 09:00:00']);
     expect(postCalls[0].body['doc']).toMatchObject({
       name: 'POT-30',
       // The form's version: ERPNext refuses the save if the item changed since it was opened.
@@ -244,6 +258,11 @@ describe('ItemsApiService', () => {
         ['batch_no', 'is', 'not set'],
       ]),
     );
+  });
+
+  it('lists an item once even when two of its barcodes match', async () => {
+    fakeErpnext({ Item: () => [ROWS[0], ROWS[0]], Warehouse: WAREHOUSES, Bin: () => [] }, SELLING);
+    expect(await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).toHaveLength(1);
   });
 
   it("keeps a service's barcodes when it is saved", async () => {

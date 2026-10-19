@@ -216,7 +216,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   price (where the role can read Item Price) and stock across the locations (products). Desktop: a table with a side
   panel. An item's page shows its selling price, its buying cost (roles that see costs) and its stock per location.
   **Add item or service** / **Edit**: type, name, code, barcode (products), category, unit, selling price (Owner, with
-  Sales Master Manager; ERPNext creates it with the item) and buying cost (products; ERPNext's valuation rate). The code
+  Sales Master Manager; ERPNext creates it with the item) and opening cost (products; ERPNext's valuation rate). The code
   is the item's name in ERPNext, so a lost answer is checked by it; a code already taken is refused. The kind, code and
   unit don't change once the item exists. Adding needs ERPNext's Item Manager: the Owner and the Purchasing officer now
   hold it (PERMISSIONS.md, seed). Designs: Catalog list, item and service pages, add/edit form (mobile EN/AR) and the
@@ -226,6 +226,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   refused, not overwritten; prices read and change the list's standard price (no customer or batch, the item's unit,
   valid today by the site's date); saving a service keeps its barcodes; the name is locked while a lost add is
   checked, and a "duplicate" right after "not added" is checked against it; a set price can't be cleared silently.
+  Review pass 2 (2 medium, 3 low) fixed: a price that fails after the item saved is retried on the saved version; an
+  existing code and name opens the item only right after a lost add's check; "Buying cost" is "Opening cost" (ERPNext's
+  valuation rate, which purchases don't update); a typed barcode becomes the one shown; search lists an item once.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

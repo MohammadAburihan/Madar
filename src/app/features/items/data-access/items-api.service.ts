@@ -89,14 +89,16 @@ export class ItemsApiService {
         limit: CATALOG_LIMIT,
       }),
     );
+    // Searching barcodes joins them in: an item with two matching barcodes comes back twice.
+    const unique = rows.filter((r, i) => rows.findIndex((o) => o.name === r.name) === i);
     const [prices, onHand] = await Promise.all([
-      this.prices(rows, today),
+      this.prices(unique, today),
       this.onHand(
-        rows.filter((r) => r.is_stock_item).map((r) => r.name),
+        unique.filter((r) => r.is_stock_item).map((r) => r.name),
         company,
       ),
     ]);
-    return rows.map((r) => ({
+    return unique.map((r) => ({
       ...item(r),
       price: prices?.get(r.name)?.price_list_rate ?? null,
       onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
@@ -180,6 +182,7 @@ export class ItemsApiService {
     setPrice: boolean,
     modified: string,
     today: string,
+    onSaved: (modified: string) => void = () => undefined,
   ): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
     const rows = doc.barcodes ?? [];
@@ -189,11 +192,15 @@ export class ItemsApiService {
       ? rows
       : barcode
         ? rows.some((r) => r.barcode === barcode)
-          ? rows
+          ? // Madar shows the first: the typed one becomes it.
+            [
+              ...rows.filter((r) => r.barcode === barcode),
+              ...rows.filter((r) => r.barcode !== barcode),
+            ]
           : [{ ...(rows[0] ?? {}), barcode }, ...rows.slice(1)]
         : rows.slice(1);
-    await confirmRequest(
-      this.erpnext.post('frappe.client.save', {
+    const saved = await confirmRequest(
+      this.erpnext.post<{ modified: string }>('frappe.client.save', {
         doc: {
           ...doc,
           // As loaded into the form: a change made since makes ERPNext refuse instead of being saved over.
@@ -207,6 +214,8 @@ export class ItemsApiService {
         },
       }),
     );
+    // The item is saved: saving again (after the price failed) builds on this version, not the opened one.
+    onSaved(String(saved?.modified ?? modified));
     if (setPrice && value.price !== null) {
       await this.setPrice(doc, round2(value.price), today);
     }

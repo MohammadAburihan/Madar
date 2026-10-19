@@ -61,7 +61,7 @@ describe('items view', () => {
     expect(view.subtitle).toBe('OLV-20 · Plants');
     expect(view.prices).toEqual([
       { label: 'Selling price', value: 'ILS 85.00 / each', text: false },
-      { label: 'Buying cost', value: 'ILS 42.00' },
+      { label: 'Opening cost', value: 'ILS 42.00' },
     ]);
     expect(view.stock).toEqual([{ title: '24 available', message: 'Main warehouse' }]);
     expect(view.noStock).toBe(false);
