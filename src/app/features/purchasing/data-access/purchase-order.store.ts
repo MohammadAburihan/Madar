@@ -90,11 +90,33 @@ export class PurchaseOrderStore {
     this.draftSaved.set(false);
   }
 
-  /** Entering the task from elsewhere: keep a running, unresolved or unseen order; else start over. */
-  resume(): void {
+  /** Left to add a new item to the catalog: coming back from there keeps the order (once). */
+  private held = false;
+
+  /** Keeps the order for the trip to "Add item" and back. */
+  holdForNewItem(): void {
+    this.held = true;
+  }
+
+  /**
+   * Entering the task from elsewhere: keep a running, unresolved or unseen order; else start over. `returning` is
+   * the way back from adding an item, which keeps the order held for it.
+   */
+  resume(returning = false): void {
+    const held = this.held;
+    this.held = false;
+    if (returning && held && this.state() !== 'confirmed') {
+      return;
+    }
     if (!this.busy() && this.state() !== 'confirmed') {
       this.start();
     }
+  }
+
+  /** The item just added to the catalog for this order: it joins the order at the supplier's price. */
+  queueNewItem(code: string): void {
+    this.prefill.set({ item: code, qty: 1 });
+    this.prefillMissing.set(null);
   }
 
   async loadSuppliers(): Promise<void> {

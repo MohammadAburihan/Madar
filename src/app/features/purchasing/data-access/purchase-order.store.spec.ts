@@ -58,6 +58,32 @@ async function ready() {
 }
 
 describe('PurchaseOrderStore', () => {
+  it('keeps the order for a trip to add an item, once, and adds that item on return', async () => {
+    const { store, api } = await ready();
+    store.holdForNewItem();
+    store.resume(true);
+    expect(store.supplier()).toBe('Green Clay');
+    expect(store.lines()).toHaveLength(1);
+    const added: PurchaseItem = { ...PLANTER, code: 'NEW-1', name: 'New pot', rate: 12 };
+    api.item.mockResolvedValueOnce(added);
+    store.queueNewItem('NEW-1');
+    await store.applyPrefill();
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate])).toEqual([
+      ['POT-30', 10, 45],
+      ['NEW-1', 1, 12],
+    ]);
+    // The hold is spent: the next return without one, or any fresh visit, starts over.
+    store.resume(true);
+    expect(store.lines()).toEqual([]);
+  });
+
+  it('starts over on a fresh visit even after a hold', async () => {
+    const { store } = await ready();
+    store.holdForNewItem();
+    store.resume();
+    expect(store.supplier()).toBeNull();
+  });
+
   it('adds an item at its buying price, and one more when added again', async () => {
     const { store } = await ready();
     store.addItem(PLANTER);

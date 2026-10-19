@@ -14921,6 +14921,20 @@
               }
             },
             {
+              "id": "dTPlH",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add item",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: d0V8Km. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "+ Add item",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
               "type": "frame",
               "id": "ixnga",
               "name": "Order line amount",
@@ -39802,6 +39816,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Y6TqJ",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Add item",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: CHgyq. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "+ إضافة صنف"
                 }
               }
             },

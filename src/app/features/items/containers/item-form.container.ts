@@ -194,6 +194,10 @@ export class ItemFormContainer {
   readonly code = input<string | undefined>();
   /** "service" to start a new service; a product otherwise. */
   readonly type = input<string | undefined>();
+  /** A name to start with: what was searched for where "Add item" was tapped. */
+  readonly name$ = input<string | undefined>(undefined, { alias: 'name' });
+  /** "purchase" when opened from a new purchase order, which the form returns to. */
+  readonly return = input<string | undefined>();
 
   private readonly api = inject(ItemsApiService);
   private readonly business = inject(BusinessService);
@@ -382,6 +386,9 @@ export class ItemFormContainer {
         this.cost.set(this.loadedCost);
       } else {
         this.kind.set(this.type() === 'service' ? 'service' : 'product');
+        if (!this.name()) {
+          this.name.set(this.name$()?.trim() ?? '');
+        }
       }
     } catch {
       if (run === this.loadRun) {
@@ -448,7 +455,7 @@ export class ItemFormContainer {
         void this.router.navigate(['/catalog', editing], { replaceUrl: true });
       } else {
         const created = await this.api.create(value);
-        void this.router.navigate(['/catalog', created], { replaceUrl: true });
+        this.done(created);
       }
     } catch (error) {
       if (
@@ -480,7 +487,7 @@ export class ItemFormContainer {
           value.name.trim()
       ) {
         // An earlier add whose answer was lost finished after all: that item is this one.
-        void this.router.navigate(['/catalog', found!.name], { replaceUrl: true });
+        this.done(found!.name);
       } else {
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {
@@ -514,7 +521,7 @@ export class ItemFormContainer {
       const found = await this.api.exists(code);
       this.unresolved.set(false);
       if (found !== null && found.itemName === this.name().trim()) {
-        void this.router.navigate(['/catalog', found.name], { replaceUrl: true });
+        this.done(found.name);
         return;
       }
       if (found !== null) {
@@ -531,8 +538,25 @@ export class ItemFormContainer {
     }
   }
 
+  /** A new item made: its page, or the purchase order it was added for, with it on the order. */
+  private done(created: string): void {
+    void this.router.navigate(this.fromPurchase() ? ['/purchases/new'] : ['/catalog', created], {
+      replaceUrl: true,
+      queryParams: this.fromPurchase() ? { from: 'catalog', added: created } : {},
+    });
+  }
+
+  private fromPurchase(): boolean {
+    return !this.code() && this.return() === 'purchase';
+  }
+
   protected back(): void {
     const code = this.code();
+    if (this.fromPurchase()) {
+      // Back to the order as it was left.
+      void this.router.navigate(['/purchases/new'], { queryParams: { from: 'catalog' } });
+      return;
+    }
     void this.router.navigate(code ? ['/catalog', code] : ['/catalog']);
   }
 }
