@@ -278,8 +278,11 @@ describe('ItemsApiService', () => {
         },
       },
     );
-    await api().create(value({ code: 'POT-31', barcode: '٧٢٩٠٠' }));
-    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: '72900' }] });
+    await api().create(value({ code: 'زيت-١٢', barcode: '٧٢٩٠٠' }));
+    expect(postCalls[0].body['doc']).toMatchObject({
+      item_code: 'زيت-12',
+      barcodes: [{ barcode: '72900' }],
+    });
     await api().update('POT-30', value({ price: null }), false, 'M', '2026-10-19');
     expect(postCalls[1].body['doc']).toMatchObject({
       item_name: 'Ceramic planter',

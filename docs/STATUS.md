@@ -245,6 +245,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Stock on phones too; the barcode field takes letters (Code 128).
   Review pass 8 (1 medium, 1 low) fixed: clearing a barcode removes only the one shown, so a retry can't take the next;
   setting prices also needs System Manager or Sales Manager, who can read the selling price list (PERMISSIONS.md).
+  Review pass 9 (1 medium, 3 low) fixed: codes are saved in Western digits, as they're searched; every field locks while
+  a lost add is checked; a retry after a failed price sends the cost typed since; the desktop panel offers Try again.
+  Deferred: on a site naming items by series, the item's name shows where its code would.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

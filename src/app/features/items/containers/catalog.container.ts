@@ -113,6 +113,7 @@ const SEARCH_DELAY_MS = 250;
             <button type="button" class="md-btn" (click)="open(p.code)">{{ txt.openItem }}</button>
           } @else if (panelFailed()) {
             <p class="muted">{{ txt.panelFailed }}</p>
+            <button type="button" class="md-btn" (click)="retryDetail()">{{ txt.retry }}</button>
           } @else if (items().length) {
             <p class="muted" role="status">{{ txt.loading }}</p>
           }
@@ -283,6 +284,13 @@ export class CatalogContainer {
       if (run === this.detailRun) {
         this.panelFailed.set(true);
       }
+    }
+  }
+
+  protected retryDetail(): void {
+    const code = this.shownCode();
+    if (code) {
+      void this.loadDetail(code);
     }
   }
 

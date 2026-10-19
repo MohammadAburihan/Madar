@@ -93,6 +93,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       @if (kind() === 'product') {
         <app-text-field
           [label]="txt.barcode"
+          [readonly]="unresolved()"
           [ltr]="true"
           [value]="barcode()"
           (valueChange)="barcode.set($event)"
@@ -101,6 +102,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       <app-select-field
         [label]="txt.group"
         [options]="groupOptions()"
+        [disabled]="unresolved()"
         [placeholder]="txt.choose"
         [value]="group() || null"
         (valueChange)="group.set($event ?? '')"
@@ -112,7 +114,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
         [label]="txt.uom"
         [options]="uomOptions()"
         [placeholder]="txt.choose"
-        [disabled]="!!code()"
+        [disabled]="!!code() || unresolved()"
         [value]="uom() || null"
         (valueChange)="uom.set($event ?? '')"
       />
@@ -122,6 +124,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       @if (canSetPrice()) {
         <app-text-field
           [label]="txt.price"
+          [readonly]="unresolved()"
           inputmode="decimal"
           [ltr]="true"
           [suffix]="currency()"
@@ -133,6 +136,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       @if (kind() === 'product' && seeCosts()) {
         <app-text-field
           [label]="txt.cost"
+          [readonly]="unresolved()"
           inputmode="decimal"
           [ltr]="true"
           [suffix]="currency()"
@@ -404,6 +408,7 @@ export class ItemFormContainer {
     const editing = this.code();
     const { price, cost } = this.amounts();
     let found: { name: string; itemName: string } | null = null;
+    const costSent = this.cost();
     const value = {
       kind: this.kind(),
       name: this.name(),
@@ -431,8 +436,8 @@ export class ItemFormContainer {
           today,
           (modified) => {
             this.loadedModified = modified;
-            // Saved with the item: a retry only sends the price.
-            this.loadedCost = this.cost();
+            // Saved with the item: a retry only sends the price (and a cost typed since).
+            this.loadedCost = costSent;
           },
           this.loadedBarcode,
         );

@@ -70,7 +70,7 @@ export class ItemsApiService {
     today: string,
   ): Promise<{ items: CatalogItem[]; capped: boolean }> {
     const like = `%${term.trim()}%`;
-    // A code or barcode typed on an Arabic keyboard is stored in Western digits; names keep theirs.
+    // Codes and barcodes are stored in Western digits (Madar saves them so); names keep the digits typed.
     const codeLike = `%${westernDigits(term.trim())}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
@@ -163,7 +163,8 @@ export class ItemsApiService {
       this.erpnext.post<{ name: string }>('frappe.client.insert', {
         doc: {
           doctype: 'Item',
-          item_code: value.code.trim(),
+          // Saved in Western digits, as codes are searched.
+          item_code: westernDigits(value.code.trim()),
           item_name: value.name.trim(),
           description: value.name.trim(),
           item_group: value.group,
@@ -266,7 +267,7 @@ export class ItemsApiService {
     const [row] = await firstValueFrom(
       this.erpnext.list<{ name: string; item_name: string }>('Item', {
         fields: ['name', 'item_name'],
-        filters: [['item_code', '=', code.trim()]],
+        filters: [['item_code', '=', westernDigits(code.trim())]],
         limit: 1,
       }),
     );
