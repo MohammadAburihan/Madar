@@ -309,6 +309,9 @@ export class ContactContainer {
         return;
       }
       await this.load(kind, detail.id, true);
+      if (!here()) {
+        return;
+      }
       this.outcome.set(active ? 'reactivated' : 'deactivated');
     } catch (error) {
       const e = ErpnextError.from(error);

@@ -230,7 +230,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   the flag as a field map (a plain 0 reads as "no value" to Frappe); Back returns to the Inactive list.
   Review pass 3 (1 medium, 2 low; a claimed stale cached list didn't hold: the shell's plain outlet rebuilds pages)
   fixed: the panel's notice names the contact and the list they're in now; it clears when the list changes; a late
-  failure isn't shown on another contact's page.
+  failure isn't shown on another contact's page. Review pass 4: nothing above low; reviewing stops. Deferred: changing
+  the list's filters while a panel deactivate runs shows its (named) notice over the new list.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 
