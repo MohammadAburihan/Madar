@@ -1,0 +1,415 @@
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { confirmRequest } from '../../../core/erpnext/confirmation';
+import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { round2, westernDigits } from '../../../core/format/number';
+import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
+import { CatalogItem, ItemDetail, ItemFormValue, ItemKind, ItemOptions } from './items.models';
+
+/** The catalog shows this many; the screen says so when there may be more. */
+export const CATALOG_LIMIT = 50;
+
+interface ItemRow {
+  name: string;
+  item_name: string;
+  item_group: string;
+  stock_uom: string;
+  is_stock_item: number;
+}
+
+interface ItemDoc extends ItemRow {
+  doctype: string;
+  valuation_rate: number;
+  barcodes?: { barcode: string; [key: string]: unknown }[];
+  [key: string]: unknown;
+}
+
+interface PriceRow {
+  name: string;
+  item_code: string;
+  price_list_rate: number;
+  uom: string | null;
+  valid_from: string | null;
+  valid_upto: string | null;
+}
+
+/**
+ * The item's standard selling price on `today`: no customer or batch (those are filtered out in the query), in its
+ * own unit, valid that day; the latest start wins, as ERPNext picks it.
+ */
+function standardPrice(rows: PriceRow[], uom: string, today: string): PriceRow | null {
+  return (
+    rows
+      .filter((r) => !r.uom || r.uom === uom)
+      .filter(
+        (r) => (!r.valid_from || r.valid_from <= today) && (!r.valid_upto || r.valid_upto >= today),
+      )
+      .sort((a, b) => (b.valid_from ?? '').localeCompare(a.valid_from ?? ''))[0] ?? null
+  );
+}
+
+const forbiddenAsNull = (error: unknown): null => {
+  if (ErpnextError.from(error).kind === 'forbidden') {
+    return null;
+  }
+  throw error;
+};
+
+/** Items & services (ERPNext Item): the catalog, one item with its stock, and adding or editing one. */
+@Injectable({ providedIn: 'root' })
+export class ItemsApiService {
+  private readonly erpnext = inject(ErpnextClient);
+  private readonly warehouses = inject(WarehouseDirectoryService);
+
+  /** Matching items, products and services, by name, code or barcode, with price and stock where readable. */
+  async catalog(
+    term: string,
+    kind: ItemKind | 'all',
+    company: string,
+    today: string,
+  ): Promise<{ items: CatalogItem[]; capped: boolean }> {
+    const like = `%${term.trim()}%`;
+    // Codes and barcodes are stored in Western digits (Madar saves them so); names keep the digits typed.
+    const codeLike = `%${westernDigits(term.trim())}%`;
+    const rows = await firstValueFrom(
+      this.erpnext.list<ItemRow>('Item', {
+        fields: ['name', 'item_name', 'item_group', 'stock_uom', 'is_stock_item'],
+        filters: [
+          ['disabled', '=', 0],
+          ['has_variants', '=', 0],
+          ...(kind === 'all' ? [] : [['is_stock_item', '=', kind === 'product' ? 1 : 0] as Filter]),
+        ],
+        orFilters: term.trim()
+          ? [
+              ['item_code', 'like', codeLike],
+              ['item_name', 'like', like],
+              ['Item Barcode', 'barcode', 'like', codeLike],
+            ]
+          : undefined,
+        orderBy: 'item_name asc, name asc',
+        limit: CATALOG_LIMIT,
+      }),
+    );
+    // Searching barcodes joins them in: an item with two matching barcodes comes back twice.
+    const unique = rows.filter((r, i) => rows.findIndex((o) => o.name === r.name) === i);
+    const [prices, onHand] = await Promise.all([
+      this.prices(unique, today),
+      this.onHand(
+        unique.filter((r) => r.is_stock_item).map((r) => r.name),
+        company,
+      ),
+    ]);
+    return {
+      items: unique.map((r) => ({
+        ...item(r),
+        price: prices?.get(r.name)?.price_list_rate ?? null,
+        onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
+      })),
+      // ERPNext's rows were capped, before duplicates came out.
+      capped: rows.length >= CATALOG_LIMIT,
+    };
+  }
+
+  /** One item by its exact code, with its price, buying cost and stock per location. */
+  async detail(code: string, company: string, today: string): Promise<ItemDetail> {
+    const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
+    const [prices, stock] = await Promise.all([
+      this.prices([doc], today),
+      doc.is_stock_item ? this.stockOf(doc.name, company) : Promise.resolve(null),
+    ]);
+    return {
+      ...item(doc),
+      priceReadable: prices !== null,
+      price: prices?.get(doc.name)?.price_list_rate ?? null,
+      onHand: stock ? stock.reduce((sum, s) => sum + s.qty, 0) : null,
+      barcode: doc.barcodes?.[0]?.barcode ?? '',
+      cost: Number(doc.valuation_rate || 0),
+      stock,
+      modified: String(doc['modified'] ?? ''),
+    };
+  }
+
+  /** The item groups (categories) and units ERPNext offers. */
+  async options(): Promise<ItemOptions> {
+    const [groups, uoms] = await Promise.all([
+      firstValueFrom(
+        this.erpnext.list<{ name: string }>('Item Group', {
+          fields: ['name'],
+          filters: [['is_group', '=', 0]],
+          orderBy: 'name asc',
+          limit: 0,
+        }),
+      ),
+      firstValueFrom(
+        this.erpnext.list<{ name: string }>('UOM', {
+          fields: ['name'],
+          filters: [['enabled', '=', 1]],
+          orderBy: 'name asc',
+          limit: 0,
+        }),
+      ),
+    ]);
+    return { groups: groups.map((g) => g.name), uoms: uoms.map((u) => u.name) };
+  }
+
+  /**
+   * Adds the item. Its code is its name in ERPNext, so a lost answer is checked with exists(); a code already
+   * taken fails with DuplicateEntryError. The selling price is created by ERPNext with the item, in one step.
+   */
+  async create(value: ItemFormValue): Promise<string> {
+    const product = value.kind === 'product';
+    const doc = await confirmRequest(
+      this.erpnext.post<{ name: string }>('frappe.client.insert', {
+        doc: {
+          doctype: 'Item',
+          // Saved in Western digits, as codes are searched.
+          item_code: westernDigits(value.code.trim()),
+          item_name: value.name.trim(),
+          description: value.name.trim(),
+          item_group: value.group,
+          stock_uom: value.uom,
+          is_stock_item: product ? 1 : 0,
+          include_item_in_manufacturing: 0,
+          ...(product && value.cost !== null ? { valuation_rate: round2(value.cost) } : {}),
+          ...(value.price !== null ? { standard_rate: round2(value.price) } : {}),
+          barcodes: value.barcode.trim() ? [{ barcode: westernDigits(value.barcode.trim()) }] : [],
+        },
+      }),
+    );
+    return doc.name;
+  }
+
+  /**
+   * Saves changes to an item (its kind, code and unit stay as they are) and, when given, its selling price. Both
+   * set values, so saving again after a failure repeats nothing.
+   */
+  async update(
+    code: string,
+    value: ItemFormValue,
+    setPrice: boolean,
+    modified: string,
+    today: string,
+    onSaved: (modified: string) => void = () => undefined,
+    /** The barcode the form showed: clearing removes it only while it is still the first. */
+    shownBarcode = '',
+  ): Promise<void> {
+    const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
+    // Compared in Western digits: one typed in Desk may hold Arabic ones.
+    const rows = doc.barcodes ?? [];
+    const same = (row: { barcode: string }, code: string) => westernDigits(row.barcode) === code;
+    const barcode = westernDigits(value.barcode.trim());
+    // Services have no barcode field in Madar: theirs, set in Desk, stay as they are.
+    const barcodes = !doc.is_stock_item
+      ? rows
+      : barcode
+        ? rows.some((r) => same(r, barcode))
+          ? // Madar shows the first: the typed one becomes it.
+            [...rows.filter((r) => same(r, barcode)), ...rows.filter((r) => !same(r, barcode))]
+          : // A new code may not fit the old row's type (EAN…), which ERPNext checks: the type goes.
+            [{ ...(rows[0] ?? {}), barcode, barcode_type: '' }, ...rows.slice(1)]
+        : // Saving again after a cleared barcode was already removed takes nothing more off.
+          rows[0] && same(rows[0], westernDigits(shownBarcode.trim()))
+          ? rows.slice(1)
+          : rows;
+    // Frappe keeps a row's idx: numbered again so the new order is the one saved.
+    const ordered = barcodes.map((r, i) => ({ ...r, idx: i + 1 }));
+    const saved = await confirmRequest(
+      this.erpnext.post<{ modified: string }>('frappe.client.save', {
+        doc: {
+          ...doc,
+          // As loaded into the form: a change made since makes ERPNext refuse instead of being saved over.
+          modified,
+          item_name: value.name.trim(),
+          // Documents take the item's description: one that was just its name follows the rename.
+          ...(!doc['description'] || doc['description'] === doc.item_name
+            ? { description: value.name.trim() }
+            : {}),
+          item_group: value.group,
+          ...(doc.is_stock_item && value.cost !== null
+            ? { valuation_rate: round2(value.cost) }
+            : {}),
+          barcodes: ordered,
+        },
+      }),
+    );
+    // The item is saved: saving again (after the price failed) builds on this version, not the opened one.
+    onSaved(String(saved?.modified ?? modified));
+    if (setPrice && value.price !== null) {
+      await this.setPrice(doc, round2(value.price), today);
+    }
+  }
+
+  /**
+   * After an edit's answer was lost: the item's version if it holds what that edit sent (the lost save landed), else
+   * null (someone else changed it).
+   */
+  async savedAs(code: string, value: ItemFormValue): Promise<string | null> {
+    const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
+    const barcode = westernDigits(value.barcode.trim());
+    const holds =
+      doc.item_name === value.name.trim() &&
+      doc.item_group === value.group &&
+      // A cleared barcode drops the first: whatever is left may be shown, so only a typed one is compared.
+      (!doc.is_stock_item || !barcode || (doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
+      (!doc.is_stock_item ||
+        value.cost === null ||
+        round2(Number(doc.valuation_rate || 0)) === round2(value.cost));
+    return holds ? String(doc['modified'] ?? '') : null;
+  }
+
+  /**
+   * The item holding this code, after a lost answer: whether the add went through. By item code, not name: a site
+   * naming items by series gives them other names.
+   */
+  async exists(code: string): Promise<{ name: string; itemName: string } | null> {
+    const [row] = await firstValueFrom(
+      this.erpnext.list<{ name: string; item_name: string }>('Item', {
+        fields: ['name', 'item_name'],
+        filters: [['item_code', '=', westernDigits(code.trim())]],
+        limit: 1,
+      }),
+    );
+    return row ? { name: row.name, itemName: row.item_name } : null;
+  }
+
+  private async setPrice(item: ItemRow, rate: number, today: string): Promise<void> {
+    const list = await this.sellingList();
+    if (!list) {
+      throw new ErpnextError('server', 'No selling price list', 417, 'NoSellingPriceList');
+    }
+    const existing = standardPrice(await this.priceRows(list, [item.name]), item.stock_uom, today);
+    await confirmRequest(
+      existing
+        ? this.erpnext.post('frappe.client.set_value', {
+            doctype: 'Item Price',
+            name: existing.name,
+            fieldname: 'price_list_rate',
+            value: rate,
+          })
+        : this.erpnext.post('frappe.client.insert', {
+            doc: {
+              doctype: 'Item Price',
+              item_code: item.name,
+              price_list: list,
+              uom: item.stock_uom,
+              price_list_rate: rate,
+            },
+          }),
+    );
+  }
+
+  /** The business's selling price list, as Selling Settings names it (setup names it in the site's language). */
+  private async sellingList(): Promise<string | null> {
+    const list = await firstValueFrom(
+      this.erpnext.get<{ selling_price_list?: string }>('frappe.client.get_value', {
+        doctype: 'Selling Settings',
+        fieldname: 'selling_price_list',
+      }),
+    ).catch(forbiddenAsNull);
+    return list?.selling_price_list || null;
+  }
+
+  /** Selling prices by item; null when the role can't read prices (sales roles can't read Item Price). */
+  private async prices(items: ItemRow[], today: string): Promise<Map<string, PriceRow> | null> {
+    if (!items.length) {
+      return new Map();
+    }
+    const list = await this.sellingList();
+    if (!list) {
+      return null;
+    }
+    const rows = await this.priceRows(
+      list,
+      items.map((i) => i.name),
+    ).catch(forbiddenAsNull);
+    if (!rows) {
+      return null;
+    }
+    const prices = new Map<string, PriceRow>();
+    for (const item of items) {
+      const price = standardPrice(
+        rows.filter((r) => r.item_code === item.name),
+        item.stock_uom,
+        today,
+      );
+      if (price) {
+        prices.set(item.name, price);
+      }
+    }
+    return prices;
+  }
+
+  /** The list's general prices for the items: not a customer's own, nor a batch's. */
+  private priceRows(list: string, codes: string[]): Promise<PriceRow[]> {
+    return firstValueFrom(
+      this.erpnext.list<PriceRow>('Item Price', {
+        fields: ['name', 'item_code', 'price_list_rate', 'uom', 'valid_from', 'valid_upto'],
+        filters: [
+          ['price_list', '=', list],
+          ['item_code', 'in', codes],
+          ['customer', 'is', 'not set'],
+          ['batch_no', 'is', 'not set'],
+        ],
+        limit: 0,
+      }),
+    );
+  }
+
+  /** On hand per item across the business's locations; null when the role can't read stock. */
+  private async onHand(codes: string[], company: string): Promise<Map<string, number> | null> {
+    if (!codes.length) {
+      return new Map();
+    }
+    const read = await Promise.all([
+      this.warehouses.list(company),
+      this.erpnext.listAll<{ item_code: string; warehouse: string; actual_qty: number }>('Bin', {
+        fields: ['item_code', 'warehouse', 'actual_qty'],
+        filters: [['item_code', 'in', codes]],
+      }),
+    ]).catch(forbiddenAsNull);
+    if (!read) {
+      return null;
+    }
+    const [places, bins] = read;
+    const ids = new Set(places.map((w) => w.id));
+    const totals = new Map<string, number>();
+    for (const bin of bins.filter((b) => ids.has(b.warehouse))) {
+      totals.set(bin.item_code, (totals.get(bin.item_code) ?? 0) + Number(bin.actual_qty));
+    }
+    return totals;
+  }
+
+  private async stockOf(
+    code: string,
+    company: string,
+  ): Promise<{ warehouse: string; qty: number }[] | null> {
+    const read = await Promise.all([
+      this.warehouses.list(company),
+      this.erpnext.listAll<{ warehouse: string; actual_qty: number }>('Bin', {
+        fields: ['warehouse', 'actual_qty'],
+        filters: [['item_code', '=', code]],
+      }),
+    ]).catch(forbiddenAsNull);
+    if (!read) {
+      return null;
+    }
+    const [places, bins] = read;
+    return places.map((w) => ({
+      warehouse: w.name,
+      qty: bins
+        .filter((b) => b.warehouse === w.id)
+        .reduce((sum, b) => sum + Number(b.actual_qty), 0),
+    }));
+  }
+}
+
+function item(row: ItemRow): Pick<CatalogItem, 'code' | 'name' | 'group' | 'uom' | 'kind'> {
+  return {
+    code: row.name,
+    name: row.item_name || row.name,
+    group: row.item_group,
+    uom: row.stock_uom,
+    kind: row.is_stock_item ? 'product' : 'service',
+  };
+}

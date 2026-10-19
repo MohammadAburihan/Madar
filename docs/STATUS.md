@@ -209,6 +209,49 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
+## Items & services and contact deactivation (in progress, before step 6)
+
+- **I1 — Items & services**: this PR. **Items & services** (`/catalog`, from Inventory, Home's Catalog and "+ New") lists
+  the business's products and services, searchable by name, code or barcode and filtered by kind, each with its selling
+  price (where the role can read Item Price) and stock across the locations (products). Desktop: a table with a side
+  panel. An item's page shows its selling price, its buying cost (roles that see costs) and its stock per location.
+  **Add item or service** / **Edit**: type, name, code, barcode (products), category, unit, selling price (Owner, with
+  Sales Master Manager; ERPNext creates it with the item) and opening cost (products; ERPNext's valuation rate). The code
+  is the item's name in ERPNext, so a lost answer is checked by it; a code already taken is refused. The kind, code and
+  unit don't change once the item exists. Adding needs ERPNext's Item Manager: the Owner and the Purchasing officer now
+  hold it (PERMISSIONS.md, seed). Designs: Catalog list, item and service pages, add/edit form (mobile EN/AR) and the
+  desktop workspace, trimmed to what's built (no photos, variants or "More options"). e2e: `30-items`. Known difference
+  from the mock: the item page shows prices in a summary card, not in fields.
+  Review pass 1 (2 medium, 4 low) fixed: edits save against the version the form loaded, so a change made meanwhile is
+  refused, not overwritten; prices read and change the list's standard price (no customer or batch, the item's unit,
+  valid today by the site's date); saving a service keeps its barcodes; the name is locked while a lost add is
+  checked, and a "duplicate" right after "not added" is checked against it; a set price can't be cleared silently.
+  Review pass 2 (2 medium, 3 low) fixed: a price that fails after the item saved is retried on the saved version; an
+  existing code and name opens the item only right after a lost add's check; "Buying cost" is "Opening cost" (ERPNext's
+  valuation rate, which purchases don't update); a typed barcode becomes the one shown; search lists an item once.
+  Review pass 3 (1 medium, 2 low) fixed: saving again after an edit's answer was lost builds on that save instead of
+  calling it someone else's change; the cap note follows ERPNext's rows. Deferred: a site whose Selling Settings names
+  no price list gets ERPNext's own fallback list for new prices, which Madar then doesn't read.
+  Review pass 4 (1 medium, 3 low) fixed: a retry after a lost edit builds on the newer version only when it holds what
+  was sent (else "changed"); a rename updates a description that was the name; a selling price is above zero (ERPNext
+  creates none at 0 with a new item); barcodes typed on an Arabic keyboard are saved in Western digits.
+  Review pass 5 (2 medium, 4 low) fixed: a chosen existing barcode is renumbered so it's the one shown; a price of 0
+  already set doesn't block saving other changes; codes made in Desk with "/" can be edited; roles that can't read
+  prices see none rather than "Not set"; search takes Arabic digits; a lost add is checked by item code, which also
+  holds on sites naming items by series.
+  Review pass 6 (1 medium, 3 low) fixed: a replaced barcode drops its old type (EAN…), which ERPNext would check the new
+  code against; a cleared barcode doesn't read as someone else's change; names are searched with the digits typed.
+  Review pass 7 (1 medium, 1 low) fixed: roles that don't move stock (purchasing, sales) reach Items & services from
+  Stock on phones too; the barcode field takes letters (Code 128).
+  Review pass 8 (1 medium, 1 low) fixed: clearing a barcode removes only the one shown, so a retry can't take the next;
+  setting prices also needs System Manager or Sales Manager, who can read the selling price list (PERMISSIONS.md).
+  Review pass 9 (1 medium, 3 low) fixed: codes are saved in Western digits, as they're searched; every field locks while
+  a lost add is checked; a retry after a failed price sends the cost typed since; the desktop panel offers Try again.
+  Deferred: on a site naming items by series, the item's name shows where its code would.
+  Review pass 10 (3 low; reviewing stops) fixed: barcodes saved in Desk with Arabic digits compare correctly; the code
+  "new" is refused (the add page's address). Deferred: with no selling price list in Selling Settings, editing a price
+  fails with the generic message.
+
 ## Stock tasks and layout parity (in progress, before step 6)
 
 - **P1 — Layout parity**: this PR. An audit of every page with separate phone and desktop layouts: Inventory's "Supply

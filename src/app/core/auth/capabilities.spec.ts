@@ -29,6 +29,8 @@ describe('capabilitiesFor', () => {
       manageWorkers: true,
       giveAdvances: true,
       approve: true,
+      manageItems: true,
+      setItemPrices: true,
     });
   });
 
@@ -61,6 +63,8 @@ describe('capabilitiesFor', () => {
         manageWorkers: false,
         giveAdvances: false,
         approve: false,
+        manageItems: false,
+        setItemPrices: false,
       });
     }
   });
@@ -286,5 +290,27 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor('owner', ['System Manager']).approve).toBe(true);
     expect(capabilitiesFor('salesperson', ['Sales User', 'Accounts User']).approve).toBe(false);
     expect(capabilitiesFor('warehouse', ['Stock User', 'HR User']).approve).toBe(true);
+  });
+
+  it('lets items be added only with Item Manager, and priced only with Sales Master Manager too', () => {
+    expect(capabilitiesFor('purchasing', ['Purchase User', 'Stock User'])).toMatchObject({
+      manageItems: false,
+      setItemPrices: false,
+    });
+    expect(capabilitiesFor('purchasing', ['Purchase User', 'Item Manager'])).toMatchObject({
+      manageItems: true,
+      setItemPrices: false,
+    });
+    expect(capabilitiesFor('owner', ['System Manager', 'Item Manager'])).toMatchObject({
+      manageItems: true,
+      setItemPrices: false,
+    });
+    expect(
+      capabilitiesFor('owner', ['System Manager', 'Item Manager', 'Sales Master Manager']),
+    ).toMatchObject({ manageItems: true, setItemPrices: true });
+    // Without System Manager or Sales Manager, Selling Settings (which names the price list) can't be read.
+    expect(
+      capabilitiesFor('owner', ['Accounts Manager', 'Item Manager', 'Sales Master Manager']),
+    ).toMatchObject({ manageItems: true, setItemPrices: false });
   });
 });

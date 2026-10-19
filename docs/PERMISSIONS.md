@@ -7,11 +7,11 @@ business rules change, then the code (`src/app/core/auth/persona.ts`, `capabilit
 
 | Madar role | Who | ERPNext roles |
 |---|---|---|
-| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager, HR Manager, Expense Approver |
+| **Owner** | Business owner or manager | System Manager, Accounts Manager, Sales Manager, Purchase Manager, Stock Manager, Projects Manager, HR Manager, Expense Approver, Item Manager, Sales Master Manager |
 | **Salesperson** | Sells to customers and collects payments | Sales User, Accounts User |
 | **Store associate** (موظف المتجر) | Sells at the counter *and* handles stock | Sales User, Accounts User, Stock User |
 | **Warehouse worker** | Receives, moves, and counts stock | Stock User |
-| **Purchasing officer** | Orders from suppliers, receives goods, and records supplier invoices | Purchase User, Stock User, Accounts User |
+| **Purchasing officer** | Orders from suppliers, receives goods, and records supplier invoices | Purchase User, Stock User, Accounts User, Item Manager |
 | **Project manager** | Runs projects and requests their materials | Projects User, Stock User |
 
 Madar picks the role from the user's ERPNext roles: Owner if they have System Manager or Accounts Manager; otherwise
@@ -61,7 +61,8 @@ to the Owner.
 | Transfer, count, or adjust stock | ✅ | — | ✅ | ✅ | — | — |
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
-| Create or edit items and prices | ✅ | — | — | — | ✅ | — |
+| Add or edit items and services (Items & services; ERPNext needs Item Manager) | ✅ | — | — | — | ✅ | — |
+| Set an item's selling price when adding or editing it (needs Sales Master Manager, and System Manager or Sales Manager to read the selling price list) | ✅ | — | — | — | — | — |
 | See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 | Give workers an advance, paid from a payment account (needs HR, Expense Approver and Accounts User or Manager) | ✅ | — | — | — | — | — |
 | Approvals inbox (leave waiting, and steps ERPNext's workflows let the user's roles take) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
