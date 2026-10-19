@@ -402,10 +402,12 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     // HR roles decide leave there; ERPNext's workflows decide what else each role may approve.
     approve: caps.approve || HR_ROLES.some((role) => roles.includes(role)),
     manageItems: caps.manageItems && roles.includes('Item Manager'),
-    // ERPNext creates and changes the price as an Item Price, which needs Sales Master Manager.
+    // ERPNext creates and changes the price as an Item Price, which needs Sales Master Manager; the selling
+    // price list it goes on is read from Selling Settings, open only to System Manager and Sales Manager.
     setItemPrices:
       caps.setItemPrices &&
       roles.includes('Item Manager') &&
-      roles.includes('Sales Master Manager'),
+      roles.includes('Sales Master Manager') &&
+      (roles.includes('System Manager') || roles.includes('Sales Manager')),
   };
 }

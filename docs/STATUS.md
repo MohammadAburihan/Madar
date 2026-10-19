@@ -243,6 +243,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   code against; a cleared barcode doesn't read as someone else's change; names are searched with the digits typed.
   Review pass 7 (1 medium, 1 low) fixed: roles that don't move stock (purchasing, sales) reach Items & services from
   Stock on phones too; the barcode field takes letters (Code 128).
+  Review pass 8 (1 medium, 1 low) fixed: clearing a barcode removes only the one shown, so a retry can't take the next;
+  setting prices also needs System Manager or Sales Manager, who can read the selling price list (PERMISSIONS.md).
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

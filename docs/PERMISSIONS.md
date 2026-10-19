@@ -62,7 +62,7 @@ to the Owner.
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
 | Add or edit items and services (Items & services; ERPNext needs Item Manager) | ✅ | — | — | — | ✅ | — |
-| Set an item's selling price when adding or editing it (needs Sales Master Manager too) | ✅ | — | — | — | — | — |
+| Set an item's selling price when adding or editing it (needs Sales Master Manager, and System Manager or Sales Manager to read the selling price list) | ✅ | — | — | — | — | — |
 | See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 | Give workers an advance, paid from a payment account (needs HR, Expense Approver and Accounts User or Manager) | ✅ | — | — | — | — | — |
 | Approvals inbox (leave waiting, and steps ERPNext's workflows let the user's roles take) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |

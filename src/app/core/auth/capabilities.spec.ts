@@ -308,5 +308,9 @@ describe('capabilitiesFor', () => {
     expect(
       capabilitiesFor('owner', ['System Manager', 'Item Manager', 'Sales Master Manager']),
     ).toMatchObject({ manageItems: true, setItemPrices: true });
+    // Without System Manager or Sales Manager, Selling Settings (which names the price list) can't be read.
+    expect(
+      capabilitiesFor('owner', ['Accounts Manager', 'Item Manager', 'Sales Master Manager']),
+    ).toMatchObject({ manageItems: true, setItemPrices: false });
   });
 });

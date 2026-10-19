@@ -212,6 +212,7 @@ export class ItemFormContainer {
   private loadedPrice = '';
   private loadedCost = '';
   private loadedModified = '';
+  private loadedBarcode = '';
   /** Saving again after a lost add found nothing: a "duplicate" then may be that first add finishing. */
   private afterLostAnswer = false;
   /** An edit whose answer was lost may have saved: its own save then shows as a newer version. */
@@ -368,6 +369,7 @@ export class ItemFormContainer {
         this.loadedPrice = detail.price === null ? '' : String(detail.price);
         this.loadedCost = detail.kind === 'product' ? String(detail.cost) : '';
         this.loadedModified = detail.modified;
+        this.loadedBarcode = detail.barcode;
         this.price.set(this.loadedPrice);
         this.cost.set(this.loadedCost);
       } else {
@@ -432,6 +434,7 @@ export class ItemFormContainer {
             // Saved with the item: a retry only sends the price.
             this.loadedCost = this.cost();
           },
+          this.loadedBarcode,
         );
         void this.router.navigate(['/catalog', editing], { replaceUrl: true });
       } else {

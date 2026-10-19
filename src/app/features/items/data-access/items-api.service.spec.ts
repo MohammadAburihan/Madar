@@ -287,6 +287,33 @@ describe('ItemsApiService', () => {
     });
   });
 
+  it('clears a barcode once: saving again leaves the next one alone', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': () => ({}) },
+      {
+        'Item/POT-30': {
+          doctype: 'Item',
+          name: 'POT-30',
+          stock_uom: 'Unit',
+          is_stock_item: 1,
+          barcodes: [{ barcode: 'B' }],
+        },
+      },
+    );
+    // The form showed A, already removed by the first save; B stays.
+    await api().update(
+      'POT-30',
+      value({ barcode: '', price: null }),
+      false,
+      'M',
+      'D',
+      () => undefined,
+      'A',
+    );
+    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: 'B', idx: 1 }] });
+  });
+
   it("drops a replaced barcode's type, which may not fit the new code", async () => {
     const { postCalls } = fakeErpnext(
       {},

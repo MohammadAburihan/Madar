@@ -190,6 +190,8 @@ export class ItemsApiService {
     modified: string,
     today: string,
     onSaved: (modified: string) => void = () => undefined,
+    /** The barcode the form showed: clearing removes it only while it is still the first. */
+    shownBarcode = '',
   ): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
     const rows = doc.barcodes ?? [];
@@ -206,7 +208,10 @@ export class ItemsApiService {
             ]
           : // A new code may not fit the old row's type (EAN…), which ERPNext checks: the type goes.
             [{ ...(rows[0] ?? {}), barcode, barcode_type: '' }, ...rows.slice(1)]
-        : rows.slice(1);
+        : // Saving again after a cleared barcode was already removed takes nothing more off.
+          rows[0]?.barcode === westernDigits(shownBarcode.trim())
+          ? rows.slice(1)
+          : rows;
     // Frappe keeps a row's idx: numbered again so the new order is the one saved.
     const ordered = barcodes.map((r, i) => ({ ...r, idx: i + 1 }));
     const saved = await confirmRequest(
