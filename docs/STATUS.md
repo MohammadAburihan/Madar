@@ -209,6 +209,20 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
+## Items & services and contact deactivation (in progress, before step 6)
+
+- **I1 — Items & services**: this PR. **Items & services** (`/catalog`, from Inventory, Home's Catalog and "+ New") lists
+  the business's products and services, searchable by name, code or barcode and filtered by kind, each with its selling
+  price (where the role can read Item Price) and stock across the locations (products). Desktop: a table with a side
+  panel. An item's page shows its selling price, its buying cost (roles that see costs) and its stock per location.
+  **Add item or service** / **Edit**: type, name, code, barcode (products), category, unit, selling price (Owner, with
+  Sales Master Manager; ERPNext creates it with the item) and buying cost (products; ERPNext's valuation rate). The code
+  is the item's name in ERPNext, so a lost answer is checked by it; a code already taken is refused. The kind, code and
+  unit don't change once the item exists. Adding needs ERPNext's Item Manager: the Owner and the Purchasing officer now
+  hold it (PERMISSIONS.md, seed). Designs: Catalog list, item and service pages, add/edit form (mobile EN/AR) and the
+  desktop workspace, trimmed to what's built (no photos, variants or "More options"). e2e: `30-items`. Known difference
+  from the mock: the item page shows prices in a summary card, not in fields.
+
 ## Stock tasks and layout parity (in progress, before step 6)
 
 - **P1 — Layout parity**: this PR. An audit of every page with separate phone and desktop layouts: Inventory's "Supply

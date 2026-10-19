@@ -133,7 +133,7 @@ export class HomeContainer {
       transferStock: ['/inventory/transfer'],
       countStock: ['/inventory/count'],
       customers: ['/contacts'],
-      catalog: ['/inventory'],
+      catalog: ['/catalog'],
     };
     void this.router.navigate(routes[id] ?? ['/task', id]);
   }

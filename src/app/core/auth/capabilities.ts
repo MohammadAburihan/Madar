@@ -51,6 +51,10 @@ export interface Capabilities {
   giveAdvances: boolean;
   /** The Approvals inbox: steps ERPNext's workflows let the user's roles take. */
   approve: boolean;
+  /** Add and edit items and services (ERPNext needs Item Manager). */
+  manageItems: boolean;
+  /** Set an item's selling price while adding or editing it (needs Sales Master Manager too). */
+  setItemPrices: boolean;
 }
 
 const SALES_ROLE: Capabilities = {
@@ -80,6 +84,8 @@ const SALES_ROLE: Capabilities = {
   manageWorkers: false,
   giveAdvances: false,
   approve: false,
+  manageItems: false,
+  setItemPrices: false,
 };
 
 const CAPABILITIES: Record<Persona, Capabilities> = {
@@ -110,6 +116,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageWorkers: true,
     giveAdvances: true,
     approve: true,
+    manageItems: true,
+    setItemPrices: true,
   },
   salesperson: SALES_ROLE,
   storeAssociate: { ...SALES_ROLE, transferStock: true, receiveGoods: true, supplyProjects: true },
@@ -140,6 +148,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
+    manageItems: false,
+    setItemPrices: false,
   },
   projectManager: {
     sell: false,
@@ -168,6 +178,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
+    manageItems: false,
+    setItemPrices: false,
   },
   purchasing: {
     sell: false,
@@ -197,6 +209,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
+    manageItems: true,
+    setItemPrices: false,
   },
 };
 
@@ -387,5 +401,11 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
       GIVE_ADVANCES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
     // HR roles decide leave there; ERPNext's workflows decide what else each role may approve.
     approve: caps.approve || HR_ROLES.some((role) => roles.includes(role)),
+    manageItems: caps.manageItems && roles.includes('Item Manager'),
+    // ERPNext creates and changes the price as an Item Price, which needs Sales Master Manager.
+    setItemPrices:
+      caps.setItemPrices &&
+      roles.includes('Item Manager') &&
+      roles.includes('Sales Master Manager'),
   };
 }

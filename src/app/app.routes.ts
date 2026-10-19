@@ -3,6 +3,7 @@ import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
 import { approvalRoutes } from './features/approvals/approvals.routes';
 import { contactRoutes } from './features/contacts/contacts.routes';
 import { inventoryRoutes } from './features/inventory/inventory.routes';
+import { itemRoutes } from './features/items/items.routes';
 import { paymentRoutes } from './features/payments/payment.routes';
 import { projectRoutes } from './features/projects/projects.routes';
 import { purchaseRoutes } from './features/purchasing/purchase.routes';
@@ -53,6 +54,7 @@ export const routes: Routes = [
       ...quotationRoutes,
       ...paymentRoutes,
       ...inventoryRoutes,
+      ...itemRoutes,
       ...purchaseRoutes,
       ...projectRoutes,
       ...reportRoutes,

@@ -21,6 +21,7 @@ const ACTIONS: { id: string; allowed: (caps: Capabilities) => boolean; route: st
   { id: 'countStock', allowed: (c) => c.transferStock, route: ['/inventory/count'] },
   { id: 'recordDamage', allowed: (c) => c.transferStock, route: ['/inventory/damage'] },
   { id: 'supplyProject', allowed: (c) => c.supplyProjects, route: ['/projects'] },
+  { id: 'addItem', allowed: (c) => c.manageItems, route: ['/catalog/new'] },
   { id: 'newProject', allowed: (c) => c.manageProjects, route: ['/projects/new'] },
   {
     id: 'addContact',

@@ -327,8 +327,9 @@ export class InventoryContainer implements OnInit {
   /** Stock tasks beyond moving; they open their own screens as those workflows arrive. */
   protected readonly stockActions = computed(() => {
     const { t } = this.i18n.tr();
+    const catalog = { id: 'catalog', label: t('inventory.actions.catalog') };
     if (!this.caps().transferStock) {
-      return [];
+      return [catalog];
     }
     return [
       { id: 'countStock', label: t('inventory.actions.count') },
@@ -336,6 +337,7 @@ export class InventoryContainer implements OnInit {
       ...(this.caps().supplyProjects
         ? [{ id: 'supplyProject', label: t('inventory.actions.supply') }]
         : []),
+      catalog,
     ];
   });
 
@@ -370,6 +372,10 @@ export class InventoryContainer implements OnInit {
   }
 
   protected open(action: string): void {
+    if (action === 'catalog') {
+      void this.router.navigate(['/catalog']);
+      return;
+    }
     if (action === 'supplyProject') {
       // A project is supplied item by item from its page.
       void this.router.navigate(['/projects']);

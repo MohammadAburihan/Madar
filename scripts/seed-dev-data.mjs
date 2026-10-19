@@ -637,6 +637,9 @@ const users = [
       'Projects Manager',
       'HR Manager',
       'Expense Approver',
+      // Items & services: adding items, and setting their selling prices (Item Price).
+      'Item Manager',
+      'Sales Master Manager',
     ],
   },
   {
@@ -658,7 +661,7 @@ const users = [
     first_name: 'Nadia',
     last_name: 'Barakat',
     // Purchasing officer; Accounts User lets her record supplier invoices (see docs/PERMISSIONS.md).
-    roles: ['Purchase User', 'Stock User', 'Accounts User'],
+    roles: ['Purchase User', 'Stock User', 'Accounts User', 'Item Manager'],
   },
   {
     email: 'yara@rehan.example',
