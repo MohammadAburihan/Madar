@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { BusinessService } from '../../../core/business/business.service';
-import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { AddStockStore } from './add-stock.store';
 import {
   InventoryApiService,
@@ -128,6 +128,34 @@ describe('InventoryApiService.addStock', () => {
         null,
       ),
     ).rejects.toBeInstanceOf(NoOpeningAccountError);
+    TestBed.resetTestingModule();
+    fakeErpnext(
+      {},
+      { [OPENING_METHOD]: () => throwError(() => new HttpErrorResponse({ status: 0 })) },
+    );
+    const costed = request({
+      lines: [{ item: 'OLV-20', name: 'O', uom: 'Unit', qty: 1, rate: 4 }],
+    });
+    // A lost connection is not a missing account.
+    await expect(api().addStock(costed, null)).rejects.not.toBeInstanceOf(NoOpeningAccountError);
+  });
+
+  it('won’t take an earlier posting with another reason or cost as this one', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Stock Entry/MAT-STE-61': {
+          ...ENTRY,
+          is_opening: 'No',
+          items: [{ item_code: 'OLV-20', qty: 1, t_warehouse: MAIN, basic_rate: 4 }],
+        },
+      },
+    );
+    const costed = request({
+      lines: [{ item: 'OLV-20', name: 'O', uom: 'Unit', qty: 1, rate: 4 }],
+    });
+    await expect(api().addStock(costed, 'MAT-STE-61')).rejects.toBeInstanceOf(PostedEarlierError);
   });
 });
 
@@ -169,7 +197,10 @@ describe('AddStockStore', () => {
     store.addItem(OLIVE);
     store.addItem(OLIVE);
     expect(store.lines()).toHaveLength(1);
-    store.setLine('OLV-20', { qtyInput: '١٠', costInput: '40' });
+    store.setLine('OLV-20', { qtyInput: '١٠', costInput: '0.004' });
+    // Rounded as it posts, so the review shows it: here a zero cost.
+    expect(store.parsed()[0].cost).toBe(0);
+    store.setLine('OLV-20', { costInput: '40' });
     expect(store.ready()).toBe(true);
     await store.confirm(false);
     expect(api.addStock.mock.calls[0][0]).toMatchObject({

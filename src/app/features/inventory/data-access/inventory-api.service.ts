@@ -7,6 +7,7 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
@@ -372,7 +373,14 @@ export class InventoryApiService {
               'erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool.get_temporary_opening_account',
               { company: request.company },
             ),
-          ).catch(() => null)
+          ).catch((error: unknown) => {
+            // ERPNext refuses when the company has none; a lost connection or a refusal stays what it is.
+            const e = ErpnextError.from(error);
+            if (e.kind === 'server' && e.status === 417) {
+              return null;
+            }
+            throw error;
+          })
         : null;
     if (request.reason === 'opening' && !opening) {
       throw new NoOpeningAccountError();
@@ -690,13 +698,15 @@ function addStockResult(entry: EntryDoc): AddStockResult {
 function sameAddStock(entry: EntryDoc, request: AddStockRequest): boolean {
   const rows = (entry['items'] as Record<string, unknown>[] | undefined) ?? [];
   return (
+    (entry['is_opening'] === 'Yes') === (request.reason === 'opening') &&
     rows.length === request.lines.length &&
     request.lines.every((line, i) => {
       const row = rows[i];
       return (
         row['item_code'] === line.item &&
         Number(row['qty']) === line.qty &&
-        row['t_warehouse'] === request.warehouse
+        row['t_warehouse'] === request.warehouse &&
+        (line.rate === null || Number(row['basic_rate']) === line.rate)
       );
     })
   );

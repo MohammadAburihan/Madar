@@ -98,7 +98,7 @@ export class AddStockReviewContainer implements OnInit {
       const item = this.ctx.store.lines().find((l) => l.item.code === this.ctx.store.failedItem());
       return {
         tone: failure === 'offline' ? ('warning' as const) : ('danger' as const),
-        title: t(`addStock.failed.${failure}.title`),
+        title: t(`addStock.failed.${failure}.title`, { item: item?.item.name ?? '' }),
         message: t(`addStock.failed.${failure}.message`, { item: item?.item.name ?? '' }),
       };
     }

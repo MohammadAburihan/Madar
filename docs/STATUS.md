@@ -220,6 +220,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   profit; stock made here is a plain receipt (a cost of 0 allowed). Lost answers are checked by the `ADD-` reference
   in the remarks. Designs: Inventory 07 Add stock, its review and posted screens (mobile EN/AR), the Add stock button on
   the Inventory mocks. e2e: `33-add-stock`.
+  Review pass 1 (2 medium, 2 low) fixed: the no-cost notice names the item; only ERPNext's own refusal reads as "no
+  opening account" (a lost connection stays one); a posted earlier draft is matched on reason and costs too; costs are
+  rounded to the cent before review, so what's reviewed is what posts.
 
 ## Purchase order: add a new item (done: #62)
 

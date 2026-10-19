@@ -6,7 +6,7 @@ import {
   newReference,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { parseNumber } from '../../../core/format/number';
+import { parseNumber, round2 } from '../../../core/format/number';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import {
   InventoryApiService,
@@ -59,7 +59,8 @@ export class AddStockStore {
   readonly parsed = computed(() =>
     this.lines().map((l) => ({
       qty: parseNumber(l.qtyInput),
-      cost: l.costInput.trim() ? parseNumber(l.costInput) : null,
+      // To the cent, as it posts: the review shows what ERPNext gets.
+      cost: l.costInput.trim() ? round2(parseNumber(l.costInput)) : null,
     })),
   );
   /** Whole units above zero, and a cost of zero or more where one is typed. */
@@ -281,7 +282,7 @@ export class AddStockStore {
         name: l.item.name,
         uom: l.item.uom,
         qty: parsed[i].qty,
-        rate: withCosts && parsed[i].cost !== null ? Math.round(parsed[i].cost! * 100) / 100 : null,
+        rate: withCosts ? parsed[i].cost : null,
       })),
     };
   }
