@@ -87,7 +87,11 @@ test.describe('items and services @phone', () => {
 
   test('lets the purchasing officer add items but not set selling prices', async ({ page }) => {
     await signIn(page, 'purchasing');
-    await page.goto('/catalog/new');
+    // Not a stock mover, yet the catalog opens from Stock on a phone.
+    await page.goto('/inventory');
+    await page.getByRole('button', { name: 'Items & services' }).click();
+    await expect(page).toHaveURL(/\/catalog$/);
+    await page.getByRole('button', { name: 'Add item or service' }).click();
     await expect(page.locator('app-text-field', { hasText: 'Opening cost' })).toBeVisible();
     await expect(page.locator('app-text-field', { hasText: 'Selling price' })).toHaveCount(0);
   });

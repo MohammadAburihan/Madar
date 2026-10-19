@@ -93,7 +93,6 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       @if (kind() === 'product') {
         <app-text-field
           [label]="txt.barcode"
-          inputmode="numeric"
           [ltr]="true"
           [value]="barcode()"
           (valueChange)="barcode.set($event)"

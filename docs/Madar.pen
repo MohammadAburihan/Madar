@@ -6102,12 +6102,12 @@
               "id": "vGjhe",
               "type": "ref",
               "ref": "jhYHZ",
-              "name": "Buying cost",
+              "name": "Opening cost",
               "width": "fill_container",
               "context": "Role: textbox. Accessible name: Variant. Route specification: Wj8ai. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
               "descendants": {
                 "tmtQA": {
-                  "content": "Buying cost"
+                  "content": "Opening cost"
                 },
                 "sedCr": {
                   "content": "ILS 22.50"
@@ -6121,7 +6121,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Choose Service for work you sell without stock. Only the owner sets the selling price; the buying cost shows to roles that see costs.",
+              "content": "Choose Service for work you sell without stock. Only the owner sets the selling price; the opening cost shows to roles that see costs.",
               "lineHeight": 1.4,
               "fontFamily": "$md-font",
               "fontSize": 14,
@@ -77753,12 +77753,12 @@
               "id": "ZF2tW",
               "type": "ref",
               "ref": "g9WDP",
-              "name": "تكلفة الشراء",
+              "name": "Opening cost",
               "width": "fill_container",
               "context": "Role: textbox. Accessible name: المتغير. Route specification: A9g50X. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
               "descendants": {
                 "Ia4Iv": {
-                  "content": "تكلفة الشراء",
+                  "content": "التكلفة الافتتاحية",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -77778,7 +77778,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "اختر «خدمة» للعمل الذي تبيعه دون مخزون. يحدّد المالك وحده سعر البيع؛ وتظهر تكلفة الشراء للأدوار التي ترى التكاليف.",
+              "content": "اختر «خدمة» للعمل الذي تبيعه دون مخزون. يحدّد المالك وحده سعر البيع؛ وتظهر التكلفة الافتتاحية للأدوار التي ترى التكاليف.",
               "lineHeight": 1.5,
               "textAlign": "right",
               "fontFamily": "$md-arabic",

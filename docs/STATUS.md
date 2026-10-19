@@ -241,6 +241,8 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   holds on sites naming items by series.
   Review pass 6 (1 medium, 3 low) fixed: a replaced barcode drops its old type (EAN…), which ERPNext would check the new
   code against; a cleared barcode doesn't read as someone else's change; names are searched with the digits typed.
+  Review pass 7 (1 medium, 1 low) fixed: roles that don't move stock (purchasing, sales) reach Items & services from
+  Stock on phones too; the barcode field takes letters (Code 128).
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

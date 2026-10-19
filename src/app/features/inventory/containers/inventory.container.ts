@@ -173,11 +173,11 @@ import {
           <button type="button" class="md-btn md-btn--primary" (click)="move()">
             {{ txt.move }}
           </button>
-          @for (action of stockActions(); track action.id) {
-            <button type="button" class="md-btn" (click)="open(action.id)">
-              {{ action.label }}
-            </button>
-          }
+        }
+        @for (action of stockActions(); track action.id) {
+          <button type="button" class="md-btn" (click)="open(action.id)">
+            {{ action.label }}
+          </button>
         }
       }
     }
