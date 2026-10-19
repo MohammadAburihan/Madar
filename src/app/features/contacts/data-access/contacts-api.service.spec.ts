@@ -282,8 +282,8 @@ describe('ContactsApiService', () => {
     await api().setActive('customers', 'Lina Haddad', false);
     await api().setActive('suppliers', 'Green Clay', true);
     expect(postCalls.map((c) => c.body)).toEqual([
-      { doctype: 'Customer', name: 'Lina Haddad', fieldname: 'disabled', value: 1 },
-      { doctype: 'Supplier', name: 'Green Clay', fieldname: 'disabled', value: 0 },
+      { doctype: 'Customer', name: 'Lina Haddad', fieldname: { disabled: 1 } },
+      { doctype: 'Supplier', name: 'Green Clay', fieldname: { disabled: 0 } },
     ]);
   });
 

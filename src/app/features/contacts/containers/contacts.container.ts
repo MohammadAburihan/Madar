@@ -108,6 +108,14 @@ const SEARCH_DELAY_MS = 250;
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
         <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
       } @else if (desktop()) {
+        @if (switchNotice(); as n) {
+          <app-feedback-card
+            [tone]="n.tone"
+            [status]="true"
+            [title]="n.title"
+            [message]="n.message"
+          />
+        }
         <div class="split">
           <div class="main">
             <app-data-table
@@ -117,7 +125,7 @@ const SEARCH_DELAY_MS = 250;
               [interactive]="true"
               [empty]="emptyText()"
               [ltrColumns]="[2]"
-              (opened)="selected.set($event)"
+              (opened)="pick($event)"
             />
           </div>
           <section class="panel" [attr.aria-label]="txt.title">
@@ -157,13 +165,6 @@ const SEARCH_DELAY_MS = 250;
                 >
                   {{ p.activationLabel }}
                 </button>
-              }
-              @if (switchFailed()) {
-                <app-feedback-card
-                  tone="danger"
-                  [title]="txt.switchFailed.title"
-                  [message]="txt.switchFailed.message"
-                />
               }
               @if (dialog(); as d) {
                 <app-confirm-dialog
@@ -239,7 +240,10 @@ export class ContactsContainer {
   protected readonly status = signal<string>('active');
   protected readonly asking = signal(false);
   protected readonly switching = signal(false);
-  protected readonly switchFailed = signal(false);
+  /** What the panel's last deactivate or reactivate came to, shown until another contact is picked. */
+  protected readonly switchOutcome = signal<
+    'deactivated' | 'reactivated' | 'permission' | 'offline' | 'error' | null
+  >(null);
   private run = 0;
   private detailRun = 0;
 
@@ -277,10 +281,7 @@ export class ContactsContainer {
         value: k,
         label: t(`contacts.activation.filters.${k}`),
       })),
-      switchFailed: {
-        title: t('contacts.activation.outcome.error.title'),
-        message: t('contacts.activation.outcome.error.message'),
-      },
+
       history: t('contacts.viewTransactions'),
       editCustomer: t('contacts.editContact'),
       editSupplier: t('contacts.editSupplier'),
@@ -388,6 +389,9 @@ export class ContactsContainer {
     if (kind === 'customers' || kind === 'suppliers') {
       this.kind.set(kind);
     }
+    if (this.route.snapshot.queryParamMap.get('status') === 'inactive') {
+      this.status.set('inactive');
+    }
     effect((onCleanup) => {
       const kind = this.current();
       const term = this.term();
@@ -443,7 +447,6 @@ export class ContactsContainer {
 
   private async loadDetail(kind: ContactKind, id: string | null): Promise<void> {
     const run = ++this.detailRun;
-    this.switchFailed.set(false);
     this.detail.set(null);
     this.panelFailed.set(false);
     if (!id) {
@@ -470,6 +473,22 @@ export class ContactsContainer {
 
   protected readonly canAdd = computed(() => editableKinds(this.caps(), 'add').length > 0);
 
+  protected readonly switchNotice = computed(() => {
+    const outcome = this.switchOutcome();
+    if (!outcome) {
+      return null;
+    }
+    const { t } = this.i18n.tr();
+    return {
+      tone:
+        outcome === 'deactivated' || outcome === 'reactivated'
+          ? ('tint' as const)
+          : ('danger' as const),
+      title: t(`contacts.activation.outcome.${outcome}.title`),
+      message: t(`contacts.activation.outcome.${outcome}.message`),
+    };
+  });
+
   protected readonly dialog = computed(() => {
     const detail = this.detail();
     return detail
@@ -478,6 +497,10 @@ export class ContactsContainer {
           detail,
           this.business.active()?.currency ?? '',
           this.i18n.tr(),
+          // Own-sales roles load only their share of what a customer owes.
+          this.current() === 'suppliers'
+            ? 'outstanding' in detail && detail.outstanding !== null
+            : !this.owner() && 'totals' in detail && detail.totals !== null,
         )
       : null;
   });
@@ -490,28 +513,42 @@ export class ContactsContainer {
       return;
     }
     this.switching.set(true);
-    this.switchFailed.set(false);
+    this.switchOutcome.set(null);
+    const active = !detail.active;
+    let outcome: NonNullable<ReturnType<typeof this.switchOutcome>>;
     try {
-      await this.api.setActive(this.current(), detail.id, !detail.active);
-      await this.load();
+      await this.api.setActive(this.current(), detail.id, active);
+      outcome = active ? 'reactivated' : 'deactivated';
     } catch (error) {
-      if (ErpnextError.from(error).kind === 'forbidden') {
+      const e = ErpnextError.from(error);
+      if (e.kind === 'forbidden') {
         void this.session.checkExpired();
       }
-      // The value may have been set before the answer was lost: list what ERPNext holds.
-      await this.load();
-      this.switchFailed.set(true);
-    } finally {
-      this.switching.set(false);
+      outcome = e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error';
     }
+    // The value may have been set even when the answer was lost: list what ERPNext holds, and keep the
+    // contact in the panel when it is still in this list.
+    await this.load();
+    if (this.rows().some((r) => r.id === detail.id)) {
+      this.selected.set(detail.id);
+    }
+    this.switchOutcome.set(outcome);
+    this.switching.set(false);
   }
 
   protected add(): void {
     void this.router.navigate(['/contacts/new'], { queryParams: { type: this.current() } });
   }
 
+  protected pick(id: string): void {
+    this.switchOutcome.set(null);
+    this.selected.set(id);
+  }
+
   protected openDetail(id: string, page?: 'history' | 'edit'): void {
-    void this.router.navigate(['/contacts', this.current(), id, ...(page ? [page] : [])]);
+    void this.router.navigate(['/contacts', this.current(), id, ...(page ? [page] : [])], {
+      queryParams: this.status() === 'inactive' ? { status: 'inactive' } : {},
+    });
   }
 
   protected act(route: string[], query: Record<string, string>): void {

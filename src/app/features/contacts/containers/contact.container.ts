@@ -148,6 +148,8 @@ import {
 export class ContactContainer {
   readonly kind = input.required<string>();
   readonly id = input.required<string>();
+  /** "inactive" when opened from the Inactive list. */
+  readonly status = input<string | undefined>();
 
   private readonly api = inject(ContactsApiService);
   private readonly business = inject(BusinessService);
@@ -354,6 +356,13 @@ export class ContactContainer {
   }
 
   protected back(): void {
-    void this.router.navigate(['/contacts'], { queryParams: { kind: this.contactKind() } });
+    // Back to the list it was opened from: an inactive contact's is the Inactive one.
+    const detail = this.detail();
+    void this.router.navigate(['/contacts'], {
+      queryParams: {
+        kind: this.contactKind(),
+        ...((detail ? !detail.active : this.status() === 'inactive') ? { status: 'inactive' } : {}),
+      },
+    });
   }
 }

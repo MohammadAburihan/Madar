@@ -41,6 +41,10 @@ test.describe('deactivating contacts @phone', () => {
     await expect(page.locator('app-person-card').filter({ hasText: name })).toHaveCount(0);
     await page.getByRole('radio', { name: 'Inactive' }).click();
     await page.locator('app-person-card').filter({ hasText: name }).click();
+    await page.getByRole('button', { name: 'Back' }).click();
+    // Back returns to the Inactive list it came from.
+    await expect(page.locator('app-person-card').filter({ hasText: name })).toBeVisible();
+    await page.locator('app-person-card').filter({ hasText: name }).click();
     await page.getByRole('button', { name: 'Reactivate customer' }).click();
     await page
       .locator('dialog[open]')

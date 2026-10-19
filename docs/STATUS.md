@@ -225,6 +225,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   announced; the Inactive list has its own empty text. Deferred: inactive contacts don't appear in statement pickers;
   order, invoice and payment pages for an inactive contact fail at confirm with ERPNext's message instead of saying
   "reactivate first" up front.
+  Review pass 2 (2 medium, 3 low) fixed: the desktop panel shows what a deactivate or reactivate came to (done,
+  refused, offline) and keeps the contact in view, and warns own-sales roles of partial balances; reactivating sends
+  the flag as a field map (a plain 0 reads as "no value" to Frappe); Back returns to the Inactive list.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

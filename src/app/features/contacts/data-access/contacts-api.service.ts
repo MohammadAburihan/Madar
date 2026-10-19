@@ -164,8 +164,8 @@ export class ContactsApiService {
       this.erpnext.post('frappe.client.set_value', {
         doctype: kind === 'customers' ? 'Customer' : 'Supplier',
         name: id,
-        fieldname: 'disabled',
-        value: active ? 0 : 1,
+        // As a dict: Frappe's set_value treats a plain value of 0 as "no value".
+        fieldname: { disabled: active ? 0 : 1 },
       }),
     );
   }

@@ -237,7 +237,17 @@ describe('contacts view', () => {
       visible(
         activationDialog(
           'suppliers',
-          { ...LINA, totals: undefined, outstanding: 1e-9, unpaid: null, openOrder: null } as never,
+          {
+            id: 'S',
+            name: 'S',
+            phone: null,
+            email: null,
+            address: [],
+            active: true,
+            outstanding: 1e-9,
+            unpaid: null,
+            openOrder: null,
+          },
           'ILS',
           en,
         ),
