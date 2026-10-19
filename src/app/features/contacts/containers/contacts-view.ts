@@ -205,6 +205,8 @@ export function activationDialog(
   contact: CustomerDetail | SupplierDetail,
   currency: string,
   tr: Translator,
+  /** False when the role sees only part of the balance (its own sales) or none of it. */
+  fullBalance = true,
 ) {
   const k = kind === 'customers' ? 'customer' : 'supplier';
   if (!contact.active) {
@@ -223,9 +225,12 @@ export function activationDialog(
     title: tr.t('contacts.activation.deactivateTitle', { name: contact.name }),
     message: [
       tr.t(`contacts.activation.${k}.deactivateMessage`),
-      open > 0
+      // ERPNext refuses every new document and payment for a disabled party, settling what's owed included.
+      tr.t(`contacts.activation.${k}.blocks`),
+      open > 0.005
         ? tr.t(`contacts.activation.${k}.stillOpen`, { amount: formatMoney(open, currency) })
         : null,
+      fullBalance ? null : tr.t('contacts.activation.partialBalance'),
     ]
       .filter(Boolean)
       .join(' '),

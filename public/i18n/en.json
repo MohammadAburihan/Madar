@@ -2591,17 +2591,19 @@
       "customer": {
         "deactivateMessage": "They leave the contact lists and can't be sold to until you reactivate them. Their history stays.",
         "stillOpen": "They still owe {{amount}}.",
-        "reactivateMessage": "They return to the contact lists and can be sold to again."
+        "reactivateMessage": "They return to the contact lists and can be sold to again.",
+        "blocks": "While inactive, ERPNext records no sales, orders or payments for them, not even what they owe."
       },
       "supplier": {
         "deactivateMessage": "They leave the contact lists and can't be bought from until you reactivate them. Their history stays.",
         "stillOpen": "You still owe them {{amount}}.",
-        "reactivateMessage": "They return to the contact lists and can be bought from again."
+        "reactivateMessage": "They return to the contact lists and can be bought from again.",
+        "blocks": "While inactive, ERPNext records no orders, bills or payments for them, not even what you owe them."
       },
       "outcome": {
         "deactivated": {
           "title": "Deactivated",
-          "message": "Find them under Inactive in Contacts to reactivate them."
+          "message": "Reactivate them here or from Inactive in Contacts."
         },
         "reactivated": {
           "title": "Reactivated",
@@ -2619,7 +2621,9 @@
           "title": "It didn't change",
           "message": "ERPNext refused it. Try again, or check the contact in ERPNext."
         }
-      }
+      },
+      "partialBalance": "You may not see all of what they owe: check with the owner first.",
+      "noneInactive": "No inactive contacts."
     }
   },
   "settings": {

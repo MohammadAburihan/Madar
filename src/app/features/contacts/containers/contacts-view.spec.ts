@@ -219,14 +219,30 @@ describe('contacts view', () => {
     expect(visible(activationDialog('customers', LINA, 'ILS', en))).toEqual({
       title: 'Deactivate Lina Haddad?',
       message:
-        "They leave the contact lists and can't be sold to until you reactivate them. Their history stays. They still owe ILS 200.00.",
+        "They leave the contact lists and can't be sold to until you reactivate them. Their history stays. While inactive, ERPNext records no sales, orders or payments for them, not even what they owe. They still owe ILS 200.00.",
       actions: [
         { id: 'confirm', label: 'Deactivate', primary: true },
         { id: 'stay', label: 'Keep active' },
       ],
     });
     const settled = { ...LINA, totals: { invoiced: 320, paid: 320, outstanding: 0 } };
-    expect(visible(activationDialog('customers', settled, 'ILS', en)).message).not.toContain('owe');
+    expect(visible(activationDialog('customers', settled, 'ILS', en)).message).not.toContain(
+      'still owe',
+    );
+    // A salesperson sees their own sales only: told the balance may be bigger.
+    expect(visible(activationDialog('customers', settled, 'ILS', en, false)).message).toContain(
+      'You may not see all of what they owe',
+    );
+    expect(
+      visible(
+        activationDialog(
+          'suppliers',
+          { ...LINA, totals: undefined, outstanding: 1e-9, unpaid: null, openOrder: null } as never,
+          'ILS',
+          en,
+        ),
+      ).message,
+    ).not.toContain('still owe');
     const supplier = {
       id: 'Green Clay',
       name: 'Green Clay',

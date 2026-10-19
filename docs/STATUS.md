@@ -218,6 +218,13 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Inactive with **Reactivate** instead of the sell, buy and pay actions. Contacts lists filter Active / Inactive.
   Designs: the Deactivate buttons on the customer and supplier pages and the desktop panel, the Active/Inactive filter,
   an inactive customer and the confirmation dialog (mobile EN/AR). e2e: `31-deactivate-contacts`.
+  Review pass 1 (3 medium, 6 low) fixed: the dialog says ERPNext then records no sales, orders or payments for them
+  (settling what's owed included); roles seeing only their own sales are told the balance may be bigger; the panel's
+  failure notice doesn't carry to another contact, and the list reloads after a failure; the walk-in customer can't be
+  deactivated; a late answer isn't shown on another contact; a rounding residue isn't "owed"; the outcome is
+  announced; the Inactive list has its own empty text. Deferred: inactive contacts don't appear in statement pickers;
+  order, invoice and payment pages for an inactive contact fail at confirm with ERPNext's message instead of saying
+  "reactivate first" up front.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

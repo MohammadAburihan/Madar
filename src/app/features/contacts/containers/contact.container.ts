@@ -11,6 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
+import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -73,7 +74,12 @@ import {
         <app-status-chip [label]="txt.inactive" tone="warning" />
       }
       @if (notice(); as n) {
-        <app-feedback-card [tone]="n.tone" [title]="n.title" [message]="n.message" />
+        <app-feedback-card
+          [tone]="n.tone"
+          [status]="true"
+          [title]="n.title"
+          [message]="n.message"
+        />
       }
       @if (v.lines) {
         <p class="lines">{{ v.lines }}</p>
@@ -111,7 +117,7 @@ import {
         <button type="button" class="md-btn" (click)="router.navigate([...base(), 'edit'])">
           {{ contactKind() === 'customers' ? txt.editCustomer : txt.editSupplier }}
         </button>
-        @if (v.active) {
+        @if (v.active && !walkIn()) {
           <button type="button" class="md-btn" [disabled]="switching()" (click)="asking.set(true)">
             {{ contactKind() === 'customers' ? txt.deactivateCustomer : txt.deactivateSupplier }}
           </button>
@@ -238,6 +244,11 @@ export class ContactContainer {
     };
   });
 
+  /** Every walk-in sale posts to this customer: it is never deactivated. */
+  protected readonly walkIn = computed(
+    () => this.contactKind() === 'customers' && this.id() === WALK_IN_CUSTOMER,
+  );
+
   protected readonly dialog = computed(() => {
     const detail = this.detail();
     return detail
@@ -246,6 +257,9 @@ export class ContactContainer {
           detail,
           this.business.active()?.currency ?? '',
           this.i18n.tr(),
+          this.contactKind() === 'suppliers'
+            ? 'outstanding' in detail && detail.outstanding !== null
+            : !this.owner() && 'totals' in detail && detail.totals !== null,
         )
       : null;
   });
@@ -285,8 +299,13 @@ export class ContactContainer {
     const active = !detail.active;
     this.switching.set(true);
     this.outcome.set(null);
+    // A late answer for a contact the page has since moved away from isn't shown on the new one.
+    const here = () => this.id() === detail.id && this.contactKind() === kind;
     try {
       await this.api.setActive(kind, detail.id, active);
+      if (!here()) {
+        return;
+      }
       await this.load(kind, detail.id, true);
       this.outcome.set(active ? 'reactivated' : 'deactivated');
     } catch (error) {
@@ -297,6 +316,9 @@ export class ContactContainer {
       this.outcome.set(
         e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error',
       );
+      if (!here()) {
+        return;
+      }
       // The value may have been set before the answer was lost: show what ERPNext holds.
       void this.load(kind, detail.id, true);
     } finally {

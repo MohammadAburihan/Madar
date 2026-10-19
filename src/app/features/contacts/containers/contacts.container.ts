@@ -324,7 +324,13 @@ export class ContactsContainer {
   protected readonly emptyText = computed(() =>
     this.i18n
       .tr()
-      .t(this.term().trim() ? 'contacts.noResults' : `contacts.empty.${this.current()}`),
+      .t(
+        this.term().trim()
+          ? 'contacts.noResults'
+          : this.status() === 'inactive'
+            ? 'contacts.activation.noneInactive'
+            : `contacts.empty.${this.current()}`,
+      ),
   );
 
   /** The row shown in the desktop panel: the one picked, else the first, never one from another list. */
@@ -437,6 +443,7 @@ export class ContactsContainer {
 
   private async loadDetail(kind: ContactKind, id: string | null): Promise<void> {
     const run = ++this.detailRun;
+    this.switchFailed.set(false);
     this.detail.set(null);
     this.panelFailed.set(false);
     if (!id) {
@@ -491,6 +498,8 @@ export class ContactsContainer {
       if (ErpnextError.from(error).kind === 'forbidden') {
         void this.session.checkExpired();
       }
+      // The value may have been set before the answer was lost: list what ERPNext holds.
+      await this.load();
       this.switchFailed.set(true);
     } finally {
       this.switching.set(false);
