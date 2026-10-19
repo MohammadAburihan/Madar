@@ -28,7 +28,16 @@ import {
   SupplierDetail,
 } from '../data-access/contacts.models';
 import { contactActions, contactKinds, editableKinds } from './contacts-access';
-import { contactCard, contactLines, contactRow, customerView, supplierView } from './contacts-view';
+import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog.component';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import {
+  activationDialog,
+  contactCard,
+  contactLines,
+  contactRow,
+  customerView,
+  supplierView,
+} from './contacts-view';
 
 const SEARCH_DELAY_MS = 250;
 
@@ -36,6 +45,7 @@ const SEARCH_DELAY_MS = 250;
 @Component({
   selector: 'app-contacts',
   imports: [
+    ConfirmDialogComponent,
     DataTableComponent,
     FeedbackCardComponent,
     FilterChipsComponent,
@@ -87,12 +97,25 @@ const SEARCH_DELAY_MS = 250;
       @if (kinds().length > 1) {
         <app-filter-chips [label]="txt.title" [options]="txt.kindOptions" [(value)]="kind" />
       }
+      <app-filter-chips
+        [label]="txt.statusLabel"
+        [options]="txt.statusOptions"
+        [(value)]="status"
+      />
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
       } @else if (state() === 'error') {
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
         <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
       } @else if (desktop()) {
+        @if (switchNotice(); as n) {
+          <app-feedback-card
+            [tone]="n.tone"
+            [status]="true"
+            [title]="n.title"
+            [message]="n.message"
+          />
+        }
         <div class="split">
           <div class="main">
             <app-data-table
@@ -102,7 +125,7 @@ const SEARCH_DELAY_MS = 250;
               [interactive]="true"
               [empty]="emptyText()"
               [ltrColumns]="[2]"
-              (opened)="selected.set($event)"
+              (opened)="pick($event)"
             />
           </div>
           <section class="panel" [attr.aria-label]="txt.title">
@@ -134,6 +157,23 @@ const SEARCH_DELAY_MS = 250;
                 <button type="button" class="md-btn" (click)="openDetail(p.id, 'edit')">
                   {{ current() === 'customers' ? txt.editCustomer : txt.editSupplier }}
                 </button>
+                <button
+                  type="button"
+                  class="md-btn"
+                  [disabled]="switching()"
+                  (click)="asking.set(true)"
+                >
+                  {{ p.activationLabel }}
+                </button>
+              }
+              @if (dialog(); as d) {
+                <app-confirm-dialog
+                  [open]="asking()"
+                  [title]="d.title"
+                  [message]="d.message"
+                  [actions]="d.actions"
+                  (chosen)="answer($event)"
+                />
               }
               <button type="button" class="md-btn" (click)="openDetail(p.id)">
                 {{ txt.openDetail }}
@@ -196,6 +236,16 @@ export class ContactsContainer {
   protected readonly selected = signal<string | null>(null);
   private readonly detail = signal<CustomerDetail | SupplierDetail | null>(null);
   protected readonly panelFailed = signal(false);
+  /** Active or inactive contacts: deactivated ones are kept, and listed apart. */
+  protected readonly status = signal<string>('active');
+  protected readonly asking = signal(false);
+  protected readonly switching = signal(false);
+  /** What the panel's last deactivate or reactivate came to, shown until another contact is picked. */
+  protected readonly switchOutcome = signal<
+    'deactivated' | 'reactivated' | 'permission' | 'offline' | 'error' | null
+  >(null);
+  /** The contact the outcome is about: after deactivating, the panel shows another one. */
+  private switchName = '';
   private run = 0;
   private detailRun = 0;
 
@@ -228,6 +278,12 @@ export class ContactsContainer {
       retry: t('contacts.retry'),
       choose: t('contacts.choose'),
       openDetail: t('contacts.openDetail'),
+      statusLabel: t('contacts.activation.status'),
+      statusOptions: (['active', 'inactive'] as const).map((k) => ({
+        value: k,
+        label: t(`contacts.activation.filters.${k}`),
+      })),
+
       history: t('contacts.viewTransactions'),
       editCustomer: t('contacts.editContact'),
       editSupplier: t('contacts.editSupplier'),
@@ -271,7 +327,13 @@ export class ContactsContainer {
   protected readonly emptyText = computed(() =>
     this.i18n
       .tr()
-      .t(this.term().trim() ? 'contacts.noResults' : `contacts.empty.${this.current()}`),
+      .t(
+        this.term().trim()
+          ? 'contacts.noResults'
+          : this.status() === 'inactive'
+            ? 'contacts.activation.noneInactive'
+            : `contacts.empty.${this.current()}`,
+      ),
   );
 
   /** The row shown in the desktop panel: the one picked, else the first, never one from another list. */
@@ -299,8 +361,13 @@ export class ContactsContainer {
           : view.latest
             ? { title: view.latest.title, message: view.latest.summary }
             : null,
-        actions: contactActions('customers', detail, caps, tr),
+        actions: detail.active ? contactActions('customers', detail, caps, tr) : [],
         recent: view.recent,
+        activationLabel: tr.t(
+          detail.active
+            ? 'contacts.activation.deactivateCustomer'
+            : 'contacts.activation.reactivateCustomer',
+        ),
       };
     }
     const view = supplierView(detail, currency, tr);
@@ -309,8 +376,13 @@ export class ContactsContainer {
       name: detail.name,
       lines: contactLines(detail),
       card: view.balance ?? view.order,
-      actions: contactActions('suppliers', detail, caps, tr),
+      actions: detail.active ? contactActions('suppliers', detail, caps, tr) : [],
       recent: [],
+      activationLabel: tr.t(
+        detail.active
+          ? 'contacts.activation.deactivateSupplier'
+          : 'contacts.activation.reactivateSupplier',
+      ),
     };
   });
 
@@ -319,9 +391,15 @@ export class ContactsContainer {
     if (kind === 'customers' || kind === 'suppliers') {
       this.kind.set(kind);
     }
+    if (this.route.snapshot.queryParamMap.get('status') === 'inactive') {
+      this.status.set('inactive');
+    }
     effect((onCleanup) => {
       const kind = this.current();
       const term = this.term();
+      this.status();
+      // A notice about the last deactivate doesn't stay over a different list.
+      untracked(() => this.switchOutcome.set(null));
       if (!this.kinds().length) {
         return;
       }
@@ -352,8 +430,13 @@ export class ContactsContainer {
       }
       const rows =
         kind === 'customers'
-          ? await this.api.customerList(term, business, this.owner())
-          : await this.api.supplierList(term, business, this.caps().seeCosts);
+          ? await this.api.customerList(term, business, this.owner(), this.status() === 'active')
+          : await this.api.supplierList(
+              term,
+              business,
+              this.caps().seeCosts,
+              this.status() === 'active',
+            );
       if (run === this.run) {
         this.rows.set(rows);
         this.rowsKind.set(kind);
@@ -394,12 +477,86 @@ export class ContactsContainer {
 
   protected readonly canAdd = computed(() => editableKinds(this.caps(), 'add').length > 0);
 
+  protected readonly switchNotice = computed(() => {
+    const outcome = this.switchOutcome();
+    if (!outcome) {
+      return null;
+    }
+    const { t } = this.i18n.tr();
+    const done = outcome === 'deactivated' || outcome === 'reactivated';
+    return {
+      tone: done ? ('tint' as const) : ('danger' as const),
+      // Named, and pointing at the list they're in now: the panel may show someone else by then.
+      title: done
+        ? t(`contacts.activation.panel.${outcome}.title`, { name: this.switchName })
+        : t(`contacts.activation.outcome.${outcome}.title`),
+      message: done
+        ? t(`contacts.activation.panel.${outcome}.message`)
+        : t(`contacts.activation.outcome.${outcome}.message`),
+    };
+  });
+
+  protected readonly dialog = computed(() => {
+    const detail = this.detail();
+    return detail
+      ? activationDialog(
+          this.current(),
+          detail,
+          this.business.active()?.currency ?? '',
+          this.i18n.tr(),
+          // Own-sales roles load only their share of what a customer owes.
+          this.current() === 'suppliers'
+            ? 'outstanding' in detail && detail.outstanding !== null
+            : !this.owner() && 'totals' in detail && detail.totals !== null,
+        )
+      : null;
+  });
+
+  /** Deactivates or reactivates the contact in the panel; it then leaves this list for the other one. */
+  protected async answer(choice: string): Promise<void> {
+    this.asking.set(false);
+    const detail = this.detail();
+    if (choice !== 'confirm' || !detail || this.switching()) {
+      return;
+    }
+    this.switching.set(true);
+    this.switchOutcome.set(null);
+    this.switchName = detail.name;
+    const active = !detail.active;
+    let outcome: NonNullable<ReturnType<typeof this.switchOutcome>>;
+    try {
+      await this.api.setActive(this.current(), detail.id, active);
+      outcome = active ? 'reactivated' : 'deactivated';
+    } catch (error) {
+      const e = ErpnextError.from(error);
+      if (e.kind === 'forbidden') {
+        void this.session.checkExpired();
+      }
+      outcome = e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error';
+    }
+    // The value may have been set even when the answer was lost: list what ERPNext holds, and keep the
+    // contact in the panel when it is still in this list.
+    await this.load();
+    if (this.rows().some((r) => r.id === detail.id)) {
+      this.selected.set(detail.id);
+    }
+    this.switchOutcome.set(outcome);
+    this.switching.set(false);
+  }
+
   protected add(): void {
     void this.router.navigate(['/contacts/new'], { queryParams: { type: this.current() } });
   }
 
+  protected pick(id: string): void {
+    this.switchOutcome.set(null);
+    this.selected.set(id);
+  }
+
   protected openDetail(id: string, page?: 'history' | 'edit'): void {
-    void this.router.navigate(['/contacts', this.current(), id, ...(page ? [page] : [])]);
+    void this.router.navigate(['/contacts', this.current(), id, ...(page ? [page] : [])], {
+      queryParams: this.status() === 'inactive' ? { status: 'inactive' } : {},
+    });
   }
 
   protected act(route: string[], query: Record<string, string>): void {

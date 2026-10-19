@@ -16,6 +16,8 @@ export interface ContactInfo {
   email: string | null;
   /** The primary address, one line per entry. */
   address: string[];
+  /** Not disabled in ERPNext: listed, and can be sold to or bought from. */
+  active: boolean;
 }
 
 export interface CustomerDetail extends ContactInfo {

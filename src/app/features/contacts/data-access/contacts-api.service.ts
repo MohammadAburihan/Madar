@@ -59,7 +59,12 @@ export class ContactsApiService {
 
   /** Customers matching the term, with what each owes across currencies, as their page totals it. */
   /** `owner` limits the balances to that user's own sales (salespeople, store associates). */
-  async customerList(term: string, company: Company, owner: string | null): Promise<ContactRow[]> {
+  async customerList(
+    term: string,
+    company: Company,
+    owner: string | null,
+    active = true,
+  ): Promise<ContactRow[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -70,7 +75,7 @@ export class ContactsApiService {
       }>('Customer', {
         fields: ['name', 'customer_name', 'mobile_no', 'primary_address'],
         filters: [
-          ['disabled', '=', 0],
+          ['disabled', '=', active ? 0 : 1],
           ['name', '!=', WALK_IN_CUSTOMER],
         ],
         orFilters: term.trim()
@@ -104,7 +109,12 @@ export class ContactsApiService {
   }
 
   /** Suppliers matching the term; balances only for roles that see supplier money. */
-  async supplierList(term: string, company: Company, withBalances: boolean): Promise<ContactRow[]> {
+  async supplierList(
+    term: string,
+    company: Company,
+    withBalances: boolean,
+    active = true,
+  ): Promise<ContactRow[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -114,7 +124,7 @@ export class ContactsApiService {
         primary_address: string | null;
       }>('Supplier', {
         fields: ['name', 'supplier_name', 'mobile_no', 'primary_address'],
-        filters: [['disabled', '=', 0]],
+        filters: [['disabled', '=', active ? 0 : 1]],
         orFilters: term.trim()
           ? [
               ['supplier_name', 'like', like],
@@ -143,6 +153,21 @@ export class ContactsApiService {
       city: lines(r.primary_address)[0] ?? null,
       outstanding: balances ? (balances.get(r.name) ?? 0) : null,
     }));
+  }
+
+  /**
+   * Deactivates or reactivates a customer or supplier (ERPNext's Disabled). Its history stays; while inactive it
+   * leaves the lists and ERPNext refuses new sales or purchases with it. Setting a value, so repeating it is safe.
+   */
+  async setActive(kind: ContactKind, id: string, active: boolean): Promise<void> {
+    await firstValueFrom(
+      this.erpnext.post('frappe.client.set_value', {
+        doctype: kind === 'customers' ? 'Customer' : 'Supplier',
+        name: id,
+        // As a dict: Frappe's set_value treats a plain value of 0 as "no value".
+        fieldname: { disabled: active ? 0 : 1 },
+      }),
+    );
   }
 
   /** `owner` limits the totals and activity to that user's own sales and payments. */
@@ -566,5 +591,6 @@ function info(doc: PartyDoc, name: string): ContactInfo {
     phone: doc.mobile_no ?? null,
     email: doc.email_id ?? null,
     address: lines(doc.primary_address),
+    active: !doc['disabled'],
   };
 }

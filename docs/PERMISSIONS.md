@@ -54,6 +54,7 @@ to the Owner.
 | See suppliers (Contacts; their balances only with cost prices) | ✅ | — | ✅ | ✅ | ✅ | — |
 | Add customers and edit their contact details | ✅ | ✅ | ✅ | — | — | ✅ |
 | Add or edit suppliers (ERPNext needs Purchase Master Manager to add, Purchase Manager to edit) | ✅ | — | — | — | ✅ | — |
+| Deactivate or reactivate customers and suppliers (the roles that edit each kind; history and balances stay) | ✅ | ✅ customers | ✅ customers | — | ✅ suppliers | ✅ customers |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |
 | Record supplier invoices | ✅ | — | — | — | ✅ | — |

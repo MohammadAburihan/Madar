@@ -195,3 +195,48 @@ export function historyCard(
       };
   }
 }
+
+/**
+ * The deactivate or reactivate question for a contact: what it means, and any balance still open (what a customer
+ * owes, what the business owes a supplier), so nobody is switched off with money outstanding unawares.
+ */
+export function activationDialog(
+  kind: ContactKind,
+  contact: CustomerDetail | SupplierDetail,
+  currency: string,
+  tr: Translator,
+  /** False when the role sees only part of the balance (its own sales) or none of it. */
+  fullBalance = true,
+) {
+  const k = kind === 'customers' ? 'customer' : 'supplier';
+  if (!contact.active) {
+    return {
+      title: tr.t('contacts.activation.reactivateTitle', { name: contact.name }),
+      message: tr.t(`contacts.activation.${k}.reactivateMessage`),
+      actions: [
+        { id: 'confirm', label: tr.t('contacts.activation.reactivate'), primary: true },
+        { id: 'stay', label: tr.t('contacts.activation.keepInactive') },
+      ],
+    };
+  }
+  const open =
+    'totals' in contact ? (contact.totals?.outstanding ?? 0) : (contact.outstanding ?? 0);
+  return {
+    title: tr.t('contacts.activation.deactivateTitle', { name: contact.name }),
+    message: [
+      tr.t(`contacts.activation.${k}.deactivateMessage`),
+      // ERPNext refuses every new document and payment for a disabled party, settling what's owed included.
+      tr.t(`contacts.activation.${k}.blocks`),
+      open > 0.005
+        ? tr.t(`contacts.activation.${k}.stillOpen`, { amount: formatMoney(open, currency) })
+        : null,
+      fullBalance ? null : tr.t('contacts.activation.partialBalance'),
+    ]
+      .filter(Boolean)
+      .join(' '),
+    actions: [
+      { id: 'confirm', label: tr.t('contacts.activation.deactivate'), primary: true },
+      { id: 'stay', label: tr.t('contacts.activation.keepActive') },
+    ],
+  };
+}
