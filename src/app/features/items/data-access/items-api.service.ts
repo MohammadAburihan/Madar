@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { round2 } from '../../../core/format/number';
+import { round2, westernDigits } from '../../../core/format/number';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { CatalogItem, ItemDetail, ItemFormValue, ItemKind, ItemOptions } from './items.models';
 
@@ -169,7 +169,7 @@ export class ItemsApiService {
           include_item_in_manufacturing: 0,
           ...(product && value.cost !== null ? { valuation_rate: round2(value.cost) } : {}),
           ...(value.price !== null ? { standard_rate: round2(value.price) } : {}),
-          barcodes: value.barcode.trim() ? [{ barcode: value.barcode.trim() }] : [],
+          barcodes: value.barcode.trim() ? [{ barcode: westernDigits(value.barcode.trim()) }] : [],
         },
       }),
     );
@@ -190,7 +190,7 @@ export class ItemsApiService {
   ): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
     const rows = doc.barcodes ?? [];
-    const barcode = value.barcode.trim();
+    const barcode = westernDigits(value.barcode.trim());
     // Services have no barcode field in Madar: theirs, set in Desk, stay as they are.
     const barcodes = !doc.is_stock_item
       ? rows
@@ -210,6 +210,10 @@ export class ItemsApiService {
           // As loaded into the form: a change made since makes ERPNext refuse instead of being saved over.
           modified,
           item_name: value.name.trim(),
+          // Documents take the item's description: one that was just its name follows the rename.
+          ...(!doc['description'] || doc['description'] === doc.item_name
+            ? { description: value.name.trim() }
+            : {}),
           item_group: value.group,
           ...(doc.is_stock_item && value.cost !== null
             ? { valuation_rate: round2(value.cost) }
@@ -225,10 +229,21 @@ export class ItemsApiService {
     }
   }
 
-  /** When ERPNext last saved the item: after a lost edit, what saving again must build on. */
-  async modifiedOf(code: string): Promise<string> {
+  /**
+   * After an edit's answer was lost: the item's version if it holds what that edit sent (the lost save landed), else
+   * null (someone else changed it).
+   */
+  async savedAs(code: string, value: ItemFormValue): Promise<string | null> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
-    return String(doc['modified'] ?? '');
+    const barcode = westernDigits(value.barcode.trim());
+    const holds =
+      doc.item_name === value.name.trim() &&
+      doc.item_group === value.group &&
+      (!doc.is_stock_item || (doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
+      (!doc.is_stock_item ||
+        value.cost === null ||
+        round2(Number(doc.valuation_rate || 0)) === round2(value.cost));
+    return holds ? String(doc['modified'] ?? '') : null;
   }
 
   /** Whether an item with this code exists, and its name: after a lost answer, whether the add went through. */

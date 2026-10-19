@@ -3568,7 +3568,8 @@
           "title": "It wasn't saved",
           "message": "ERPNext rejected it. Check the details and try again."
         }
-      }
+      },
+      "priceError": "Enter a price above zero."
     },
     "noStockYet": "None in stock yet."
   }

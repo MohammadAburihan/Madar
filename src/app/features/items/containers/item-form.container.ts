@@ -126,7 +126,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
           inputmode="decimal"
           [ltr]="true"
           [suffix]="currency()"
-          [error]="errors?.price ? txt.amountError : null"
+          [error]="errors?.price ? txt.priceError : null"
           [value]="price()"
           (valueChange)="price.set($event)"
         />
@@ -243,13 +243,15 @@ export class ItemFormContainer {
   protected readonly invalid = computed(() => {
     const { price, cost } = this.amounts();
     const bad = (value: number | null) => value !== null && !(value >= 0);
+    // ERPNext doesn't create a price of 0 with a new item: a selling price is above zero.
+    const badPrice = (value: number | null) => value !== null && !(value > 0);
     const errors = {
       name: !this.name().trim(),
       itemCode: !this.itemCode().trim() || this.itemCode().includes('/'),
       group: !this.group(),
       uom: !this.uom(),
       // A price that's set can be changed but not cleared here: ERPNext would keep it.
-      price: this.canSetPrice() && (bad(price) || (!!this.loadedPrice && price === null)),
+      price: this.canSetPrice() && (badPrice(price) || (!!this.loadedPrice && price === null)),
       cost: this.kind() === 'product' && this.seeCosts() && bad(cost),
     };
     return Object.values(errors).some(Boolean) ? errors : null;
@@ -284,6 +286,7 @@ export class ItemFormContainer {
       choose: t('items.form.choose'),
       required: t('items.form.required'),
       amountError: t('items.form.amountError'),
+      priceError: t('items.form.priceError'),
       save: t(service ? 'items.form.saveService' : 'items.form.saveItem'),
       saving: t('items.form.saving'),
       cancel: t('items.form.cancel'),
@@ -437,15 +440,14 @@ export class ItemFormContainer {
         this.editLost &&
         ErpnextError.from(error).excType === 'TimestampMismatchError'
       ) {
-        // The newer version is that lost save: build on it, once, rather than blame someone else.
+        // The newer version may be that lost save: build on it, once, only if it holds what was sent.
         this.editLost = false;
-        try {
-          this.loadedModified = await this.api.modifiedOf(editing);
+        const saved = await this.api.savedAs(editing, value).catch(() => null);
+        if (saved) {
+          this.loadedModified = saved;
           this.saving.set(false);
           await this.save();
           return;
-        } catch {
-          // Shown below as the change it is.
         }
       }
       if (editing && error instanceof UnresolvedError) {

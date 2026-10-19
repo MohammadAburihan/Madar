@@ -262,6 +262,48 @@ describe('ItemsApiService', () => {
     );
   });
 
+  it('saves Arabic-keyboard barcodes in Western digits, and renames the description that was the name', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.insert': () => ({ name: 'POT-31' }), 'frappe.client.save': () => ({}) },
+      {
+        'Item/POT-30': {
+          doctype: 'Item',
+          name: 'POT-30',
+          item_name: 'Planter',
+          description: 'Planter',
+          stock_uom: 'Unit',
+          is_stock_item: 1,
+          barcodes: [],
+        },
+      },
+    );
+    await api().create(value({ code: 'POT-31', barcode: '٧٢٩٠٠' }));
+    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: '72900' }] });
+    await api().update('POT-30', value({ price: null }), false, 'M', '2026-10-19');
+    expect(postCalls[1].body['doc']).toMatchObject({
+      item_name: 'Ceramic planter',
+      description: 'Ceramic planter',
+    });
+  });
+
+  it('tells a lost edit that landed from a change someone else made', async () => {
+    const doc = {
+      doctype: 'Item',
+      name: 'POT-30',
+      item_name: 'Ceramic planter',
+      item_group: 'Pots',
+      stock_uom: 'Unit',
+      is_stock_item: 1,
+      valuation_rate: 22.5,
+      barcodes: [{ barcode: '7290000654321' }],
+      modified: 'NEW',
+    };
+    fakeErpnext({}, {}, { 'Item/POT-30': doc });
+    expect(await api().savedAs('POT-30', value())).toBe('NEW');
+    expect(await api().savedAs('POT-30', value({ group: 'Plants' }))).toBeNull();
+  });
+
   it('lists an item once even when two of its barcodes match', async () => {
     fakeErpnext({ Item: () => [ROWS[0], ROWS[0]], Warehouse: WAREHOUSES, Bin: () => [] }, SELLING);
     expect((await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).items).toHaveLength(

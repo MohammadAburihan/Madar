@@ -232,6 +232,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 3 (1 medium, 2 low) fixed: saving again after an edit's answer was lost builds on that save instead of
   calling it someone else's change; the cap note follows ERPNext's rows. Deferred: a site whose Selling Settings names
   no price list gets ERPNext's own fallback list for new prices, which Madar then doesn't read.
+  Review pass 4 (1 medium, 3 low) fixed: a retry after a lost edit builds on the newer version only when it holds what
+  was sent (else "changed"); a rename updates a description that was the name; a selling price is above zero (ERPNext
+  creates none at 0 with a new item); barcodes typed on an Arabic keyboard are saved in Western digits.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 
