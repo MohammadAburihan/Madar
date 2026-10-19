@@ -90,3 +90,21 @@ export interface AdjustResult {
 export function adjustChange(request: Pick<AdjustRequest, 'kind' | 'qty' | 'systemQty'>): number {
   return request.kind === 'count' ? request.qty - request.systemQty : -request.qty;
 }
+
+/** Stock that comes in without a purchase: what the business had when it started, or grew or made. */
+export type AddStockReason = 'opening' | 'made';
+
+export interface AddStockRequest {
+  reference: string;
+  company: string;
+  warehouse: string;
+  reason: AddStockReason;
+  /** `rate` null takes the item's own cost (its opening cost or last valuation). */
+  lines: { item: string; name: string; uom: string; qty: number; rate: number | null }[];
+}
+
+export interface AddStockResult {
+  entry: string;
+  postingDate: string;
+  postingTime: string;
+}

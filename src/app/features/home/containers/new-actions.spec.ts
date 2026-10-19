@@ -13,6 +13,7 @@ describe('new actions', () => {
       'Receive goods',
       'Record expense',
       'Transfer stock',
+      'Add stock',
       'Count stock',
       'Record damage or loss',
       'Supply a project',
@@ -35,6 +36,7 @@ describe('new actions', () => {
     expect(ids('warehouse')).toEqual([
       'receiveGoods',
       'transferStock',
+      'addStock',
       'countStock',
       'recordDamage',
       'supplyProject',

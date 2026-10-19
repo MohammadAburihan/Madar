@@ -712,7 +712,8 @@
       "count": "Count stock",
       "damage": "Record damage or loss",
       "supply": "Supply a project",
-      "catalog": "Items & services"
+      "catalog": "Items & services",
+      "add": "Add stock"
     },
     "empty": "No stock recorded yet.",
     "noResults": "No items match.",
@@ -2717,6 +2718,7 @@
       "receiveGoods": "Receive goods",
       "recordExpense": "Record expense",
       "transferStock": "Transfer stock",
+      "addStock": "Add stock",
       "countStock": "Count stock",
       "recordDamage": "Record damage or loss",
       "supplyProject": "Supply a project",
@@ -3637,5 +3639,82 @@
       "priceError": "Enter a price above zero."
     },
     "noStockYet": "None in stock yet."
+  },
+  "addStock": {
+    "title": "Add stock",
+    "subtitle": "Stock you already have, or grew or made",
+    "chip": "Stock in",
+    "reason": "Reason *",
+    "reasons": {
+      "opening": "Opening stock",
+      "made": "Grown or made here"
+    },
+    "search": "Item to add",
+    "qty": "Quantity *",
+    "cost": "Cost per unit",
+    "costHint": "Leave empty to use the item's opening cost.",
+    "remove": "Remove",
+    "review": "Review stock to add",
+    "footnote": "Use Count stock to correct a count, and Purchases for stock you buy.",
+    "effect": {
+      "title": "Adds {{units}} units at {{warehouse}}",
+      "opening": {
+        "one": "Opening stock goes to the opening balance, not to profit.",
+        "other": "Opening stock goes to the opening balance, not to profit."
+      },
+      "made": {
+        "one": "Recorded as stock grown or made here.",
+        "other": "Recorded as stock grown or made here."
+      }
+    },
+    "reviewTitle": "Review stock to add",
+    "heading": {
+      "one": "Add 1 item · {{units}} units",
+      "other": "Add {{count}} items · {{units}} units"
+    },
+    "line": "{{item}}: {{qty}} {{uom}}",
+    "lineCost": "{{item}}: {{qty}} {{uom}} × {{rate}}",
+    "value": "Value {{amount}}.",
+    "valueSome": "Value of the costed lines {{amount}}; the rest at each item's own cost.",
+    "confirm": "Add stock",
+    "edit": "Edit",
+    "doneTitle": "Stock added",
+    "added": "Added",
+    "doneMessage": {
+      "one": "1 item, {{units}} units, now at {{warehouse}}.",
+      "other": "{{count}} items, {{units}} units, now at {{warehouse}}."
+    },
+    "more": "Add more stock",
+    "checkingTitle": "Checking your stock",
+    "noAccess": {
+      "title": "You can't add stock",
+      "message": "Your role doesn't include stock counts or adjustments. Ask your business owner for access."
+    },
+    "failed": {
+      "permission": {
+        "title": "You can't add this stock",
+        "message": "ERPNext didn't allow it for your role. Nothing changed."
+      },
+      "offline": {
+        "title": "No connection",
+        "message": "It wasn't sent. Check the connection and try again."
+      },
+      "valuation": {
+        "title": "{{item}} has no cost yet",
+        "message": "ERPNext needs a cost to value it. Set its opening cost in Items & services, or ask the owner to add it with a cost."
+      },
+      "opening": {
+        "title": "No opening account",
+        "message": "The company has no Temporary Opening account in ERPNext, which opening stock is booked against. Add one in ERPNext's chart of accounts."
+      },
+      "changed": {
+        "title": "An earlier version was already added",
+        "message": "It was posted before your latest changes. Check the stock before adding again."
+      },
+      "error": {
+        "title": "The stock wasn't added",
+        "message": "ERPNext rejected it. Check the details and try again."
+      }
+    }
   }
 }

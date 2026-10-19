@@ -95,4 +95,34 @@ export const inventoryRoutes: Route[] = [
       },
     ],
   },
+  {
+    path: 'inventory/add',
+    loadComponent: () =>
+      import('./containers/add-stock-flow.container').then((m) => m.AddStockFlowContainer),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./containers/add-stock-entry.container').then((m) => m.AddStockEntryContainer),
+      },
+      {
+        path: 'review',
+        loadComponent: () =>
+          import('./containers/add-stock-review.container').then((m) => m.AddStockReviewContainer),
+      },
+      {
+        path: 'done',
+        loadComponent: () =>
+          import('./containers/add-stock-done.container').then((m) => m.AddStockDoneContainer),
+      },
+      {
+        path: 'checking',
+        loadComponent: () =>
+          import('./containers/add-stock-checking.container').then(
+            (m) => m.AddStockCheckingContainer,
+          ),
+      },
+    ],
+  },
 ];
