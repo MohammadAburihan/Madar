@@ -252,7 +252,11 @@ export class ItemFormContainer {
     const errors = {
       name: !this.name().trim(),
       // Only a new code: one made in Desk may hold "/", and can't be changed here anyway.
-      itemCode: !this.itemCode().trim() || (!this.code() && this.itemCode().includes('/')),
+      // "new" is the add page's own address.
+      itemCode:
+        !this.itemCode().trim() ||
+        (!this.code() &&
+          (this.itemCode().includes('/') || this.itemCode().trim().toLowerCase() === 'new')),
       group: !this.group(),
       uom: !this.uom(),
       // A price that's set can be changed but not cleared here: ERPNext would keep it.

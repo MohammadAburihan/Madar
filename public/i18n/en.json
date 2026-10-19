@@ -3517,7 +3517,7 @@
       "code": "Code *",
       "serviceCode": "Service code *",
       "codeFixed": "The code can't change once the item exists.",
-      "codeError": "Enter a code, without “/”.",
+      "codeError": "Enter a code, without “/”, other than “new”.",
       "barcode": "Barcode",
       "group": "Category *",
       "uom": "Unit *",

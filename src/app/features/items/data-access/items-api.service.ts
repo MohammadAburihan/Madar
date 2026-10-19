@@ -195,22 +195,21 @@ export class ItemsApiService {
     shownBarcode = '',
   ): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
+    // Compared in Western digits: one typed in Desk may hold Arabic ones.
     const rows = doc.barcodes ?? [];
+    const same = (row: { barcode: string }, code: string) => westernDigits(row.barcode) === code;
     const barcode = westernDigits(value.barcode.trim());
     // Services have no barcode field in Madar: theirs, set in Desk, stay as they are.
     const barcodes = !doc.is_stock_item
       ? rows
       : barcode
-        ? rows.some((r) => r.barcode === barcode)
+        ? rows.some((r) => same(r, barcode))
           ? // Madar shows the first: the typed one becomes it.
-            [
-              ...rows.filter((r) => r.barcode === barcode),
-              ...rows.filter((r) => r.barcode !== barcode),
-            ]
+            [...rows.filter((r) => same(r, barcode)), ...rows.filter((r) => !same(r, barcode))]
           : // A new code may not fit the old row's type (EAN…), which ERPNext checks: the type goes.
             [{ ...(rows[0] ?? {}), barcode, barcode_type: '' }, ...rows.slice(1)]
         : // Saving again after a cleared barcode was already removed takes nothing more off.
-          rows[0]?.barcode === westernDigits(shownBarcode.trim())
+          rows[0] && same(rows[0], westernDigits(shownBarcode.trim()))
           ? rows.slice(1)
           : rows;
     // Frappe keeps a row's idx: numbered again so the new order is the one saved.

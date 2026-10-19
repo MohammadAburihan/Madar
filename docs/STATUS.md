@@ -248,6 +248,9 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 9 (1 medium, 3 low) fixed: codes are saved in Western digits, as they're searched; every field locks while
   a lost add is checked; a retry after a failed price sends the cost typed since; the desktop panel offers Try again.
   Deferred: on a site naming items by series, the item's name shows where its code would.
+  Review pass 10 (3 low; reviewing stops) fixed: barcodes saved in Desk with Arabic digits compare correctly; the code
+  "new" is refused (the add page's address). Deferred: with no selling price list in Selling Settings, editing a price
+  fails with the generic message.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 
