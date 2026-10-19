@@ -235,6 +235,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 4 (1 medium, 3 low) fixed: a retry after a lost edit builds on the newer version only when it holds what
   was sent (else "changed"); a rename updates a description that was the name; a selling price is above zero (ERPNext
   creates none at 0 with a new item); barcodes typed on an Arabic keyboard are saved in Western digits.
+  Review pass 5 (2 medium, 4 low) fixed: a chosen existing barcode is renumbered so it's the one shown; a price of 0
+  already set doesn't block saving other changes; codes made in Desk with "/" can be edited; roles that can't read
+  prices see none rather than "Not set"; search takes Arabic digits; a lost add is checked by item code, which also
+  holds on sites naming items by series.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

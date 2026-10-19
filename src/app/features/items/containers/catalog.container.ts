@@ -98,7 +98,9 @@ const SEARCH_DELAY_MS = 250;
           @if (panel(); as p) {
             <h2>{{ p.title }}</h2>
             <p class="lines">{{ p.subtitle }}</p>
-            <app-totals-card density="compact" tone="tint" [rows]="p.prices" />
+            @if (p.prices.length) {
+              <app-totals-card density="compact" tone="tint" [rows]="p.prices" />
+            }
             @for (s of p.stock; track s.message) {
               <p class="lines">{{ s.title }} · {{ s.message }}</p>
             }

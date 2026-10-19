@@ -134,11 +134,11 @@ describe('ItemsApiService', () => {
 
   it('reports a lost answer as unresolved, and finds the item by its code', async () => {
     fakeErpnext(
-      { Item: () => [{ item_name: 'Ceramic planter' }] },
+      { Item: () => [{ name: 'POT-30', item_name: 'Ceramic planter' }] },
       { 'frappe.client.insert': () => throwError(() => new HttpErrorResponse({ status: 504 })) },
     );
     await expect(api().create(value())).rejects.toBeInstanceOf(UnresolvedError);
-    expect(await api().exists('POT-30')).toBe('Ceramic planter');
+    expect(await api().exists('POT-30')).toEqual({ name: 'POT-30', itemName: 'Ceramic planter' });
   });
 
   it('saves edits over the loaded item and updates the existing selling price', async () => {
@@ -207,7 +207,7 @@ describe('ItemsApiService', () => {
       modified: '2026-10-19 07:00:00',
       item_name: 'Ceramic planter',
       valuation_rate: 22.5,
-      barcodes: [{ name: 'BC-1', barcode: '7290000654321' }],
+      barcodes: [{ name: 'BC-1', barcode: '7290000654321', idx: 1 }],
     });
     expect(postCalls[1]).toEqual({
       method: 'frappe.client.set_value',
@@ -345,7 +345,7 @@ describe('ItemsApiService', () => {
       'M',
       '2026-10-19',
     );
-    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: 'SRV-BC' }] });
+    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: 'SRV-BC', idx: 1 }] });
   });
 
   it('adds a selling price when the item has none yet', async () => {
@@ -382,6 +382,7 @@ describe('ItemsApiService', () => {
       },
     );
     expect(await api().detail('OLV-20', 'Rehan Nursery', '2026-10-19')).toMatchObject({
+      priceReadable: true,
       price: null,
       cost: 42,
       barcode: '7290000123456',

@@ -69,7 +69,8 @@ export class ItemsApiService {
     company: string,
     today: string,
   ): Promise<{ items: CatalogItem[]; capped: boolean }> {
-    const like = `%${term.trim()}%`;
+    // A barcode typed on an Arabic keyboard is stored in Western digits.
+    const like = `%${westernDigits(term.trim())}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
         fields: ['name', 'item_name', 'item_group', 'stock_uom', 'is_stock_item'],
@@ -118,6 +119,7 @@ export class ItemsApiService {
     ]);
     return {
       ...item(doc),
+      priceReadable: prices !== null,
       price: prices?.get(doc.name)?.price_list_rate ?? null,
       onHand: stock ? stock.reduce((sum, s) => sum + s.qty, 0) : null,
       barcode: doc.barcodes?.[0]?.barcode ?? '',
@@ -203,6 +205,8 @@ export class ItemsApiService {
             ]
           : [{ ...(rows[0] ?? {}), barcode }, ...rows.slice(1)]
         : rows.slice(1);
+    // Frappe keeps a row's idx: numbered again so the new order is the one saved.
+    const ordered = barcodes.map((r, i) => ({ ...r, idx: i + 1 }));
     const saved = await confirmRequest(
       this.erpnext.post<{ modified: string }>('frappe.client.save', {
         doc: {
@@ -218,7 +222,7 @@ export class ItemsApiService {
           ...(doc.is_stock_item && value.cost !== null
             ? { valuation_rate: round2(value.cost) }
             : {}),
-          barcodes,
+          barcodes: ordered,
         },
       }),
     );
@@ -246,16 +250,19 @@ export class ItemsApiService {
     return holds ? String(doc['modified'] ?? '') : null;
   }
 
-  /** Whether an item with this code exists, and its name: after a lost answer, whether the add went through. */
-  async exists(code: string): Promise<string | null> {
+  /**
+   * The item holding this code, after a lost answer: whether the add went through. By item code, not name: a site
+   * naming items by series gives them other names.
+   */
+  async exists(code: string): Promise<{ name: string; itemName: string } | null> {
     const [row] = await firstValueFrom(
-      this.erpnext.list<{ item_name: string }>('Item', {
-        fields: ['item_name'],
-        filters: [['name', '=', code.trim()]],
+      this.erpnext.list<{ name: string; item_name: string }>('Item', {
+        fields: ['name', 'item_name'],
+        filters: [['item_code', '=', code.trim()]],
         limit: 1,
       }),
     );
-    return row ? row.item_name : null;
+    return row ? { name: row.name, itemName: row.item_name } : null;
   }
 
   private async setPrice(item: ItemRow, rate: number, today: string): Promise<void> {

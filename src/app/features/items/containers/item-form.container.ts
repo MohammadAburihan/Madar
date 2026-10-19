@@ -247,11 +247,15 @@ export class ItemFormContainer {
     const badPrice = (value: number | null) => value !== null && !(value > 0);
     const errors = {
       name: !this.name().trim(),
-      itemCode: !this.itemCode().trim() || this.itemCode().includes('/'),
+      // Only a new code: one made in Desk may hold "/", and can't be changed here anyway.
+      itemCode: !this.itemCode().trim() || (!this.code() && this.itemCode().includes('/')),
       group: !this.group(),
       uom: !this.uom(),
       // A price that's set can be changed but not cleared here: ERPNext would keep it.
-      price: this.canSetPrice() && (badPrice(price) || (!!this.loadedPrice && price === null)),
+      price:
+        this.canSetPrice() &&
+        this.price() !== this.loadedPrice &&
+        (badPrice(price) || (!!this.loadedPrice && price === null)),
       cost: this.kind() === 'product' && this.seeCosts() && bad(cost),
     };
     return Object.values(errors).some(Boolean) ? errors : null;
@@ -460,10 +464,11 @@ export class ItemFormContainer {
         !editing &&
         this.afterLostAnswer &&
         ErpnextError.from(error).excType === 'DuplicateEntryError' &&
-        (await this.api.exists(value.code).catch(() => null)) === value.name.trim()
+        (await this.api.exists(value.code).catch(() => null))?.itemName === value.name.trim()
       ) {
         // An earlier add whose answer was lost finished after all: that item is this one.
-        void this.router.navigate(['/catalog', value.code], { replaceUrl: true });
+        const found = await this.api.exists(value.code);
+        void this.router.navigate(['/catalog', found?.name ?? value.code], { replaceUrl: true });
       } else {
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {
@@ -496,8 +501,8 @@ export class ItemFormContainer {
     try {
       const found = await this.api.exists(code);
       this.unresolved.set(false);
-      if (found !== null && found === this.name().trim()) {
-        void this.router.navigate(['/catalog', code], { replaceUrl: true });
+      if (found !== null && found.itemName === this.name().trim()) {
+        void this.router.navigate(['/catalog', found.name], { replaceUrl: true });
         return;
       }
       if (found !== null) {

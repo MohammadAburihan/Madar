@@ -45,14 +45,21 @@ export function catalogRow(item: CatalogItem, currency: string, tr: Translator):
 /** An item's page: what it costs to buy and sell, and where its stock is. */
 export function itemView(detail: ItemDetail, currency: string, seeCosts: boolean, tr: Translator) {
   const prices: TotalRow[] = [
-    {
-      label: tr.t('items.sellingPrice'),
-      value:
-        detail.price === null
-          ? tr.t('items.noPrice')
-          : tr.t('items.perUnit', { price: formatMoney(detail.price, currency), uom: detail.uom }),
-      text: detail.price === null,
-    },
+    ...(detail.priceReadable
+      ? [
+          {
+            label: tr.t('items.sellingPrice'),
+            value:
+              detail.price === null
+                ? tr.t('items.noPrice')
+                : tr.t('items.perUnit', {
+                    price: formatMoney(detail.price, currency),
+                    uom: detail.uom,
+                  }),
+            text: detail.price === null,
+          },
+        ]
+      : []),
     ...(seeCosts && detail.kind === 'product'
       ? [{ label: tr.t('items.cost'), value: formatMoney(detail.cost, currency) }]
       : []),

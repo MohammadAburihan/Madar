@@ -52,6 +52,7 @@ describe('items view', () => {
       barcode: '7290000123456',
       cost: 42,
       modified: 'M',
+      priceReadable: true,
       stock: [
         { warehouse: 'Main warehouse', qty: 24 },
         { warehouse: 'Work In Progress', qty: 0 },
@@ -71,8 +72,17 @@ describe('items view', () => {
     ).toBe(true);
     expect(view.lines).toBe('Barcode 7290000123456\nUnit: each');
     expect(itemView(detail, 'ILS', false, en).prices).toHaveLength(1);
+    // A role that can't read prices sees none, not "not set".
+    expect(
+      itemView({ ...detail, price: null, priceReadable: false }, 'ILS', false, en).prices,
+    ).toEqual([]);
     const service = visible(
-      itemView({ ...CONSULT, barcode: '', cost: 0, stock: null, modified: 'M' }, 'ILS', true, en),
+      itemView(
+        { ...CONSULT, barcode: '', cost: 0, stock: null, modified: 'M', priceReadable: true },
+        'ILS',
+        true,
+        en,
+      ),
     );
     expect(service.subtitle).toBe('SRV-GARDEN · Service · Services');
     expect(service.prices).toHaveLength(1);

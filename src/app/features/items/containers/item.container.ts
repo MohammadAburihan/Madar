@@ -58,7 +58,9 @@ import { itemView } from './items-view';
     <app-back-link [label]="txt.back" (back)="router.navigate(['/catalog'])" />
     @if (view(); as v) {
       <app-page-heading [title]="v.title" [subtitle]="v.subtitle" />
-      <app-totals-card density="compact" [rows]="v.prices" />
+      @if (v.prices.length) {
+        <app-totals-card density="compact" [rows]="v.prices" />
+      }
       @if (detail()!.kind === 'service') {
         <app-feedback-card [title]="txt.service.title" [message]="txt.service.message" />
       } @else {
