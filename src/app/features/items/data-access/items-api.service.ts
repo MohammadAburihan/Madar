@@ -251,7 +251,9 @@ export class ItemsApiService {
       doc.item_name === value.name.trim() &&
       doc.item_group === value.group &&
       // A cleared barcode drops the first: whatever is left may be shown, so only a typed one is compared.
-      (!doc.is_stock_item || !barcode || (doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
+      (!doc.is_stock_item ||
+        !barcode ||
+        westernDigits(doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
       (!doc.is_stock_item ||
         value.cost === null ||
         round2(Number(doc.valuation_rate || 0)) === round2(value.cost));

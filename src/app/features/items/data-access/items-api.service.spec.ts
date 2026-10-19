@@ -352,6 +352,9 @@ describe('ItemsApiService', () => {
     fakeErpnext({}, {}, { 'Item/POT-30': doc });
     expect(await api().savedAs('POT-30', value())).toBe('NEW');
     expect(await api().savedAs('POT-30', value({ group: 'Plants' }))).toBeNull();
+    TestBed.resetTestingModule();
+    fakeErpnext({}, {}, { 'Item/POT-30': { ...doc, barcodes: [{ barcode: '٧٢٩٠٠٠٠٦٥٤٣٢١' }] } });
+    expect(await api().savedAs('POT-30', value())).toBe('NEW');
   });
 
   it('lists an item once even when two of its barcodes match', async () => {

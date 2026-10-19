@@ -209,7 +209,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Items & services and contact deactivation (in progress, before step 6)
+## Items & services and contact deactivation (done: #59, #60)
 
 - **I1 — Items & services**: merged (#59). **Items & services** (`/catalog`, from Inventory, Home's Catalog and "+ New") lists
   the business's products and services, searchable by name, code or barcode and filtered by kind, each with its selling
@@ -251,7 +251,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Review pass 10 (3 low; reviewing stops) fixed: barcodes saved in Desk with Arabic digits compare correctly; the code
   "new" is refused (the add page's address). Deferred: with no selling price list in Selling Settings, editing a price
   fails with the generic message.
-- **D1 — Deactivate customer / supplier**: this PR. A contact's page and the desktop panel offer **Deactivate customer**
+- **D1 — Deactivate customer / supplier**: merged (#60). A contact's page and the desktop panel offer **Deactivate customer**
   or **supplier** to the roles that edit that kind (PERMISSIONS.md), after a confirmation that names any balance still
   open (what a customer owes, what the business owes a supplier). It sets ERPNext's Disabled: history and balances stay,
   the contact leaves the lists and pickers (ERPNext refuses new sales or purchases with it), and its page shows
@@ -273,9 +273,11 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   failure isn't shown on another contact's page. Review pass 4: nothing above low; reviewing stops. Deferred: changing
   the list's filters while a panel deactivate runs shows its (named) notice over the new list.
 
-## Stock tasks and layout parity (in progress, before step 6)
+- **Batch review** (#57–#60): one low finding fixed (a lost edit's check compares Desk barcodes in Western digits).
 
-- **P1 — Layout parity**: this PR. An audit of every page with separate phone and desktop layouts: Inventory's "Supply
+## Stock tasks and layout parity (done: #57, #58)
+
+- **P1 — Layout parity**: merged (#57). An audit of every page with separate phone and desktop layouts: Inventory's "Supply
   a project" opens Projects on both (it was a placeholder, hidden on phones); a project's purchase orders and sales
   open from its page on phones as on the desktop workspace; the desktop Workers panel adds Set salary, Log hours, Give
   an advance and Edit worker, and the Contacts panel View transactions and Edit, as on their full pages. Left as they
@@ -284,7 +286,7 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   for example) don't have it until rebuilt with `npm run cap:sync`. Designs: the Workers, Contacts and Inventory
   mocks and the project page (EN/AR). e2e: `28-layout-parity`.
 
-- **S1 — Count stock and Record damage or loss**: this PR. Both start from Inventory (with the selected item), "+ New"
+- **S1 — Count stock and Record damage or loss**: merged (#58). Both start from Inventory (with the selected item), "+ New"
   and, for the warehouse worker, Home; they work on phones and desktop for the roles that transfer stock. A count picks
   an item and location, shows the system quantity, takes what was counted and a reason ("Physical count" to start),
   and posts the difference; it refuses when the location changed since it was read, showing the new quantity. Damage or
