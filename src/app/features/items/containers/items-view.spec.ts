@@ -51,6 +51,7 @@ describe('items view', () => {
       ...OLIVE,
       barcode: '7290000123456',
       cost: 42,
+      modified: 'M',
       stock: [
         { warehouse: 'Main warehouse', qty: 24 },
         { warehouse: 'Work In Progress', qty: 0 },
@@ -71,7 +72,7 @@ describe('items view', () => {
     expect(view.lines).toBe('Barcode 7290000123456\nUnit: each');
     expect(itemView(detail, 'ILS', false, en).prices).toHaveLength(1);
     const service = visible(
-      itemView({ ...CONSULT, barcode: '', cost: 0, stock: null }, 'ILS', true, en),
+      itemView({ ...CONSULT, barcode: '', cost: 0, stock: null, modified: 'M' }, 'ILS', true, en),
     );
     expect(service.subtitle).toBe('SRV-GARDEN · Service · Services');
     expect(service.prices).toHaveLength(1);

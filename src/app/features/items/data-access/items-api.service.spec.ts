@@ -59,7 +59,7 @@ describe('ItemsApiService', () => {
       },
       SELLING,
     );
-    expect(await api().catalog('olive', 'all', 'Rehan Nursery')).toEqual([
+    expect(await api().catalog('olive', 'all', 'Rehan Nursery', '2026-10-19')).toEqual([
       {
         code: 'OLV-20',
         name: 'Olive tree',
@@ -97,7 +97,7 @@ describe('ItemsApiService', () => {
       { Item: () => [ROWS[0]], Warehouse: WAREHOUSES, Bin: forbidden },
       { 'frappe.client.get_value': forbidden },
     );
-    expect(await api().catalog('', 'product', 'Rehan Nursery')).toEqual([
+    expect(await api().catalog('', 'product', 'Rehan Nursery', '2026-10-19')).toEqual([
       expect.objectContaining({ code: 'OLV-20', price: null, onHand: null }),
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['is_stock_item', '=', 1]);
@@ -143,7 +143,34 @@ describe('ItemsApiService', () => {
 
   it('saves edits over the loaded item and updates the existing selling price', async () => {
     const { postCalls } = fakeErpnext(
-      { 'Item Price': () => [{ name: 'PRICE-1' }] },
+      {
+        'Item Price': () => [
+          {
+            name: 'OLD',
+            item_code: 'POT-30',
+            price_list_rate: 40,
+            uom: null,
+            valid_from: '2025-01-01',
+            valid_upto: '2025-12-31',
+          },
+          {
+            name: 'PRICE-1',
+            item_code: 'POT-30',
+            price_list_rate: 45,
+            uom: 'Unit',
+            valid_from: '2026-01-01',
+            valid_upto: null,
+          },
+          {
+            name: 'BOX',
+            item_code: 'POT-30',
+            price_list_rate: 400,
+            uom: 'Box',
+            valid_from: null,
+            valid_upto: null,
+          },
+        ],
+      },
       { ...SELLING, 'frappe.client.save': () => ({}), 'frappe.client.set_value': () => ({}) },
       {
         'Item/POT-30': {
@@ -159,10 +186,11 @@ describe('ItemsApiService', () => {
         },
       },
     );
-    await api().update('POT-30', value({ price: 49 }), true);
+    await api().update('POT-30', value({ price: 49 }), true, '2026-10-19 07:00:00', '2026-10-19');
     expect(postCalls[0].body['doc']).toMatchObject({
       name: 'POT-30',
-      modified: '2026-10-19 08:00:00',
+      // The form's version: ERPNext refuses the save if the item changed since it was opened.
+      modified: '2026-10-19 07:00:00',
       item_name: 'Ceramic planter',
       valuation_rate: 22.5,
       barcodes: [{ name: 'BC-1', barcode: '7290000654321' }],
@@ -173,13 +201,82 @@ describe('ItemsApiService', () => {
     });
   });
 
+  it("shows the standard price in the item's unit and valid today, never a customer's own", async () => {
+    const { listCalls } = fakeErpnext(
+      {
+        Item: () => [ROWS[0]],
+        'Item Price': () => [
+          {
+            name: 'P1',
+            item_code: 'OLV-20',
+            price_list_rate: 70,
+            uom: 'Unit',
+            valid_from: '2025-01-01',
+            valid_upto: '2025-12-31',
+          },
+          {
+            name: 'P2',
+            item_code: 'OLV-20',
+            price_list_rate: 85,
+            uom: 'Unit',
+            valid_from: '2026-01-01',
+            valid_upto: null,
+          },
+          {
+            name: 'P3',
+            item_code: 'OLV-20',
+            price_list_rate: 900,
+            uom: 'Box',
+            valid_from: null,
+            valid_upto: null,
+          },
+        ],
+        Warehouse: WAREHOUSES,
+        Bin: () => [],
+      },
+      SELLING,
+    );
+    const [olive] = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19');
+    expect(olive.price).toBe(85);
+    expect(listCalls.find((c) => c.doctype === 'Item Price')?.query.filters).toEqual(
+      expect.arrayContaining([
+        ['customer', 'is', 'not set'],
+        ['batch_no', 'is', 'not set'],
+      ]),
+    );
+  });
+
+  it("keeps a service's barcodes when it is saved", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': () => ({}) },
+      {
+        'Item/SRV-1': {
+          doctype: 'Item',
+          name: 'SRV-1',
+          stock_uom: 'Visit',
+          is_stock_item: 0,
+          barcodes: [{ barcode: 'SRV-BC' }],
+        },
+      },
+    );
+    await api().update(
+      'SRV-1',
+      value({ kind: 'service', barcode: '', price: null }),
+      false,
+      'M',
+      '2026-10-19',
+    );
+    expect(postCalls[0].body['doc']).toMatchObject({ barcodes: [{ barcode: 'SRV-BC' }] });
+  });
+
   it('adds a selling price when the item has none yet', async () => {
     const { postCalls } = fakeErpnext(
       { 'Item Price': () => [] },
       { ...SELLING, 'frappe.client.save': () => ({}), 'frappe.client.insert': () => ({}) },
       { 'Item/POT-30': { doctype: 'Item', name: 'POT-30', stock_uom: 'Unit', is_stock_item: 1 } },
     );
-    await api().update('POT-30', value({ price: 49, cost: null }), true);
+    await api().update('POT-30', value({ price: 49, cost: null }), true, 'M', '2026-10-19');
     expect(postCalls[1].body['doc']).toEqual({
       doctype: 'Item Price',
       item_code: 'POT-30',
@@ -206,7 +303,7 @@ describe('ItemsApiService', () => {
         },
       },
     );
-    expect(await api().detail('OLV-20', 'Rehan Nursery')).toMatchObject({
+    expect(await api().detail('OLV-20', 'Rehan Nursery', '2026-10-19')).toMatchObject({
       price: null,
       cost: 42,
       barcode: '7290000123456',

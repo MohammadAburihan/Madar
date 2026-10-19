@@ -14,6 +14,8 @@ import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { toIsoDate } from '../../../core/format/format';
+import { SiteClockService } from '../../../core/time/site-clock.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -92,6 +94,7 @@ export class ItemContainer {
 
   private readonly api = inject(ItemsApiService);
   private readonly business = inject(BusinessService);
+  private readonly clock = inject(SiteClockService);
   private readonly session = inject(SessionService);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -145,11 +148,12 @@ export class ItemContainer {
     this.detail.set(null);
     this.failed.set(null);
     try {
-      const business = await this.business.ensure();
+      const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
-      const detail = await this.api.detail(this.code(), business.name);
+      const today = toIsoDate(this.clock.now());
+      const detail = await this.api.detail(this.code(), business.name, today);
       if (run === this.run) {
         this.detail.set(detail);
       }

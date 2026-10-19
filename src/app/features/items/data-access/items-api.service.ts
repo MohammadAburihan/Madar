@@ -25,6 +25,30 @@ interface ItemDoc extends ItemRow {
   [key: string]: unknown;
 }
 
+interface PriceRow {
+  name: string;
+  item_code: string;
+  price_list_rate: number;
+  uom: string | null;
+  valid_from: string | null;
+  valid_upto: string | null;
+}
+
+/**
+ * The item's standard selling price on `today`: no customer or batch (those are filtered out in the query), in its
+ * own unit, valid that day; the latest start wins, as ERPNext picks it.
+ */
+function standardPrice(rows: PriceRow[], uom: string, today: string): PriceRow | null {
+  return (
+    rows
+      .filter((r) => !r.uom || r.uom === uom)
+      .filter(
+        (r) => (!r.valid_from || r.valid_from <= today) && (!r.valid_upto || r.valid_upto >= today),
+      )
+      .sort((a, b) => (b.valid_from ?? '').localeCompare(a.valid_from ?? ''))[0] ?? null
+  );
+}
+
 const forbiddenAsNull = (error: unknown): null => {
   if (ErpnextError.from(error).kind === 'forbidden') {
     return null;
@@ -39,7 +63,12 @@ export class ItemsApiService {
   private readonly warehouses = inject(WarehouseDirectoryService);
 
   /** Matching items, products and services, by name, code or barcode, with price and stock where readable. */
-  async catalog(term: string, kind: ItemKind | 'all', company: string): Promise<CatalogItem[]> {
+  async catalog(
+    term: string,
+    kind: ItemKind | 'all',
+    company: string,
+    today: string,
+  ): Promise<CatalogItem[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
@@ -60,9 +89,8 @@ export class ItemsApiService {
         limit: CATALOG_LIMIT,
       }),
     );
-    const codes = rows.map((r) => r.name);
     const [prices, onHand] = await Promise.all([
-      this.prices(codes),
+      this.prices(rows, today),
       this.onHand(
         rows.filter((r) => r.is_stock_item).map((r) => r.name),
         company,
@@ -70,25 +98,26 @@ export class ItemsApiService {
     ]);
     return rows.map((r) => ({
       ...item(r),
-      price: prices?.get(r.name) ?? null,
+      price: prices?.get(r.name)?.price_list_rate ?? null,
       onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
     }));
   }
 
   /** One item by its exact code, with its price, buying cost and stock per location. */
-  async detail(code: string, company: string): Promise<ItemDetail> {
+  async detail(code: string, company: string, today: string): Promise<ItemDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
     const [prices, stock] = await Promise.all([
-      this.prices([doc.name]),
+      this.prices([doc], today),
       doc.is_stock_item ? this.stockOf(doc.name, company) : Promise.resolve(null),
     ]);
     return {
       ...item(doc),
-      price: prices?.get(doc.name) ?? null,
+      price: prices?.get(doc.name)?.price_list_rate ?? null,
       onHand: stock ? stock.reduce((sum, s) => sum + s.qty, 0) : null,
       barcode: doc.barcodes?.[0]?.barcode ?? '',
       cost: Number(doc.valuation_rate || 0),
       stock,
+      modified: String(doc['modified'] ?? ''),
     };
   }
 
@@ -145,19 +174,30 @@ export class ItemsApiService {
    * Saves changes to an item (its kind, code and unit stay as they are) and, when given, its selling price. Both
    * set values, so saving again after a failure repeats nothing.
    */
-  async update(code: string, value: ItemFormValue, setPrice: boolean): Promise<void> {
+  async update(
+    code: string,
+    value: ItemFormValue,
+    setPrice: boolean,
+    modified: string,
+    today: string,
+  ): Promise<void> {
     const doc = await firstValueFrom(this.erpnext.doc<ItemDoc>('Item', code));
-    const barcode = value.barcode.trim();
     const rows = doc.barcodes ?? [];
-    const barcodes = barcode
-      ? rows.some((r) => r.barcode === barcode)
-        ? rows
-        : [{ ...(rows[0] ?? {}), barcode }, ...rows.slice(1)]
-      : rows.slice(1);
+    const barcode = value.barcode.trim();
+    // Services have no barcode field in Madar: theirs, set in Desk, stay as they are.
+    const barcodes = !doc.is_stock_item
+      ? rows
+      : barcode
+        ? rows.some((r) => r.barcode === barcode)
+          ? rows
+          : [{ ...(rows[0] ?? {}), barcode }, ...rows.slice(1)]
+        : rows.slice(1);
     await confirmRequest(
       this.erpnext.post('frappe.client.save', {
         doc: {
           ...doc,
+          // As loaded into the form: a change made since makes ERPNext refuse instead of being saved over.
+          modified,
           item_name: value.name.trim(),
           item_group: value.group,
           ...(doc.is_stock_item && value.cost !== null
@@ -168,7 +208,7 @@ export class ItemsApiService {
       }),
     );
     if (setPrice && value.price !== null) {
-      await this.setPrice(code, doc.stock_uom, round2(value.price));
+      await this.setPrice(doc, round2(value.price), today);
     }
   }
 
@@ -184,21 +224,12 @@ export class ItemsApiService {
     return row ? row.item_name : null;
   }
 
-  private async setPrice(code: string, uom: string, rate: number): Promise<void> {
+  private async setPrice(item: ItemRow, rate: number, today: string): Promise<void> {
     const list = await this.sellingList();
     if (!list) {
       throw new ErpnextError('server', 'No selling price list', 417, 'NoSellingPriceList');
     }
-    const [existing] = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Item Price', {
-        fields: ['name'],
-        filters: [
-          ['item_code', '=', code],
-          ['price_list', '=', list],
-        ],
-        limit: 1,
-      }),
-    );
+    const existing = standardPrice(await this.priceRows(list, [item.name]), item.stock_uom, today);
     await confirmRequest(
       existing
         ? this.erpnext.post('frappe.client.set_value', {
@@ -210,9 +241,9 @@ export class ItemsApiService {
         : this.erpnext.post('frappe.client.insert', {
             doc: {
               doctype: 'Item Price',
-              item_code: code,
+              item_code: item.name,
               price_list: list,
-              uom,
+              uom: item.stock_uom,
               price_list_rate: rate,
             },
           }),
@@ -231,25 +262,49 @@ export class ItemsApiService {
   }
 
   /** Selling prices by item; null when the role can't read prices (sales roles can't read Item Price). */
-  private async prices(codes: string[]): Promise<Map<string, number> | null> {
-    if (!codes.length) {
+  private async prices(items: ItemRow[], today: string): Promise<Map<string, PriceRow> | null> {
+    if (!items.length) {
       return new Map();
     }
     const list = await this.sellingList();
     if (!list) {
       return null;
     }
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ item_code: string; price_list_rate: number }>('Item Price', {
-        fields: ['item_code', 'price_list_rate'],
+    const rows = await this.priceRows(
+      list,
+      items.map((i) => i.name),
+    ).catch(forbiddenAsNull);
+    if (!rows) {
+      return null;
+    }
+    const prices = new Map<string, PriceRow>();
+    for (const item of items) {
+      const price = standardPrice(
+        rows.filter((r) => r.item_code === item.name),
+        item.stock_uom,
+        today,
+      );
+      if (price) {
+        prices.set(item.name, price);
+      }
+    }
+    return prices;
+  }
+
+  /** The list's general prices for the items: not a customer's own, nor a batch's. */
+  private priceRows(list: string, codes: string[]): Promise<PriceRow[]> {
+    return firstValueFrom(
+      this.erpnext.list<PriceRow>('Item Price', {
+        fields: ['name', 'item_code', 'price_list_rate', 'uom', 'valid_from', 'valid_upto'],
         filters: [
           ['price_list', '=', list],
           ['item_code', 'in', codes],
+          ['customer', 'is', 'not set'],
+          ['batch_no', 'is', 'not set'],
         ],
         limit: 0,
       }),
-    ).catch(forbiddenAsNull);
-    return rows ? new Map(rows.map((r) => [r.item_code, Number(r.price_list_rate)])) : null;
+    );
   }
 
   /** On hand per item across the business's locations; null when the role can't read stock. */

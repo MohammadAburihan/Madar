@@ -222,6 +222,10 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   hold it (PERMISSIONS.md, seed). Designs: Catalog list, item and service pages, add/edit form (mobile EN/AR) and the
   desktop workspace, trimmed to what's built (no photos, variants or "More options"). e2e: `30-items`. Known difference
   from the mock: the item page shows prices in a summary card, not in fields.
+  Review pass 1 (2 medium, 4 low) fixed: edits save against the version the form loaded, so a change made meanwhile is
+  refused, not overwritten; prices read and change the list's standard price (no customer or batch, the item's unit,
+  valid today by the site's date); saving a service keeps its barcodes; the name is locked while a lost add is
+  checked, and a "duplicate" right after "not added" is checked against it; a set price can't be cleared silently.
 
 ## Stock tasks and layout parity (in progress, before step 6)
 

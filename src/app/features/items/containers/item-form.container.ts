@@ -16,6 +16,8 @@ import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { toIsoDate } from '../../../core/format/format';
+import { SiteClockService } from '../../../core/time/site-clock.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -74,6 +76,7 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
       }
       <app-text-field
         [label]="txt.name"
+        [readonly]="unresolved()"
         [error]="errors?.name ? txt.required : null"
         [value]="name()"
         (valueChange)="name.set($event)"
@@ -191,6 +194,7 @@ export class ItemFormContainer {
 
   private readonly api = inject(ItemsApiService);
   private readonly business = inject(BusinessService);
+  private readonly clock = inject(SiteClockService);
   private readonly session = inject(SessionService);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -208,6 +212,7 @@ export class ItemFormContainer {
   /** The price and cost as loaded: an edit leaves them alone unless they were changed. */
   private loadedPrice = '';
   private loadedCost = '';
+  private loadedModified = '';
   protected readonly loading = signal(false);
   protected readonly loadFailed = signal(false);
   protected readonly saving = signal(false);
@@ -239,7 +244,8 @@ export class ItemFormContainer {
       itemCode: !this.itemCode().trim() || this.itemCode().includes('/'),
       group: !this.group(),
       uom: !this.uom(),
-      price: this.canSetPrice() && bad(price),
+      // A price that's set can be changed but not cleared here: ERPNext would keep it.
+      price: this.canSetPrice() && (bad(price) || (!!this.loadedPrice && price === null)),
       cost: this.kind() === 'product' && this.seeCosts() && bad(cost),
     };
     return Object.values(errors).some(Boolean) ? errors : null;
@@ -329,13 +335,14 @@ export class ItemFormContainer {
     this.loading.set(true);
     this.loadFailed.set(false);
     try {
-      const business = await this.business.ensure();
+      const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
+      const today = toIsoDate(this.clock.now());
       const [options, detail] = await Promise.all([
         this.api.options(),
-        code ? this.api.detail(code, business.name) : null,
+        code ? this.api.detail(code, business.name, today) : null,
       ]);
       if (run !== this.loadRun) {
         return;
@@ -350,6 +357,7 @@ export class ItemFormContainer {
         this.uom.set(detail.uom);
         this.loadedPrice = detail.price === null ? '' : String(detail.price);
         this.loadedCost = detail.kind === 'product' ? String(detail.cost) : '';
+        this.loadedModified = detail.modified;
         this.price.set(this.loadedPrice);
         this.cost.set(this.loadedCost);
       } else {
@@ -399,8 +407,10 @@ export class ItemFormContainer {
           : null,
     };
     try {
+      await this.clock.ensure();
+      const today = toIsoDate(this.clock.now());
       if (editing) {
-        await this.api.update(editing, value, this.canSetPrice());
+        await this.api.update(editing, value, this.canSetPrice(), this.loadedModified, today);
         void this.router.navigate(['/catalog', editing], { replaceUrl: true });
       } else {
         const created = await this.api.create(value);
@@ -410,6 +420,13 @@ export class ItemFormContainer {
       if (error instanceof UnresolvedError && !editing) {
         // ERPNext may still be adding it: look the code up before saving again, so it isn't added twice.
         this.unresolved.set(true);
+      } else if (
+        !editing &&
+        ErpnextError.from(error).excType === 'DuplicateEntryError' &&
+        (await this.api.exists(value.code).catch(() => null)) === value.name.trim()
+      ) {
+        // An earlier add whose answer was lost finished after all: that item is this one.
+        void this.router.navigate(['/catalog', value.code], { replaceUrl: true });
       } else {
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {

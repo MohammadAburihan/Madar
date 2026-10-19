@@ -19,6 +19,8 @@ export interface ItemDetail extends CatalogItem {
   cost: number;
   /** Per location; null for services or when stock can't be read. */
   stock: { warehouse: string; qty: number }[] | null;
+  /** When ERPNext last saved it: an edit saved over a later change is refused. */
+  modified: string;
 }
 
 export interface ItemFormValue {

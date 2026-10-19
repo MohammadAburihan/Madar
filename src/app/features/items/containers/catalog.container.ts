@@ -12,6 +12,8 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { toIsoDate } from '../../../core/format/format';
+import { SiteClockService } from '../../../core/time/site-clock.service';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
@@ -141,6 +143,7 @@ const SEARCH_DELAY_MS = 250;
 export class CatalogContainer {
   private readonly api = inject(ItemsApiService);
   private readonly business = inject(BusinessService);
+  private readonly clock = inject(SiteClockService);
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -237,11 +240,12 @@ export class CatalogContainer {
     const run = ++this.run;
     this.state.set('loading');
     try {
-      const business = await this.business.ensure();
+      const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
-      const items = await this.api.catalog(term, kind as ItemKind | 'all', business.name);
+      const today = toIsoDate(this.clock.now());
+      const items = await this.api.catalog(term, kind as ItemKind | 'all', business.name, today);
       if (run === this.run) {
         this.items.set(items);
         this.state.set('ready');
@@ -258,11 +262,12 @@ export class CatalogContainer {
     this.detail.set(null);
     this.panelFailed.set(false);
     try {
-      const business = await this.business.ensure();
+      const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
-      const detail = await this.api.detail(code, business.name);
+      const today = toIsoDate(this.clock.now());
+      const detail = await this.api.detail(code, business.name, today);
       if (run === this.detailRun) {
         this.detail.set(detail);
       }
