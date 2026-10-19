@@ -402,6 +402,7 @@ export class ItemFormContainer {
     this.notCreated.set(false);
     const editing = this.code();
     const { price, cost } = this.amounts();
+    let found: { name: string; itemName: string } | null = null;
     const value = {
       kind: this.kind(),
       name: this.name(),
@@ -464,11 +465,11 @@ export class ItemFormContainer {
         !editing &&
         this.afterLostAnswer &&
         ErpnextError.from(error).excType === 'DuplicateEntryError' &&
-        (await this.api.exists(value.code).catch(() => null))?.itemName === value.name.trim()
+        (found = await this.api.exists(value.code).catch(() => null))?.itemName ===
+          value.name.trim()
       ) {
         // An earlier add whose answer was lost finished after all: that item is this one.
-        const found = await this.api.exists(value.code);
-        void this.router.navigate(['/catalog', found?.name ?? value.code], { replaceUrl: true });
+        void this.router.navigate(['/catalog', found!.name], { replaceUrl: true });
       } else {
         const e = ErpnextError.from(error);
         if (e.kind === 'forbidden') {

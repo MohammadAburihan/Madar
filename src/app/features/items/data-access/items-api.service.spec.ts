@@ -287,6 +287,26 @@ describe('ItemsApiService', () => {
     });
   });
 
+  it("drops a replaced barcode's type, which may not fit the new code", async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': () => ({}) },
+      {
+        'Item/POT-30': {
+          doctype: 'Item',
+          name: 'POT-30',
+          stock_uom: 'Unit',
+          is_stock_item: 1,
+          barcodes: [{ name: 'BC-1', barcode: '4006381333931', barcode_type: 'EAN' }],
+        },
+      },
+    );
+    await api().update('POT-30', value({ barcode: 'SKU-55', price: null }), false, 'M', 'D');
+    expect(postCalls[0].body['doc']).toMatchObject({
+      barcodes: [{ name: 'BC-1', barcode: 'SKU-55', barcode_type: '', idx: 1 }],
+    });
+  });
+
   it('tells a lost edit that landed from a change someone else made', async () => {
     const doc = {
       doctype: 'Item',

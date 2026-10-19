@@ -69,8 +69,9 @@ export class ItemsApiService {
     company: string,
     today: string,
   ): Promise<{ items: CatalogItem[]; capped: boolean }> {
-    // A barcode typed on an Arabic keyboard is stored in Western digits.
-    const like = `%${westernDigits(term.trim())}%`;
+    const like = `%${term.trim()}%`;
+    // A code or barcode typed on an Arabic keyboard is stored in Western digits; names keep theirs.
+    const codeLike = `%${westernDigits(term.trim())}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
         fields: ['name', 'item_name', 'item_group', 'stock_uom', 'is_stock_item'],
@@ -81,9 +82,9 @@ export class ItemsApiService {
         ],
         orFilters: term.trim()
           ? [
-              ['item_code', 'like', like],
+              ['item_code', 'like', codeLike],
               ['item_name', 'like', like],
-              ['Item Barcode', 'barcode', 'like', like],
+              ['Item Barcode', 'barcode', 'like', codeLike],
             ]
           : undefined,
         orderBy: 'item_name asc, name asc',
@@ -203,7 +204,8 @@ export class ItemsApiService {
               ...rows.filter((r) => r.barcode === barcode),
               ...rows.filter((r) => r.barcode !== barcode),
             ]
-          : [{ ...(rows[0] ?? {}), barcode }, ...rows.slice(1)]
+          : // A new code may not fit the old row's type (EAN…), which ERPNext checks: the type goes.
+            [{ ...(rows[0] ?? {}), barcode, barcode_type: '' }, ...rows.slice(1)]
         : rows.slice(1);
     // Frappe keeps a row's idx: numbered again so the new order is the one saved.
     const ordered = barcodes.map((r, i) => ({ ...r, idx: i + 1 }));
@@ -243,7 +245,8 @@ export class ItemsApiService {
     const holds =
       doc.item_name === value.name.trim() &&
       doc.item_group === value.group &&
-      (!doc.is_stock_item || (doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
+      // A cleared barcode drops the first: whatever is left may be shown, so only a typed one is compared.
+      (!doc.is_stock_item || !barcode || (doc.barcodes?.[0]?.barcode ?? '') === barcode) &&
       (!doc.is_stock_item ||
         value.cost === null ||
         round2(Number(doc.valuation_rate || 0)) === round2(value.cost));
