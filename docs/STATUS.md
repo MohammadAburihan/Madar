@@ -209,6 +209,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
+## Purchase order: add a new item (in progress, before step 6)
+
+- **A2 — Add item from a purchase order**: this PR. New purchase order offers **+ Add item** under the item search to
+  roles that add items. It opens Add item or service with the searched name and the chosen kind (product/service);
+  saving comes back to the same order, supplier and lines kept, with the new item added at the supplier's price, and
+  Cancel comes back to it unchanged. The order is held for that one trip only: a fresh visit still starts over.
+  Designs: the button on Purchase 01 Create PO (shared EN/AR body, phone and desktop). e2e: `32-purchase-add-item`.
+  Review pass 1 (2 low; reviewing stops) fixed: the new item waits apart from a project's queued shortfall item; the
+  return address drops `added` once used, so going back doesn't re-add a removed line.
+
 ## Items & services and contact deactivation (done: #59, #60)
 
 - **I1 — Items & services**: merged (#59). **Items & services** (`/catalog`, from Inventory, Home's Catalog and "+ New") lists

@@ -959,7 +959,8 @@
       "services": "الخدمات",
       "forProject": "شراء للمشروع {{project}}",
       "prefillMissing": "لا يمكن شراء {{item}}، لذلك لم يُضف. تأكد أنه صنف شراء فعّال.",
-      "supplierMissing": "لم يعد {{supplier}} مورّداً نشطاً. اختر مورّداً آخر."
+      "supplierMissing": "لم يعد {{supplier}} مورّداً نشطاً. اختر مورّداً آخر.",
+      "addItem": "+ إضافة صنف"
     },
     "kind": {
       "product": "منتج",

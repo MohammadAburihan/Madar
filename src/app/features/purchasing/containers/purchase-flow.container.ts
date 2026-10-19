@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { PurchaseOrderStore } from '../data-access/purchase-order.store';
 
 /**
@@ -14,6 +14,8 @@ import { PurchaseOrderStore } from '../data-access/purchase-order.store';
 })
 export class PurchaseFlowContainer {
   constructor() {
-    inject(PurchaseOrderStore).resume();
+    // Back from "Add item" (`from=catalog`): the order the user left is still theirs.
+    const from = inject(ActivatedRoute).snapshot.queryParamMap.get('from');
+    inject(PurchaseOrderStore).resume(from === 'catalog');
   }
 }

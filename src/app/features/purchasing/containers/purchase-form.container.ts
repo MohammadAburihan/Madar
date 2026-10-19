@@ -121,6 +121,9 @@ const SEARCH_DELAY_MS = 250;
             <p class="muted">{{ txt.noResults }}</p>
           }
         }
+        @if (canAddItems()) {
+          <button type="button" class="md-btn" (click)="addNewItem()">{{ txt.addItem }}</button>
+        }
         @for (line of ctx.store.lines(); track line.item.code; let i = $index) {
           <div class="line">
             <app-quantity-stepper
@@ -170,6 +173,7 @@ export class PurchaseFormContainer implements OnInit {
   /** What the user typed in each price field, so "4." isn't rewritten to "4" while typing. */
   protected readonly rateInputs = signal<Record<string, string>>({});
   private searchRun = 0;
+  protected readonly canAddItems = computed(() => this.ctx.session.capabilities().manageItems);
 
   protected readonly text = computed(() => {
     const { t } = this.ctx.i18n.tr();
@@ -188,6 +192,7 @@ export class PurchaseFormContainer implements OnInit {
       placeholder: t('purchase.form.placeholder'),
       supplierFirst: t('purchase.form.supplierFirst'),
       noResults: t('purchase.form.noResults'),
+      addItem: t('purchase.form.addItem'),
       rate: t('purchase.form.rate'),
       review: t('purchase.form.review'),
       retry: t('purchase.retry'),
@@ -257,6 +262,18 @@ export class PurchaseFormContainer implements OnInit {
       store.forProject(project, params.get('item'), Number(params.get('qty')) || null);
     }
     this.deepSupplier = params.get('supplier');
+    const added = params.get('added');
+    if (added) {
+      // Back from "Add item" with the item made: it joins the order once the supplier is known. Taken off the
+      // address, so going back to it doesn't add the item again after it was removed.
+      store.queueNewItem(added);
+      void this.ctx.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { added: null, from: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
     void this.load();
   }
 
@@ -293,6 +310,7 @@ export class PurchaseFormContainer implements OnInit {
     this.missingSupplier.set(null);
     this.ctx.store.setSupplier(supplier);
     void this.ctx.store.applyPrefill().catch(() => undefined);
+    void this.ctx.store.applyAdded().catch(() => undefined);
   }
 
   protected setRate(index: number, code: string, input: string): void {
@@ -320,6 +338,19 @@ export class PurchaseFormContainer implements OnInit {
       }
     }
     this.loaded.set(true);
+    void store.applyAdded().catch(() => undefined);
+  }
+
+  /** Opens "Add item or service" with what was searched for, keeping this order for the way back. */
+  protected addNewItem(): void {
+    this.ctx.store.holdForNewItem();
+    void this.ctx.router.navigate(['/catalog/new'], {
+      queryParams: {
+        name: this.term().trim() || null,
+        type: this.kind(),
+        return: 'purchase',
+      },
+    });
   }
 
   private async search(term: string, kind: 'product' | 'service'): Promise<void> {

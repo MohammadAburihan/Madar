@@ -907,7 +907,8 @@
       "services": "Services",
       "forProject": "Bought for project {{project}}",
       "prefillMissing": "{{item}} can't be bought, so it wasn't added. Check that it's an active purchase item.",
-      "supplierMissing": "{{supplier}} isn't an active supplier any more. Choose another."
+      "supplierMissing": "{{supplier}} isn't an active supplier any more. Choose another.",
+      "addItem": "+ Add item"
     },
     "kind": {
       "product": "Product",
