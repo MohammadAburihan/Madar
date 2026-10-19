@@ -7,9 +7,12 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
+  AddStockRequest,
+  AddStockResult,
   AdjustRequest,
   AdjustResult,
   InventoryOverview,
@@ -54,6 +57,15 @@ export class NoValuationError extends Error {
     super(`${item} has no valuation rate`);
   }
 }
+
+/** The company has no Temporary Opening account, which ERPNext books opening stock against. */
+export class NoOpeningAccountError extends Error {
+  constructor() {
+    super('No Temporary Opening account');
+  }
+}
+
+const ADD_LABELS = { opening: 'Opening stock', made: 'Grown or made here' } as const;
 
 const DAMAGE_LABELS = { damaged: 'Damaged', lost: 'Lost', expired: 'Expired' } as const;
 
@@ -279,7 +291,10 @@ export class InventoryApiService {
       if (now !== request.systemQty) {
         throw new StockMovedError(now);
       }
-      if (adjustChange(request) > 0 && !(await this.hasValuation(request))) {
+      if (
+        adjustChange(request) > 0 &&
+        !(await this.hasValuation(request.item, request.warehouse, request.company))
+      ) {
         throw new NoValuationError(request.item);
       }
     }
@@ -326,6 +341,109 @@ export class InventoryApiService {
     return this.adjustResult(entry, request);
   }
 
+  /**
+   * Brings stock in without a purchase, all lines at one location. Opening stock is booked against the company's
+   * Temporary Opening account (ERPNext's opening entry), so it never reads as profit; stock grown or made here is a
+   * plain receipt. A line without a cost takes the item's own, which must exist. A timeout throws UnresolvedError:
+   * look it up with findAddStock().
+   */
+  async addStock(
+    request: AddStockRequest,
+    draft: string | null,
+    onInserted: (draft: string) => void = () => undefined,
+  ): Promise<AddStockResult> {
+    const current = draft
+      ? await reusableDraft(this.erpnext.doc<EntryDoc>('Stock Entry', draft))
+      : null;
+    if (current?.docstatus === 1) {
+      if (!sameAddStock(current, request)) {
+        throw new PostedEarlierError(current.name);
+      }
+      return addStockResult(current);
+    }
+    for (const line of request.lines.filter((l) => l.rate === null)) {
+      if (!(await this.hasValuation(line.item, request.warehouse, request.company))) {
+        throw new NoValuationError(line.item);
+      }
+    }
+    const opening =
+      request.reason === 'opening'
+        ? await firstValueFrom(
+            this.erpnext.post<string | null>(
+              'erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool.get_temporary_opening_account',
+              { company: request.company },
+            ),
+          ).catch((error: unknown) => {
+            // ERPNext refuses when the company has none; a lost connection or a refusal stays what it is.
+            const e = ErpnextError.from(error);
+            if (e.kind === 'server' && e.status === 417) {
+              return null;
+            }
+            throw error;
+          })
+        : null;
+    if (request.reason === 'opening' && !opening) {
+      throw new NoOpeningAccountError();
+    }
+    const fresh = await this.types.withType({
+      doctype: 'Stock Entry',
+      stock_entry_type: 'Material Receipt',
+      purpose: 'Material Receipt',
+      company: request.company,
+      is_opening: opening ? 'Yes' : 'No',
+      to_warehouse: request.warehouse,
+      from_warehouse: null,
+      remarks: `${ADD_LABELS[request.reason]}\n\nMadar add ${request.reference}`,
+      items: request.lines.map((line) => ({
+        item_code: line.item,
+        qty: line.qty,
+        uom: line.uom,
+        stock_uom: line.uom,
+        conversion_factor: 1,
+        t_warehouse: request.warehouse,
+        ...(line.rate !== null ? { basic_rate: line.rate, set_basic_rate_manually: 1 } : {}),
+        // A cost of 0 is meant (grown from seed): ERPNext otherwise asks for a valuation.
+        ...(line.rate === 0 ? { allow_zero_valuation_rate: 1 } : {}),
+        ...(opening ? { expense_account: opening } : {}),
+      })),
+    });
+    let entry: EntryDoc;
+    try {
+      let doc: EntryDoc;
+      if (current) {
+        doc = { ...current, ...fresh, name: current.name, modified: current['modified'] };
+      } else {
+        doc = await confirmRequest(
+          this.erpnext.post<EntryDoc>('frappe.client.insert', { doc: fresh }),
+        );
+        onInserted(doc.name);
+      }
+      entry = await confirmRequest(this.erpnext.post<EntryDoc>('frappe.client.submit', { doc }));
+    } catch (error) {
+      throw unresolvedOr(error);
+    }
+    return addStockResult(entry);
+  }
+
+  /** Looks stock brought in up by its Madar reference after an unresolved confirmation. */
+  async findAddStock(reference: string): Promise<AddStockResult | 'not-found' | { draft: string }> {
+    const [entry] = await firstValueFrom(
+      this.erpnext.list<EntryDoc>('Stock Entry', {
+        fields: ['name', 'docstatus', 'posting_date', 'posting_time'],
+        filters: [
+          ['remarks', 'like', `%${reference}%`],
+          ['docstatus', '!=', 2],
+        ],
+        orderBy: 'docstatus desc',
+        limit: 1,
+      }),
+    );
+    if (!entry) {
+      return 'not-found';
+    }
+    return entry.docstatus === 0 ? { draft: entry.name } : addStockResult(entry);
+  }
+
   /** Deletes a draft a failed confirmation left behind. */
   async discard(draft: string): Promise<void> {
     await firstValueFrom(
@@ -361,13 +479,13 @@ export class InventoryApiService {
    * Whether ERPNext can value stock added at the location: its own rule (the location's last rate, then the item's
    * valuation or standard rate, then a buying price), asked as for stock going out so a missing rate reads as 0.
    */
-  private async hasValuation(request: AdjustRequest): Promise<boolean> {
+  private async hasValuation(item: string, warehouse: string, company: string): Promise<boolean> {
     const rate = await firstValueFrom(
       this.erpnext.post<number>('erpnext.stock.utils.get_incoming_rate', {
         args: {
-          item_code: request.item,
-          warehouse: request.warehouse,
-          company: request.company,
+          item_code: item,
+          warehouse,
+          company,
           qty: -1,
           voucher_type: 'Stock Entry',
           // The latest rate on record, whatever today is on the site.
@@ -570,5 +688,26 @@ function sameAdjustment(entry: EntryDoc, request: AdjustRequest): boolean {
     rows[0]['item_code'] === request.item &&
     Number(rows[0]['qty']) === Math.abs(change) &&
     rows[0][change > 0 ? 't_warehouse' : 's_warehouse'] === request.warehouse
+  );
+}
+
+function addStockResult(entry: EntryDoc): AddStockResult {
+  return { entry: entry.name, postingDate: entry.posting_date, postingTime: entry.posting_time };
+}
+
+function sameAddStock(entry: EntryDoc, request: AddStockRequest): boolean {
+  const rows = (entry['items'] as Record<string, unknown>[] | undefined) ?? [];
+  return (
+    (entry['is_opening'] === 'Yes') === (request.reason === 'opening') &&
+    rows.length === request.lines.length &&
+    request.lines.every((line, i) => {
+      const row = rows[i];
+      return (
+        row['item_code'] === line.item &&
+        Number(row['qty']) === line.qty &&
+        row['t_warehouse'] === request.warehouse &&
+        (line.rate === null || Number(row['basic_rate']) === line.rate)
+      );
+    })
   );
 }

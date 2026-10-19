@@ -20549,6 +20549,19 @@
               }
             },
             {
+              "id": "DrpEM",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add stock"
+                }
+              }
+            },
+            {
               "id": "M5S5Y",
               "type": "ref",
               "ref": "Ab7yc",
@@ -31140,6 +31153,19 @@
                   "layout": "vertical",
                   "gap": 16,
                   "children": [
+                    {
+                      "id": "WspTy",
+                      "type": "ref",
+                      "ref": "Ab7yc",
+                      "name": "Add stock",
+                      "width": "fill_container",
+                      "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host g8ztZ and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "descendants": {
+                        "JgY9L": {
+                          "content": "Add stock"
+                        }
+                      }
+                    },
                     {
                       "id": "fBXgv",
                       "type": "ref",
@@ -51962,6 +51988,22 @@
               }
             },
             {
+              "id": "gaWm1",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Add stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إضافة مخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "dCoPz",
               "type": "ref",
               "ref": "S1PTe",
@@ -61050,6 +61092,22 @@
                   "gap": 16,
                   "alignItems": "end",
                   "children": [
+                    {
+                      "id": "dWeuZ",
+                      "type": "ref",
+                      "ref": "S1PTe",
+                      "name": "Add stock",
+                      "width": "fill_container",
+                      "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host DPJa3 and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                      "descendants": {
+                        "yHiIx": {
+                          "content": "إضافة مخزون",
+                          "fontFamily": "$md-arabic",
+                          "lineHeight": 1.5,
+                          "textAlign": "right"
+                        }
+                      }
+                    },
                     {
                       "id": "L7sZu",
                       "type": "ref",
@@ -123576,6 +123634,1752 @@
           "content": "إبقاء نشطاً"
         }
       }
+    },
+    {
+      "type": "frame",
+      "id": "bg5vA",
+      "x": 34000,
+      "y": 5551,
+      "name": "04 Mobile / Inventory 07 Add stock",
+      "context": " | Handoff: English LTR; counterpart y9LQT9. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "E2myoo",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "e4PX0R",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "la1y0",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "VSTWa",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "P6jyPs",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "J2kvv",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IThJl",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "N4Pw3o",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "RcLwz",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "h5xtu7",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: y9LQT9. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "Z8H0w",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: zIzt1. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "NMwCK",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "HuJJ0",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "H4ZaLu",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Add stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "lMtJz",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Main warehouse · Opening stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "HTcFb",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Count correction",
+              "fill": "$md-tint",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Count correction. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Stock in",
+                  "fill": "$md-primary"
+                }
+              }
+            },
+            {
+              "id": "J03e6x",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Reason",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Adjustment type. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Reason *"
+                },
+                "sedCr": {
+                  "content": "Opening stock"
+                }
+              }
+            },
+            {
+              "id": "NB5lx",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Location",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Adjustment type. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Location"
+                },
+                "sedCr": {
+                  "content": "Main warehouse"
+                }
+              }
+            },
+            {
+              "id": "H2Sgl",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: Search. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "id": "IcHqr",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Item",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Affected stock · OLV-20 · 8 on hand · Garden shop. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Olive tree · 20 L"
+                },
+                "IxO24": {
+                  "content": "OLV-20 · Unit"
+                },
+                "u15BHu": {
+                  "content": "10 · ILS 40.00 each"
+                }
+              }
+            },
+            {
+              "id": "ByK1x",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Quantity",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Adjustment type. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Quantity *"
+                },
+                "sedCr": {
+                  "content": "10"
+                }
+              }
+            },
+            {
+              "id": "JSwJj",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Cost per unit",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Adjustment type. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Cost per unit"
+                },
+                "sedCr": {
+                  "content": "ILS 40.00"
+                }
+              }
+            },
+            {
+              "id": "QhWxW",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: y9LQT9. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "id": "lPOPo",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Line 2",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Affected stock · OLV-20 · 8 on hand · Garden shop. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Ceramic planter · 30 cm"
+                },
+                "IxO24": {
+                  "content": "POT-30 · Unit"
+                },
+                "u15BHu": {
+                  "content": "5 · ILS 22.50 each"
+                }
+              }
+            },
+            {
+              "id": "qC6oJ",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Company stock will fall by 2",
+              "width": "fill_container",
+              "fill": "#FFF1D6",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Adds 15 units at Main warehouse",
+                  "fill": "$md-warning"
+                },
+                "RKM9S": {
+                  "content": "Value ILS 512.50. Opening stock goes to the opening balance, not to profit."
+                }
+              }
+            },
+            {
+              "id": "tSvKr",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Post count adjustment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Post count adjustment. Route specification: XmogS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Review stock to add"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "HE9Xu",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Use Count stock to correct a count, and Purchases for stock you buy.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Y4qp1l",
+      "x": 34550,
+      "y": 5551,
+      "name": "Arabic / 04 Mobile / Inventory 07 Add stock",
+      "context": " | Arabic counterpart of I6uep. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart I6uep. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "I6uep",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "PyQSW",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "u3QJ2k",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "c0HNJW",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HFFlB",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "sWyPb",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "IaDsD",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "bw24e",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "pyEAr",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zMdts",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "jRBkS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: I6uep. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "Pkeos",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: m4pqC3. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "OcEJ1",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "L2DbUp",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "TaRu7",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "إضافة مخزون",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "O5QGJj",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المستودع الرئيسي · مخزون افتتاحي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "sdYU9",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "Count correction",
+              "fill": "$md-tint",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: تسوية الجرد. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "إدخال مخزون",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "zYY4q",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Reason",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: نوع التسوية. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "السبب *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "مخزون افتتاحي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "wPzqo",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Location",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: نوع التسوية. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الموقع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "المستودع الرئيسي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "cedgo",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: بحث. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "id": "Ms3Ee",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Item",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: المخزون المتأثر · OLV-20 · المتوفر 8 · متجر الحديقة. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "شجرة زيتون · 20 لتر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "OLV-20 · وحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "10 · ILS 40.00 للوحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "lSPZf",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Quantity",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: نوع التسوية. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الكمية *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "10",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Hv9a0",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Cost per unit",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: نوع التسوية. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Adjustment type; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "تكلفة الوحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "ILS 40.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "hw3q9",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Remove",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: I6uep. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
+              "id": "mNYOU",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Line 2",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: المخزون المتأثر · OLV-20 · المتوفر 8 · متجر الحديقة. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "أصيص خزفي · 30 سم",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "POT-30 · وحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "5 · ILS 22.50 للوحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "vi9kT",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Company stock will fall by 2",
+              "width": "fill_container",
+              "fill": "#FFF1D6",
+              "descendants": {
+                "v5EFM": {
+                  "content": "يضيف 15 وحدة في المستودع الرئيسي",
+                  "fill": "$md-warning",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "القيمة ILS 512.50. يُسجَّل المخزون الافتتاحي في الرصيد الافتتاحي لا في الربح.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "AWj2W",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Post count adjustment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: ترحيل تسوية الجرد. Route specification: V7BP44. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "مراجعة المخزون المضاف",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "UJqXz",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "استخدم جرد المخزون لتصحيح الجرد، والمشتريات للمخزون الذي تشتريه.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "wViwD",
+      "x": 35100,
+      "y": 5551,
+      "name": "09 Mobile / Review stock to add",
+      "context": " | Handoff: English LTR; counterpart V7BP44. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "x3sLUc",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "vXfph",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "R8qn8",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dBMdc",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "JmZNM",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: Switch business. Route specification: XBVPW. Editing opens Ravkg; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "i6FJ9C",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Rehan Nursery",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "UwWsi",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "u2Lu2V",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "id": "oP4I7",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: V7BP44. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "id": "FLbg1",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "QpZfF",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Review stock to add",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "blqai",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Main warehouse · Opening stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "pHKXs",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Count variance −2",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Add 2 items · 15 units",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "Olive tree · 20 L: 10 × ILS 40.00. Ceramic planter · 30 cm: 5 × ILS 22.50. Value ILS 512.50."
+                }
+              }
+            },
+            {
+              "id": "M0NFB2",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Post count adjustment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Post count adjustment. Route specification: D2jVn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Add stock"
+                }
+              }
+            },
+            {
+              "id": "ZbfuT",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Edit count",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Edit count. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Edit"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "lg6bp",
+      "x": 35650,
+      "y": 5551,
+      "name": "Arabic / 09 Mobile / Review stock to add",
+      "context": " | Arabic counterpart of XmogS. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart XmogS. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "XmogS",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "T258X",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "v21qcH",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "IIA3T",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HmZuC",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Q4tFQ",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: تبديل المنشأة. Route specification: SOqwG. Editing opens XtOdQ; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "VeA3D",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "v2O0uk",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "WEVM2",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "مشتل ريحان للنباتات والحدائق",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "id": "R0mtg",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: XmogS. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "id": "Pkjvw",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "رجوع"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "nEna1",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مراجعة المخزون المضاف",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Q1nNDI",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المستودع الرئيسي · مخزون افتتاحي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "SJ7GU",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Count variance −2",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "إضافة صنفين · 15 وحدة",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "شجرة زيتون · 20 لتر: 10 × ILS 40.00. أصيص خزفي · 30 سم: 5 × ILS 22.50. القيمة ILS 512.50.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "rupk0",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Post count adjustment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: ترحيل تسوية الجرد. Route specification: QwM97. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "إضافة المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "S74Qe",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Edit count",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تعديل الجرد. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تعديل",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ShMll",
+      "x": 36200,
+      "y": 5551,
+      "name": "09 Mobile / Stock added",
+      "context": " | Handoff: English LTR; counterpart QwM97. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ed1rB",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ZeN6I",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "JcYB1",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "vdugy",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "g8RxzG",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: Switch business. Route specification: XBVPW. Editing opens Ravkg; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YXoiE",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Rehan Nursery",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "M9C56",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "wpYX1",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "id": "VcvxO",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: QwM97. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "id": "g1WZW",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "Pde4n",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Stock added",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "RLay3",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "MAT-STE-2026-00061 · Opening stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "ZFQaa",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Posted",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Added",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "2 items, 15 units, now at Main warehouse."
+                }
+              }
+            },
+            {
+              "id": "S06sC",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Open stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open stock. Route specification: WDrtt. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Open stock"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "m4Q9c",
+      "x": 36750,
+      "y": 5551,
+      "name": "Arabic / 09 Mobile / Stock added",
+      "context": " | Arabic counterpart of D2jVn. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart D2jVn. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "D2jVn",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "wIorA",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "o9yHXS",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "k5bPE5",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZdY0R",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "LZTnr",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: تبديل المنشأة. Route specification: SOqwG. Editing opens XtOdQ; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "pSXXI",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "zqwS5",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "uX1Vr",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "مشتل ريحان للنباتات والحدائق",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "id": "q5CLM",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: D2jVn. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "id": "a6fYWJ",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "رجوع"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "n3ipih",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تمت إضافة المخزون",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "x8eee",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "MAT-STE-2026-00061 · مخزون افتتاحي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "PVGsZ",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Posted",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "تمت الإضافة",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "صنفان، 15 وحدة، الآن في المستودع الرئيسي.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Dow4z",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Open stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: فتح المخزون. Route specification: fbSFD. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "فتح المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

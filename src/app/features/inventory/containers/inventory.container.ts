@@ -332,6 +332,7 @@ export class InventoryContainer implements OnInit {
       return [catalog];
     }
     return [
+      { id: 'addStock', label: t('inventory.actions.add') },
       { id: 'countStock', label: t('inventory.actions.count') },
       { id: 'recordDamage', label: t('inventory.actions.damage') },
       ...(this.caps().supplyProjects
@@ -382,7 +383,8 @@ export class InventoryContainer implements OnInit {
       return;
     }
     const item = this.selected();
-    void this.router.navigate(['/inventory', action === 'countStock' ? 'count' : 'damage'], {
+    const task = action === 'addStock' ? 'add' : action === 'countStock' ? 'count' : 'damage';
+    void this.router.navigate(['/inventory', task], {
       queryParams: item ? { item: item.code } : {},
     });
   }

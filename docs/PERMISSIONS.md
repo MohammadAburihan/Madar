@@ -59,7 +59,7 @@ to the Owner.
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |
 | Record supplier invoices | ✅ | — | — | — | ✅ | — |
 | Pay suppliers, record expenses | ✅ | — | — | — | — | — |
-| Transfer, count, or adjust stock | ✅ | — | ✅ | ✅ | — | — |
+| Transfer, count, adjust, or add stock without buying it (opening stock, grown or made here; cost per unit only for roles that see costs) | ✅ | — | ✅ | ✅ | — | — |
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
 | Add or edit items and services (Items & services; ERPNext needs Item Manager) | ✅ | — | — | — | ✅ | — |
