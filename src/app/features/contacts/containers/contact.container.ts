@@ -14,24 +14,35 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
+import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ContactsApiService } from '../data-access/contacts-api.service';
 import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
 import { contactActions, contactKinds, editableKinds } from './contacts-access';
-import { contactLines, contactSubtitle, customerView, supplierView } from './contacts-view';
+import {
+  activationDialog,
+  contactLines,
+  contactSubtitle,
+  customerView,
+  supplierView,
+} from './contacts-view';
 
 /** One customer or supplier: how to reach them, what they owe or are owed, and what to do next. */
 @Component({
   selector: 'app-contact',
   imports: [
     BackLinkComponent,
+    ConfirmDialogComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
     PageHeadingComponent,
+    StatusChipComponent,
     TotalsCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,6 +69,12 @@ import { contactLines, contactSubtitle, customerView, supplierView } from './con
       />
     } @else if (view(); as v) {
       <app-page-heading [title]="v.name" [subtitle]="v.subtitle" />
+      @if (!v.active) {
+        <app-status-chip [label]="txt.inactive" tone="warning" />
+      }
+      @if (notice(); as n) {
+        <app-feedback-card [tone]="n.tone" [title]="n.title" [message]="n.message" />
+      }
       @if (v.lines) {
         <p class="lines">{{ v.lines }}</p>
       }
@@ -66,6 +83,16 @@ import { contactLines, contactSubtitle, customerView, supplierView } from './con
       }
       @for (card of v.cards; track card.title) {
         <app-feedback-card [title]="card.title" [message]="card.message" />
+      }
+      @if (!v.active && editable()) {
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="switching()"
+          (click)="asking.set(true)"
+        >
+          {{ contactKind() === 'customers' ? txt.reactivateCustomer : txt.reactivateSupplier }}
+        </button>
       }
       @for (action of v.actions; track action.id; let first = $first) {
         <button
@@ -84,6 +111,20 @@ import { contactLines, contactSubtitle, customerView, supplierView } from './con
         <button type="button" class="md-btn" (click)="router.navigate([...base(), 'edit'])">
           {{ contactKind() === 'customers' ? txt.editCustomer : txt.editSupplier }}
         </button>
+        @if (v.active) {
+          <button type="button" class="md-btn" [disabled]="switching()" (click)="asking.set(true)">
+            {{ contactKind() === 'customers' ? txt.deactivateCustomer : txt.deactivateSupplier }}
+          </button>
+        }
+      }
+      @if (dialog(); as d) {
+        <app-confirm-dialog
+          [open]="asking()"
+          [title]="d.title"
+          [message]="d.message"
+          [actions]="d.actions"
+          (chosen)="answer($event)"
+        />
       }
     } @else if (failed()) {
       <app-page-heading [title]="txt.pageTitle" [subtitle]="id()" />
@@ -116,6 +157,13 @@ export class ContactContainer {
 
   private readonly detail = signal<CustomerDetail | SupplierDetail | null>(null);
   protected readonly failed = signal(false);
+  /** The deactivate or reactivate question is open. */
+  protected readonly asking = signal(false);
+  protected readonly switching = signal(false);
+  /** What the last deactivate or reactivate came to. */
+  private readonly outcome = signal<
+    'deactivated' | 'reactivated' | 'permission' | 'offline' | 'error' | null
+  >(null);
   private run = 0;
 
   private readonly contactKind = computed<ContactKind>(() =>
@@ -146,6 +194,11 @@ export class ContactContainer {
       history: t('contacts.viewTransactions'),
       editCustomer: t('contacts.editContact'),
       editSupplier: t('contacts.editSupplier'),
+      inactive: t('contacts.activation.inactive'),
+      deactivateCustomer: t('contacts.activation.deactivateCustomer'),
+      deactivateSupplier: t('contacts.activation.deactivateSupplier'),
+      reactivateCustomer: t('contacts.activation.reactivateCustomer'),
+      reactivateSupplier: t('contacts.activation.reactivateSupplier'),
       loadFailed: {
         title: t('contacts.loadFailed.title'),
         message: t('contacts.loadFailed.message'),
@@ -163,9 +216,11 @@ export class ContactContainer {
     const currency = this.business.active()?.currency ?? '';
     const base = {
       name: detail.name,
+      active: detail.active,
       subtitle: contactSubtitle(kind, detail.id, tr),
       lines: contactLines(detail),
-      actions: contactActions(kind, detail, this.caps(), tr),
+      // ERPNext refuses new sales or purchases with an inactive contact: none are offered.
+      actions: detail.active ? contactActions(kind, detail, this.caps(), tr) : [],
     };
     if ('totals' in detail) {
       const view = customerView(detail, currency, this.i18n.language(), tr);
@@ -183,6 +238,32 @@ export class ContactContainer {
     };
   });
 
+  protected readonly dialog = computed(() => {
+    const detail = this.detail();
+    return detail
+      ? activationDialog(
+          this.contactKind(),
+          detail,
+          this.business.active()?.currency ?? '',
+          this.i18n.tr(),
+        )
+      : null;
+  });
+
+  protected readonly notice = computed(() => {
+    const outcome = this.outcome();
+    if (!outcome) {
+      return null;
+    }
+    const { t } = this.i18n.tr();
+    const done = outcome === 'deactivated' || outcome === 'reactivated';
+    return {
+      tone: done ? ('tint' as const) : ('danger' as const),
+      title: t(`contacts.activation.outcome.${outcome}.title`),
+      message: t(`contacts.activation.outcome.${outcome}.message`),
+    };
+  });
+
   constructor() {
     effect(() => {
       const kind = this.contactKind();
@@ -194,8 +275,41 @@ export class ContactContainer {
     });
   }
 
-  protected async load(kind = this.contactKind(), id = this.id()): Promise<void> {
+  protected async answer(choice: string): Promise<void> {
+    this.asking.set(false);
+    const detail = this.detail();
+    if (choice !== 'confirm' || !detail || this.switching()) {
+      return;
+    }
+    const kind = this.contactKind();
+    const active = !detail.active;
+    this.switching.set(true);
+    this.outcome.set(null);
+    try {
+      await this.api.setActive(kind, detail.id, active);
+      await this.load(kind, detail.id, true);
+      this.outcome.set(active ? 'reactivated' : 'deactivated');
+    } catch (error) {
+      const e = ErpnextError.from(error);
+      if (e.kind === 'forbidden') {
+        void this.session.checkExpired();
+      }
+      this.outcome.set(
+        e.kind === 'forbidden' ? 'permission' : e.kind === 'offline' ? 'offline' : 'error',
+      );
+      // The value may have been set before the answer was lost: show what ERPNext holds.
+      void this.load(kind, detail.id, true);
+    } finally {
+      this.switching.set(false);
+    }
+  }
+
+  /** `keep` leaves the outcome notice on screen: the reload after deactivating shows the new state under it. */
+  protected async load(kind = this.contactKind(), id = this.id(), keep = false): Promise<void> {
     const run = ++this.run;
+    if (!keep) {
+      this.outcome.set(null);
+    }
     this.detail.set(null);
     this.failed.set(false);
     try {

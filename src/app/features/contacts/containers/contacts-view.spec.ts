@@ -7,6 +7,7 @@ import {
   customerView,
   historyCard,
   supplierView,
+  activationDialog,
 } from './contacts-view';
 
 const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
@@ -19,6 +20,7 @@ const LINA: CustomerDetail = {
   phone: '059-000-0142',
   email: 'lina@example.com',
   address: ['12 Garden Street', 'Ramallah', 'Ramallah'],
+  active: true,
   totals: { invoiced: 320, paid: 120, outstanding: 200 },
   latest: {
     name: 'SI-1042',
@@ -79,6 +81,7 @@ describe('contacts view', () => {
       phone: null,
       email: null,
       address: [],
+      active: true,
       outstanding: 170,
       unpaid: { name: 'PINV-0068', total: 270, paid: 100, remaining: 170 },
       openOrder: { name: 'PO-2048', ordered: 10, received: 6, billed: 6 },
@@ -210,5 +213,42 @@ describe('contacts view', () => {
         ).message,
       ),
     ).toBe('Invoice confirmed · Paid\nPaid 70.00 · Due 0.00');
+  });
+
+  it('asks before deactivating, naming what is still owed either way', () => {
+    expect(visible(activationDialog('customers', LINA, 'ILS', en))).toEqual({
+      title: 'Deactivate Lina Haddad?',
+      message:
+        "They leave the contact lists and can't be sold to until you reactivate them. Their history stays. They still owe ILS 200.00.",
+      actions: [
+        { id: 'confirm', label: 'Deactivate', primary: true },
+        { id: 'stay', label: 'Keep active' },
+      ],
+    });
+    const settled = { ...LINA, totals: { invoiced: 320, paid: 320, outstanding: 0 } };
+    expect(visible(activationDialog('customers', settled, 'ILS', en)).message).not.toContain('owe');
+    const supplier = {
+      id: 'Green Clay',
+      name: 'Green Clay',
+      phone: null,
+      email: null,
+      address: [],
+      active: true,
+      outstanding: 170,
+      unpaid: null,
+      openOrder: null,
+    };
+    expect(visible(activationDialog('suppliers', supplier, 'ILS', ar)).message).toContain(
+      'ما زلت مديناً له بـ ILS 170.00.',
+    );
+    expect(
+      visible(activationDialog('customers', { ...LINA, active: false }, 'ILS', en)),
+    ).toMatchObject({
+      title: 'Reactivate Lina Haddad?',
+      actions: [
+        { id: 'confirm', label: 'Reactivate', primary: true },
+        { id: 'stay', label: 'Keep inactive' },
+      ],
+    });
   });
 });

@@ -195,3 +195,43 @@ export function historyCard(
       };
   }
 }
+
+/**
+ * The deactivate or reactivate question for a contact: what it means, and any balance still open (what a customer
+ * owes, what the business owes a supplier), so nobody is switched off with money outstanding unawares.
+ */
+export function activationDialog(
+  kind: ContactKind,
+  contact: CustomerDetail | SupplierDetail,
+  currency: string,
+  tr: Translator,
+) {
+  const k = kind === 'customers' ? 'customer' : 'supplier';
+  if (!contact.active) {
+    return {
+      title: tr.t('contacts.activation.reactivateTitle', { name: contact.name }),
+      message: tr.t(`contacts.activation.${k}.reactivateMessage`),
+      actions: [
+        { id: 'confirm', label: tr.t('contacts.activation.reactivate'), primary: true },
+        { id: 'stay', label: tr.t('contacts.activation.keepInactive') },
+      ],
+    };
+  }
+  const open =
+    'totals' in contact ? (contact.totals?.outstanding ?? 0) : (contact.outstanding ?? 0);
+  return {
+    title: tr.t('contacts.activation.deactivateTitle', { name: contact.name }),
+    message: [
+      tr.t(`contacts.activation.${k}.deactivateMessage`),
+      open > 0
+        ? tr.t(`contacts.activation.${k}.stillOpen`, { amount: formatMoney(open, currency) })
+        : null,
+    ]
+      .filter(Boolean)
+      .join(' '),
+    actions: [
+      { id: 'confirm', label: tr.t('contacts.activation.deactivate'), primary: true },
+      { id: 'stay', label: tr.t('contacts.activation.keepActive') },
+    ],
+  };
+}

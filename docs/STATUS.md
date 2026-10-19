@@ -209,6 +209,16 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
+## Items & services and contact deactivation (in progress, before step 6)
+
+- **D1 — Deactivate customer / supplier**: this PR. A contact's page and the desktop panel offer **Deactivate customer**
+  or **supplier** to the roles that edit that kind (PERMISSIONS.md), after a confirmation that names any balance still
+  open (what a customer owes, what the business owes a supplier). It sets ERPNext's Disabled: history and balances stay,
+  the contact leaves the lists and pickers (ERPNext refuses new sales or purchases with it), and its page shows
+  Inactive with **Reactivate** instead of the sell, buy and pay actions. Contacts lists filter Active / Inactive.
+  Designs: the Deactivate buttons on the customer and supplier pages and the desktop panel, the Active/Inactive filter,
+  an inactive customer and the confirmation dialog (mobile EN/AR). e2e: `31-deactivate-contacts`.
+
 ## Stock tasks and layout parity (in progress, before step 6)
 
 - **P1 — Layout parity**: this PR. An audit of every page with separate phone and desktop layouts: Inventory's "Supply

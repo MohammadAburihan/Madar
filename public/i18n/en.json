@@ -2570,6 +2570,56 @@
       "goodsReceived": "Goods received",
       "goodsSentBack": "Goods sent back",
       "dueOnly": "Due {{due}}"
+    },
+    "activation": {
+      "status": "Status",
+      "filters": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "inactive": "Inactive",
+      "deactivateCustomer": "Deactivate customer",
+      "deactivateSupplier": "Deactivate supplier",
+      "reactivateCustomer": "Reactivate customer",
+      "reactivateSupplier": "Reactivate supplier",
+      "deactivateTitle": "Deactivate {{name}}?",
+      "reactivateTitle": "Reactivate {{name}}?",
+      "deactivate": "Deactivate",
+      "keepActive": "Keep active",
+      "reactivate": "Reactivate",
+      "keepInactive": "Keep inactive",
+      "customer": {
+        "deactivateMessage": "They leave the contact lists and can't be sold to until you reactivate them. Their history stays.",
+        "stillOpen": "They still owe {{amount}}.",
+        "reactivateMessage": "They return to the contact lists and can be sold to again."
+      },
+      "supplier": {
+        "deactivateMessage": "They leave the contact lists and can't be bought from until you reactivate them. Their history stays.",
+        "stillOpen": "You still owe them {{amount}}.",
+        "reactivateMessage": "They return to the contact lists and can be bought from again."
+      },
+      "outcome": {
+        "deactivated": {
+          "title": "Deactivated",
+          "message": "Find them under Inactive in Contacts to reactivate them."
+        },
+        "reactivated": {
+          "title": "Reactivated",
+          "message": "They're back in the contact lists."
+        },
+        "permission": {
+          "title": "You can't change this",
+          "message": "ERPNext didn't allow it for your role. Nothing changed."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "Check the connection; the page shows what ERPNext holds now."
+        },
+        "error": {
+          "title": "It didn't change",
+          "message": "ERPNext refused it. Try again, or check the contact in ERPNext."
+        }
+      }
     }
   },
   "settings": {

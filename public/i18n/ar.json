@@ -2654,6 +2654,56 @@
       "goodsReceived": "تم استلام البضائع",
       "goodsSentBack": "أُعيدت البضائع للمورّد",
       "dueOnly": "المتبقي {{due}}"
+    },
+    "activation": {
+      "status": "الحالة",
+      "filters": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "inactive": "غير نشط",
+      "deactivateCustomer": "إيقاف تنشيط العميل",
+      "deactivateSupplier": "إيقاف تنشيط المورّد",
+      "reactivateCustomer": "إعادة تنشيط العميل",
+      "reactivateSupplier": "إعادة تنشيط المورّد",
+      "deactivateTitle": "إيقاف تنشيط {{name}}؟",
+      "reactivateTitle": "إعادة تنشيط {{name}}؟",
+      "deactivate": "إيقاف التنشيط",
+      "keepActive": "إبقاء نشطاً",
+      "reactivate": "إعادة التنشيط",
+      "keepInactive": "إبقاء غير نشط",
+      "customer": {
+        "deactivateMessage": "يخرج من قوائم جهات الاتصال ولا يمكن البيع له حتى تعيد تنشيطه. يبقى سجلّه.",
+        "stillOpen": "ما زال عليه {{amount}}.",
+        "reactivateMessage": "يعود إلى قوائم جهات الاتصال ويمكن البيع له مجدداً."
+      },
+      "supplier": {
+        "deactivateMessage": "يخرج من قوائم جهات الاتصال ولا يمكن الشراء منه حتى تعيد تنشيطه. يبقى سجلّه.",
+        "stillOpen": "ما زلت مديناً له بـ {{amount}}.",
+        "reactivateMessage": "يعود إلى قوائم جهات الاتصال ويمكن الشراء منه مجدداً."
+      },
+      "outcome": {
+        "deactivated": {
+          "title": "أُوقف تنشيطه",
+          "message": "تجده تحت «غير نشط» في جهات الاتصال لإعادة تنشيطه."
+        },
+        "reactivated": {
+          "title": "أُعيد تنشيطه",
+          "message": "عاد إلى قوائم جهات الاتصال."
+        },
+        "permission": {
+          "title": "لا يمكنك تغيير هذا",
+          "message": "لم يسمح ERPNext بذلك لدورك. لم يتغيّر شيء."
+        },
+        "offline": {
+          "title": "لا يوجد اتصال",
+          "message": "تحقّق من الاتصال؛ تعرض الصفحة ما لدى ERPNext الآن."
+        },
+        "error": {
+          "title": "لم يتغيّر",
+          "message": "رفضه ERPNext. حاول مجدداً أو راجع جهة الاتصال في ERPNext."
+        }
+      }
     }
   },
   "settings": {

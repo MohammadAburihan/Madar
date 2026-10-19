@@ -276,4 +276,29 @@ describe('ContactsApiService', () => {
     const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
     expect(history.find((e) => e.name === 'SI-1')!.credited).toBe(30);
   });
+
+  it("deactivates and reactivates through ERPNext's Disabled flag", async () => {
+    const { postCalls } = fakeErpnext({}, { 'frappe.client.set_value': () => ({}) });
+    await api().setActive('customers', 'Lina Haddad', false);
+    await api().setActive('suppliers', 'Green Clay', true);
+    expect(postCalls.map((c) => c.body)).toEqual([
+      { doctype: 'Customer', name: 'Lina Haddad', fieldname: 'disabled', value: 1 },
+      { doctype: 'Supplier', name: 'Green Clay', fieldname: 'disabled', value: 0 },
+    ]);
+  });
+
+  it('lists inactive contacts apart, and reads whether one is active', async () => {
+    const { listCalls } = fakeErpnext(
+      { Customer: () => [], Supplier: () => [] },
+      {},
+      { 'Supplier/Green Clay': { name: 'Green Clay', supplier_name: 'Green Clay', disabled: 1 } },
+    );
+    await api().customerList('', COMPANY, null, false);
+    await api().supplierList('', COMPANY, false, false);
+    expect(listCalls.map((c) => c.query.filters?.[0])).toEqual([
+      ['disabled', '=', 1],
+      ['disabled', '=', 1],
+    ]);
+    expect((await api().supplier('Green Clay', COMPANY, false)).active).toBe(false);
+  });
 });
