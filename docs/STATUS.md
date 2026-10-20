@@ -215,9 +215,13 @@ Asked for every area: change or remove rows inside tasks, and edit or remove rec
 are cancelled, or cancelled and amended as a corrected copy (Owner only); drafts are deleted. Rules in `PERMISSIONS.md`.
 One PR each, in this order:
 
-1. This PR: the rules in `PERMISSIONS.md` and the overview.
-2. Lines inside tasks: a Remove button on every line of the sale basket (services too), quotation and purchase order;
-   remove/skip on delivery, receipt and return rows.
+1. Done (#67): the rules in `PERMISSIONS.md` and the overview.
+2. Lines inside tasks (this PR): **Remove** on every line of the sale basket (phone and desktop, services too), the
+   sale line editor, quotation and purchase order; **Remove / Add back** on delivery, receipt and return rows (a
+   removed row reads "Not included"; with none left, Confirm stays off and a note says why). Saved drafts and posted
+   documents carry only the remaining lines (checked on v16: re-saving a draft drops the removed child rows). e2e:
+   `35-remove-lines`. Review pass 1: low only (delivery Add back on a service row restored a quantity, now 0 as on
+   load); reviewing stops.
 3. Delete drafts: on Unfinished work and draft detail pages, with a confirm step.
 4. Cancel and amend, core and sales invoices: shared helpers, Cancelled in lists, Cancel / Cancel and edit on the invoice.
 5. Sales orders, quotations and deliveries.
