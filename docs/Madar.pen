@@ -10987,7 +10987,7 @@
       "x": 6040,
       "y": 2003,
       "name": "04 Mobile / Drafts",
-      "context": " | Handoff: English LTR; counterpart f0you. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "context": " | Handoff: English LTR; counterpart f0you. Continue buttons sit inside each draft card: sale → MNbv4, purchase → CHgyq, quotation → gLucp. Opening a draft that can't be continued shows k3Dgxj. Sales invoice draft: j8Ruks; purchase order draft: Jk2W5; supplier payment draft: XXwGL. Runtime: not run—requires runnable application.",
       "clip": true,
       "width": 390,
       "fill": "$md-bg",
@@ -11175,7 +11175,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "2 drafts · Rehan Nursery",
+              "content": "3 drafts · Rehan Nursery",
               "lineHeight": 1.4,
               "fontFamily": "$md-font",
               "fontSize": 15,
@@ -11192,64 +11192,160 @@
               "padding": 0
             },
             {
-              "id": "Y28Vsc",
-              "type": "ref",
-              "ref": "d3sxVd",
+              "type": "frame",
+              "id": "WBaHU",
               "name": "Sale for Lina Haddad",
               "width": "fill_container",
               "fill": "$md-tint",
-              "descendants": {
-                "Z8awi6": {
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "su7im",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
                   "content": "Sale for Lina Haddad",
-                  "fill": "$md-primary"
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
                 },
-                "RKM9S": {
-                  "content": "ILS 320.00 · 3 units · Updated 10 min ago"
+                {
+                  "type": "text",
+                  "id": "xNEk0",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 320.00 · 3 units · Updated 10 min ago",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "y6X5w",
+                  "type": "ref",
+                  "ref": "wk3Ko",
+                  "name": "Continue sale",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue sale. Route specification: MNbv4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "rPCdT": {
+                      "content": "Continue sale"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
-              "id": "y6X5w",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Continue sale",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Continue sale. Route specification: MNbv4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Continue sale"
-                }
-              }
-            },
-            {
-              "id": "Inz4l",
-              "type": "ref",
-              "ref": "d3sxVd",
+              "type": "frame",
+              "id": "Z9TE2",
               "name": "Purchase from Green Clay",
               "width": "fill_container",
               "fill": "$md-tint",
-              "descendants": {
-                "Z8awi6": {
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "OmfmK",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
                   "content": "Purchase from Green Clay",
-                  "fill": "$md-primary"
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
                 },
-                "RKM9S": {
-                  "content": "10 planters · Updated yesterday"
+                {
+                  "type": "text",
+                  "id": "r55wS",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "10 planters · Updated yesterday",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "K8ugl",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue purchase. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue purchase"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
-              "id": "K8ugl",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Continue purchase",
+              "type": "frame",
+              "id": "nK98w",
+              "name": "Quotation for Lina Haddad",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: Continue purchase. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Continue purchase"
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "z0fPK",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Quotation for Lina Haddad",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "SX0BK",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · 1 unit · Updated 19 min ago",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "sjmL4",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue quotation. Route specification: gLucp. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue quotation"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -75701,7 +75797,7 @@
       "x": 20050,
       "y": 2042,
       "name": "Arabic / 04 Mobile / Drafts",
-      "context": " | Arabic counterpart of hJseP. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart hJseP. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "context": " | Arabic counterpart of hJseP. Continue buttons sit inside each draft card: sale → xA2Bo, purchase → d0V8Km, quotation → j2MTn. Unavailable draft: p7hvVt. Language switch preserves business, route, input and draft. | Handoff: Arabic RTL; counterpart hJseP.",
       "metadata": {
         "type": "madar-localization",
         "source": "hJseP",
@@ -75900,7 +75996,7 @@
               "fill": "$md-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "مسودتان · مشتل ريحان للنباتات والحدائق",
+              "content": "3 مسودات · مشتل ريحان للنباتات والحدائق",
               "lineHeight": 1.5,
               "textAlign": "right",
               "fontFamily": "$md-arabic",
@@ -75918,82 +76014,175 @@
               "padding": 0
             },
             {
-              "id": "F7pcm",
-              "type": "ref",
-              "ref": "eoTqH",
+              "type": "frame",
+              "id": "B0rGBE",
               "name": "Sale for Lina Haddad",
               "width": "fill_container",
               "fill": "$md-tint",
-              "descendants": {
-                "v5EFM": {
-                  "content": "بيع إلى لينا الحداد",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L8LfYI",
+                  "name": "Title",
                   "fill": "$md-primary",
-                  "fontFamily": "$md-arabic",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "بيع إلى لينا الحداد",
                   "lineHeight": 1.5,
-                  "textAlign": "right"
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
                 },
-                "CZQQN": {
+                {
+                  "type": "text",
+                  "id": "yrQ37",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
                   "content": "ILS 320.00 · 3 وحدات · حُدّث قبل 10 دقائق",
-                  "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
-                  "textAlign": "right"
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "xI1hC",
+                  "type": "ref",
+                  "ref": "V1NTE",
+                  "name": "Continue sale",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة البيع. Route specification: xA2Bo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "c6rXZg": {
+                      "content": "متابعة البيع",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
-              "id": "xI1hC",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Continue sale",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: متابعة البيع. Route specification: xA2Bo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "متابعة البيع",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "reWQM",
-              "type": "ref",
-              "ref": "eoTqH",
+              "type": "frame",
+              "id": "Oinw8",
               "name": "Purchase from Green Clay",
               "width": "fill_container",
               "fill": "$md-tint",
-              "descendants": {
-                "v5EFM": {
-                  "content": "شراء من الطين الأخضر",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "NKGNT",
+                  "name": "Title",
                   "fill": "$md-primary",
-                  "fontFamily": "$md-arabic",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "شراء من الطين الأخضر",
                   "lineHeight": 1.5,
-                  "textAlign": "right"
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
                 },
-                "CZQQN": {
+                {
+                  "type": "text",
+                  "id": "QOxEz",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
                   "content": "10 أوانٍ · حُدّث أمس",
-                  "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
-                  "textAlign": "right"
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "nbq2e",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة الشراء. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة الشراء",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
-              "id": "nbq2e",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Continue purchase",
+              "type": "frame",
+              "id": "WpZ9K",
+              "name": "Quotation for Lina Haddad",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: متابعة الشراء. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "متابعة الشراء",
-                  "fontFamily": "$md-arabic",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "F475a",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "عرض سعر إلى لينا الحداد",
                   "lineHeight": 1.5,
-                  "textAlign": "right"
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "FHQLf",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · وحدة واحدة · حُدّث قبل 19 دقيقة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "aLCM5",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة عرض السعر. Route specification: j2MTn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة عرض السعر",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -125371,6 +125560,2654 @@
               "descendants": {
                 "c6rXZg": {
                   "content": "فتح المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "k3Dgxj",
+      "x": 7540,
+      "y": 2003,
+      "name": "04 Mobile / Drafts Can't continue",
+      "context": " | Handoff: English LTR; counterpart p7hvVt. Shown in place of a draft task that can't be opened. Route specification: Back to drafts → hJseP. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "s3DJ4d",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "jJwkU",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "FIwU2",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Y5owb",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "sDRDb",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xlXo8",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tpskL",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "A2fLAU",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Kx3Mi",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tdcoq",
+              "name": "Draft can't be continued notice",
+              "context": "Role: alert. Accessible name: This draft can't be continued. Shown instead of the task when the draft was confirmed, deleted, or belongs to someone else or another business. Status uses visible text as well as color.",
+              "width": "fill_container",
+              "fill": "#FBE9E7",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iwOhI",
+                  "name": "Title",
+                  "fill": "$md-danger",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "This draft can't be continued",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "wBC3X",
+                  "name": "Message",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "It may have been confirmed or deleted, or belong to someone else or another business. Go back and check your drafts.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "id": "cl1FH",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to drafts",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Back to drafts. Route specification: hJseP. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back to drafts"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "p7hvVt",
+      "x": 22720,
+      "y": 2042,
+      "name": "Arabic / 04 Mobile / Drafts Can't continue",
+      "context": " | Arabic counterpart of k3Dgxj. Handoff: Arabic RTL; shown in place of a draft task that can't be opened. Route specification: Back to drafts → f0you.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "hJseP",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "b2Rmc",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "jtcO5",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "g5JSOM",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "P4Yzvj",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "QbW06",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "m3BSn",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "OjXkI",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "pIQ9q",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X1GUwJ",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HRdoS",
+              "name": "Draft can't be continued notice",
+              "context": "Role: alert. Accessible name: لا يمكن متابعة هذه المسودة. Shown instead of the task when the draft was confirmed, deleted, or belongs to someone else or another business. Status uses visible text as well as color.",
+              "width": "fill_container",
+              "fill": "#FBE9E7",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UyTuA",
+                  "name": "Title",
+                  "fill": "$md-danger",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "لا يمكن متابعة هذه المسودة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "YzD1k",
+                  "name": "Message",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ربما أُكّدت أو حُذفت، أو تخص شخصاً آخر أو منشأة أخرى. ارجع وتحقق من المسودات.",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "id": "i7urIu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to drafts",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: العودة إلى المسودات. Route specification: f0you. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "العودة إلى المسودات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "j8Ruks",
+      "x": 9810,
+      "y": 10058,
+      "name": "04 Mobile / Sales Invoice draft",
+      "context": " | Handoff: English LTR; counterpart B3FgVI. Draft sales invoice: Continue sale opens the draft in the sale task (MNbv4). All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "pBwe0",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "dIaJC",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "m4IDp",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JrF6m",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "p2VBW9",
+              "name": "Business context",
+              "context": "Open business switcher; record remains scoped to Rehan Nursery",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "K5mt6",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vubeD",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "fBhLg",
+                      "name": "Business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "RWkd8",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "vwKhy",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: B3FgVI. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "fBc8l",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: Leztk. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "byxrG",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "CwLv6",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "O6COeq",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Sales invoice ACC-SINV-2026-00149",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Ahox1",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Lina Haddad · 20 Oct 2026",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "yZtIS",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Invoice: Draft",
+              "fill": "$md-tint",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Invoice: Draft. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Invoice: Draft",
+                  "fill": "$md-primary"
+                }
+              }
+            },
+            {
+              "id": "lbIeB",
+              "type": "ref",
+              "ref": "zJO73",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "m86csx": {
+                  "content": "ILS 45.00"
+                },
+                "ZjtQe": {
+                  "content": "ILS 0.00"
+                },
+                "O5eeva": {
+                  "content": "ILS 45.00"
+                }
+              }
+            },
+            {
+              "id": "N9YPBC",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "No payments yet",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "No payments yet",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "PAY-0154 · ILS 120.00\nPAY-0156 · ILS 120.00\nBoth received in Main cash.",
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "A1GcH",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Continue sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Continue sale. Route specification: MNbv4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Continue sale"
+                }
+              }
+            },
+            {
+              "id": "U0pj6",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "View payment history",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: View payment history. Route specification: Leztk. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "View payment history"
+                }
+              }
+            },
+            {
+              "id": "hKrWl",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to sales",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Back to sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back to sales"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "B3FgVI",
+      "x": 22720,
+      "y": 10303,
+      "name": "Arabic / 04 Mobile / Sales Invoice draft",
+      "context": " | Arabic counterpart of j8Ruks. Draft sales invoice: Continue sale opens the draft in the sale task (xA2Bo). Annotated route specification; native interactions unavailable.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "q7SU4x",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "pNquF",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "kpmRZ",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "UXlrI",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "M2vnF",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "hNl9e",
+              "name": "Business context",
+              "context": "Open business switcher; record remains scoped to Rehan Nursery",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "PQs4X",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "q6Aqi",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "zQyHe",
+                      "name": "Business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S4ZKW",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "Zg6im",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: j8Ruks. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "azKq3",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: Iy72g. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AhSYi",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "P8W1L",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "nOrle",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "فاتورة البيع ACC-SINV-2026-00149",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "n1S7WL",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لينا الحداد · 20 أكتوبر 2026",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "ZiFCC",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "الفاتورة: مسودة",
+              "fill": "$md-tint",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: الفاتورة: مسودة. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "الفاتورة: مسودة",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "U4FAf",
+              "type": "ref",
+              "ref": "X9euW",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "qPLQI": {
+                  "content": "ILS 45.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "qPnyV": {
+                  "content": "ILS 0.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "hNuBn": {
+                  "content": "ILS 45.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                }
+              }
+            },
+            {
+              "id": "faCU5",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "لا توجد دفعات بعد",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "لا توجد دفعات بعد",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "PAY-0154 · ILS 120.00\nPAY-0156 · ILS 120.00\nتم استلامهما في الصندوق الرئيسي.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "id": "bnxRW",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Continue sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: متابعة البيع. Route specification: xA2Bo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "متابعة البيع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "nVsSB",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "View payment history",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: عرض سجل الدفعات. Route specification: Iy72g. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "عرض سجل الدفعات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "xCDAq",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to sales",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: العودة إلى المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "العودة إلى المبيعات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Jk2W5",
+      "x": 8710,
+      "y": 11706,
+      "name": "04 Mobile / Purchase Draft order detail",
+      "context": " | Handoff: English LTR; counterpart fKjxY. Draft purchase order: Continue purchase opens the draft in CHgyq. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "O8EogB",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "HB7gJ",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "uKBcu",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "QloRd",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "jzLHR",
+              "name": "Business context",
+              "context": "Open business switcher; record remains scoped to Rehan Nursery",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "f2GuFU",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "itVq3",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "hzvSI",
+                      "name": "Business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GCOdI",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "r2APm",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: fKjxY. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "f5EIdt",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: v2ZcU. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "y0mWxI",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "RZEWa",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "hUzc0",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Purchase order",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "CTD07",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PUR-ORD-2026-00041 · Green Clay",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "Veo9f",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Draft",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Draft. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Draft",
+                  "fill": "$md-warning"
+                }
+              }
+            },
+            {
+              "id": "wxMG3",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Supplier",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: Supplier. Read-only. Annotation only; native activation unavailable.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Supplier"
+                },
+                "sedCr": {
+                  "content": "Green Clay"
+                }
+              }
+            },
+            {
+              "id": "HM1sw",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Ceramic planter · POT-30",
+              "width": "fill_container",
+              "context": "Role: static item. Accessible name: Ceramic planter · POT-30 · Ordered 1 · ILS 20.00 each. Sample text represents the shown record.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Ceramic planter"
+                },
+                "IxO24": {
+                  "content": "POT-30"
+                },
+                "u15BHu": {
+                  "content": "Ordered 1 · ILS 20.00 each"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "YKRLn",
+              "name": "Order quantities",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ytpTB",
+                  "name": "Ordered",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y133V",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ordered",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "WurAW",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gG8oB",
+                  "name": "Received",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GOERx",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Received",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zXFRn",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "0",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cwZV7",
+                  "name": "Remaining",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CEyEz",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Remaining",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uvWEt",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tsQTm",
+              "name": "Order total",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "gap": 16,
+              "padding": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "er9jm",
+                  "name": "Order total label",
+                  "fill": "$md-muted",
+                  "content": "Order total",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "PQZcQ",
+                  "name": "Order total value",
+                  "fill": "$md-primary",
+                  "content": "ILS 20.00",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "cisGl",
+              "name": "Note",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Stock changes only after a receipt is recorded.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "EJXe8",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Continue purchase",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Continue purchase. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Continue purchase"
+                }
+              }
+            },
+            {
+              "id": "Oskmu",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Open purchasing workspace",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open purchasing workspace. Route specification: v2ZcU. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Open purchasing workspace"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "fKjxY",
+      "x": 22720,
+      "y": 11995,
+      "name": "Arabic / 04 Mobile / Purchase Draft order detail",
+      "context": " | Arabic counterpart of Jk2W5. Draft purchase order: Continue purchase opens the draft in d0V8Km. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart Jk2W5.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "D7PZet",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "XiSbs",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "mj5us",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "bi2M6",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "B6601O",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "NGiCB",
+              "name": "Business context",
+              "context": "Open business switcher; record remains scoped to Rehan Nursery",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L3E11",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "Jjl3u",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "txrNm",
+                      "name": "Business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rVBbu",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "oM4pb",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: Jk2W5. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "s4t0VP",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: I8xWyu. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XUr9B",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "dGGkZ",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "rChzc",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "أمر الشراء",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "bPZnD",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Green Clay · PUR-ORD-2026-00041",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "jabgy",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "Draft",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: مسودة. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "مسودة",
+                  "fill": "$md-warning"
+                }
+              }
+            },
+            {
+              "id": "nOzaN",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Supplier",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: المورد. Read-only. Annotation only; native activation unavailable.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "المورد"
+                },
+                "empG8": {
+                  "content": "Green Clay"
+                }
+              }
+            },
+            {
+              "id": "dEWrq",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Ceramic planter · POT-30",
+              "width": "fill_container",
+              "context": "Role: static item. Accessible name: Ceramic planter · POT-30 · المطلوب 1 · ILS 20.00 للوحدة. Sample text represents the shown record.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "Ceramic planter",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "POT-30",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "المطلوب 1 · ILS 20.00 للوحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "wgeDo",
+              "name": "Order quantities",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SW2mW",
+                  "name": "المتبقي",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "z6fwX8",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المتبقي",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "K6IOq",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "G7uhN1",
+                  "name": "المستلم",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ustgO",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المستلم",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "e6A7Xk",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "0",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TUjy7",
+                  "name": "المطلوب",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mzHEt",
+                      "name": "Label",
+                      "fill": "$md-ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المطلوب",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "l4hbQY",
+                      "name": "Value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 28,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wqcCW",
+              "name": "Order total",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "gap": 16,
+              "padding": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FzI3B",
+                  "name": "Order total value",
+                  "fill": "$md-primary",
+                  "content": "ILS 20.00",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "e9SM0r",
+                  "name": "Order total label",
+                  "fill": "$md-muted",
+                  "content": "إجمالي الطلب",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "wQBHY",
+              "name": "Note",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لا يتغيّر المخزون إلا بعد تسجيل الاستلام.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "F3Cc24",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "متابعة الشراء",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: متابعة الشراء. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "متابعة الشراء",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "xePFv",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "فتح مساحة المشتريات",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: فتح مساحة المشتريات. Route specification: I8xWyu. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "فتح مساحة المشتريات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "XXwGL",
+      "x": 7060,
+      "y": 12889,
+      "name": "04 Mobile / Money Supplier payment draft",
+      "context": " | Handoff: English LTR; counterpart J6huM. Draft supplier payment: Continue payment opens the draft in Sscq8. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "VW5sj",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "S2vca",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "RaPKO",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MysLy",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Hhe8x",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WUafa",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rHqnT",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "dJv1U",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "d6xRs",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "yg9ST",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: J6huM. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "vP8A0",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: dVsdv. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "byziv",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "umhIW",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "BL4Px",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Supplier payment",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "cmTWd",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PUR-ORD-2026-00041 · GC-8831 · Green Clay",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "eARgJ",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Partial payment",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Partial payment. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Draft",
+                  "fill": "$md-warning"
+                }
+              }
+            },
+            {
+              "id": "naYtA",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "ILS 100.00 recorded",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Not paid yet",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "This payment is a draft: nothing is paid until it is confirmed."
+                }
+              }
+            },
+            {
+              "id": "UwgpO",
+              "type": "ref",
+              "ref": "zJO73",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "m86csx": {
+                  "content": "ILS 270.00"
+                },
+                "ZjtQe": {
+                  "content": "ILS 0.00"
+                },
+                "O5eeva": {
+                  "content": "ILS 270.00"
+                }
+              }
+            },
+            {
+              "id": "sMrb6",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Paid from",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: Paid from. Route specification: XXwGL. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Paid from"
+                },
+                "sedCr": {
+                  "content": "Main bank"
+                }
+              }
+            },
+            {
+              "id": "T3C5Oh",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Continue payment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Continue payment. Route specification: Sscq8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Continue payment"
+                }
+              }
+            },
+            {
+              "id": "MUd1N",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "View supplier invoice",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: View supplier invoice. Route specification: dVsdv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "View supplier invoice"
+                }
+              }
+            },
+            {
+              "id": "ssLhy",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Open purchasing workspace",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open purchasing workspace. Route specification: v2ZcU. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Open purchasing workspace"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "J6huM",
+      "x": 22720,
+      "y": 13219,
+      "name": "Arabic / 04 Mobile / Money Supplier payment draft",
+      "context": " | Arabic counterpart of XXwGL. Draft supplier payment: Continue payment opens the draft in I33HN4. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart XXwGL.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "qm6my",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "L0SaeO",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "v6AKg",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "UiT9E",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Auxzp",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Pof7T",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Q5hjUm",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "R5yYMw",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "DgKND",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MBzfC",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "E6rKeF",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: XXwGL. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "J4614L",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: EYiPX. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "r2p5s",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "NYqvW",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "vGfoS",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "دفعة المورد",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "zoh9F",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PUR-ORD-2026-00041 · GC-8831 · غرين كلاي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "r8U7lz",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "Partial payment",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: دفعة جزئية. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "مسودة",
+                  "fill": "$md-warning",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "CNmVj",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "تم تسجيل ILS 100.00",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "لم تُدفع بعد",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "هذه الدفعة مسودة: لا يُدفع شيء حتى تأكيدها.",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "jdh8i",
+              "type": "ref",
+              "ref": "X9euW",
+              "name": "Transaction totals",
+              "width": "fill_container",
+              "descendants": {
+                "qPLQI": {
+                  "content": "ILS 270.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "qPnyV": {
+                  "content": "ILS 0.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                },
+                "hNuBn": {
+                  "content": "ILS 270.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                }
+              }
+            },
+            {
+              "id": "NepTP",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Paid from",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: المدفوع من. Route specification: J6huM. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "المدفوع من",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "البنك الرئيسي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Vj925",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "متابعة الدفعة",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: متابعة الدفعة. Route specification: I33HN4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "متابعة الدفعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "n5ku8b",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "View supplier invoice",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: عرض فاتورة المورد. Route specification: EYiPX. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "عرض فاتورة المورد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "dzV1C",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Open purchasing workspace",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: فتح مساحة المشتريات. Route specification: I8xWyu. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "فتح مساحة المشتريات",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
