@@ -209,13 +209,31 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
 
-## Continue drafts and the walk-in customer (in progress)
+## Edit, remove and cancel records (planned, 20 Oct 2026)
+
+Asked for every area: change or remove rows inside tasks, and edit or remove records in the lists. Confirmed records
+are cancelled, or cancelled and amended as a corrected copy (Owner only); drafts are deleted. Rules in `PERMISSIONS.md`.
+One PR each, in this order:
+
+1. This PR: the rules in `PERMISSIONS.md` and the overview.
+2. Lines inside tasks: a Remove button on every line of the sale basket (services too), quotation and purchase order;
+   remove/skip on delivery, receipt and return rows.
+3. Delete drafts: on Unfinished work and draft detail pages, with a confirm step.
+4. Cancel and amend, core and sales invoices: shared helpers, Cancelled in lists, Cancel / Cancel and edit on the invoice.
+5. Sales orders, quotations and deliveries.
+6. Purchasing: orders, receipts, supplier invoices and payments.
+7. Money: payment and expense pages with cancel and amend.
+8. Inventory: a page per stock movement (move, count, damage, add stock) with cancel.
+
+Not planned yet: workers (attendance, leave, salary slips, advances) and project records.
+
+## Continue drafts and the walk-in customer (done: #65, #66)
 
 - **Walk-in customer (done: #65)**: walk-in sales create the shared Walk-in Customer the first time they need it (a new
   site has none); it is found by name, then by customer name (sites that number customers from a series), and kept out
   of customer search and Contacts by both. Deferred (low): two devices creating it at the same moment on a series site;
   a walk-in disabled in Desk fails sales with ERPNext's message; a normal customer may still be named "Walk-in Customer".
-- **Continue drafts**: this PR. **Unfinished work** (`/drafts`, from Home's drafts link and cards) lists the active
+- **Continue drafts (done: #66)**: **Unfinished work** (`/drafts`, from Home's drafts link and cards) lists the active
   business's draft sales, quotations, sales orders, purchase orders and supplier payments, newest first, with search;
   salesperson and store associate see only their own sales drafts, buying amounts only for roles that see costs.
   **Continue sale / quotation / purchase / payment** reopens a draft in its task (`?draft=<name>`) under its own Madar

@@ -227,6 +227,7 @@ Home summaries, simple area-specific overviews, and the fixed reports in section
 - Short forms with advanced options disclosed when needed.
 - Save drafts and preserve input while navigating.
 - Separate draft/final document status from payment and fulfillment status.
+- Change or remove lines while a task is open; delete drafts; cancel confirmed records, or cancel and edit them as a corrected copy (added 20 Oct 2026; who may do each is in `PERMISSIONS.md`).
 - Loading, empty, validation, permission, connection, and session-expiration states.
 - Transaction history and receipt/document attachments where relevant.
 - Configurable currency and locale-aware formatting; use ILS only as sample data.
