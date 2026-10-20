@@ -69,6 +69,24 @@ describe('payment view', () => {
     expect(visible(view.paymentResult(PAYMENT, INVOICE, true, ar).chip.label)).toBe('دفعة جزئية');
   });
 
+  it('shows a draft payment as not paid, leaving the invoice figures alone', () => {
+    const unpaid = { ...INVOICE, outstanding: 270 };
+    const v = visible(view.paymentResult({ ...PAYMENT, docstatus: 0 }, unpaid, false, en));
+    expect([v.chip, v.cardTitle, v.cardMessage, v.totals]).toEqual([
+      { label: 'Draft', tone: 'warning' },
+      'Not paid yet',
+      'This payment is a draft: nothing is paid until it is confirmed.',
+      [
+        { label: 'Invoice total', value: 'ILS 270.00' },
+        { label: 'Amount paid', value: 'ILS 0.00' },
+        { label: 'Outstanding', value: 'ILS 270.00', accent: true },
+      ],
+    ]);
+    expect(view.paymentResult({ ...PAYMENT, docstatus: 0 }, INVOICE, false, ar).cardTitle).toBe(
+      'لم تُدفع بعد',
+    );
+  });
+
   it('describes a payment opened later like the supplier-payment mock', () => {
     const v = visible(view.paymentResult(PAYMENT, INVOICE, false, en));
     expect([v.title, v.subtitle, v.cardMessage]).toEqual([

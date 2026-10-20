@@ -23,6 +23,11 @@ export interface QuotationDetail {
   customerName: string;
   /** Made out to a customer; a quotation to a Lead (from Desk) can't be finished in Madar. */
   forCustomer: boolean;
+  /** The business and the user it belongs to, so a continued draft can be checked against both. */
+  company?: string;
+  owner?: string;
+  /** Madar's `QUO-…` reference from the draft, kept when it is continued. */
+  reference?: string | null;
   docstatus: number;
   status: string;
   date: string;

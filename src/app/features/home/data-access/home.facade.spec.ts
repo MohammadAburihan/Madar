@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { SessionService, SessionUser } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -23,6 +24,7 @@ function setup(options: {
   const session = {
     user,
     persona: () => 'salesperson' as const,
+    capabilities: () => capabilitiesFor('salesperson'),
     ensure: options.ensure ?? (() => Promise.resolve(true)),
     checkExpired: vi.fn(() => Promise.resolve(false)),
     status: () => 'signed-in',

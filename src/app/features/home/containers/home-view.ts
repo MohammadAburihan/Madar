@@ -1,9 +1,12 @@
 import { Capabilities } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
-import { daysUntil, formatLongDate, formatMoney, minutesSince } from '../../../core/format/format';
+import { daysUntil, formatLongDate, formatMoney } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
 import { isolate, Translator } from '../../../core/i18n/translator';
-import { HomeData } from '../data-access/home.models';
+import { Draft, HomeData } from '../data-access/home.models';
+import { DraftKind } from '../data-access/drafts.models';
+import { DraftTarget, draftAction, draftTarget } from './drafts-view';
+import { ago as relativeAgo } from './relative-time';
 
 export interface HomeViewInput {
   data: HomeData;
@@ -36,12 +39,17 @@ export interface CardView {
   message: string;
   /** Amount titles read as an isolated left-to-right run, also in Arabic. */
   numeric?: boolean;
+  /** Where the card's button goes, when it has one. */
+  target?: DraftTarget;
+  action?: string;
 }
 
 export interface AttentionRow {
   work: string;
   due: string;
   next: string;
+  /** Set when `next` is a button that opens a draft. */
+  target?: DraftTarget;
 }
 
 export interface HomeView {
@@ -79,6 +87,12 @@ const ACTIONS: Record<Persona, string[]> = {
   projectManager: ['supplyProject'],
 };
 
+const KINDS: Record<Draft['doctype'], DraftKind> = {
+  'Sales Invoice': 'sale',
+  'Sales Order': 'order',
+  Quotation: 'quotation',
+};
+
 const MOBILE_CARD_LIMIT = 2;
 const TABLE_ROW_LIMIT = 5;
 
@@ -94,19 +108,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     const key = dueKey(iso);
     return key === 'later' ? iso : tr.t(`home.due.${key}`);
   };
-  const ago = (timestamp: string) => {
-    const minutes = minutesSince(timestamp, now);
-    if (minutes < 1) {
-      return tr.t('home.relative.justNow');
-    }
-    if (minutes < 60) {
-      return tr.plural('home.relative.minutes', minutes);
-    }
-    const hours = Math.floor(minutes / 60);
-    return hours < 24
-      ? tr.plural('home.relative.hours', hours)
-      : tr.plural('home.relative.days', Math.floor(hours / 24));
-  };
+  const ago = (timestamp: string) => relativeAgo(timestamp, now, tr);
 
   const roleLabel = tr.t(`home.role.${persona}`);
   const date = formatLongDate(now, language);
@@ -131,6 +133,8 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
           party: drafts[0].party,
           when: ago(drafts[0].modified),
         }),
+        target: { commands: ['/drafts'], draft: null },
+        action: tr.t('home.cards.viewDrafts'),
       }
     : null;
   const deliveryCards: CardView[] = deliveries.map((d) => ({
@@ -161,7 +165,17 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
         }
       : null;
 
-  const own = drafts[0];
+  const own = drafts.find((d) => d.doctype === 'Sales Invoice');
+  const ownTarget =
+    own &&
+    draftTarget({
+      kind: KINDS[own.doctype],
+      name: own.name,
+      continuable: own.continuable,
+      invoice: null,
+    });
+  const ownAction =
+    own && draftAction({ kind: KINDS[own.doctype], continuable: own.continuable }, tr);
   const invoice = invoices[0];
   const continueSaleCard: CardView | null = own
     ? {
@@ -170,6 +184,8 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
           party: own.party,
           amount: formatMoney(own.total, own.currency || business.currency),
         }),
+        target: ownTarget,
+        action: ownAction,
       }
     : null;
   const followUpCard: CardView | null = invoice
@@ -190,13 +206,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     );
   } else if (persona === 'salesperson') {
     cards = [
-      own && {
-        title: tr.t('home.cards.continueSale'),
-        message: tr.t('home.cards.continueSaleMessage', {
-          party: own.party,
-          amount: formatMoney(own.total, own.currency || business.currency),
-        }),
-      },
+      continueSaleCard,
       invoice && {
         title: tr.t('home.cards.followUp'),
         message: tr.t(
@@ -226,10 +236,16 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
       next: tr.t('home.next.receiveDelivery'),
       sort: `1${d.scheduleDate}`,
     })),
-    ...drafts.slice(0, 1).map((d) => ({
+    ...(own ? [own] : []).map((d) => ({
       work: tr.t('home.work.draft', { party: d.party }),
       due: ago(d.modified),
-      next: tr.t('home.next.continueSale'),
+      next: draftAction({ kind: KINDS[d.doctype], continuable: d.continuable }, tr),
+      target: draftTarget({
+        kind: KINDS[d.doctype],
+        name: d.name,
+        continuable: d.continuable,
+        invoice: null,
+      }),
       sort: `2${d.modified}`,
     })),
     ...supply.map((s) => ({
@@ -322,12 +338,8 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
     glance,
     glanceNote: tr.t('home.glance.note', { business: business.name }),
     note: persona === 'warehouse' ? tr.t('home.warehouseNote') : null,
-    draftsLink:
-      persona !== 'warehouse' &&
-      persona !== 'purchasing' &&
-      persona !== 'projectManager' &&
-      draftCount
-        ? tr.t('home.draftsLink', { drafts: tr.plural('home.draftCount', draftCount) })
-        : null,
+    draftsLink: draftCount
+      ? tr.t('home.draftsLink', { drafts: tr.plural('home.draftCount', draftCount) })
+      : null,
   };
 }

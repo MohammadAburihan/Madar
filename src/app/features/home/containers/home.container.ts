@@ -21,6 +21,7 @@ import { AttentionTableComponent } from '../components/attention-table.component
 import { GlancePanelComponent } from '../components/glance-panel.component';
 import { HomeHeaderComponent } from '../components/home-header.component';
 import { HomeFacade } from '../data-access/home.facade';
+import { DraftTarget } from './drafts-view';
 import { buildHomeView } from './home-view';
 
 @Component({
@@ -136,6 +137,12 @@ export class HomeContainer {
       catalog: ['/catalog'],
     };
     void this.router.navigate(routes[id] ?? ['/task', id]);
+  }
+
+  protected openDraft(target: DraftTarget): void {
+    void this.router.navigate(target.commands, {
+      queryParams: target.draft ? { draft: target.draft } : undefined,
+    });
   }
 
   protected openDrafts(): void {

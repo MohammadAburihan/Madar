@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { SessionService } from '../../../core/auth/session.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -6,6 +7,7 @@ import {
   UnresolvedError,
   newReference,
 } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
 import {
@@ -26,6 +28,7 @@ export class PurchaseOrderStore {
   private readonly business = inject(BusinessService);
   private readonly suppliersDirectory = inject(SupplierDirectoryService);
   private readonly clock = inject(SiteClockService);
+  private readonly session = inject(SessionService);
 
   readonly reference = signal(newReference('PUR'));
   readonly suppliers = signal<SupplierOption[]>([]);
@@ -89,6 +92,46 @@ export class PurchaseOrderStore {
     this.saveRun++;
     this.savingDraft.set(false);
     this.draftSaved.set(false);
+  }
+
+  private openRun = 0;
+
+  /**
+   * Opens `?draft=<name>` in the form under its own reference, so confirming submits that draft and a timed-out
+   * confirmation can still be found. The draft already open here keeps its unsaved edits.
+   */
+  async openDraft(name: string): Promise<'opened' | 'busy' | 'stale'> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    if (!this.session.capabilities().orderPurchases) {
+      throw new DraftUnavailableError(name);
+    }
+    const run = ++this.openRun;
+    if (this.draft() === name && this.state() !== 'confirmed') {
+      this.draftSaved.set(true);
+      return 'opened';
+    }
+    const business = await this.business.ensure();
+    const order = await this.api.draftOrder(name, { company: business?.name ?? '' });
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    if (this.draft() === name) {
+      // Left behind by a failed confirmation, and now opened on purpose: starting over must not delete it.
+      this.draftSaved.set(true);
+    }
+    this.start();
+    this.reference.set(order.reference);
+    this.supplier.set(order.supplier);
+    this.project.set(order.project);
+    this.lines.set(order.lines);
+    this.draft.set(order.name);
+    this.draftSaved.set(true);
+    return 'opened';
   }
 
   /** Left to add a new item to the catalog: coming back from there keeps the order (once). */

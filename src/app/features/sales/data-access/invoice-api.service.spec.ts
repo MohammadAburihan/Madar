@@ -44,6 +44,8 @@ describe('InvoiceApiService', () => {
       outstanding: 80,
       delivered: true,
       returnable: true,
+      quickSale: true,
+      saleReference: null,
       credited: 0,
       payments: [
         { name: 'PAY-0154', amount: 120, account: 'Main cash' },

@@ -4,6 +4,7 @@ import { OWN_SALES_ONLY, Persona } from '../../../core/auth/persona';
 import { ErpnextClient, Field, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
+import { referenceIn } from '../../../core/erpnext/draft';
 import { Delivery, Draft, Drafts, HomeData, InvoiceDue, LowStock, SupplyNeed } from './home.models';
 
 export interface HomeScope {
@@ -14,6 +15,8 @@ export interface HomeScope {
   userId: string;
   /** Wall-clock time at the ERPNext site. */
   today: Date;
+  /** Purchase orders and supplier payments the user may continue also count as drafts. */
+  buying?: { orders: boolean; payments: boolean };
 }
 
 export interface HomeLoadResult {
@@ -29,6 +32,12 @@ interface LoadContext extends HomeScope {
 }
 
 const DRAFT_DOCTYPES: Draft['doctype'][] = ['Sales Invoice', 'Sales Order', 'Quotation'];
+// What tells a draft Madar can finish from one made in Desk, by doctype.
+const DRAFT_EXTRA: Record<Draft['doctype'], string[]> = {
+  'Sales Invoice': ['remarks', 'update_stock', 'is_return'],
+  'Sales Order': [],
+  Quotation: ['quotation_to', 'utm_content'],
+};
 const ATTENTION_LIMIT = 5;
 // Child-table queries return one row per item, so fetch enough rows to cover a few documents.
 const CHILD_ROW_LIMIT = 50;
@@ -51,7 +60,9 @@ export class HomeApiService {
         sells ? this.optional(ctx, () => this.todaySales(ctx)) : undefined,
         persona === 'owner' ? this.optional(ctx, () => this.receivables(ctx)) : undefined,
         sells ? this.optional(ctx, () => this.invoicesDue(ctx)) : undefined,
-        sells ? this.optional(ctx, () => this.drafts(ctx)) : undefined,
+        sells || ctx.buying?.orders || ctx.buying?.payments
+          ? this.optional(ctx, () => this.drafts(ctx))
+          : undefined,
         stocks ? this.optional(ctx, () => this.deliveries(ctx)) : undefined,
         stocks ? this.optional(ctx, () => this.supply(ctx)) : undefined,
         stocks ? this.optional(ctx, () => this.lowStock(ctx)) : undefined,
@@ -129,45 +140,82 @@ export class HomeApiService {
   }
 
   private async drafts(ctx: LoadContext): Promise<Drafts> {
-    const perDoctype = await Promise.all(
-      DRAFT_DOCTYPES.map((doctype) =>
-        this.optional(ctx, async () => {
-          const filters: Filter[] = [
-            ['company', '=', ctx.company],
-            ['docstatus', '=', 0],
-          ];
-          if (OWN_SALES_ONLY.includes(ctx.persona)) {
-            filters.push(['owner', '=', ctx.userId]);
-          }
-          const [count, [latest]] = await Promise.all([
-            firstValueFrom(this.erpnext.count(doctype, filters)),
-            this.list<{
-              name: string;
-              customer_name: string;
-              modified: string;
-              grand_total: number;
-              currency: string;
-            }>(doctype, ['name', 'customer_name', 'modified', 'grand_total', 'currency'], filters, {
-              orderBy: 'modified desc',
-              limit: 1,
-            }),
-          ]);
-          const recent: Draft[] = latest
-            ? [
-                {
-                  doctype,
-                  name: latest.name,
-                  party: latest.customer_name,
-                  modified: latest.modified,
-                  total: latest.grand_total,
-                  currency: latest.currency,
-                },
-              ]
-            : [];
-          return { count, recent };
-        }),
-      ),
-    );
+    const sells =
+      ctx.persona !== 'warehouse' &&
+      ctx.persona !== 'purchasing' &&
+      ctx.persona !== 'projectManager';
+    const salesDrafts = sells
+      ? DRAFT_DOCTYPES.map((doctype) =>
+          this.optional(ctx, async () => {
+            const filters: Filter[] = [
+              ['company', '=', ctx.company],
+              ['docstatus', '=', 0],
+            ];
+            if (OWN_SALES_ONLY.includes(ctx.persona)) {
+              filters.push(['owner', '=', ctx.userId]);
+            }
+            const [count, [latest]] = await Promise.all([
+              firstValueFrom(this.erpnext.count(doctype, filters)),
+              this.list<Record<string, unknown> & { name: string; modified: string }>(
+                doctype,
+                [
+                  'name',
+                  'customer_name',
+                  'modified',
+                  'grand_total',
+                  'currency',
+                  ...DRAFT_EXTRA[doctype],
+                ],
+                filters,
+                { orderBy: 'modified desc', limit: 1 },
+              ),
+            ]);
+            const recent: Draft[] = latest
+              ? [
+                  {
+                    doctype,
+                    name: latest.name,
+                    party: String(latest['customer_name'] ?? ''),
+                    modified: latest.modified,
+                    total: Number(latest['grand_total']),
+                    currency: String(latest['currency'] ?? ''),
+                    continuable: isContinuable(doctype, latest),
+                  },
+                ]
+              : [];
+            return { count, recent };
+          }),
+        )
+      : [];
+    // Buying drafts only add to the count: the Continue sale card is for sales.
+    const buyingDrafts = [
+      ctx.buying?.orders
+        ? this.optional(ctx, async () => ({
+            count: await firstValueFrom(
+              this.erpnext.count('Purchase Order', [
+                ['company', '=', ctx.company],
+                ['docstatus', '=', 0],
+              ]),
+            ),
+            recent: [] as Draft[],
+          }))
+        : undefined,
+      ctx.buying?.payments
+        ? this.optional(ctx, async () => ({
+            count: await firstValueFrom(
+              this.erpnext.count('Payment Entry', [
+                ['company', '=', ctx.company],
+                ['docstatus', '=', 0],
+                ['payment_type', '=', 'Pay'],
+                ['party_type', '=', 'Supplier'],
+              ]),
+            ),
+            recent: [] as Draft[],
+          }))
+        : undefined,
+    ];
+    const attempted = [...salesDrafts, ...buyingDrafts].filter((d) => d !== undefined);
+    const perDoctype = await Promise.all(attempted);
     const readable = perDoctype.filter((d): d is Drafts => d !== undefined);
     if (!readable.length) {
       throw new ErpnextError('forbidden', 'No draft doctypes are readable', 403);
@@ -410,6 +458,18 @@ export class HomeApiService {
       throw error;
     }
   }
+}
+
+function isContinuable(doctype: Draft['doctype'], row: Record<string, unknown>): boolean {
+  if (doctype === 'Sales Invoice') {
+    return (
+      !!row['update_stock'] && !row['is_return'] && referenceIn(row['remarks'], 'SALE') !== null
+    );
+  }
+  if (doctype === 'Quotation') {
+    return row['quotation_to'] === 'Customer' && referenceIn(row['utm_content'], 'QUO') !== null;
+  }
+  return false;
 }
 
 function addDays(date: Date, days: number): Date {

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
+import { DraftTarget } from '../containers/drafts-view';
 import { AttentionRow, CardView } from '../containers/home-view';
 
 export interface AttentionHeaders {
@@ -27,7 +28,15 @@ export interface AttentionHeaders {
               ><bdi>{{ row.work }}</bdi></span
             >
             <span role="cell">{{ row.due }}</span>
-            <span role="cell">{{ row.next }}</span>
+            <span role="cell">
+              @if (row.target; as target) {
+                <button type="button" class="link" (click)="opened.emit(target)">
+                  {{ row.next }}
+                </button>
+              } @else {
+                {{ row.next }}
+              }
+            </span>
           </div>
         }
       </div>
@@ -57,6 +66,19 @@ export interface AttentionHeaders {
       font: 400 15px / var(--md-lh) var(--md-font);
     }
 
+    .link {
+      all: unset;
+      cursor: pointer;
+      color: var(--md-primary);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .link:focus-visible {
+      outline: 2px solid var(--md-primary);
+      outline-offset: 2px;
+    }
+
     .head {
       background: var(--md-tint);
       border-block-end: 0;
@@ -69,4 +91,5 @@ export class AttentionTableComponent {
   readonly headers = input.required<AttentionHeaders>();
   readonly rows = input.required<readonly AttentionRow[]>();
   readonly empty = input.required<CardView>();
+  readonly opened = output<DraftTarget>();
 }

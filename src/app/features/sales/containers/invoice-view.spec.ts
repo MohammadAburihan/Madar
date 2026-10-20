@@ -1,6 +1,6 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { InvoiceDetail } from '../data-access/invoice-api.service';
-import { invoiceView } from './invoice-view';
+import { canContinueSale, invoiceView } from './invoice-view';
 
 const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
 const en = realTranslator('en');
@@ -12,6 +12,10 @@ const INVOICE: InvoiceDetail = {
   customerName: 'Lina Haddad',
   postingDate: '2026-10-11',
   status: 'confirmed',
+  company: 'Rehan Nursery',
+  owner: 'rehan@example.com',
+  saleReference: null,
+  quickSale: true,
   total: 320,
   outstanding: 80,
   delivered: true,
@@ -152,5 +156,38 @@ describe('invoice view', () => {
     expect(view.payments.title).toBe('دفعتان مرتبطتان');
     expect(view.payments.message).toContain('تم استلامهما في Main cash.');
     expect(view.chips[1].label).toBe('الدفع: مدفوع جزئياً');
+  });
+});
+
+describe('canContinueSale', () => {
+  const DRAFT: InvoiceDetail = {
+    ...INVOICE,
+    status: 'draft',
+    saleReference: 'SALE-0A1B2C3',
+    owner: 'lina@example.com',
+  };
+  const scope = { sell: true, company: 'Rehan Nursery', owner: null };
+
+  it('offers a quick-sale draft of this business to a role that sells', () => {
+    expect(canContinueSale(DRAFT, scope)).toBe(true);
+  });
+
+  it.each([
+    ['confirmed', { ...DRAFT, status: 'confirmed' as const }, scope],
+    ['not made by Madar', { ...DRAFT, saleReference: null }, scope],
+    ['a credit note or an invoice that moves no stock', { ...DRAFT, quickSale: false }, scope],
+    ['another business', DRAFT, { ...scope, company: 'Other Co' }],
+    ['for a role that cannot sell', DRAFT, { ...scope, sell: false }],
+    [
+      "a colleague's, for a role limited to its own sales",
+      DRAFT,
+      { ...scope, owner: 'sami@example.com' },
+    ],
+  ])('does not offer a draft that is %s', (_label, invoice, where) => {
+    expect(canContinueSale(invoice, where)).toBe(false);
+  });
+
+  it('offers the own draft to a role limited to its own sales', () => {
+    expect(canContinueSale(DRAFT, { ...scope, owner: 'lina@example.com' })).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { SessionService } from '../../../core/auth/session.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -6,6 +7,7 @@ import {
   UnresolvedError,
   newReference,
 } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
 import {
@@ -26,6 +28,7 @@ export class SupplierPaymentStore {
   private readonly invoices = inject(SupplierInvoiceApiService);
   private readonly business = inject(BusinessService);
   private readonly paymentAccounts = inject(PaymentAccountsService);
+  private readonly session = inject(SessionService);
 
   readonly reference = signal(newReference('PAYS'));
   /** The invoice the task was opened from, by name; set before it has loaded. */
@@ -109,6 +112,53 @@ export class SupplierPaymentStore {
     if (!keep) {
       this.start(invoice);
     }
+  }
+
+  private openRun = 0;
+
+  /**
+   * Opens `?draft=<payment>` in the pay form under its own reference, with the amount and account it was saved
+   * with, so confirming submits that draft. The draft already open here keeps its unsaved edits.
+   */
+  async openDraft(name: string): Promise<'opened' | 'busy' | 'stale'> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    const capabilities = this.session.capabilities();
+    if (!capabilities.paySuppliers) {
+      throw new DraftUnavailableError(name);
+    }
+    const run = ++this.openRun;
+    if (this.draft() === name && this.state() !== 'confirmed' && this.invoice()) {
+      this.draftSaved.set(true);
+      return 'opened';
+    }
+    const business = await this.business.ensure();
+    const payment = await this.api.draftPayment(name, { company: business?.name ?? '' });
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    if (this.draft() === name) {
+      // Left behind by a failed confirmation, and now opened on purpose: starting over must not delete it.
+      this.draftSaved.set(true);
+    }
+    this.start(payment.invoice);
+    this.reference.set(payment.reference);
+    this.draft.set(payment.name);
+    this.draftSaved.set(true);
+    await this.load(capabilities.paymentModes);
+    if (run !== this.openRun || this.reference() !== payment.reference) {
+      return 'stale';
+    }
+    if (this.selectedInvoice()) {
+      this.amountInput.set(payment.amount.toFixed(2));
+    }
+    // Never another account in its place: if the drafted one isn't available to this user, they choose.
+    this.account.set(this.accounts().find((a) => a.mode === payment.mode)?.mode ?? null);
+    return 'opened';
   }
 
   /** Loads the invoice, the supplier's other unpaid invoices and the accounts to pay from. */

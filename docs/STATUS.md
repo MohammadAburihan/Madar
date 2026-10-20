@@ -1,6 +1,6 @@
 # Madar — project status
 
-_Last updated: 17 Oct 2026_
+_Last updated: 20 Oct 2026_
 
 ## Done (merged into `development`)
 
@@ -208,6 +208,28 @@ Every feature PR was built, reviewed, fixed and checked end to end on the ERPNex
   Arabic, has only their tasks.
 - Next (agreed 17 Oct 2026, before step 6): Workers & HR on Frappe HRMS (installed into the local ERPNext image), then
   Advanced reports and approvals; then step 6.
+
+## Continue drafts and the walk-in customer (in progress)
+
+- **Walk-in customer (done: #65)**: walk-in sales create the shared Walk-in Customer the first time they need it (a new
+  site has none); it is found by name, then by customer name (sites that number customers from a series), and kept out
+  of customer search and Contacts by both. Deferred (low): two devices creating it at the same moment on a series site;
+  a walk-in disabled in Desk fails sales with ERPNext's message; a normal customer may still be named "Walk-in Customer".
+- **Continue drafts**: this PR. **Unfinished work** (`/drafts`, from Home's drafts link and cards) lists the active
+  business's draft sales, quotations, sales orders, purchase orders and supplier payments, newest first, with search;
+  salesperson and store associate see only their own sales drafts, buying amounts only for roles that see costs.
+  **Continue sale / quotation / purchase / payment** reopens a draft in its task (`?draft=<name>`) under its own Madar
+  reference, so confirming submits that draft and a lost answer is still found; draft invoice, order and payment pages
+  have the same button. A draft that is gone, posted, someone else's, another business's or not Madar's shows "This
+  draft can't be continued" (sales orders open their page). Quick-sale drafts don't store the payment choice: it
+  resets to paid. Designs: Drafts (cards with their buttons, quotation card), Drafts can't continue, Sales invoice
+  draft, Purchase draft order detail, Supplier payment draft (mobile EN/AR). e2e: `34-drafts`.
+  Review pass 1 (no high; 4 low fixed): an opened draft left by a failed confirmation is kept by a later start-over; a
+  confirmed result not yet shown isn't replaced; own-scope fails closed without a user; Home's continue-sale card uses
+  sale drafts only; a draft supplier payment reads "Not paid yet". Review pass 2: low only; reviewing stops. Deferred
+  (low): a Desk quotation without a Madar reference still opens through `?draft=` (as its Edit does); quotations in a
+  non-company currency continue at the base rate; quick sale drops an unseen receipt when another draft is opened; a
+  hand-edited pay URL may name another invoice than the draft's.
 
 ## Add stock without buying it (in progress, before step 6)
 

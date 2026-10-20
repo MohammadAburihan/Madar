@@ -1,4 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
+import { SessionService } from '../../../core/auth/session.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -6,6 +8,7 @@ import {
   UnresolvedError,
   newReference,
 } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
 import { SiteClockService } from '../../../core/time/site-clock.service';
@@ -25,6 +28,7 @@ export class QuotationStore {
   private readonly api = inject(QuotationApiService);
   private readonly business = inject(BusinessService);
   private readonly clock = inject(SiteClockService);
+  private readonly session = inject(SessionService);
 
   readonly reference = signal(newReference('QUO'));
   readonly customer = signal<{ id: string; name: string; meta: string | null } | null>(null);
@@ -103,11 +107,59 @@ export class QuotationStore {
     if (this.busy()) {
       return false;
     }
+    this.load(draft);
+    this.opened = true;
+    return true;
+  }
+
+  private openRun = 0;
+
+  /**
+   * Opens `?draft=<name>` in the form under its own reference. The draft already open here keeps its unsaved
+   * edits; another confirmation still open is kept, and the form shows that one.
+   */
+  async openDraft(name: string): Promise<'opened' | 'busy' | 'stale'> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    const run = ++this.openRun;
+    if (this.draft() === name && this.state() !== 'confirmed') {
+      this.draftSaved.set(true);
+      return 'opened';
+    }
+    const business = await this.business.ensure();
+    const owner = this.draftOwner(name);
+    const detail = await this.api.draftQuotation(name, { company: business?.name ?? '', owner });
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    this.load(detail);
+    return 'opened';
+  }
+
+  private draftOwner(name: string): string | null {
+    if (!OWN_SALES_ONLY.includes(this.session.persona())) {
+      return null;
+    }
+    const id = this.session.user()?.id;
+    if (!id) {
+      throw new DraftUnavailableError(name);
+    }
+    return id;
+  }
+
+  private load(draft: QuotationDetail): void {
     if (this.draft() === draft.name) {
       // Left behind by a failed confirmation, and now opened on purpose: starting over must not delete it.
       this.draftSaved.set(true);
     }
     this.start();
+    if (draft.reference) {
+      this.reference.set(draft.reference);
+    }
     this.customer.set({ id: draft.customer, name: draft.customerName, meta: null });
     this.lines.set(
       draft.lines.map((l) => ({
@@ -129,8 +181,6 @@ export class QuotationStore {
     this.draft.set(draft.name);
     // The user saved it: starting over again keeps it.
     this.draftSaved.set(true);
-    this.opened = true;
-    return true;
   }
 
   /** Entering the task from elsewhere: keep a running, unresolved or unseen quotation; else start over. */

@@ -1,13 +1,16 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
   PostedEarlierError,
   UnresolvedError,
   newReference,
 } from '../../../core/erpnext/confirmation';
+import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { CatalogFilter, SalesApiService } from './sales-api.service';
 import {
   CatalogItem,
@@ -46,6 +49,8 @@ export class QuickSaleStore {
   readonly accounts = signal<PaymentAccount[]>([]);
   readonly account = signal<PaymentAccount | null>(null);
   readonly draft = signal<string | null>(null);
+  /** The opened draft's customer is disabled: ERPNext refuses any sale to them until another is chosen. */
+  readonly customerInactive = signal(false);
   readonly state = signal<ConfirmState>('idle');
   private readonly openConfirmation = computed(() =>
     ['confirming', 'unresolved', 'checking'].includes(this.state()),
@@ -100,9 +105,66 @@ export class QuickSaleStore {
     this.amountInput.set('');
     this.account.set(null);
     this.draft.set(null);
+    this.customerInactive.set(false);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
+  }
+
+  private openRun = 0;
+
+  /**
+   * Opens a saved draft sale at the basket under its own reference, so confirming submits that draft and a
+   * timed-out confirmation can still be found. The draft already open here keeps its unsaved edits.
+   */
+  async openDraft(name: string): Promise<'opened' | 'busy' | 'stale'> {
+    if (this.openConfirmation()) {
+      return 'busy';
+    }
+    const run = ++this.openRun;
+    if (this.draft() !== name || this.state() === 'confirmed') {
+      const business = await this.business.ensure();
+      const ownOnly = OWN_SALES_ONLY.includes(this.session.persona());
+      const owner = ownOnly ? (this.session.user()?.id ?? null) : null;
+      if (ownOnly && !owner) {
+        throw new DraftUnavailableError(name);
+      }
+      const sale = await this.api.draftSale(name, { company: business?.name ?? '', owner });
+      if (run !== this.openRun) {
+        return 'stale';
+      }
+      if (this.openConfirmation()) {
+        return 'busy';
+      }
+      this.start();
+      this.reference.set(sale.reference);
+      this.draft.set(sale.name);
+      const walkIn = sale.customer === WALK_IN_CUSTOMER || sale.customerName === WALK_IN_CUSTOMER;
+      this.walkIn.set(walkIn);
+      this.customer.set(
+        walkIn
+          ? null
+          : {
+              id: sale.customer,
+              name: sale.customerName,
+              phone: null,
+              city: null,
+              outstanding: 0,
+              unpaidInvoices: 0,
+            },
+      );
+      this.customerInactive.set(!walkIn && !sale.customerActive);
+      this.lines.set(sale.lines);
+      this.warehouse.set(sale.warehouse);
+    }
+    await this.loadOptions();
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.warehouse() && !this.warehouses().some((w) => w.id === this.warehouse())) {
+      this.warehouse.set(null);
+    }
+    return 'opened';
   }
 
   async loadOptions(): Promise<void> {
@@ -137,11 +199,13 @@ export class QuickSaleStore {
   }
 
   selectCustomer(customer: CustomerOption): void {
+    this.customerInactive.set(false);
     this.customer.set(customer);
     this.walkIn.set(false);
   }
 
   useWalkIn(): void {
+    this.customerInactive.set(false);
     this.customer.set(null);
     this.walkIn.set(true);
   }

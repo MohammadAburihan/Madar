@@ -61,6 +61,10 @@ export class HomeFacade {
         companyCurrency: business.currency,
         userId: user.id,
         today,
+        buying: {
+          orders: this.session.capabilities().orderPurchases,
+          payments: this.session.capabilities().paySuppliers,
+        },
       });
       const expired = result.allForbidden && (await this.session.checkExpired());
       if (!isCurrent()) {

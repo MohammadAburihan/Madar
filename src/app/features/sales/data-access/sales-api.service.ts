@@ -7,15 +7,22 @@ import {
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
+import {
+  DraftUnavailableError,
+  missingAsUnavailable,
+  referenceIn,
+} from '../../../core/erpnext/draft';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
 import { shareInFlight } from '../../../core/util/share-in-flight';
+import { stockedItems } from './stocked-items';
 import {
   CatalogItem,
   CustomerOption,
+  DraftSale,
   NewCustomer,
   PaymentAccount,
   SaleRequest,
@@ -38,6 +45,27 @@ interface InvoiceDoc {
   grand_total: number;
   outstanding_amount: number;
   [key: string]: unknown;
+}
+
+interface DraftInvoiceDoc extends InvoiceDoc {
+  company: string;
+  owner: string;
+  customer: string;
+  customer_name: string;
+  remarks: string | null;
+  update_stock: number;
+  is_return: number;
+  set_warehouse: string | null;
+  items?: {
+    item_code: string;
+    item_name: string;
+    uom: string;
+    qty: number;
+    rate: number;
+    price_list_rate: number;
+    discount_percentage: number;
+    warehouse: string | null;
+  }[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -151,6 +179,92 @@ export class SalesApiService {
 
   paymentAccounts(company: string, allowed: 'all' | readonly string[]): Promise<PaymentAccount[]> {
     return this.accounts.list(company, allowed);
+  }
+
+  /**
+   * A draft quick sale to continue: one of this business's (and, for `owner`, this user's) own Madar drafts.
+   * Anything else is DraftUnavailableError. Stock is read as it is now, so the basket checks the real shelf.
+   */
+  async draftSale(
+    name: string,
+    scope: { company: string; owner: string | null },
+  ): Promise<DraftSale> {
+    const doc = await firstValueFrom(
+      this.erpnext.doc<DraftInvoiceDoc>('Sales Invoice', name),
+    ).catch((error) => {
+      throw missingAsUnavailable(error, name);
+    });
+    const reference = referenceIn(doc.remarks, 'SALE');
+    if (
+      doc.docstatus !== 0 ||
+      doc.company !== scope.company ||
+      (scope.owner && doc.owner !== scope.owner) ||
+      doc.is_return ||
+      !doc.update_stock ||
+      !reference
+    ) {
+      throw new DraftUnavailableError(name);
+    }
+    const rows = doc.items ?? [];
+    const warehouse = doc.set_warehouse ?? rows.find((r) => r.warehouse)?.warehouse ?? null;
+    const [goods, customer] = await Promise.all([
+      stockedItems(
+        this.erpnext,
+        rows.map((r) => r.item_code),
+      ),
+      firstValueFrom(
+        this.erpnext.list<{ name: string }>('Customer', {
+          fields: ['name'],
+          filters: [
+            ['name', '=', doc.customer],
+            ['disabled', '=', 0],
+          ],
+          limit: 1,
+        }),
+      ),
+    ]);
+    const bins =
+      goods.size && warehouse
+        ? await firstValueFrom(
+            this.erpnext.list<{ item_code: string; actual_qty: number }>('Bin', {
+              fields: ['item_code', 'actual_qty'],
+              filters: [
+                ['item_code', 'in', [...goods]],
+                ['warehouse', '=', warehouse],
+              ],
+              limit: 0,
+            }),
+          )
+        : [];
+    return {
+      name: doc.name,
+      reference,
+      customer: doc.customer,
+      customerName: doc.customer_name,
+      customerActive: customer.length > 0,
+      warehouse,
+      lines: rows.map((r) => {
+        const rate = Number(r.price_list_rate) || Number(r.rate);
+        return {
+          item: {
+            code: r.item_code,
+            name: r.item_name,
+            uom: r.uom,
+            isStock: goods.has(r.item_code),
+            price: rate,
+            stock:
+              goods.has(r.item_code) && warehouse
+                ? {
+                    [warehouse]: bins.find((b) => b.item_code === r.item_code)?.actual_qty ?? 0,
+                  }
+                : {},
+          },
+          qty: Number(r.qty),
+          rate,
+          discount: Number(r.discount_percentage) || 0,
+        };
+      }),
+    };
   }
 
   /** Saves the sale as a draft invoice (no stock or payment effects yet). Updates the draft if it exists. */

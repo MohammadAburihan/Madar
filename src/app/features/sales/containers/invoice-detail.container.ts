@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -19,7 +20,7 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { InvoiceApiService, InvoiceDetail } from '../data-access/invoice-api.service';
-import { invoiceView } from './invoice-view';
+import { canContinueSale, invoiceView } from './invoice-view';
 
 /** A sales invoice with its payment state and linked payments. */
 @Component({
@@ -45,7 +46,17 @@ import { invoiceView } from './invoice-view';
       }
       <app-totals-card [rows]="v.totals" />
       <app-feedback-card [title]="v.payments.title" [message]="v.payments.message" />
-      <button type="button" class="md-btn md-btn--primary" (click)="router.navigate(['/money'])">
+      @if (continuable()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="continueSale()">
+          {{ text().continueSale }}
+        </button>
+      }
+      <button
+        type="button"
+        class="md-btn"
+        [class.md-btn--primary]="!continuable()"
+        (click)="router.navigate(['/money'])"
+      >
         {{ text().history }}
       </button>
       @if (caps().returnSales && invoice()?.returnable) {
@@ -82,15 +93,31 @@ export class InvoiceDetailContainer {
   protected readonly router = inject(Router);
   protected readonly i18n = injectI18n();
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
-  protected readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  protected readonly caps = this.session.capabilities;
   protected readonly invoice = signal<InvoiceDetail | null>(null);
   protected readonly failed = signal(false);
+
+  protected readonly continuable = computed(() => {
+    const invoice = this.invoice();
+    return (
+      !!invoice &&
+      canContinueSale(invoice, {
+        sell: this.caps().sell,
+        company: this.business.active()?.name ?? '',
+        owner: OWN_SALES_ONLY.includes(this.session.persona())
+          ? (this.session.user()?.id ?? '')
+          : null,
+      })
+    );
+  });
 
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
       back: t('sale.back'),
       history: t('invoice.history'),
+      continueSale: t('invoice.continueSale'),
       backToSales: t('invoice.backToSales'),
       returnItems: t('sales.return.start'),
       loading: t('invoice.loading'),
@@ -112,6 +139,7 @@ export class InvoiceDetailContainer {
   });
 
   constructor() {
+    void this.business.ensure().catch(() => undefined);
     effect(() => {
       const name = this.name();
       this.invoice.set(null);
@@ -121,6 +149,10 @@ export class InvoiceDetailContainer {
         .then((invoice) => name === this.name() && this.invoice.set(invoice))
         .catch(() => name === this.name() && this.failed.set(true));
     });
+  }
+
+  protected continueSale(): void {
+    void this.router.navigate(['/sales/new/basket'], { queryParams: { draft: this.name() } });
   }
 
   protected back(): void {

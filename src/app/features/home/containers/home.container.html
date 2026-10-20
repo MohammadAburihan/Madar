@@ -60,9 +60,18 @@
   @switch (status) {
     @case ('ready') {
       @if (mode === 'table') {
-        <app-attention-table [headers]="txt.headers" [rows]="v.rows" [empty]="v.emptyAttention" />
+        <app-attention-table
+          [headers]="txt.headers"
+          [rows]="v.rows"
+          [empty]="v.emptyAttention"
+          (opened)="openDraft($event)"
+        />
       } @else {
-        <app-attention-cards [cards]="v.cards" [empty]="v.emptyAttention" />
+        <app-attention-cards
+          [cards]="v.cards"
+          [empty]="v.emptyAttention"
+          (opened)="openDraft($event)"
+        />
       }
     }
     @case ('offline') {

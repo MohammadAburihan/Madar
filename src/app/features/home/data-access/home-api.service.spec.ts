@@ -205,6 +205,66 @@ describe('HomeApiService', () => {
     expect(calls.some((c) => c.doctype === 'Bin' || c.doctype === 'Item Reorder')).toBe(false);
   });
 
+  it('marks the latest drafts Madar can finish, and counts unfinished purchases for roles that buy', async () => {
+    const { api } = setup(
+      {
+        'Sales Invoice': (q) =>
+          q.orderBy === 'modified desc'
+            ? [
+                {
+                  name: 'SI-2',
+                  customer_name: 'Lina Haddad',
+                  modified: '2026-10-13 09:00:00',
+                  grand_total: 320,
+                  currency: 'ILS',
+                  remarks: 'Madar quick sale SALE-0A1B2C3',
+                  update_stock: 1,
+                  is_return: 0,
+                },
+              ]
+            : [],
+        Quotation: (q) =>
+          q.orderBy === 'modified desc'
+            ? [
+                {
+                  name: 'QT-1',
+                  customer_name: 'Samir Nasser',
+                  modified: '2026-10-12 09:00:00',
+                  grand_total: 90,
+                  currency: 'ILS',
+                  quotation_to: 'Lead',
+                  utm_content: 'QUO-0A1B2C3',
+                },
+              ]
+            : [],
+      },
+      { 'Sales Invoice': 1, Quotation: 1, 'Purchase Order': 2, 'Payment Entry': 1 },
+    );
+
+    const { data } = await api.load({
+      ...scope('owner'),
+      buying: { orders: true, payments: true },
+    });
+
+    expect(data.drafts?.count).toBe(5);
+    expect(data.drafts?.recent.map((d) => [d.name, d.continuable])).toEqual([
+      ['SI-2', true],
+      ['QT-1', false],
+    ]);
+  });
+
+  it('counts only the purchase drafts for a purchasing officer, who sells nothing', async () => {
+    const { api, calls } = setup({}, { 'Purchase Order': 2, 'Payment Entry': 5 });
+    const { data } = await api.load({
+      ...scope('purchasing'),
+      buying: { orders: true, payments: false },
+    });
+    expect(data.drafts).toEqual({ count: 2, recent: [] });
+    expect(
+      calls.some((c) => c.doctype === 'Sales Invoice' && c.query.orderBy === 'modified desc'),
+    ).toBe(false);
+  });
+
   it('shows the first line still to arrive and only what has not been received', async () => {
     const { api } = setup({
       Warehouse: WAREHOUSES,

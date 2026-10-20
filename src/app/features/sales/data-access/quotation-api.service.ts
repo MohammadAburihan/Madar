@@ -6,6 +6,11 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
+import {
+  DraftUnavailableError,
+  missingAsUnavailable,
+  referenceIn,
+} from '../../../core/erpnext/draft';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { HtmlPdfService } from '../../../core/erpnext/html-pdf.service';
 import { QuotationDetail, QuotationRequest } from './quotation.models';
@@ -16,6 +21,8 @@ interface QuotationDoc {
   docstatus: number;
   status: string;
   quotation_to: string;
+  company: string;
+  owner: string;
   party_name: string;
   customer_name: string;
   transaction_date: string;
@@ -145,6 +152,9 @@ export class QuotationApiService {
       customer: doc.party_name,
       customerName: doc.customer_name || doc.party_name,
       forCustomer: doc.quotation_to === 'Customer',
+      company: doc.company,
+      owner: doc.owner,
+      reference: referenceIn(doc['utm_content'], 'QUO'),
       docstatus: doc.docstatus,
       status: doc.status,
       date: doc.transaction_date,
@@ -161,6 +171,25 @@ export class QuotationApiService {
         isStock: stock.has(i.item_code),
       })),
     };
+  }
+
+  /** A draft quotation of this business (and, for `owner`, this user) that can be finished in Madar. */
+  async draftQuotation(
+    name: string,
+    scope: { company: string; owner: string | null },
+  ): Promise<QuotationDetail> {
+    const detail = await this.quotation(name).catch((error) => {
+      throw missingAsUnavailable(error, name);
+    });
+    if (
+      detail.docstatus !== 0 ||
+      !detail.forCustomer ||
+      detail.company !== scope.company ||
+      (scope.owner && detail.owner !== scope.owner)
+    ) {
+      throw new DraftUnavailableError(name);
+    }
+    return detail;
   }
 
   /** The quotation page Madar builds, rendered to PDF on the server, for sharing with the customer. */

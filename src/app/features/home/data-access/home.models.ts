@@ -12,6 +12,8 @@ export interface Draft {
   modified: string;
   total: number;
   currency: string;
+  /** Madar made it and can finish it from its task; otherwise its page opens. */
+  continuable: boolean;
 }
 
 export interface Drafts {

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
@@ -49,7 +50,17 @@ import { paymentResult } from './payment-view';
     } @else if (view(); as v) {
       <app-page-heading [title]="v.title" [subtitle]="v.subtitle" />
       <app-payment-detail [view]="v" [paidFromLabel]="txt.paidFrom" />
-      <button type="button" class="md-btn md-btn--primary" (click)="openInvoice()">
+      @if (continuable(); as target) {
+        <button type="button" class="md-btn md-btn--primary" (click)="continuePayment(target)">
+          {{ txt.continuePayment }}
+        </button>
+      }
+      <button
+        type="button"
+        class="md-btn"
+        [class.md-btn--primary]="!continuable()"
+        (click)="openInvoice()"
+      >
         {{ txt.viewInvoice }}
       </button>
       <button type="button" class="md-btn" (click)="workspace()">{{ txt.workspace }}</button>
@@ -74,6 +85,7 @@ export class SupplierPaymentContainer {
   private readonly payments = inject(SupplierPaymentApiService);
   private readonly invoices = inject(SupplierInvoiceApiService);
   private readonly router = inject(Router);
+  private readonly business = inject(BusinessService);
   private readonly viewport = inject(ViewportService).viewport;
   protected readonly caps = inject(SessionService).capabilities;
   protected readonly i18n = injectI18n();
@@ -91,6 +103,7 @@ export class SupplierPaymentContainer {
       title: t('purchase.payment.pageTitle'),
       paidFrom: t('purchase.payment.paidFrom'),
       viewInvoice: t('purchase.payment.viewInvoice'),
+      continuePayment: t('purchase.payment.continue'),
       workspace: t('purchase.payment.workspace'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
@@ -105,6 +118,20 @@ export class SupplierPaymentContainer {
     };
   });
 
+  /** The invoice a draft payment of this business continues for, when Madar can finish it. */
+  protected readonly continuable = computed(() => {
+    const payment = this.payment();
+    return payment &&
+      payment.docstatus === 0 &&
+      this.caps().paySuppliers &&
+      payment.toSupplier &&
+      payment.reference &&
+      payment.company === this.business.active()?.name &&
+      payment.invoices.length === 1
+      ? payment.invoices[0].invoice
+      : null;
+  });
+
   protected readonly view = computed(() => {
     const payment = this.payment();
     const invoice = this.paid();
@@ -112,6 +139,7 @@ export class SupplierPaymentContainer {
   });
 
   constructor() {
+    void this.business.ensure().catch(() => undefined);
     effect(() => {
       const name = this.name();
       if (this.caps().seeCosts) {
@@ -146,6 +174,12 @@ export class SupplierPaymentContainer {
 
   private invoiceName(): string | undefined {
     return this.invoice();
+  }
+
+  protected continuePayment(invoice: string): void {
+    void this.router.navigate(['/purchases/invoice', invoice, 'pay'], {
+      queryParams: { draft: this.name() },
+    });
   }
 
   protected openInvoice(): void {

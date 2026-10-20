@@ -6,6 +6,7 @@ import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { ErpnextClient, ListQuery } from '../../../core/erpnext/erpnext-client';
 import { CatalogItem, SaleRequest } from './sale.models';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
 type Lister = (query: ListQuery) => unknown[];
@@ -518,5 +519,142 @@ describe('SalesApiService', () => {
       );
       expect(result).toMatchObject({ payment: 'PAY-1', paid: 100 });
     });
+  });
+});
+
+describe('SalesApiService.draftSale', () => {
+  const SCOPE = { company: 'Rehan Nursery', owner: null };
+  const DRAFT = {
+    name: 'ACC-SINV-0001',
+    docstatus: 0,
+    company: 'Rehan Nursery',
+    owner: 'lina@example.com',
+    customer: 'Lina Haddad',
+    customer_name: 'Lina Haddad',
+    remarks: 'Madar quick sale SALE-0A1B2C3',
+    update_stock: 1,
+    is_return: 0,
+    set_warehouse: 'Main - RN',
+    items: [
+      {
+        item_code: 'OLV-20',
+        item_name: 'Olive tree',
+        uom: 'Unit',
+        qty: 2,
+        rate: 76.5,
+        price_list_rate: 85,
+        discount_percentage: 10,
+        warehouse: 'Main - RN',
+      },
+      {
+        item_code: 'SRV-GARDEN',
+        item_name: 'Garden consultation',
+        uom: 'Visit',
+        qty: 1,
+        rate: 150,
+        price_list_rate: 150,
+        discount_percentage: 0,
+        warehouse: null,
+      },
+    ],
+  };
+
+  function open(doc: unknown) {
+    fakeErpnext(
+      {
+        Item: () => [{ name: 'OLV-20' }],
+        Bin: () => [{ item_code: 'OLV-20', actual_qty: 24 }],
+        Customer: () => [{ name: 'Lina Haddad' }],
+      },
+      {},
+      { 'Sales Invoice/ACC-SINV-0001': doc },
+    );
+    return TestBed.inject(SalesApiService);
+  }
+
+  it("reads the draft's reference, customer, lines at their typed prices, and current stock", async () => {
+    const draft = await open(DRAFT).draftSale('ACC-SINV-0001', SCOPE);
+    expect(draft).toMatchObject({
+      name: 'ACC-SINV-0001',
+      reference: 'SALE-0A1B2C3',
+      customer: 'Lina Haddad',
+      customerActive: true,
+      warehouse: 'Main - RN',
+    });
+    expect(
+      draft.lines.map((l) => [l.item.code, l.qty, l.rate, l.discount, l.item.isStock]),
+    ).toEqual([
+      ['OLV-20', 2, 85, 10, true],
+      ['SRV-GARDEN', 1, 150, 0, false],
+    ]);
+    expect(draft.lines[0].item.stock).toEqual({ 'Main - RN': 24 });
+    expect(draft.lines[1].item.stock).toEqual({});
+  });
+
+  it('reports a customer who has been disabled since', async () => {
+    fakeErpnext(
+      { Item: () => [], Customer: () => [] },
+      {},
+      { 'Sales Invoice/ACC-SINV-0001': DRAFT },
+    );
+    const draft = await TestBed.inject(SalesApiService).draftSale('ACC-SINV-0001', SCOPE);
+    expect(draft.customerActive).toBe(false);
+  });
+
+  it.each([
+    ['posted', { ...DRAFT, docstatus: 1 }],
+    ['another business', { ...DRAFT, company: 'Other Co' }],
+    ['not a Madar quick sale', { ...DRAFT, remarks: 'Made in Desk' }],
+    ['a credit note', { ...DRAFT, is_return: 1 }],
+    ['an invoice that moves no stock', { ...DRAFT, update_stock: 0 }],
+  ])('refuses a draft that is %s', async (_label, doc) => {
+    await expect(open(doc).draftSale('ACC-SINV-0001', SCOPE)).rejects.toBeInstanceOf(
+      DraftUnavailableError,
+    );
+  });
+
+  it("refuses a colleague's draft for a role limited to its own sales", async () => {
+    await expect(
+      open(DRAFT).draftSale('ACC-SINV-0001', {
+        company: 'Rehan Nursery',
+        owner: 'sami@example.com',
+      }),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
+  });
+
+  it('opens the own draft of a role limited to its own sales', async () => {
+    await expect(
+      open(DRAFT).draftSale('ACC-SINV-0001', {
+        company: 'Rehan Nursery',
+        owner: 'lina@example.com',
+      }),
+    ).resolves.toMatchObject({ name: 'ACC-SINV-0001' });
+  });
+
+  it('treats a deleted draft as unavailable and lets other failures through', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Sales Invoice/ACC-SINV-0001': () =>
+          throwError(() => new HttpErrorResponse({ status: 404 })),
+      },
+    );
+    await expect(
+      TestBed.inject(SalesApiService).draftSale('ACC-SINV-0001', SCOPE),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
+  });
+
+  it('does not hide a lost connection as an unavailable draft', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Sales Invoice/ACC-SINV-0001': () => throwError(() => new HttpErrorResponse({ status: 0 })),
+      },
+    );
+    await expect(
+      TestBed.inject(SalesApiService).draftSale('ACC-SINV-0001', SCOPE),
+    ).rejects.not.toBeInstanceOf(DraftUnavailableError);
   });
 });

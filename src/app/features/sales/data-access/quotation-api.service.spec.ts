@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { QuotationApiService } from './quotation-api.service';
 import { QuotationRequest } from './quotation.models';
 
@@ -106,5 +107,53 @@ describe('QuotationApiService', () => {
     expect(quotation).toMatchObject({ total: 90, customerName: 'Lina Haddad', forCustomer: true });
     // In the company currency, like the total, whatever currency the quotation was made in.
     expect(quotation.lines[0]).toMatchObject({ rate: 44.985, amount: 89.97 });
+  });
+});
+
+describe('QuotationApiService.draftQuotation', () => {
+  const DOC = {
+    name: 'QT-1',
+    docstatus: 0,
+    status: 'Draft',
+    quotation_to: 'Customer',
+    party_name: 'Lina Haddad',
+    customer_name: 'Lina Haddad',
+    company: 'Rehan Nursery',
+    owner: 'lina@example.com',
+    utm_content: 'QUO-0A1B2C3',
+    transaction_date: '2026-10-16',
+    valid_till: '2026-10-30',
+    base_grand_total: 90,
+    base_rounded_total: 0,
+    items: [],
+  };
+  const open = (doc: object) => {
+    fakeErpnext({}, {}, { 'Quotation/QT-1': doc });
+    return api();
+  };
+
+  it('reads the draft with its reference, business and owner', async () => {
+    expect(
+      await open(DOC).draftQuotation('QT-1', { company: 'Rehan Nursery', owner: null }),
+    ).toMatchObject({
+      reference: 'QUO-0A1B2C3',
+      company: 'Rehan Nursery',
+    });
+  });
+
+  it.each([
+    ['posted', { ...DOC, docstatus: 1 }],
+    ['another business', { ...DOC, company: 'Other Co' }],
+    ['made out to a lead', { ...DOC, quotation_to: 'Lead' }],
+  ])('refuses a quotation that is %s', async (_label, doc) => {
+    await expect(
+      open(doc).draftQuotation('QT-1', { company: 'Rehan Nursery', owner: null }),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
+  });
+
+  it("refuses a colleague's draft for a role limited to its own sales", async () => {
+    await expect(
+      open(DOC).draftQuotation('QT-1', { company: 'Rehan Nursery', owner: 'sami@example.com' }),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
   });
 });
