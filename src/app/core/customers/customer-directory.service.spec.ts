@@ -32,6 +32,7 @@ describe('CustomerDirectoryService', () => {
       { id: 'Samir', name: 'Samir', phone: null, city: null, outstanding: 0, unpaidInvoices: 0 },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', WALK_IN_CUSTOMER]);
+    expect(listCalls[0].query.filters).toContainEqual(['customer_name', '!=', WALK_IN_CUSTOMER]);
     expect(listCalls[0].query.orFilters).toContainEqual(['customer_name', 'like', '%lin%']);
     expect(listCalls[1].query.groupBy).toBe('customer');
   });
@@ -116,5 +117,105 @@ describe('CustomerDirectoryService', () => {
       city: 'Ramallah',
     });
     expect(listCalls[0].query.filters).toEqual([['name', '=', 'Lina Haddad']]);
+  });
+});
+
+describe('CustomerDirectoryService.walkIn', () => {
+  it('uses the customer whose id is the walk-in name', async () => {
+    const { postCalls } = fakeErpnext({
+      Customer: (query) =>
+        query.filters?.some((f) => f[0] === 'name') ? [{ name: WALK_IN_CUSTOMER }] : [],
+    });
+    expect(await TestBed.inject(CustomerDirectoryService).walkIn()).toBe(WALK_IN_CUSTOMER);
+    expect(postCalls).toEqual([]);
+  });
+
+  it('finds it by customer name when a naming series gave it another id', async () => {
+    const { postCalls } = fakeErpnext({
+      Customer: (query) =>
+        query.filters?.some((f) => f[0] === 'customer_name') ? [{ name: 'CUST-0007' }] : [],
+    });
+    const directory = TestBed.inject(CustomerDirectoryService);
+    expect(await directory.walkIn()).toBe('CUST-0007');
+    expect(await directory.walkIn()).toBe('CUST-0007');
+    expect(postCalls).toEqual([]);
+  });
+
+  it('creates it when the site has none', async () => {
+    const { postCalls } = fakeErpnext(
+      { Customer: () => [] },
+      { 'frappe.client.insert': () => ({ name: 'CUST-0001' }) },
+    );
+    expect(await TestBed.inject(CustomerDirectoryService).walkIn()).toBe('CUST-0001');
+    expect(postCalls).toHaveLength(1);
+    expect(postCalls[0].body['doc']).toEqual({
+      doctype: 'Customer',
+      customer_name: WALK_IN_CUSTOMER,
+      customer_type: 'Individual',
+    });
+  });
+
+  it('creates it once for concurrent callers, and remembers it', async () => {
+    const { postCalls, listCalls } = fakeErpnext(
+      { Customer: () => [] },
+      { 'frappe.client.insert': () => ({ name: 'CUST-0001' }) },
+    );
+    const directory = TestBed.inject(CustomerDirectoryService);
+    const ids = await Promise.all([directory.walkIn(), directory.walkIn(), directory.walkIn()]);
+    expect(ids).toEqual(['CUST-0001', 'CUST-0001', 'CUST-0001']);
+    await directory.walkIn();
+    expect(postCalls).toHaveLength(1);
+    expect(listCalls).toHaveLength(2);
+  });
+
+  it('looks up by customer name oldest first', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: (query) =>
+        query.filters?.some((f) => f[0] === 'customer_name') ? [{ name: 'CUST-0007' }] : [],
+    });
+    await TestBed.inject(CustomerDirectoryService).walkIn();
+    expect(listCalls[0].query.orderBy).toBeUndefined();
+    expect(listCalls[1].query.orderBy).toBe('creation asc');
+  });
+
+  it('returns the walk-in another device created when the insert fails', async () => {
+    let lookups = 0;
+    fakeErpnext(
+      { Customer: () => (++lookups > 2 ? [{ name: 'CUST-0009' }] : []) },
+      {
+        'frappe.client.insert': () => {
+          throw new Error('duplicate');
+        },
+      },
+    );
+    expect(await TestBed.inject(CustomerDirectoryService).walkIn()).toBe('CUST-0009');
+  });
+
+  it('rejects with the insert error when the insert fails and nothing is found', async () => {
+    fakeErpnext(
+      { Customer: () => [] },
+      {
+        'frappe.client.insert': () => {
+          throw new Error('duplicate');
+        },
+      },
+    );
+    await expect(TestBed.inject(CustomerDirectoryService).walkIn()).rejects.toThrow('duplicate');
+  });
+
+  it('looks again after a failed lookup instead of remembering the failure', async () => {
+    let fail = true;
+    fakeErpnext({
+      Customer: () => {
+        if (fail) {
+          throw new Error('down');
+        }
+        return [{ name: WALK_IN_CUSTOMER }];
+      },
+    });
+    const directory = TestBed.inject(CustomerDirectoryService);
+    await expect(directory.walkIn()).rejects.toThrow('down');
+    fail = false;
+    expect(await directory.walkIn()).toBe(WALK_IN_CUSTOMER);
   });
 });

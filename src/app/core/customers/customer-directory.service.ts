@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../erpnext/erpnext-client';
+import { shareInFlight } from '../util/share-in-flight';
 
 export interface CustomerOption {
   id: string;
@@ -26,6 +27,16 @@ export const WALK_IN_CUSTOMER = 'Walk-in Customer';
 @Injectable({ providedIn: 'root' })
 export class CustomerDirectoryService {
   private readonly erpnext = inject(ErpnextClient);
+  private walkInId: string | null = null;
+  private readonly resolveWalkIn = shareInFlight(() => this.findOrCreateWalkIn());
+
+  /**
+   * The Walk-in Customer's id, created on first use: a new site has none. ERPNext names it after its
+   * customer name or from a series depending on Selling Settings, so the id is looked up, not assumed.
+   */
+  async walkIn(): Promise<string> {
+    return this.walkInId ?? (await this.resolveWalkIn());
+  }
 
   /**
    * Balances count only `company`'s invoices in its `currency` when given, so they match what a task can
@@ -48,6 +59,7 @@ export class CustomerDirectoryService {
         filters: [
           ['disabled', '=', 0],
           ['name', '!=', WALK_IN_CUSTOMER],
+          ['customer_name', '!=', WALK_IN_CUSTOMER],
         ],
         orFilters: term.trim()
           ? [
@@ -137,6 +149,48 @@ export class CustomerDirectoryService {
       outstanding: 0,
       unpaidInvoices: 0,
     };
+  }
+
+  private async findOrCreateWalkIn(): Promise<string> {
+    const find = async () => {
+      for (const field of ['name', 'customer_name']) {
+        const [row] = await firstValueFrom(
+          this.erpnext.list<{ name: string }>('Customer', {
+            fields: ['name'],
+            filters: [[field, '=', WALK_IN_CUSTOMER]],
+            ...(field === 'customer_name' ? { orderBy: 'creation asc' } : {}),
+            limit: 1,
+          }),
+        );
+        if (row) {
+          return row.name;
+        }
+      }
+      return null;
+    };
+    let id = await find();
+    if (!id) {
+      try {
+        const created = await firstValueFrom(
+          this.erpnext.post<{ name: string }>('frappe.client.insert', {
+            doc: {
+              doctype: 'Customer',
+              customer_name: WALK_IN_CUSTOMER,
+              customer_type: 'Individual',
+            },
+          }),
+        );
+        id = created.name;
+      } catch (error) {
+        // Another device may have created it a moment ago.
+        id = await find();
+        if (!id) {
+          throw error;
+        }
+      }
+    }
+    this.walkInId = id;
+    return id;
   }
 
   private async balancesFor(

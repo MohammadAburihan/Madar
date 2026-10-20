@@ -8,7 +8,7 @@ import {
   UnresolvedError,
   newReference,
 } from '../../../core/erpnext/confirmation';
-import { CatalogFilter, SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
+import { CatalogFilter, SalesApiService } from './sales-api.service';
 import {
   CatalogItem,
   CustomerOption,
@@ -264,10 +264,11 @@ export class QuickSaleStore {
 
   private async request(): Promise<SaleRequest> {
     const business = await this.business.ensure();
+    const customer = this.walkIn() ? await this.api.walkInCustomer() : (this.customer()?.id ?? '');
     return {
       reference: this.reference(),
       company: business?.name ?? '',
-      customer: this.walkIn() ? WALK_IN_CUSTOMER : (this.customer()?.id ?? ''),
+      customer,
       warehouse: this.warehouse() ?? '',
       lines: this.lines(),
       amountPaid: this.amountPaid() || 0,

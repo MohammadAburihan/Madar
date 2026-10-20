@@ -77,6 +77,7 @@ export class ContactsApiService {
         filters: [
           ['disabled', '=', active ? 0 : 1],
           ['name', '!=', WALK_IN_CUSTOMER],
+          ['customer_name', '!=', WALK_IN_CUSTOMER],
         ],
         orFilters: term.trim()
           ? [

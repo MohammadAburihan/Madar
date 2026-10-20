@@ -1,6 +1,12 @@
 import { Capabilities } from '../../../core/auth/capabilities';
+import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { Translator } from '../../../core/i18n/translator';
 import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
+
+/** A series-named site gives the walk-in another id, so its customer name counts too. */
+export function isWalkIn(kind: ContactKind, id: string, name: string | null): boolean {
+  return kind === 'customers' && (id === WALK_IN_CUSTOMER || name === WALK_IN_CUSTOMER);
+}
 
 /** Which lists the role works with: customers for selling or projects, suppliers for buying or receiving. */
 export function contactKinds(caps: Capabilities): ContactKind[] {

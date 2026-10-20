@@ -55,6 +55,10 @@ export class SalesApiService {
     return this.customers.search(term, company);
   }
 
+  walkInCustomer(): Promise<string> {
+    return this.customers.walkIn();
+  }
+
   createCustomer(customer: NewCustomer, country: string): Promise<CustomerOption> {
     return this.customers.create(customer, country);
   }

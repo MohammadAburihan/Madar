@@ -11,7 +11,6 @@ import {
 import { Router } from '@angular/router';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
-import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -25,7 +24,7 @@ import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ContactsApiService } from '../data-access/contacts-api.service';
 import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactActions, contactKinds, editableKinds } from './contacts-access';
+import { contactActions, contactKinds, editableKinds, isWalkIn } from './contacts-access';
 import {
   activationDialog,
   contactLines,
@@ -247,8 +246,8 @@ export class ContactContainer {
   });
 
   /** Every walk-in sale posts to this customer: it is never deactivated. */
-  protected readonly walkIn = computed(
-    () => this.contactKind() === 'customers' && this.id() === WALK_IN_CUSTOMER,
+  protected readonly walkIn = computed(() =>
+    isWalkIn(this.contactKind(), this.id(), this.detail()?.name ?? null),
   );
 
   protected readonly dialog = computed(() => {

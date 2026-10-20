@@ -7,7 +7,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { QuickSaleStore } from './quick-sale.store';
 import { CatalogItem, SaleResult } from './sale.models';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
-import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
+import { SalesApiService } from './sales-api.service';
 
 const OLIVE: CatalogItem = {
   code: 'OLV-20',
@@ -43,6 +43,7 @@ function setup() {
     confirm: vi.fn(),
     find: vi.fn(),
     saveDraft: vi.fn().mockResolvedValue('SI-9'),
+    walkInCustomer: vi.fn().mockResolvedValue('CUST-0007'),
   };
   TestBed.configureTestingModule({
     providers: [
@@ -168,7 +169,7 @@ describe('QuickSaleStore', () => {
     expect(store.dirty()).toBe(false);
   });
 
-  it('sells to the walk-in customer and sends no account when unpaid', async () => {
+  it('sells to the walk-in customer by its resolved id and sends no account when unpaid', async () => {
     const { store, api } = setup();
     await store.loadOptions();
     withBasket(store);
@@ -179,7 +180,7 @@ describe('QuickSaleStore', () => {
     await store.confirm();
 
     expect(api.confirm.mock.calls[0][0]).toMatchObject({
-      customer: WALK_IN_CUSTOMER,
+      customer: 'CUST-0007',
       amountPaid: 0,
       account: null,
     });
