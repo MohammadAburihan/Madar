@@ -61,15 +61,18 @@ Add its line to `MEMORY.md`. If a lesson is project-wide and stable, propose add
 
 ## When reviewing is enough
 
-Review again only while a pass is still finding high or medium issues. Stop and merge when **any** of these holds:
+Review again only while a pass is still finding high or medium issues, and **never more than 3 passes per PR**.
+Stop and merge when **any** of these holds:
 
 | Signal | Why it's enough |
 |---|---|
 | The latest pass found nothing above **low** | Remaining risk is edge cases; more passes trade time for trivia |
 | Two passes in a row found only low/nit items | Returns have flattened |
 | Findings are about code outside the PR's purpose, or repeat earlier deferred ones | The review has run out of real targets |
+| Three passes have run | The cap (user's rule): fix what the third found that matters, defer the rest, merge |
 
-Always run one more pass after fixing a **high** finding, since such fixes often have their own bugs.
+Run one more pass after fixing a **high** finding, since such fixes often have their own bugs, unless that would be
+the fourth: then check the fix yourself and merge.
 Leave deferred low/nit items in the PR description or `docs/STATUS.md`, not as TODO comments.
 
 If a review agent stalls or fails, run it once more. If it fails again, review the latest fix commits

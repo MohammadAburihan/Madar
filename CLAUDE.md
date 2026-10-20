@@ -183,7 +183,8 @@ Each feature goes build → e2e → PR → `/code-review` → fix → merge; the
 paths (phone and desktop where it has both, Arabic for new screens) that check what the screen shows, and the whole
 suite passes before merging. Reviews aim for confidence, not zero findings: stop reviewing and merge
 (CI green) once a pass finds nothing above low severity, or two passes in a row find only low-severity items.
-Defer the rest to the PR description or `docs/STATUS.md`.
+Run **at most 3 review passes** per PR: after the third, fix what it found that matters and merge, with no fourth
+pass. Defer the rest to the PR description or `docs/STATUS.md`.
 
 ## Development and deployment model
 
