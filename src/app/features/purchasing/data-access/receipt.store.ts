@@ -39,6 +39,8 @@ export class ReceiptStore {
   readonly warehouse = signal<string | null>(null);
   /** What the user typed for each order row still to receive. */
   readonly qtyInputs = signal<Record<string, string>>({});
+  /** Rows the user took out of this task; they read "Not included" until added back. */
+  readonly removed = signal<ReadonlySet<string>>(new Set());
   readonly draft = signal<string | null>(null);
   readonly state = signal<ReceiptState>('idle');
   readonly failure = signal<ReceiptFailure | null>(null);
@@ -97,6 +99,7 @@ export class ReceiptStore {
     this.order.set(null);
     this.warehouse.set(null);
     this.qtyInputs.set({});
+    this.removed.set(new Set());
     this.draft.set(null);
     this.state.set('idle');
     this.failure.set(null);
@@ -132,6 +135,7 @@ export class ReceiptStore {
     this.warehouses.set(warehouses);
     const expected = order.lines.find((l) => l.warehouse)?.warehouse;
     this.warehouse.set(warehouses.find((w) => w.id === expected)?.id ?? warehouses[0]?.id ?? null);
+    this.removed.set(new Set());
     this.qtyInputs.set(
       Object.fromEntries(
         order.lines.filter((l) => remainingQty(l) > 0).map((l) => [l.row, String(remainingQty(l))]),
@@ -142,6 +146,23 @@ export class ReceiptStore {
   setWarehouse(warehouse: string | null): void {
     this.clearFailure();
     this.warehouse.set(warehouse);
+  }
+
+  removeRow(row: string): void {
+    this.setQty(row, '0');
+    this.removed.update((rows) => new Set(rows).add(row));
+  }
+
+  addBackRow(row: string): void {
+    const line = this.openLines().find((l) => l.row === row);
+    if (line) {
+      this.setQty(row, String(remainingQty(line)));
+    }
+    this.removed.update((rows) => {
+      const next = new Set(rows);
+      next.delete(row);
+      return next;
+    });
   }
 
   setQty(row: string, input: string): void {

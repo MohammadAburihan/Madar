@@ -20,6 +20,7 @@ import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { QuantityStepperComponent } from '../../../shared/ui/quantity-stepper.component';
@@ -39,6 +40,7 @@ const SEARCH_DELAY_MS = 250;
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     PersonCardComponent,
     QuantityStepperComponent,
@@ -133,6 +135,11 @@ const SEARCH_DELAY_MS = 250;
             (valueChange)="setRate(i, line.item.code, $event)"
           />
         </div>
+        <app-line-remove
+          [label]="lineText(line.item.name).remove"
+          [name]="lineText(line.item.name).removeName"
+          (remove)="removeLine(i, line.item.code)"
+        />
       }
       <app-text-field
         [label]="txt.validTill"
@@ -319,6 +326,11 @@ export class QuotationFormContainer implements OnInit {
     this.ctx.store.setQty(index, qty);
   }
 
+  protected removeLine(index: number, code: string): void {
+    this.forgetRate(code);
+    this.ctx.store.removeLine(index);
+  }
+
   private forgetRate(code: string): void {
     this.rateInputs.update(({ [code]: _, ...rest }) => rest);
   }
@@ -344,6 +356,8 @@ export class QuotationFormContainer implements OnInit {
       decrease: t('sales.quote.decrease', { item }),
       increase: t('sales.quote.increase', { item }),
       rate: t('sales.quote.rate', { item }),
+      remove: t('taskLines.remove'),
+      removeName: t('taskLines.removeItem', { item }),
     };
   }
 

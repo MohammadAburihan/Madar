@@ -409,6 +409,7 @@
       "detailDiscount": "{{qty}} × {{price}} · {{discount}}% discount",
       "apply": "Apply to basket",
       "remove": "Remove from sale",
+      "removeName": "Remove from sale · {{item}}",
       "priceLocked": {
         "title": "Price cannot be changed",
         "message": "Your role cannot change this price. Ask your business owner."
@@ -3790,5 +3791,13 @@
       "purchase": "Open order",
       "payment": "Open payment"
     }
+  },
+  "taskLines": {
+    "remove": "Remove",
+    "removeItem": "Remove {{item}}",
+    "addBack": "Add back",
+    "addBackItem": "Add back {{item}}",
+    "notIncluded": "Not included",
+    "nothingIncluded": "Nothing is included yet. Enter a quantity or add a row back to continue."
   }
 }

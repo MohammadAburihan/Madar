@@ -455,4 +455,19 @@ describe('QuickSaleStore.openDraft', () => {
     expect(store.lines()).toHaveLength(2);
     expect(store.draft()).toBeNull();
   });
+
+  it('removes one line by position and keeps the rest of the sale', () => {
+    const { store } = setup();
+    withBasket(store);
+    const reference = store.reference();
+    store.useWalkIn();
+
+    store.removeLine(1);
+    expect(store.lines().map((l) => l.item.code)).toEqual(['OLV-20']);
+    expect(store.total()).toBe(170);
+    expect([store.reference(), store.walkIn()]).toEqual([reference, true]);
+
+    store.removeLine(0);
+    expect(store.lines()).toEqual([]);
+  });
 });

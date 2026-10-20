@@ -166,4 +166,18 @@ describe('SalesReturnStore', () => {
     await store.load();
     expect(store.ready()).toBe(false);
   });
+
+  it('takes a removed row out of the return until it is added back', async () => {
+    const { store } = setup();
+    await store.load();
+
+    store.removeRow('tree');
+    expect([store.returningNow(), [...store.removed()], store.ready()]).toEqual([
+      0,
+      ['tree'],
+      false,
+    ]);
+    store.addBackRow('tree');
+    expect([store.returningNow(), store.removed().size, store.ready()]).toEqual([1, 0, true]);
+  });
 });

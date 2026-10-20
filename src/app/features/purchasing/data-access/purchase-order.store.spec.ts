@@ -416,4 +416,14 @@ describe('PurchaseOrderStore.openDraft', () => {
     await expect(store.openDraft('PO-X')).rejects.toBeInstanceOf(DraftUnavailableError);
     expect(store.lines()).toHaveLength(1);
   });
+
+  it('removes a line whatever its quantity and keeps the supplier', async () => {
+    const { store } = await ready();
+    const supplier = store.supplierInfo();
+
+    store.removeLine(0);
+
+    expect([store.lines(), store.ready()]).toEqual([[], false]);
+    expect(store.supplierInfo()).toEqual(supplier);
+  });
 });

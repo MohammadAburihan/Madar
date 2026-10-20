@@ -265,12 +265,17 @@ export class PurchaseOrderStore {
   }
 
   setQty(index: number, qty: number): void {
+    if (qty <= 0) {
+      this.removeLine(index);
+      return;
+    }
     this.clearFailure();
-    this.lines.update((lines) =>
-      qty > 0
-        ? lines.map((l, i) => (i === index ? { ...l, qty } : l))
-        : lines.filter((_, i) => i !== index),
-    );
+    this.lines.update((lines) => lines.map((l, i) => (i === index ? { ...l, qty } : l)));
+  }
+
+  removeLine(index: number): void {
+    this.clearFailure();
+    this.lines.update((lines) => lines.filter((_, i) => i !== index));
   }
 
   setRate(index: number, rate: number): void {

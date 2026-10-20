@@ -326,4 +326,18 @@ describe('QuotationStore.openDraft', () => {
     await expect(store.openDraft('QT-OTHER')).rejects.toBeInstanceOf(DraftUnavailableError);
     expect(store.lines()).toHaveLength(1);
   });
+
+  it('removes a line whatever its quantity and keeps the draft and customer', async () => {
+    const { store } = await ready();
+    store.addItem({ ...store.lines()[0].item, code: 'SRV-1', name: 'Visit', isStock: false });
+    const draft = store.draft();
+    const customer = store.customer();
+
+    store.removeLine(0);
+
+    expect(store.lines().map((l) => l.item.code)).toEqual(['SRV-1']);
+    expect([store.draft(), store.customer()]).toEqual([draft, customer]);
+    store.removeLine(0);
+    expect([store.lines(), store.ready()]).toEqual([[], false]);
+  });
 });

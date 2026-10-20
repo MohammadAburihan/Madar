@@ -15,6 +15,7 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { QuantityStepperComponent } from '../../../shared/ui/quantity-stepper.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
@@ -36,6 +37,7 @@ const SEARCH_DELAY_MS = 250;
     FilterChipsComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     QuantityStepperComponent,
     SearchFieldComponent,
@@ -142,6 +144,11 @@ const SEARCH_DELAY_MS = 250;
               (valueChange)="setRate(i, line.item.code, $event)"
             />
           </div>
+          <app-line-remove
+            [label]="lineText(line.item.name).remove"
+            [name]="lineText(line.item.name).removeName"
+            (remove)="ctx.store.removeLine(i)"
+          />
         }
         @if (ctx.store.lines().length) {
           <app-totals-card density="compact" [rows]="lines()" />
@@ -291,6 +298,8 @@ export class PurchaseFormContainer implements OnInit {
       qty: t('purchase.form.qty', { item }),
       decrease: t('purchase.form.decrease', { item }),
       increase: t('purchase.form.increase', { item }),
+      remove: t('taskLines.remove'),
+      removeName: t('taskLines.removeItem', { item }),
     };
   }
 

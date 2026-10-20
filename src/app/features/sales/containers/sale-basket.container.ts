@@ -4,6 +4,7 @@ import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { QuantityStepperComponent } from '../../../shared/ui/quantity-stepper.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
@@ -18,6 +19,7 @@ import { injectSaleContext } from './sale-context';
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     QuantityStepperComponent,
     SelectFieldComponent,
@@ -62,6 +64,11 @@ import { injectSaleContext } from './sale-context';
           (changed)="setQty(i, $event)"
         />
       }
+      <app-line-remove
+        [label]="txt.remove"
+        [name]="removeName(line.item.name)"
+        (remove)="ctx.store.removeLine(i)"
+      />
     }
     @if (ctx.store.lines().length) {
       <button
@@ -119,6 +126,7 @@ export class SaleBasketContainer implements OnInit {
       saveDraft: t('sale.saveDraft'),
       decrease: t('sale.basket.decrease'),
       increase: t('sale.basket.increase'),
+      remove: t('taskLines.remove'),
     };
   });
 
@@ -149,6 +157,10 @@ export class SaleBasketContainer implements OnInit {
 
   protected stepperLabel(item: string): string {
     return this.ctx.i18n.tr().t('sale.basket.quantity', { item });
+  }
+
+  protected removeName(item: string): string {
+    return this.ctx.i18n.tr().t('taskLines.removeItem', { item });
   }
 
   protected setQty(index: number, qty: number): void {

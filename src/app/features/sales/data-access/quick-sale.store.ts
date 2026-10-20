@@ -233,10 +233,14 @@ export class QuickSaleStore {
 
   setQty(index: number, qty: number): void {
     if (qty <= 0) {
-      this.lines.set(this.lines().filter((_, i) => i !== index));
+      this.removeLine(index);
       return;
     }
     this.updateLine(index, { qty });
+  }
+
+  removeLine(index: number): void {
+    this.lines.set(this.lines().filter((_, i) => i !== index));
   }
 
   updateLine(index: number, change: Partial<Pick<SaleLine, 'qty' | 'rate' | 'discount'>>): void {

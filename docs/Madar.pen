@@ -7022,6 +7022,19 @@
               }
             },
             {
+              "id": "cmmyV",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Olive tree",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Olive tree · 20 L. Route specification: MNbv4. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"Remove from sale\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
               "id": "N806q",
               "type": "ref",
               "ref": "Nb1tB",
@@ -7053,6 +7066,19 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Price & discount options"
+                }
+              }
+            },
+            {
+              "id": "BIu1m",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Garden consultation",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Garden consultation. Route specification: MNbv4. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"Remove from sale\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
                 }
               }
             },
@@ -11667,6 +11693,19 @@
                   "content": "Cancel"
                 }
               }
+            },
+            {
+              "id": "dy25j",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove from sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove from sale · Olive tree · 20 L. Route specification: MNbv4. Removes this line from the basket and returns to the basket with totals updated; no confirmation. Keyboard: Enter/Space. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove from sale"
+                }
+              }
             }
           ]
         }
@@ -15074,6 +15113,19 @@
               ]
             },
             {
+              "id": "Nv9Nw",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Ceramic planter",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Ceramic planter · 18 cm. Route specification: CHgyq. Removes this line from the order and updates the order total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Add item. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
               "id": "n8xXGO",
               "type": "ref",
               "ref": "wk3Ko",
@@ -15830,6 +15882,19 @@
                 },
                 "sedCr": {
                   "content": "6 units"
+                }
+              }
+            },
+            {
+              "id": "UgzVF",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Ceramic planter",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Ceramic planter · 18 cm. Route specification: x0Kvl. Leaves this row out of the receipt; the row shows Not included with an Add back button, and quantities and the confirm label update. Keyboard: Enter/Space. Focus moves to Add back. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
                 }
               }
             },
@@ -16594,6 +16659,19 @@
               }
             },
             {
+              "id": "b9k9a",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Olive tree",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Olive tree · 20 L. Route specification: gLucp. Removes this line from the quotation and updates the quoted total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Valid until. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
               "id": "UvhZi",
               "type": "ref",
               "ref": "Nb1tB",
@@ -16612,6 +16690,19 @@
                 },
                 "u15BHu": {
                   "content": "ILS 150.00"
+                }
+              }
+            },
+            {
+              "id": "WAVBZ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Garden consultation",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Garden consultation. Route specification: gLucp. Removes this line from the quotation and updates the quoted total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Valid until. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
                 }
               }
             },
@@ -39997,6 +40088,19 @@
               ]
             },
             {
+              "id": "O4Z6U",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة أصيص خزفي",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة أصيص خزفي · 30 سم. Route specification: d0V8Km. Removes this line from the order and updates the order total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Add item. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
               "id": "NxuXk",
               "type": "ref",
               "ref": "V1NTE",
@@ -40837,6 +40941,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "L2I91",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة أصيص خزفي",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة أصيص خزفي · 18 سم. Route specification: HMUsT. Leaves this row out of the receipt; the row shows غير مشمول with an إعادة الإضافة button, and quantities and the confirm label update. Keyboard: Enter/Space. Focus moves to the add-back button. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
                 }
               }
             },
@@ -79063,6 +79180,19 @@
               }
             },
             {
+              "id": "vvn2S",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة شجرة زيتون",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة شجرة زيتون · 20 لتر. Route specification: xA2Bo. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"إزالة من عملية البيع\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
               "id": "FZvvE",
               "type": "ref",
               "ref": "iMXdD",
@@ -79106,6 +79236,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "W47SHp",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة استشارة لتنسيق الحدائق",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة استشارة لتنسيق الحدائق. Route specification: xA2Bo. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"إزالة من عملية البيع\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
                 }
               }
             },
@@ -81427,6 +81570,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "z3wFL",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Remove from sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة من عملية البيع · شجرة زيتون · 20 لتر. Route specification: xA2Bo. Removes this line from the basket and returns to the basket with totals updated; no confirmation. Keyboard: Enter/Space. 48px target. Arabic counterpart of the English Remove from sale control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة من عملية البيع"
                 }
               }
             }
@@ -84896,6 +85052,19 @@
               }
             },
             {
+              "id": "gnBHs",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة شجرة زيتون",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة شجرة زيتون · 20 لتر. Route specification: j2MTn. Removes this line from the quotation and updates the quoted total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Valid until. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
               "id": "LVkfa",
               "type": "ref",
               "ref": "iMXdD",
@@ -84923,6 +85092,19 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "left"
+                }
+              }
+            },
+            {
+              "id": "q9b6K",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة استشارة لتنسيق الحدائق",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة استشارة لتنسيق الحدائق. Route specification: j2MTn. Removes this line from the quotation and updates the quoted total; no confirmation. Keyboard: Enter/Space. Focus moves to the next line or Valid until. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
                 }
               }
             },
@@ -128208,6 +128390,2112 @@
               "descendants": {
                 "yHiIx": {
                   "content": "فتح مساحة المشتريات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "lM5NS",
+      "x": 9160,
+      "y": 11706,
+      "name": "04 Mobile / Purchase Receive items Row removed",
+      "context": " | Handoff: English LTR; state of x0Kvl with one row left out of the receipt (Not included, Add back); counterpart clg2g. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "KnYLh",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "heMYX",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "xi27c",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Rasjo",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "K6GcRn",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n2XF6p",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UqHFm",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "beAAp",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Mkd2m",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "SBVAX",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: HMUsT. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "fyVWN",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: nrQjb. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "EIkhN",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "MECvm",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n9APB8",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Receive items",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "uuJW2",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PO-2048 · Green Clay",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "W2SEqV",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Receive into warehouse",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Receive into warehouse. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Receive into warehouse; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Receive into warehouse"
+                },
+                "sedCr": {
+                  "content": "Main warehouse"
+                }
+              }
+            },
+            {
+              "id": "FlNAL",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Partial delivery",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Partial delivery. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Partial delivery",
+                  "fill": "$md-warning"
+                }
+              }
+            },
+            {
+              "id": "yYJol",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Ceramic planter · 18 cm",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Ceramic planter · 30 cm · POT-30 · Product · each · Ordered 10 · ILS 45.00 each. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Ceramic planter · 30 cm"
+                },
+                "IxO24": {
+                  "content": "POT-30 · Product · each"
+                },
+                "u15BHu": {
+                  "content": "Ordered 10 · ILS 45.00 each"
+                }
+              }
+            },
+            {
+              "id": "MdmAc",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Received now",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: Received now. Route specification: lM5NS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Required. Inline error is linked to this label and input; error summary focuses this control.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Received now *"
+                },
+                "sedCr": {
+                  "content": "6 units"
+                }
+              }
+            },
+            {
+              "id": "H2TWCF",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Ceramic planter",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Ceramic planter · 18 cm. Route specification: lM5NS. Leaves this row out of the receipt; the row shows Not included with an Add back button, and quantities and the confirm label update. Keyboard: Enter/Space. Focus moves to Add back. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
+              "id": "Q7kanf",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Olive tree · 20 L",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Olive tree · 20 L · OLV-20 · Product · each · Ordered 10 · ILS 40.00 each · Not included. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Olive tree · 20 L"
+                },
+                "IxO24": {
+                  "content": "OLV-20 · Product · each"
+                },
+                "u15BHu": {
+                  "content": "Ordered 10 · ILS 40.00 each"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "FRG0A",
+              "name": "Not included",
+              "context": "Role: status text. Read with the row: Olive tree · 20 L, Not included. Shown instead of the quantity field while the row is removed.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Not included",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "vV3zF",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add back Olive tree",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add back Olive tree · 20 L. Route specification: lM5NS. Puts the row back into the receipt with its previous quantity; the quantity field and Remove return. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add back"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "y9sc2o",
+              "name": "Receipt quantities",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JSazw",
+                  "name": "Received now",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "s8TkH",
+                      "name": "Received now value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "6",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "D3t3w",
+                      "name": "Received now label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Received now",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "u4MI4q",
+                  "name": "Still remaining",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lP3js",
+                      "name": "Still remaining value",
+                      "fill": "$md-warning",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "14",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "BrdPf",
+                      "name": "Still remaining label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Still remaining",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lgQTF",
+              "name": "Receipt amount",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "i7ADQ",
+                  "name": "Receipt value label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "6 × ILS 45.00",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "F7Yha",
+                  "name": "Receipt value",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 270.00",
+                  "lineHeight": 1.4,
+                  "textAlign": "right",
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "xrzK6",
+              "name": "Receipt consequence",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Only 6 units enter stock. 14 units stay open on the order.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "oCQm9",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Record 6 units received",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Record 6 units received. Route specification: w2yTZ7. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Record 6 units received"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "c6G4rB",
+      "x": 9710,
+      "y": 11706,
+      "name": "04 Mobile / Purchase Receive items Nothing included",
+      "context": " | Handoff: English LTR; state of x0Kvl with every row left out of the receipt (Not included, Add back, Nothing is included yet note, Confirm disabled); counterpart A4OlXL. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "UhvG7",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AIdDz",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "xd9GE",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HbbxX",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "CzXEZ",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yGZ4R",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V2tNP",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "OteSu",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "LCZcJ",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "SCWiN",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: HMUsT. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "V3Ffh4",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: nrQjb. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Bt7ez",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "Izf3g",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "C80AX",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Receive items",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "MI0EI",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PO-2048 · Green Clay",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "wUdR6",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Receive into warehouse",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: Receive into warehouse. Route specification: bDSok. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Selector parameters: Receive into warehouse; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Receive into warehouse"
+                },
+                "sedCr": {
+                  "content": "Main warehouse"
+                }
+              }
+            },
+            {
+              "id": "No3DY",
+              "type": "ref",
+              "ref": "OB83Y",
+              "name": "Partial delivery",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: Partial delivery. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "ynIiO": {
+                  "content": "Partial delivery",
+                  "fill": "$md-warning"
+                }
+              }
+            },
+            {
+              "id": "h2SrS",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Ceramic planter · 18 cm",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Ceramic planter · 30 cm · POT-30 · Product · each · Ordered 10 · ILS 45.00 each. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Ceramic planter · 30 cm"
+                },
+                "IxO24": {
+                  "content": "POT-30 · Product · each"
+                },
+                "u15BHu": {
+                  "content": "Ordered 10 · ILS 45.00 each"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "QievD",
+              "name": "Not included Ceramic planter",
+              "context": "Role: status text. Read with the row: Ceramic planter · 18 cm, Not included. Shown instead of the quantity field while the row is removed.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Not included",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "Iwux5",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add back Ceramic planter",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add back Ceramic planter · 18 cm. Route specification: c6G4rB. Puts the row back into the receipt with its previous quantity. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add back"
+                }
+              }
+            },
+            {
+              "id": "h0IpL",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Olive tree · 20 L",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Olive tree · 20 L · OLV-20 · Product · each · Ordered 10 · ILS 40.00 each · Not included. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Olive tree · 20 L"
+                },
+                "IxO24": {
+                  "content": "OLV-20 · Product · each"
+                },
+                "u15BHu": {
+                  "content": "Ordered 10 · ILS 40.00 each"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "maZpD",
+              "name": "Not included Olive tree",
+              "context": "Role: status text. Read with the row: Olive tree · 20 L, Not included. Shown instead of the quantity field while the row is removed.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Not included",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "kO3Gt",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add back Olive tree",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add back Olive tree · 20 L. Route specification: c6G4rB. Puts the row back into the receipt with its previous quantity. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add back"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "j16rx",
+              "name": "Nothing included note",
+              "context": "Role: status. Announced when the last included row is removed; the confirm button stays disabled until a row is added back.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Nothing is included yet. Enter a quantity or add a row back to continue.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "MRAhe",
+              "name": "Receipt quantities",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VUejM",
+                  "name": "Received now",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Lrht4",
+                      "name": "Received now value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "0",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MAvqM",
+                      "name": "Received now label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Received now",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "G6zl1O",
+                  "name": "Still remaining",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "k0DWA4",
+                      "name": "Still remaining value",
+                      "fill": "$md-warning",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "20",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ykDrS",
+                      "name": "Still remaining label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Still remaining",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "inmU4",
+              "name": "Receipt amount",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "RC1Yc",
+                  "name": "Receipt value label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "0 × ILS 45.00",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "xBkn3",
+                  "name": "Receipt value",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 0.00",
+                  "lineHeight": 1.4,
+                  "textAlign": "right",
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "pNcyB",
+              "name": "Receipt consequence",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Only 0 units enter stock. 20 units stay open on the order.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "mKmoX",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Record 0 units received",
+              "width": "fill_container",
+              "context": "Role: button, disabled (aria-disabled). Accessible name: Record 0 units received. Unavailable until at least one row is included or a quantity above zero is entered; the note above explains why. Route specification: w2yTZ7.",
+              "opacity": 0.5,
+              "descendants": {
+                "rPCdT": {
+                  "content": "Record 0 units received"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "clg2g",
+      "x": 17400,
+      "y": 11995,
+      "name": "Arabic / 04 Mobile / Purchase Receive items Row removed",
+      "context": " | Arabic counterpart of lM5NS. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart lM5NS. State of HMUsT with one row left out of the receipt. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "x0Kvl",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "rcpVp",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "XCpos",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "NCHEM",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kVkk4",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nxsYa",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lHzEK",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "x1OIW",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "QiGNF",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oEM4a",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "uYZjM",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: lM5NS. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "PbEhu",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: Ydw4Q. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Zcp2K",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "hg3Gj",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "bFpv3",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "استلام الأصناف",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "WLdUy",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PO-2048 · غرين كلاي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "wk0nE",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Receive into warehouse",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: الاستلام في المستودع. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Receive into warehouse; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الاستلام في المستودع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "المستودع الرئيسي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "n325Y",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "Partial delivery",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: استلام جزئي. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "استلام جزئي",
+                  "fill": "$md-warning",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "PnUFN",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Ceramic planter · 18 cm",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: أصيص خزفي · 30 سم · POT-30 · منتج · للقطعة · طُلب 10 · 45.00 ILS لكل قطعة. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "أصيص خزفي · 30 سم",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "POT-30 · منتج · للقطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "طُلب 10 · 45.00 ILS لكل قطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "u2lBWy",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Received now",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: المستلم الآن. Route specification: clg2g. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Required. Inline error is linked to this label and input; error summary focuses this control.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "المستلم الآن *",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "6 وحدات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "aVdh7",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة أصيص خزفي",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة أصيص خزفي · 18 سم. Route specification: clg2g. Leaves this row out of the receipt; the row shows غير مشمول with an إعادة الإضافة button, and quantities and the confirm label update. Keyboard: Enter/Space. Focus moves to the add-back button. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
+              "id": "ljLXj",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "شجرة زيتون · 20 لتر",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: شجرة زيتون · 20 لتر · OLV-20 · منتج · للقطعة · طُلب 10 · 40.00 ILS لكل قطعة · غير مشمول. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "شجرة زيتون · 20 لتر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "OLV-20 · منتج · للقطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "طُلب 10 · 40.00 ILS لكل قطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "nAo8j",
+              "name": "غير مشمول",
+              "context": "Role: status text. Read with the row: شجرة زيتون · 20 لتر، غير مشمول. Shown instead of the quantity field while the row is removed. Arabic counterpart of Not included.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "غير مشمول",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "j8iiiO",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إعادة إضافة شجرة زيتون",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إعادة إضافة شجرة زيتون · 20 لتر. Route specification: clg2g. Puts the row back into the receipt with its previous quantity; the quantity field and إزالة return. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target. Arabic counterpart of Add back.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إعادة الإضافة"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "ShDOk",
+              "name": "Receipt quantities",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "h4cxX",
+                  "name": "Still remaining",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Jy1N9",
+                      "name": "Still remaining value",
+                      "fill": "$md-warning",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "14",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "OypHe",
+                      "name": "Still remaining label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "ما زال متبقياً",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FEM4U",
+                  "name": "Received now",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VJuIr",
+                      "name": "Received now value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "6",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "j94Iwf",
+                      "name": "Received now label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المستلم الآن",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "axyOX",
+              "name": "Receipt amount",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Cfn30",
+                  "name": "Receipt value",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 270.00",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "P7XUh8",
+                  "name": "Receipt value label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "6 × 45.00 ILS",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "sJN4Q",
+              "name": "Receipt consequence",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تُضاف 6 وحدات فقط إلى المخزون، وتبقى 14 وحدة مفتوحة في الطلب.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "O99HHp",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Record 6 units received",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل استلام 6 وحدات. Route specification: qqUBc. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تسجيل استلام 6 وحدات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "A4OlXL",
+      "x": 16950,
+      "y": 11995,
+      "name": "Arabic / 04 Mobile / Purchase Receive items Nothing included",
+      "context": " | Arabic counterpart of c6G4rB. Language switch preserves business, route, input and draft. Annotated route specification; native interactions unavailable. | Handoff: Arabic RTL; counterpart c6G4rB. State of HMUsT with every row left out of the receipt, note and disabled confirm. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "x0Kvl",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "alignItems": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "XO7ma",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "G79kBr",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "AozTP",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TRlFf",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ki9kT",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "v5X8z",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "UVs8g",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Vjt2h",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JmXnq",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "e8Xft",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: x0Kvl. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "u66hO",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: Ydw4Q. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "N8EmT",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "ARsqL",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "MKl4r",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "استلام الأصناف",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ciXJC",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "PO-2048 · غرين كلاي",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "E2w9PU",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Receive into warehouse",
+              "width": "fill_container",
+              "context": "Role: combobox. Accessible name: الاستلام في المستودع. Route specification: b1c0RN. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Selector parameters: Receive into warehouse; current value preselected; Cancel preserves prior value.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "الاستلام في المستودع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "المستودع الرئيسي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "nuUvc",
+              "type": "ref",
+              "ref": "SxuzC",
+              "name": "Partial delivery",
+              "fill": "#FFF1D6",
+              "height": "fit_content",
+              "context": "Role: status. Accessible name: استلام جزئي. Status uses visible text as well as color.",
+              "padding": [
+                6,
+                10
+              ],
+              "descendants": {
+                "OOgtT": {
+                  "content": "استلام جزئي",
+                  "fill": "$md-warning",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Y3ZMhk",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Ceramic planter · 18 cm",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: أصيص خزفي · 30 سم · POT-30 · منتج · للقطعة · طُلب 10 · 45.00 ILS لكل قطعة. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "أصيص خزفي · 30 سم",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "POT-30 · منتج · للقطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "طُلب 10 · 45.00 ILS لكل قطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "Y3PcVT",
+              "name": "غير مشمول أصيص خزفي",
+              "context": "Role: status text. Read with the row: أصيص خزفي · 30 سم، غير مشمول. Shown instead of the quantity field while the row is removed. Arabic counterpart of Not included.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "غير مشمول",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "cZLTC",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إعادة إضافة أصيص خزفي",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إعادة إضافة أصيص خزفي · 30 سم. Route specification: A4OlXL. Puts the row back into the receipt with its previous quantity. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target. Arabic counterpart of Add back.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إعادة الإضافة"
+                }
+              }
+            },
+            {
+              "id": "ktyLa",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "شجرة زيتون · 20 لتر",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: شجرة زيتون · 20 لتر · OLV-20 · منتج · للقطعة · طُلب 10 · 40.00 ILS لكل قطعة · غير مشمول. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "شجرة زيتون · 20 لتر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "OLV-20 · منتج · للقطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "طُلب 10 · 40.00 ILS لكل قطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "F1BIx8",
+              "name": "غير مشمول شجرة زيتون",
+              "context": "Role: status text. Read with the row: شجرة زيتون · 20 لتر، غير مشمول. Shown instead of the quantity field while the row is removed. Arabic counterpart of Not included.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "غير مشمول",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "rbOzk",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إعادة إضافة شجرة زيتون",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إعادة إضافة شجرة زيتون · 20 لتر. Route specification: A4OlXL. Puts the row back into the receipt with its previous quantity. Keyboard: Enter/Space. Focus moves to the quantity field. 48px target. Arabic counterpart of Add back.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إعادة الإضافة"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "c2TLv",
+              "name": "ملاحظة لا شيء مشمول",
+              "context": "Role: status. Announced when the last included row is removed; the confirm button stays disabled until a row is added back. Arabic counterpart of the Nothing is included note.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لا شيء مشمول بعد. أدخل كمية أو أعد إضافة صف للمتابعة.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "BCYbM",
+              "name": "Receipt quantities",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "f6Rrda",
+                  "name": "Still remaining",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mj2fK",
+                      "name": "Still remaining value",
+                      "fill": "$md-warning",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "20",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JWvXc",
+                      "name": "Still remaining label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "ما زال متبقياً",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "VfSdV",
+                  "name": "Received now",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "$md-line",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 12,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "utiPB",
+                      "name": "Received now value",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "0",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xptBV",
+                      "name": "Received now label",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "المستلم الآن",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CYuXO",
+              "name": "Receipt amount",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "LQ43i",
+                  "name": "Receipt value",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 0.00",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Jg6QA",
+                  "name": "Receipt value label",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "0 × 45.00 ILS",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "B9bZ0",
+              "name": "Receipt consequence",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "تُضاف 0 وحدات فقط إلى المخزون، وتبقى 20 وحدة مفتوحة في الطلب.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "gDNaJ",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "تسجيل استلام 0 وحدات",
+              "width": "fill_container",
+              "context": "Role: button, disabled (aria-disabled). Accessible name: تسجيل استلام 0 وحدات. Unavailable until at least one row is included or a quantity above zero is entered; the note above explains why. Route specification: qqUBc.",
+              "opacity": 0.5,
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تسجيل استلام 0 وحدات",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"

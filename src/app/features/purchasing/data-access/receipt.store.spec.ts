@@ -231,4 +231,29 @@ describe('ReceiptStore', () => {
       expect(store.ready()).toBe(false);
     }
   });
+
+  it('takes a removed row out of the receipt until it is added back', async () => {
+    const { store, api } = await loaded({
+      ...ORDER,
+      lines: [LINE, { ...LINE, row: 'row-2' }],
+    });
+    api.receive.mockResolvedValue('PR-1');
+
+    store.removeRow('row-2');
+    expect([store.receivingNow(), [...store.removed()]]).toEqual([10, ['row-2']]);
+    await store.confirm();
+    expect(api.receive.mock.calls[0][0].lines).toEqual([{ row: 'row-1', qty: 10 }]);
+
+    store.start(ORDER.name);
+    await store.load();
+    store.removeRow('row-1');
+    store.removeRow('row-2');
+    expect(store.ready()).toBe(false);
+    store.addBackRow('row-2');
+    expect([store.qtyInputs()['row-2'], store.removed().size, store.ready()]).toEqual([
+      '10',
+      1,
+      true,
+    ]);
+  });
 });

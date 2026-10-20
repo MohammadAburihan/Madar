@@ -3,6 +3,7 @@ import { formatMoney } from '../../../core/format/format';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { lineTotal, parseNumber } from '../data-access/sale.models';
@@ -15,6 +16,7 @@ import { injectSaleContext } from './sale-context';
     BackLinkComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     TextFieldComponent,
   ],
@@ -67,6 +69,7 @@ import { injectSaleContext } from './sale-context';
         {{ txt.apply }}
       </button>
       <button type="button" class="md-btn" (click)="close()">{{ txt.cancel }}</button>
+      <app-line-remove [label]="txt.remove" [name]="txt.removeName" (remove)="remove()" />
     }
   `,
 })
@@ -132,6 +135,8 @@ export class SaleLineContainer implements OnInit {
           : t('sale.line.detail', { qty: qty || 0, price: money(price || 0) }),
       apply: t('sale.line.apply'),
       cancel: t('sale.cancel'),
+      remove: t('sale.line.remove'),
+      removeName: t('sale.line.removeName', { item: line.item.name }),
     };
   });
 
@@ -164,6 +169,11 @@ export class SaleLineContainer implements OnInit {
       void this.ctx.go(`stock/${index}`, { queryParams: { qty }, replaceUrl: true });
       return;
     }
+    this.close();
+  }
+
+  protected remove(): void {
+    this.ctx.store.removeLine(Number(this.index()));
     this.close();
   }
 
