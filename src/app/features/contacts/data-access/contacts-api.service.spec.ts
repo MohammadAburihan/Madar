@@ -37,6 +37,7 @@ describe('ContactsApiService', () => {
       { id: 'Lina Haddad', name: 'Lina Haddad', phone: '059', city: 'Ramallah', outstanding: 117 },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', 'Walk-in Customer']);
+    expect(listCalls[0].query.filters).toContainEqual(['customer_name', '!=', 'Walk-in Customer']);
   });
 
   it('shows customers without balances to roles that can’t read invoices', async () => {

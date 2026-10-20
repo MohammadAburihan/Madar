@@ -32,6 +32,7 @@ describe('CustomerDirectoryService', () => {
       { id: 'Samir', name: 'Samir', phone: null, city: null, outstanding: 0, unpaidInvoices: 0 },
     ]);
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', WALK_IN_CUSTOMER]);
+    expect(listCalls[0].query.filters).toContainEqual(['customer_name', '!=', WALK_IN_CUSTOMER]);
     expect(listCalls[0].query.orFilters).toContainEqual(['customer_name', 'like', '%lin%']);
     expect(listCalls[1].query.groupBy).toBe('customer');
   });
@@ -165,6 +166,41 @@ describe('CustomerDirectoryService.walkIn', () => {
     await directory.walkIn();
     expect(postCalls).toHaveLength(1);
     expect(listCalls).toHaveLength(2);
+  });
+
+  it('looks up by customer name oldest first', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: (query) =>
+        query.filters?.some((f) => f[0] === 'customer_name') ? [{ name: 'CUST-0007' }] : [],
+    });
+    await TestBed.inject(CustomerDirectoryService).walkIn();
+    expect(listCalls[0].query.orderBy).toBeUndefined();
+    expect(listCalls[1].query.orderBy).toBe('creation asc');
+  });
+
+  it('returns the walk-in another device created when the insert fails', async () => {
+    let lookups = 0;
+    fakeErpnext(
+      { Customer: () => (++lookups > 2 ? [{ name: 'CUST-0009' }] : []) },
+      {
+        'frappe.client.insert': () => {
+          throw new Error('duplicate');
+        },
+      },
+    );
+    expect(await TestBed.inject(CustomerDirectoryService).walkIn()).toBe('CUST-0009');
+  });
+
+  it('rejects with the insert error when the insert fails and nothing is found', async () => {
+    fakeErpnext(
+      { Customer: () => [] },
+      {
+        'frappe.client.insert': () => {
+          throw new Error('duplicate');
+        },
+      },
+    );
+    await expect(TestBed.inject(CustomerDirectoryService).walkIn()).rejects.toThrow('duplicate');
   });
 
   it('looks again after a failed lookup instead of remembering the failure', async () => {

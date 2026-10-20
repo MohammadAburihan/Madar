@@ -59,6 +59,7 @@ export class CustomerDirectoryService {
         filters: [
           ['disabled', '=', 0],
           ['name', '!=', WALK_IN_CUSTOMER],
+          ['customer_name', '!=', WALK_IN_CUSTOMER],
         ],
         orFilters: term.trim()
           ? [
@@ -157,6 +158,7 @@ export class CustomerDirectoryService {
           this.erpnext.list<{ name: string }>('Customer', {
             fields: ['name'],
             filters: [[field, '=', WALK_IN_CUSTOMER]],
+            ...(field === 'customer_name' ? { orderBy: 'creation asc' } : {}),
             limit: 1,
           }),
         );

@@ -1,7 +1,7 @@
 import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { realTranslator } from '../../../../testing/real-translator';
 import { CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
-import { contactActions, contactKinds, editableKinds } from './contacts-access';
+import { contactActions, contactKinds, editableKinds, isWalkIn } from './contacts-access';
 
 const en = realTranslator('en');
 const visible = (labels: string[]) => labels.map((l) => l.replace(/[⁨⁩]/g, ''));
@@ -30,6 +30,13 @@ const SUPPLIER: SupplierDetail = {
 };
 
 describe('contacts access', () => {
+  it('recognises the walk-in by id or by customer name, customers only', () => {
+    expect(isWalkIn('customers', 'Walk-in Customer', null)).toBe(true);
+    expect(isWalkIn('customers', 'CUST-0007', 'Walk-in Customer')).toBe(true);
+    expect(isWalkIn('customers', 'CUST-0008', 'Lina Haddad')).toBe(false);
+    expect(isWalkIn('suppliers', 'SUP-0001', 'Walk-in Customer')).toBe(false);
+  });
+
   it('gives each role the lists it works with', () => {
     expect(contactKinds(capabilitiesFor('owner'))).toEqual(['customers', 'suppliers']);
     expect(contactKinds(capabilitiesFor('salesperson'))).toEqual(['customers']);
