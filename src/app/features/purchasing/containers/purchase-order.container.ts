@@ -84,6 +84,11 @@ import { receiveAction, receivedLineCard } from './receipt-view';
       @if (!v.received) {
         <p class="muted">{{ txt.note }}</p>
       }
+      @if (continuable()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="continuePurchase()">
+          {{ txt.continuePurchase }}
+        </button>
+      }
       @if (v.receive) {
         <button type="button" class="md-btn md-btn--primary" (click)="receive()">
           {{ v.receive }}
@@ -159,6 +164,7 @@ export class PurchaseOrderContainer {
       workspace: t('purchase.detail.workspace'),
       viewInvoice: t('purchase.detail.viewInvoice'),
       invoicesHeading: t('purchase.detail.invoicesHeading'),
+      continuePurchase: t('purchase.detail.continue'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
       loadFailed: {
@@ -234,6 +240,17 @@ export class PurchaseOrderContainer {
     };
   });
 
+  protected readonly continuable = computed(() => {
+    const order = this.order();
+    return (
+      !!order &&
+      order.progress === 'draft' &&
+      this.caps().orderPurchases &&
+      !!order.reference &&
+      order.company === this.business.active()?.name
+    );
+  });
+
   /** One invoice opens from a button, several are listed to choose from (cost roles only). */
   protected readonly invoiceCards = computed(() =>
     this.invoices().length > 1
@@ -272,6 +289,10 @@ export class PurchaseOrderContainer {
         this.failed.set(true);
       }
     }
+  }
+
+  protected continuePurchase(): void {
+    void this.router.navigate(['/purchases/new'], { queryParams: { draft: this.name() } });
   }
 
   protected recordInvoice(): void {

@@ -146,6 +146,13 @@ import { injectSaleContext } from './sale-context';
     </ng-template>
 
     <ng-template #notices>
+      @if (ctx.store.customerInactive()) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.inactive.title"
+          [message]="txt.inactive.message"
+        />
+      }
       @if (failure(); as notice) {
         <app-feedback-card [tone]="notice.tone" [title]="notice.title" [message]="notice.message" />
       }
@@ -164,6 +171,7 @@ export class SaleReviewContainer implements OnInit {
     const needsAccount = store.paymentStatus() !== 'unpaid';
     return (
       store.state() !== 'confirming' &&
+      !store.customerInactive() &&
       store.lines().length > 0 &&
       !!store.warehouse() &&
       store.amountValid() &&
@@ -222,6 +230,10 @@ export class SaleReviewContainer implements OnInit {
       account: t('sale.review.account'),
       stock: t('sale.basket.stock'),
       invalidAmount: t('sale.review.invalidAmount'),
+      inactive: {
+        title: t('sale.review.inactive.title'),
+        message: t('sale.review.inactive.message'),
+      },
       noAccount: {
         title: t('sale.review.noAccount.title'),
         message: t('sale.review.noAccount.message'),

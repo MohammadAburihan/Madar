@@ -7,7 +7,8 @@ import { BusinessService } from '../../../core/business/business.service';
 import { QuickSaleStore } from './quick-sale.store';
 import { CatalogItem, SaleResult } from './sale.models';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
-import { SalesApiService } from './sales-api.service';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
+import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
 const OLIVE: CatalogItem = {
   code: 'OLV-20',
@@ -36,19 +37,27 @@ const RESULT: SaleResult = {
   paymentFailed: false,
 };
 
-function setup() {
+function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
   const api = {
     warehouses: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
     paymentAccounts: vi.fn().mockResolvedValue([CASH]),
     confirm: vi.fn(),
     find: vi.fn(),
     saveDraft: vi.fn().mockResolvedValue('SI-9'),
-    walkInCustomer: vi.fn().mockResolvedValue('CUST-0007'),
+    walkInCustomer: vi.fn().mockResolvedValue(WALK_IN_CUSTOMER),
+    draftSale: vi.fn(),
   };
   TestBed.configureTestingModule({
     providers: [
       { provide: SalesApiService, useValue: api },
-      { provide: SessionService, useValue: { capabilities: () => capabilitiesFor('salesperson') } },
+      {
+        provide: SessionService,
+        useValue: {
+          capabilities: () => capabilitiesFor('salesperson'),
+          persona: () => 'salesperson',
+          user: () => user,
+        },
+      },
       {
         provide: BusinessService,
         useValue: {
@@ -175,6 +184,7 @@ describe('QuickSaleStore', () => {
     withBasket(store);
     store.useWalkIn();
     store.paymentStatus.set('unpaid');
+    api.walkInCustomer.mockResolvedValue('CUST-0007');
     api.confirm.mockResolvedValue(RESULT);
 
     await store.confirm();
@@ -328,5 +338,121 @@ describe('QuickSaleStore', () => {
     expect(await store.checkResult()).toBe('pending');
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
+  });
+});
+
+const DRAFT = {
+  name: 'ACC-SINV-0001',
+  reference: 'SALE-0A1B2C3',
+  customer: 'Lina Haddad',
+  customerName: 'Lina Haddad',
+  customerActive: true,
+  warehouse: 'Main - RN',
+  lines: [{ item: OLIVE, qty: 2, rate: 85, discount: 10 }],
+};
+
+describe('QuickSaleStore.openDraft', () => {
+  it('loads the draft with its own reference, name, lines and warehouse', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue(DRAFT);
+
+    expect(await store.openDraft('ACC-SINV-0001')).toBe('opened');
+
+    expect(api.draftSale).toHaveBeenCalledWith('ACC-SINV-0001', {
+      company: 'Rehan Nursery',
+      owner: 'lina@example.com',
+    });
+    expect(store.reference()).toBe('SALE-0A1B2C3');
+    expect(store.draft()).toBe('ACC-SINV-0001');
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect(store.walkIn()).toBe(false);
+    expect(store.warehouse()).toBe('Main - RN');
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate, l.discount])).toEqual([
+      ['OLV-20', 2, 85, 10],
+    ]);
+    expect(store.accounts()).toHaveLength(1);
+  });
+
+  it('confirms the opened draft under its reference instead of inserting another invoice', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue(DRAFT);
+    api.confirm.mockResolvedValue(RESULT);
+    await store.openDraft('ACC-SINV-0001');
+
+    await store.confirm();
+
+    expect(api.confirm.mock.calls[0][0]).toMatchObject({
+      reference: 'SALE-0A1B2C3',
+      customer: 'Lina Haddad',
+    });
+    expect(api.confirm.mock.calls[0][1]).toBe('ACC-SINV-0001');
+  });
+
+  it('treats the walk-in customer as the walk-in choice', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue({
+      ...DRAFT,
+      customer: 'CUST-0007',
+      customerName: WALK_IN_CUSTOMER,
+    });
+    await store.openDraft('ACC-SINV-0001');
+    expect([store.walkIn(), store.customer()]).toEqual([true, null]);
+  });
+
+  it('flags a customer who has been disabled since, until another is chosen', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue({ ...DRAFT, customerActive: false });
+    await store.openDraft('ACC-SINV-0001');
+    expect(store.customerInactive()).toBe(true);
+    store.useWalkIn();
+    expect(store.customerInactive()).toBe(false);
+  });
+
+  it('asks for the warehouse again when the drafted one is no longer offered', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue({ ...DRAFT, warehouse: 'Closed - RN' });
+    await store.openDraft('ACC-SINV-0001');
+    expect(store.warehouse()).toBeNull();
+  });
+
+  it('is refused while a confirmation is open, and leaves that sale alone', async () => {
+    const { store, api } = setup();
+    withBasket(store);
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
+
+    expect(await store.openDraft('ACC-SINV-0001')).toBe('busy');
+
+    expect(api.draftSale).not.toHaveBeenCalled();
+    expect(store.lines()).toHaveLength(2);
+  });
+
+  it('fails closed when an own-sales-only user has no id', async () => {
+    const { store, api } = setup(null);
+    await expect(store.openDraft('ACC-SINV-0001')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(api.draftSale).not.toHaveBeenCalled();
+  });
+
+  it('keeps unsaved edits when the same draft is opened again', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue(DRAFT);
+    await store.openDraft('ACC-SINV-0001');
+    store.setQty(0, 5);
+
+    expect(await store.openDraft('ACC-SINV-0001')).toBe('opened');
+
+    expect(api.draftSale).toHaveBeenCalledTimes(1);
+    expect(store.lines()[0].qty).toBe(5);
+  });
+
+  it('rejects a draft that is not available without touching the sale in progress', async () => {
+    const { store, api } = setup();
+    withBasket(store);
+    api.draftSale.mockRejectedValue(new DraftUnavailableError('ACC-SINV-0001'));
+
+    await expect(store.openDraft('ACC-SINV-0001')).rejects.toBeInstanceOf(DraftUnavailableError);
+
+    expect(store.lines()).toHaveLength(2);
+    expect(store.draft()).toBeNull();
   });
 });

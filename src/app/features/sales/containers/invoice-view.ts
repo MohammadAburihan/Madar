@@ -90,3 +90,18 @@ export function invoiceView(
     },
   };
 }
+
+/** A quick-sale draft of this business (and, for a role limited to its own sales, this user's) can be continued. */
+export function canContinueSale(
+  invoice: InvoiceDetail,
+  scope: { sell: boolean; company: string; owner: string | null },
+): boolean {
+  return (
+    scope.sell &&
+    invoice.status === 'draft' &&
+    invoice.quickSale &&
+    !!invoice.saleReference &&
+    invoice.company === scope.company &&
+    (!scope.owner || invoice.owner === scope.owner)
+  );
+}

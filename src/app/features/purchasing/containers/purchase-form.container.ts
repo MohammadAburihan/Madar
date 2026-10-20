@@ -337,6 +337,12 @@ export class PurchaseFormContainer implements OnInit {
         this.missingSupplier.set(supplier);
       }
     }
+    const held = store.supplier();
+    if (held && !store.suppliers().some((s) => s.id === held)) {
+      // A continued draft's supplier was disabled since: say so rather than keep a supplier ERPNext will refuse.
+      this.missingSupplier.set(held);
+      store.setSupplier(null);
+    }
     this.loaded.set(true);
     void store.applyAdded().catch(() => undefined);
   }

@@ -7,11 +7,21 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
+import {
+  DraftUnavailableError,
+  missingAsUnavailable,
+  referenceIn,
+} from '../../../core/erpnext/draft';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { spreadAllocation, withoutLocalFlags } from '../../../core/erpnext/payment-entry';
 import { round2 } from '../../../core/format/number';
-import { SupplierPayment, SupplierPaymentRequest, UnpaidSupplierInvoice } from './purchase.models';
+import {
+  DraftPayment,
+  SupplierPayment,
+  SupplierPaymentRequest,
+  UnpaidSupplierInvoice,
+} from './purchase.models';
 
 interface PaymentDoc {
   name: string;
@@ -19,7 +29,7 @@ interface PaymentDoc {
   party_name: string;
   paid_from: string;
   paid_amount: number;
-  references: { reference_name: string; allocated_amount: number }[];
+  references: { reference_doctype?: string; reference_name: string; allocated_amount: number }[];
   [key: string]: unknown;
 }
 
@@ -152,6 +162,35 @@ export class SupplierPaymentApiService {
     }
   }
 
+  /** A draft supplier payment of this business that Madar made for one invoice; anything else can't be continued. */
+  async draftPayment(name: string, scope: { company: string }): Promise<DraftPayment> {
+    const doc = await firstValueFrom(this.erpnext.doc<PaymentDoc>('Payment Entry', name)).catch(
+      (error) => {
+        throw missingAsUnavailable(error, name);
+      },
+    );
+    const reference = referenceIn(doc['reference_no'], 'PAYS');
+    const invoices = [...new Set((doc.references ?? []).map((r) => r.reference_name))];
+    if (
+      doc.docstatus !== 0 ||
+      doc['company'] !== scope.company ||
+      doc['payment_type'] !== 'Pay' ||
+      doc['party_type'] !== 'Supplier' ||
+      !reference ||
+      invoices.length !== 1 ||
+      doc.references.some((r) => r.reference_doctype !== 'Purchase Invoice')
+    ) {
+      throw new DraftUnavailableError(name);
+    }
+    return {
+      name: doc.name,
+      reference,
+      invoice: invoices[0],
+      amount: doc.paid_amount,
+      mode: (doc['mode_of_payment'] as string | null) || null,
+    };
+  }
+
   /** Looks a payment up by its Madar reference after an unresolved confirmation. */
   async find(reference: string): Promise<{ payment: string } | 'not-found' | { draft: string }> {
     const [payment] = await firstValueFrom(
@@ -195,6 +234,9 @@ export class SupplierPaymentApiService {
       supplierName: doc.party_name,
       amount: doc.paid_amount,
       paidFrom: account?.account_name ?? doc.paid_from,
+      company: doc['company'] as string,
+      reference: referenceIn(doc['reference_no'], 'PAYS'),
+      toSupplier: doc['payment_type'] === 'Pay' && doc['party_type'] === 'Supplier',
       invoices: names.map((invoice) => ({
         invoice,
         allocated: round2(

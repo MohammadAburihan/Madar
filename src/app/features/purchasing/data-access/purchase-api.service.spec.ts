@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { PurchaseApiService } from './purchase-api.service';
 import { OrderRequest, ReceiptRequest, orderProgress } from './purchase.models';
 
@@ -432,6 +433,60 @@ describe('PurchaseApiService', () => {
     expect(postCalls[0].body['doc']).toMatchObject({
       project: 'PROJ-0001',
       items: [{ item_code: 'POT-30', project: 'PROJ-0001' }],
+    });
+  });
+});
+
+describe('PurchaseApiService.draftOrder', () => {
+  const DRAFT = {
+    ...ORDER,
+    docstatus: 0,
+    status: 'Draft',
+    company: 'Rehan Nursery',
+    project: 'PROJ-1',
+    order_confirmation_no: 'PUR-0A1B2C3',
+  };
+  const open = (doc: object) => {
+    fakeErpnext(
+      { Item: () => [{ name: 'POT-30', is_stock_item: 1 }] },
+      {},
+      { 'Purchase Order/PO-2048': doc },
+    );
+    return TestBed.inject(PurchaseApiService);
+  };
+
+  it("reads the draft's reference, supplier, project and lines at their typed rates", async () => {
+    expect(await open(DRAFT).draftOrder('PO-2048', { company: 'Rehan Nursery' })).toEqual({
+      name: 'PO-2048',
+      reference: 'PUR-0A1B2C3',
+      supplier: 'Green Clay',
+      project: 'PROJ-1',
+      lines: [
+        {
+          item: { code: 'POT-30', name: 'Ceramic planter', uom: 'Unit', kind: 'product', rate: 45 },
+          qty: 10,
+          rate: 45,
+        },
+      ],
+    });
+  });
+
+  it.each([
+    ['confirmed', { ...DRAFT, docstatus: 1 }],
+    ['another business', { ...DRAFT, company: 'Other Co' }],
+    ['not made in Madar', { ...DRAFT, order_confirmation_no: null }],
+  ])('refuses an order that is %s', async (_label, doc) => {
+    await expect(
+      open(doc).draftOrder('PO-2048', { company: 'Rehan Nursery' }),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
+  });
+
+  it('reads the business and reference on the order page too', async () => {
+    fakeErpnext({}, {}, { 'Purchase Order/PO-2048': DRAFT });
+    expect(await TestBed.inject(PurchaseApiService).order('PO-2048')).toMatchObject({
+      company: 'Rehan Nursery',
+      reference: 'PUR-0A1B2C3',
+      progress: 'draft',
     });
   });
 });

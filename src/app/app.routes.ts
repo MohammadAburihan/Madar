@@ -17,13 +17,6 @@ import {
   salesRecordsRoute,
 } from './features/sales/sale.routes';
 
-const placeholder = (path: string, titleKey: string) => ({
-  path,
-  data: { titleKey },
-  loadComponent: () =>
-    import('./features/shell/containers/placeholder.container').then((m) => m.PlaceholderContainer),
-});
-
 export const routes: Routes = [
   {
     path: 'connect',
@@ -72,7 +65,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/home/containers/new.container').then((m) => m.NewContainer),
       },
-      placeholder('drafts', 'nav.drafts'),
+      {
+        path: 'drafts',
+        loadComponent: () =>
+          import('./features/home/containers/drafts.container').then((m) => m.DraftsContainer),
+      },
       {
         path: 'task/:action',
         loadComponent: () =>

@@ -18,6 +18,7 @@ const DATA: HomeData = {
         modified: '2026-10-11 08:50:00.000000',
         total: 320,
         currency: 'ILS',
+        continuable: true,
       },
       {
         doctype: 'Sales Order',
@@ -26,6 +27,7 @@ const DATA: HomeData = {
         modified: '2026-10-11 07:00:00.000000',
         total: 110,
         currency: 'ILS',
+        continuable: false,
       },
     ],
   },
@@ -101,13 +103,23 @@ describe('buildHomeView', () => {
     ]);
     expect(view.actionColumns).toBe(3);
     expect(view.cards).toEqual([
-      { title: '2 unfinished drafts', message: 'Sale for Lina Haddad · Updated 10 min ago' },
+      {
+        title: '2 unfinished drafts',
+        message: 'Sale for Lina Haddad · Updated 10 min ago',
+        target: { commands: ['/drafts'], draft: null },
+        action: 'View drafts',
+      },
       { title: 'Delivery arriving today', message: 'PO-2048 · 10 × Ceramic planter' },
     ]);
     expect(view.summary).toBe('Today: ILS 1,280 sales · ILS 460 to collect');
     expect(view.rows).toEqual([
       { work: 'PO-2048 · Green Clay', due: 'Today', next: 'Receive delivery' },
-      { work: 'Lina Haddad · Draft', due: '10 min ago', next: 'Continue sale' },
+      {
+        work: 'Lina Haddad · Draft',
+        due: '10 min ago',
+        next: 'Continue sale',
+        target: { commands: ['/sales/new/basket'], draft: 'SI-1042' },
+      },
       { work: 'Garden installation', due: 'Today', next: 'Supply 12 × Planter' },
       { work: 'Samir Nasser · SI-1039', due: 'Tomorrow', next: 'Receive payment' },
     ]);
@@ -130,6 +142,8 @@ describe('buildHomeView', () => {
     expect(view.cards[0]).toEqual({
       title: 'مسودتان غير مكتملتين',
       message: 'بيع إلى Lina Haddad · حُدّث قبل 10 دقائق',
+      target: { commands: ['/drafts'], draft: null },
+      action: 'عرض المسودات',
     });
     expect(view.cards[1].title).toBe('توريد يصل اليوم');
     expect(view.summary).toBe('اليوم: مبيعات ILS 1,280 · مستحق التحصيل ILS 460');
@@ -155,10 +169,35 @@ describe('buildHomeView', () => {
       'Catalog',
     ]);
     expect(view.cards).toEqual([
-      { title: 'Continue your sale', message: 'Lina Haddad · ILS 320.00 · Draft' },
+      {
+        title: 'Continue your sale',
+        message: 'Lina Haddad · ILS 320.00 · Draft',
+        action: 'Continue sale',
+        target: { commands: ['/sales/new/basket'], draft: 'SI-1042' },
+      },
       { title: 'Customer to follow up', message: 'Samir Nasser · Invoice due tomorrow' },
     ]);
     expect(view.summary).toBe('Your sales today: ILS 640');
+  });
+
+  it('continues the newest sale draft, not a newer order or quotation draft', () => {
+    const [sale, order] = DATA.drafts!.recent;
+    const salesperson = (recent: NonNullable<HomeData['drafts']>['recent']) =>
+      buildHomeView(
+        input({ persona: 'salesperson', data: { drafts: { count: recent.length, recent } } }),
+        realTranslator('en'),
+      );
+
+    const newerOrder = salesperson([{ ...order, modified: '2026-10-11 08:55:00.000000' }, sale]);
+    expect(newerOrder.cards[0].target).toEqual({
+      commands: ['/sales/new/basket'],
+      draft: 'SI-1042',
+    });
+    expect(newerOrder.rows.map((r) => r.next)).toEqual(['Continue sale']);
+
+    const onlyOrder = salesperson([order]);
+    expect(onlyOrder.cards).toEqual([]);
+    expect(onlyOrder.rows).toEqual([]);
   });
 
   it('builds the store associate home from sales and stock work', () => {
@@ -186,6 +225,8 @@ describe('buildHomeView', () => {
     expect(view.cards[0]).toEqual({
       title: 'Continue your sale',
       message: 'Lina Haddad · ILS 320.00 · Draft',
+      action: 'Continue sale',
+      target: { commands: ['/sales/new/basket'], draft: 'SI-1042' },
     });
     expect(view.cards[1].title).toBe('3 items running low');
     expect(view.summary).toBe('Your sales today: ILS 640');
@@ -229,6 +270,15 @@ describe('buildHomeView', () => {
     );
     expect(view.glance.some((card) => card.title.includes('ILS'))).toBe(false);
     expect(view.draftsLink).toBeNull();
+  });
+
+  it('links a purchasing officer to the drafts page when they have unfinished purchases', () => {
+    const view = buildHomeView(
+      input({ persona: 'purchasing', data: { drafts: { count: 1, recent: [] } } }),
+      realTranslator('en'),
+    );
+    expect(view.draftsLink).toBe('Unfinished work · 1 draft · View all drafts');
+    expect(view.cards).toEqual([]);
   });
 
   it('builds the purchasing officer home from deliveries and stock, without sales', () => {

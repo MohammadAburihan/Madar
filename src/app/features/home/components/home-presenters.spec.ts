@@ -51,6 +51,44 @@ describe('Home presenters', () => {
     expect(text(fixture.nativeElement)).toContain(EMPTY.title);
   });
 
+  it('AttentionCards gives a draft card a button that opens it', async () => {
+    const target = { commands: ['/sales/new/basket'], draft: 'SI-1042' };
+    const fixture = await render(AttentionCardsComponent, {
+      cards: [
+        { title: 'Continue your sale', message: 'Lina Haddad', action: 'Continue sale', target },
+        { title: 'Customer to follow up', message: 'Samir Nasser' },
+      ],
+      empty: EMPTY,
+    });
+    const opened: unknown[] = [];
+    fixture.componentInstance.opened.subscribe((t) => opened.push(t));
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+
+    expect(buttons).toHaveLength(1);
+    expect(text(buttons[0])).toBe('Continue sale');
+    buttons[0].click();
+    expect(opened).toEqual([target]);
+  });
+
+  it('AttentionTable turns the next action of a draft row into a button', async () => {
+    const target = { commands: ['/sales/new/basket'], draft: 'SI-1042' };
+    const fixture = await render(AttentionTableComponent, {
+      headers: { work: 'Work', due: 'Due', next: 'Next action' },
+      rows: [
+        { work: 'Lina Haddad · Draft', due: '10 min ago', next: 'Continue sale', target },
+        { work: 'PO-2048 · Green Clay', due: 'Today', next: 'Receive delivery' },
+      ],
+      empty: EMPTY,
+    });
+    const opened: unknown[] = [];
+    fixture.componentInstance.opened.subscribe((t) => opened.push(t));
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+
+    expect(buttons).toHaveLength(1);
+    buttons[0].click();
+    expect(opened).toEqual([target]);
+  });
+
   it('AttentionTable renders an accessible table of rows', async () => {
     const fixture = await render(AttentionTableComponent, {
       headers: { work: 'Work', due: 'Due', next: 'Next action' },

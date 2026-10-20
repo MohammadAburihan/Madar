@@ -133,7 +133,8 @@
       },
       "lowStockMessage": "{{warehouse}} · View stock",
       "supplyNeed": "{{project}} needs materials",
-      "supplyNeedMessage": "{{qty}} × {{item}} needed · {{available}} available"
+      "supplyNeedMessage": "{{qty}} × {{item}} needed · {{available}} available",
+      "viewDrafts": "View drafts"
     },
     "allClear": {
       "title": "Nothing needs your attention",
@@ -340,6 +341,10 @@
       "notCreated": {
         "title": "The sale wasn't created",
         "message": "Review it and confirm again."
+      },
+      "inactive": {
+        "title": "This customer is inactive",
+        "message": "ERPNext won't record a sale to them. Go back and choose another customer, or reactivate them in Contacts."
       }
     },
     "receipt": {
@@ -646,7 +651,8 @@
     "receivedBoth": "Both received in {{accounts}}.",
     "receivedAll": "All received in {{accounts}}.",
     "loading": "Loading invoice…",
-    "credited": "Credited by credit notes"
+    "credited": "Credited by credit notes",
+    "continueSale": "Continue sale"
   },
   "inventory": {
     "title": "Inventory",
@@ -1001,7 +1007,8 @@
       "recordInvoice": "Record supplier invoice",
       "viewInvoice": "View supplier invoice",
       "billedQty": "{{qty}} billed",
-      "invoicesHeading": "Supplier invoices"
+      "invoicesHeading": "Supplier invoices",
+      "continue": "Continue purchase"
     },
     "receive": {
       "title": "Receive items",
@@ -1247,6 +1254,8 @@
       "partial": "Partial payment",
       "full": "Paid in full",
       "recordedCard": "{{amount}} recorded",
+      "draftCard": "Not paid yet",
+      "draftMessage": "This payment is a draft: nothing is paid until it is confirmed.",
       "recordedMessage": "Supplier invoice total {{total}}. {{left}} remains outstanding.",
       "recordedMessageFull": "Supplier invoice total {{total}}. Nothing remains outstanding.",
       "pageMessage": "This payment belongs to {{order}}. {{left}} remains due on the supplier invoice.",
@@ -1257,7 +1266,8 @@
       "loadFailed": {
         "title": "This payment couldn't load",
         "message": "Check the connection and try again."
-      }
+      },
+      "continue": "Continue payment"
     }
   },
   "expense": {
@@ -3715,6 +3725,70 @@
         "title": "The stock wasn't added",
         "message": "ERPNext rejected it. Check the details and try again."
       }
+    }
+  },
+  "draft": {
+    "opening": {
+      "loading": "Opening your draft…",
+      "unavailable": {
+        "title": "This draft can't be continued",
+        "message": "It may have been confirmed or deleted, or belong to someone else or another business. Go back and check your drafts."
+      },
+      "error": {
+        "title": "Couldn't open the draft",
+        "message": "Check the connection and try again."
+      },
+      "back": "Back to drafts",
+      "retry": "Try again"
+    }
+  },
+  "drafts": {
+    "heading": "Unfinished work",
+    "subtitle": "{{drafts}} · {{business}}",
+    "search": "Search",
+    "placeholder": "Search name, code or barcode",
+    "loading": "Loading your drafts…",
+    "error": {
+      "title": "Couldn't load your drafts",
+      "message": "Check the connection and try again."
+    },
+    "noAccess": {
+      "title": "No drafts for your role",
+      "message": "Your role can't continue drafts here."
+    },
+    "empty": {
+      "title": "Nothing unfinished",
+      "message": "Drafts you save show up here."
+    },
+    "noMatch": {
+      "title": "No matching drafts",
+      "message": "Try another name, code or barcode."
+    },
+    "note": "Drafts have no confirmed invoice, payment or stock effect.",
+    "updated": "Updated {{when}}",
+    "units": {
+      "one": "1 unit",
+      "other": "{{count}} units"
+    },
+    "title": {
+      "sale": "Sale for {{party}}",
+      "quotation": "Quotation for {{party}}",
+      "order": "Order for {{party}}",
+      "purchase": "Purchase from {{party}}",
+      "payment": "Payment to {{party}}"
+    },
+    "continue": {
+      "sale": "Continue sale",
+      "quotation": "Continue quotation",
+      "purchase": "Continue purchase",
+      "payment": "Continue payment"
+    },
+    "open": {
+      "sale": "Open invoice",
+      "quotation": "Open quotation",
+      "order": "Open order",
+      "purchase": "Open order",
+      "payment": "Open payment"
     }
   }
 }

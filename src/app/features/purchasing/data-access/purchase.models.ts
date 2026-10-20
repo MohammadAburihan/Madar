@@ -70,6 +70,19 @@ export interface OrderLineDetail {
 
 export interface OrderDetail extends OrderSummary {
   lines: OrderLineDetail[];
+  /** The business, Madar's `PUR-…` reference and project: what decides whether the draft can be continued. */
+  company?: string;
+  reference?: string | null;
+  project?: string | null;
+}
+
+/** A saved draft purchase order, read back so the order can be continued under its own reference. */
+export interface DraftOrder {
+  name: string;
+  reference: string;
+  supplier: string;
+  project: string | null;
+  lines: OrderLine[];
 }
 
 export interface ReceiptRequest {
@@ -156,6 +169,16 @@ export interface SupplierPaymentRequest {
   account: { mode: string; account: string; label: string };
 }
 
+/** A saved draft supplier payment, read back so it can be continued under its own reference. */
+export interface DraftPayment {
+  name: string;
+  reference: string;
+  invoice: string;
+  amount: number;
+  /** The Mode of Payment it was drafted with. */
+  mode: string | null;
+}
+
 export interface SupplierPayment {
   name: string;
   docstatus: number;
@@ -165,6 +188,10 @@ export interface SupplierPayment {
   paidFrom: string;
   /** The supplier invoices it paid, with the amount allocated to each. */
   invoices: { invoice: string; allocated: number }[];
+  /** The business, Madar's `PAYS-…` reference and whether it pays a supplier: what lets a draft be continued. */
+  company?: string;
+  reference?: string | null;
+  toSupplier?: boolean;
 }
 
 export function paymentStatus(invoice: { total: number; outstanding: number }): PaymentStatus {

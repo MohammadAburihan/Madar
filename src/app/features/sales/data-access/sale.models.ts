@@ -28,6 +28,18 @@ export interface SaleLine {
   discount: number;
 }
 
+/** A saved quick-sale draft, read back so the sale can be continued under its own reference. */
+export interface DraftSale {
+  name: string;
+  reference: string;
+  customer: string;
+  customerName: string;
+  /** False when the customer has been disabled since the draft was saved. */
+  customerActive: boolean;
+  warehouse: string | null;
+  lines: SaleLine[];
+}
+
 export interface WarehouseOption {
   id: string;
   name: string;

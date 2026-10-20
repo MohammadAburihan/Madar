@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
+import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { QuotationApiService } from './quotation-api.service';
 import { QuotationStore } from './quotation.store';
@@ -17,16 +19,21 @@ const PLANTER: CatalogItem = {
   stock: {},
 };
 
-function setup() {
+function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
   const api = {
     confirm: vi.fn(),
     saveDraft: vi.fn(),
     find: vi.fn(),
     discard: vi.fn().mockResolvedValue(undefined),
+    draftQuotation: vi.fn(),
   };
   TestBed.configureTestingModule({
     providers: [
       { provide: QuotationApiService, useValue: api },
+      {
+        provide: SessionService,
+        useValue: { persona: () => 'salesperson', user: () => user },
+      },
       {
         provide: BusinessService,
         useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery', currency: 'ILS' }) },
@@ -236,5 +243,87 @@ describe('QuotationStore', () => {
     const { store } = await ready();
     store.setValidTill('2026-10-15');
     expect([store.validDate(), store.ready()]).toEqual([false, false]);
+  });
+
+  it("keeps the draft quotation's own reference when it is edited", () => {
+    const { store } = setup();
+    store.edit({ ...draftDetail('QT-DRAFT'), reference: 'QUO-0A1B2C3' });
+    expect(store.reference()).toBe('QUO-0A1B2C3');
+  });
+});
+
+describe('QuotationStore.openDraft', () => {
+  it('loads the draft under its own reference, scoped to the business and the user', async () => {
+    const { store, api } = setup();
+    api.draftQuotation.mockResolvedValue({ ...draftDetail('QT-DRAFT'), reference: 'QUO-0A1B2C3' });
+
+    expect(await store.openDraft('QT-DRAFT')).toBe('opened');
+
+    expect(api.draftQuotation).toHaveBeenCalledWith('QT-DRAFT', {
+      company: 'Rehan Nursery',
+      owner: 'lina@example.com',
+    });
+    expect([store.reference(), store.draft(), store.customer()?.id, store.lines().length]).toEqual([
+      'QUO-0A1B2C3',
+      'QT-DRAFT',
+      'Lina Haddad',
+      1,
+    ]);
+  });
+
+  it('is refused while a confirmation is open', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
+    expect(await store.openDraft('QT-DRAFT')).toBe('busy');
+    expect(api.draftQuotation).not.toHaveBeenCalled();
+  });
+
+  it('keeps unsaved edits when the same draft is opened again', async () => {
+    const { store, api } = setup();
+    api.draftQuotation.mockResolvedValue(draftDetail('QT-DRAFT'));
+    await store.openDraft('QT-DRAFT');
+    store.setQty(0, 7);
+    expect(await store.openDraft('QT-DRAFT')).toBe('opened');
+    expect(api.draftQuotation).toHaveBeenCalledTimes(1);
+    expect(store.lines()[0].qty).toBe(7);
+  });
+
+  it('keeps the draft it is already holding when that draft is opened on purpose', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementation(async (_request, _draft, onInserted) => {
+      onInserted('QT-DRAFT');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+
+    expect(await store.openDraft('QT-DRAFT')).toBe('opened');
+    store.start();
+
+    expect(api.discard).not.toHaveBeenCalled();
+  });
+
+  it('is refused while the last result is not yet shown', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockResolvedValue('QT-1');
+    await store.confirm();
+
+    expect(await store.openDraft('QT-DRAFT')).toBe('busy');
+
+    expect(api.draftQuotation).not.toHaveBeenCalled();
+    expect(store.result()).toBe('QT-1');
+  });
+
+  it('fails closed when an own-sales-only user has no id', async () => {
+    const { store, api } = setup(null);
+    await expect(store.openDraft('QT-DRAFT')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(api.draftQuotation).not.toHaveBeenCalled();
+  });
+
+  it('leaves the task alone when the draft is not available', async () => {
+    const { store, api } = await ready();
+    api.draftQuotation.mockRejectedValue(new DraftUnavailableError('QT-OTHER'));
+    await expect(store.openDraft('QT-OTHER')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(store.lines()).toHaveLength(1);
   });
 });

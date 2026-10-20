@@ -98,6 +98,7 @@ export function paymentResult(
     left: money(invoice.outstanding),
     order: invoice.order ?? invoice.name,
   };
+  const draft = payment.docstatus === 0;
   const message = recorded
     ? paidUp
       ? 'purchase.payment.recordedMessageFull'
@@ -111,12 +112,14 @@ export function paymentResult(
     subtitle: (recorded ? [ref, invoice.supplierName] : [invoice.order, ref, invoice.supplierName])
       .filter(Boolean)
       .join(' · '),
-    chip: {
-      label: tr.t(paidUp ? 'purchase.payment.full' : 'purchase.payment.partial'),
-      tone: paidUp ? 'tint' : 'warning',
-    },
-    cardTitle: tr.t('purchase.payment.recordedCard', params),
-    cardMessage: tr.t(message, params),
+    chip: draft
+      ? { label: tr.t('purchase.chip.draft'), tone: 'warning' }
+      : {
+          label: tr.t(paidUp ? 'purchase.payment.full' : 'purchase.payment.partial'),
+          tone: paidUp ? 'tint' : 'warning',
+        },
+    cardTitle: tr.t(draft ? 'purchase.payment.draftCard' : 'purchase.payment.recordedCard', params),
+    cardMessage: tr.t(draft ? 'purchase.payment.draftMessage' : message, params),
     totals: invoiceTotals(invoice.total, invoice.outstanding, invoice.currency, tr),
     paidFrom: payment.paidFrom,
   };

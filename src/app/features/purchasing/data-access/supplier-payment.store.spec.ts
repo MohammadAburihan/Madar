@@ -1,8 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
+import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
 import { SupplierInvoice } from './purchase.models';
 import { SupplierInvoiceApiService } from './supplier-invoice-api.service';
@@ -33,18 +37,20 @@ const ACCOUNTS = [
   { mode: 'Cash', account: 'Cash - RN', label: 'Cash', isBank: false },
 ];
 
-function setup() {
+function setup(persona: Persona = 'owner') {
   const api = {
     unpaidInvoices: vi.fn().mockResolvedValue(UNPAID),
     confirm: vi.fn(),
     saveDraft: vi.fn(),
     find: vi.fn(),
     discard: vi.fn().mockResolvedValue(undefined),
+    draftPayment: vi.fn(),
   };
   const accounts = { list: vi.fn().mockResolvedValue(ACCOUNTS) };
   TestBed.configureTestingModule({
     providers: [
       { provide: SupplierPaymentApiService, useValue: api },
+      { provide: SessionService, useValue: { capabilities: () => capabilitiesFor(persona) } },
       { provide: SupplierInvoiceApiService, useValue: { invoice: () => Promise.resolve(INVOICE) } },
       { provide: PaymentAccountsService, useValue: accounts },
       {
@@ -229,5 +235,115 @@ describe('SupplierPaymentStore', () => {
     api.confirm.mockRejectedValue(new HttpErrorResponse({ status: 403 }));
     await store.confirm();
     expect([store.state(), store.failure()]).toEqual(['failed', 'permission']);
+  });
+});
+
+describe('SupplierPaymentStore.openDraft', () => {
+  const DRAFT = {
+    name: 'PAY-DRAFT',
+    reference: 'PAYS-0A1B2C3',
+    invoice: 'PINV-0068',
+    amount: 100,
+    mode: 'Cash',
+  };
+
+  it("loads the draft's invoice, amount and account under its own reference and name", async () => {
+    const { store, api } = setup();
+    api.draftPayment.mockResolvedValue(DRAFT);
+
+    expect(await store.openDraft('PAY-DRAFT')).toBe('opened');
+
+    expect(api.draftPayment).toHaveBeenCalledWith('PAY-DRAFT', { company: 'Rehan Nursery' });
+    expect([store.reference(), store.draft(), store.invoiceName(), store.selected()]).toEqual([
+      'PAYS-0A1B2C3',
+      'PAY-DRAFT',
+      'PINV-0068',
+      'PINV-0068',
+    ]);
+    expect([store.amountInput(), store.account(), store.ready()]).toEqual(['100.00', 'Cash', true]);
+  });
+
+  it('confirms the opened draft under its reference instead of inserting another payment', async () => {
+    const { store, api } = setup();
+    api.draftPayment.mockResolvedValue(DRAFT);
+    api.confirm.mockResolvedValue('PAY-DRAFT');
+    await store.openDraft('PAY-DRAFT');
+
+    await store.confirm();
+
+    expect(api.confirm.mock.calls[0][0]).toMatchObject({
+      reference: 'PAYS-0A1B2C3',
+      invoice: 'PINV-0068',
+      amount: 100,
+    });
+    expect(api.confirm.mock.calls[0][1]).toBe('PAY-DRAFT');
+  });
+
+  it('leaves the account to the user when the drafted one is not offered to them', async () => {
+    const { store, api } = setup();
+    api.draftPayment.mockResolvedValue({ ...DRAFT, mode: 'Wire Transfer' });
+    await store.openDraft('PAY-DRAFT');
+    expect([store.account(), store.ready()]).toEqual([null, false]);
+  });
+
+  it('is refused while a confirmation is open', async () => {
+    const { store, api } = await loaded();
+    store.selectInvoice('PINV-0068');
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
+    expect(await store.openDraft('PAY-DRAFT')).toBe('busy');
+    expect(api.draftPayment).not.toHaveBeenCalled();
+  });
+
+  it('keeps unsaved edits when the same draft is opened again', async () => {
+    const { store, api } = setup();
+    api.draftPayment.mockResolvedValue(DRAFT);
+    await store.openDraft('PAY-DRAFT');
+    store.setAmount('60');
+    expect(await store.openDraft('PAY-DRAFT')).toBe('opened');
+    expect(api.draftPayment).toHaveBeenCalledTimes(1);
+    expect(store.amountInput()).toBe('60');
+  });
+
+  it('refuses a role that cannot pay suppliers', async () => {
+    const { store, api } = setup('purchasing');
+    await expect(store.openDraft('PAY-DRAFT')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(api.draftPayment).not.toHaveBeenCalled();
+  });
+
+  it('keeps the draft it is already holding when that draft is opened on purpose', async () => {
+    const { store, api } = await loaded();
+    store.selectInvoice('PINV-0068');
+    store.setAmount('100');
+    api.confirm.mockImplementation(async (_request, _draft, onInserted) => {
+      onInserted('PAY-DRAFT');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+    api.draftPayment.mockResolvedValue(DRAFT);
+
+    expect(await store.openDraft('PAY-DRAFT')).toBe('opened');
+    store.start('PINV-0068');
+
+    expect(api.discard).not.toHaveBeenCalled();
+  });
+
+  it('is refused while the last result is not yet shown', async () => {
+    const { store, api } = await loaded();
+    store.selectInvoice('PINV-0068');
+    store.setAmount('100');
+    api.confirm.mockResolvedValue('PAY-1');
+    await store.confirm();
+
+    expect(await store.openDraft('PAY-DRAFT')).toBe('busy');
+
+    expect(api.draftPayment).not.toHaveBeenCalled();
+  });
+
+  it('does not touch the task when the draft is not available', async () => {
+    const { store, api } = await loaded();
+    api.draftPayment.mockRejectedValue(new DraftUnavailableError('PAY-X'));
+    await expect(store.openDraft('PAY-X')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(store.selected()).toBe('PINV-0068');
   });
 });

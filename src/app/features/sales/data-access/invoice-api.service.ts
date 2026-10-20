@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { referenceIn } from '../../../core/erpnext/draft';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import { canReturn } from './sales-return.models';
 import { creditsAgainst } from './credits';
@@ -13,6 +14,12 @@ export interface InvoiceDetail {
   customerName: string;
   postingDate: string;
   status: 'draft' | 'confirmed' | 'cancelled';
+  company: string;
+  owner: string;
+  /** Madar's `SALE-…` reference when a quick sale made the invoice; only those drafts can be continued. */
+  saleReference: string | null;
+  /** A return (credit note) or an invoice that moves no stock isn't a quick sale. */
+  quickSale: boolean;
   total: number;
   outstanding: number;
   /** What credit notes against it took off its outstanding: not money paid. */
@@ -33,6 +40,9 @@ export class InvoiceApiService {
       firstValueFrom(
         this.erpnext.doc<{
           name: string;
+          company: string;
+          owner: string;
+          remarks: string | null;
           customer: string;
           customer_name: string;
           posting_date: string;
@@ -119,6 +129,10 @@ export class InvoiceApiService {
       postingDate: invoice.posting_date,
       status:
         invoice.docstatus === 1 ? 'confirmed' : invoice.docstatus === 2 ? 'cancelled' : 'draft',
+      company: invoice.company,
+      owner: invoice.owner,
+      saleReference: referenceIn(invoice.remarks, 'SALE'),
+      quickSale: !!invoice.update_stock && !invoice.is_return,
       total: invoiceTotal(invoice),
       outstanding: invoice.outstanding_amount,
       credited: credits.account,

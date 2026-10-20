@@ -1,8 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { PurchaseApiService } from './purchase-api.service';
@@ -17,7 +20,7 @@ const PLANTER: PurchaseItem = {
   rate: 45,
 };
 
-function setup() {
+function setup(capabilities = () => capabilitiesFor('owner')) {
   const api = {
     searchItems: vi.fn().mockResolvedValue([PLANTER]),
     item: vi.fn().mockResolvedValue(PLANTER),
@@ -25,10 +28,12 @@ function setup() {
     saveDraft: vi.fn(),
     find: vi.fn(),
     discard: vi.fn().mockResolvedValue(undefined),
+    draftOrder: vi.fn(),
   };
   TestBed.configureTestingModule({
     providers: [
       { provide: PurchaseApiService, useValue: api },
+      { provide: SessionService, useValue: { capabilities } },
       {
         provide: BusinessService,
         useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery', currency: 'ILS' }) },
@@ -298,5 +303,117 @@ describe('PurchaseOrderStore', () => {
     expect(api.item.mock.calls[0][0]).toBe('ITM-1');
     expect(api.searchItems).not.toHaveBeenCalled();
     expect([store.lines(), store.prefillMissing()]).toEqual([[], 'ITM-1']);
+  });
+});
+
+describe('PurchaseOrderStore.openDraft', () => {
+  const DRAFT = {
+    name: 'PO-DRAFT',
+    reference: 'PUR-0A1B2C3',
+    supplier: 'Green Clay',
+    project: 'PROJ-1',
+    lines: [{ item: PLANTER, qty: 10, rate: 40 }],
+  };
+
+  it('loads the draft with its own reference, name, supplier, project and typed rates', async () => {
+    const { store, api } = setup();
+    api.draftOrder.mockResolvedValue(DRAFT);
+
+    expect(await store.openDraft('PO-DRAFT')).toBe('opened');
+
+    expect(api.draftOrder).toHaveBeenCalledWith('PO-DRAFT', { company: 'Rehan Nursery' });
+    expect([store.reference(), store.draft(), store.supplier(), store.project()]).toEqual([
+      'PUR-0A1B2C3',
+      'PO-DRAFT',
+      'Green Clay',
+      'PROJ-1',
+    ]);
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate])).toEqual([['POT-30', 10, 40]]);
+    expect(store.total()).toBe(400);
+  });
+
+  it('confirms the opened draft under its reference instead of inserting another order', async () => {
+    const { store, api } = setup();
+    api.draftOrder.mockResolvedValue(DRAFT);
+    api.confirm.mockResolvedValue('PO-DRAFT');
+    await store.openDraft('PO-DRAFT');
+
+    await store.confirm();
+
+    expect(api.confirm.mock.calls[0][0]).toMatchObject({ reference: 'PUR-0A1B2C3' });
+    expect(api.confirm.mock.calls[0][1]).toBe('PO-DRAFT');
+    expect(store.result()).toBe('PO-DRAFT');
+  });
+
+  it('is refused while a confirmation is open, and leaves that order alone', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockRejectedValue(new UnresolvedError());
+    await store.confirm();
+    expect(await store.openDraft('PO-DRAFT')).toBe('busy');
+    expect(api.draftOrder).not.toHaveBeenCalled();
+    expect(store.lines()).toHaveLength(1);
+  });
+
+  it('keeps unsaved edits when the same draft is opened again', async () => {
+    const { store, api } = setup();
+    api.draftOrder.mockResolvedValue(DRAFT);
+    await store.openDraft('PO-DRAFT');
+    store.setQty(0, 3);
+    expect(await store.openDraft('PO-DRAFT')).toBe('opened');
+    expect(api.draftOrder).toHaveBeenCalledTimes(1);
+    expect(store.lines()[0].qty).toBe(3);
+  });
+
+  it('refuses a role that cannot order from suppliers', async () => {
+    const { store, api } = setup(() => capabilitiesFor('warehouse'));
+    await expect(store.openDraft('PO-DRAFT')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(api.draftOrder).not.toHaveBeenCalled();
+  });
+
+  it('keeps a draft left by a failed confirmation when it is opened on purpose', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementation(async (_request, _draft, onInserted) => {
+      onInserted('PO-DRAFT');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+    api.draftOrder.mockResolvedValue(DRAFT);
+
+    await store.openDraft('PO-DRAFT');
+
+    expect(api.discard).not.toHaveBeenCalled();
+    expect(store.draft()).toBe('PO-DRAFT');
+  });
+
+  it('keeps the draft it is already holding when that draft is opened on purpose', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockImplementation(async (_request, _draft, onInserted) => {
+      onInserted('PO-DRAFT');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.confirm();
+
+    expect(await store.openDraft('PO-DRAFT')).toBe('opened');
+    store.start();
+
+    expect(api.discard).not.toHaveBeenCalled();
+  });
+
+  it('is refused while the last result is not yet shown', async () => {
+    const { store, api } = await ready();
+    api.confirm.mockResolvedValue('PO-1');
+    await store.confirm();
+
+    expect(await store.openDraft('PO-DRAFT')).toBe('busy');
+
+    expect(api.draftOrder).not.toHaveBeenCalled();
+    expect(store.result()).toBe('PO-1');
+  });
+
+  it('leaves the task alone when the draft is not available', async () => {
+    const { store, api } = await ready();
+    api.draftOrder.mockRejectedValue(new DraftUnavailableError('PO-X'));
+    await expect(store.openDraft('PO-X')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(store.lines()).toHaveLength(1);
   });
 });

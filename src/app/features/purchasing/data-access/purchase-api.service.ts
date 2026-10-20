@@ -6,9 +6,15 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
+import {
+  DraftUnavailableError,
+  missingAsUnavailable,
+  referenceIn,
+} from '../../../core/erpnext/draft';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { shareInFlight } from '../../../core/util/share-in-flight';
 import {
+  DraftOrder,
   OrderDetail,
   OrderRequest,
   OrderSummary,
@@ -29,6 +35,8 @@ interface OrderDoc {
   grand_total: number;
   per_received: number;
   per_billed: number;
+  company?: string;
+  project?: string | null;
   items?: {
     name: string;
     item_code: string;
@@ -143,6 +151,50 @@ export class PurchaseApiService {
         received: lines.reduce((sum, l) => sum + l.receivedQty, 0),
       }),
       lines,
+      company: doc.company,
+      reference: referenceIn(doc['order_confirmation_no'], 'PUR'),
+      project: doc.project ?? null,
+    };
+  }
+
+  /** A draft order of this business that Madar made, to continue; anything else is DraftUnavailableError. */
+  async draftOrder(name: string, scope: { company: string }): Promise<DraftOrder> {
+    const doc = await firstValueFrom(this.erpnext.doc<OrderDoc>('Purchase Order', name)).catch(
+      (error) => {
+        throw missingAsUnavailable(error, name);
+      },
+    );
+    const reference = referenceIn(doc['order_confirmation_no'], 'PUR');
+    if (doc.docstatus !== 0 || doc.company !== scope.company || !reference) {
+      throw new DraftUnavailableError(name);
+    }
+    const rows = doc.items ?? [];
+    const kinds = rows.length
+      ? await firstValueFrom(
+          this.erpnext.list<{ name: string; is_stock_item: number }>('Item', {
+            fields: ['name', 'is_stock_item'],
+            filters: [['name', 'in', [...new Set(rows.map((r) => r.item_code))]]],
+            limit: 0,
+          }),
+        )
+      : [];
+    return {
+      name: doc.name,
+      reference,
+      supplier: doc.supplier,
+      project: doc.project ?? null,
+      lines: rows.map((r) => ({
+        item: {
+          code: r.item_code,
+          name: r.item_name,
+          uom: r.uom,
+          kind:
+            kinds.find((k) => k.name === r.item_code)?.is_stock_item === 0 ? 'service' : 'product',
+          rate: r.rate,
+        },
+        qty: r.qty,
+        rate: r.rate,
+      })),
     };
   }
 

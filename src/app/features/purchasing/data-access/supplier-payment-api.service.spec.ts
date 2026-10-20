@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
+import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { SupplierPaymentRequest } from './purchase.models';
 import { SupplierPaymentApiService } from './supplier-payment-api.service';
 
@@ -223,7 +224,72 @@ describe('SupplierPaymentApiService', () => {
       supplierName: 'Green Clay',
       amount: 100,
       paidFrom: 'Main bank',
+      reference: null,
+      toSupplier: false,
       invoices: [{ invoice: 'PINV-0068', allocated: 100 }],
     });
+  });
+});
+
+describe('SupplierPaymentApiService.draftPayment', () => {
+  const DRAFT = {
+    ...POSTED,
+    docstatus: 0,
+    company: 'Rehan Nursery',
+    payment_type: 'Pay',
+    party_type: 'Supplier',
+    reference_no: 'PAYS-0A1B2C3',
+    mode_of_payment: 'Bank Draft',
+    references: [
+      { reference_doctype: 'Purchase Invoice', reference_name: 'PINV-0068', allocated_amount: 100 },
+    ],
+  };
+  const open = (doc: object) => {
+    fakeErpnext({}, {}, { 'Payment Entry/PAY-0155': doc });
+    return api();
+  };
+
+  it("reads the draft's reference, invoice, amount and mode of payment", async () => {
+    expect(await open(DRAFT).draftPayment('PAY-0155', { company: 'Rehan Nursery' })).toEqual({
+      name: 'PAY-0155',
+      reference: 'PAYS-0A1B2C3',
+      invoice: 'PINV-0068',
+      amount: 100,
+      mode: 'Bank Draft',
+    });
+  });
+
+  it.each([
+    ['recorded', { ...DRAFT, docstatus: 1 }],
+    ['another business', { ...DRAFT, company: 'Other Co' }],
+    ['a receipt from a customer', { ...DRAFT, payment_type: 'Receive', party_type: 'Customer' }],
+    ['not made in Madar', { ...DRAFT, reference_no: 'cheque 17' }],
+    [
+      'spread over two invoices',
+      {
+        ...DRAFT,
+        references: [
+          ...DRAFT.references,
+          {
+            reference_doctype: 'Purchase Invoice',
+            reference_name: 'PINV-0070',
+            allocated_amount: 5,
+          },
+        ],
+      },
+    ],
+    [
+      'against something other than a supplier invoice',
+      {
+        ...DRAFT,
+        references: [
+          { reference_doctype: 'Purchase Order', reference_name: 'PO-1', allocated_amount: 100 },
+        ],
+      },
+    ],
+  ])('refuses a payment that is %s', async (_label, doc) => {
+    await expect(
+      open(doc).draftPayment('PAY-0155', { company: 'Rehan Nursery' }),
+    ).rejects.toBeInstanceOf(DraftUnavailableError);
   });
 });
