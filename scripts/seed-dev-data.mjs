@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Seeds a throwaway ERPNext site with data mirroring the design mocks (Rehan Nursery).
-// Usage: node scripts/seed-dev-data.mjs --url http://localhost:8081 [--user Administrator --password admin]
+// Usage: node scripts/seed-dev-data.mjs --url http://localhost:18081 [--user Administrator --password admin]
 import { argv, exit } from 'node:process';
 
 const arg = (name, fallback) => {
@@ -13,7 +13,7 @@ const COMPANY = 'Rehan Nursery';
 const ABBR = 'RN';
 const DEV_PASSWORD = 'Madar-Dev-2026';
 if (!BASE) {
-  console.error('Pass --url explicitly, e.g. --url http://localhost:8081');
+  console.error('Pass --url explicitly, e.g. --url http://localhost:18081');
   exit(1);
 }
 

@@ -597,7 +597,7 @@ attendance, H3 leave and approvals, H4 shifts, H5 advances, H6 payroll and salar
 ## End-to-end happy paths: merged (#26)
 
 `npm run e2e` runs 33 Playwright tests (`e2e/`) against the seeded test site, through its own dev server on :4321
-(`ERPNEXT_DEV_URL=http://localhost:8081`, always started fresh so it can't reach `frontend`), at phone (390 px) and desktop (1440 px) widths, one at a time in file
+(`ERPNEXT_DEV_URL=http://localhost:18081`, always started fresh so it can't reach `frontend`), at phone (390 px) and desktop (1440 px) widths, one at a time in file
 order because they share the site's stock (moving stock restocks the Main warehouse the sales take from): sign-in and Arabic, the More tab and role navigation; a purchase order
 through receipt, supplier invoice and payment; a walk-in cash sale, a sale on account and its collection, adding a
 customer mid-sale; moving stock and the inventory page; an expense with a receipt photo; a project from creation

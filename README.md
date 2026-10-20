@@ -40,14 +40,14 @@ cd ../frappe_docker
 docker compose -f pwd.yml up -d
 ```
 
-Open http://localhost:8080 and sign in as `Administrator` / `admin` (local development only).
+In a fresh `frappe_docker` clone, change the `frontend` service's port in `pwd.yml` to `"18080:8080"` first. Open http://localhost:18080 and sign in as `Administrator` / `admin` (local development only).
 
 Stop it with `docker compose -f pwd.yml down`. Adding `-v` deletes the local data.
 
 #### Seeded test site
 
 `pwd.yml` sends every request to its `frontend` site, so Madar's demo data lives in a separate, disposable
-site with its own web container on port 8081:
+site with its own web container on port 18081:
 
 ```sh
 sh scripts/dev-test-site.sh   # (re)creates madar-test.localhost and seeds it like the design mocks
@@ -76,8 +76,8 @@ Requires Node.js 24 or newer.
 
 ```sh
 npm install
-npm start          # http://localhost:4200, proxies API calls to ERPNext on :8080
-ERPNEXT_DEV_URL=http://localhost:8081 npm start   # same, against the seeded test site
+npm start          # http://localhost:4200, proxies API calls to ERPNext on :18080
+ERPNEXT_DEV_URL=http://localhost:18081 npm start   # same, against the seeded test site
 npm test
 ```
 
