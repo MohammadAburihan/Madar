@@ -8,13 +8,22 @@ export interface DeletedDraft {
   party: string;
 }
 
+const FRESH_MS = 5000;
+
 /** Tells everything that may hold a draft in memory (task stores, lists, Home) that it was deleted. */
 @Injectable({ providedIn: 'root' })
 export class DeletedDraftsService {
   private readonly last = signal<DeletedDraft | null>(null);
   readonly latest = this.last.asReadonly();
+  private publishedAt = 0;
+
+  /** Whether the latest delete just happened, so a page opened by the delete itself can still report it. */
+  isFresh(): boolean {
+    return Date.now() - this.publishedAt < FRESH_MS;
+  }
 
   publish(draft: DeletedDraft): void {
+    this.publishedAt = Date.now();
     this.last.set({ ...draft });
   }
 }

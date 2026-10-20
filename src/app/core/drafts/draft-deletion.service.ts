@@ -26,7 +26,10 @@ export class DraftDeletionService {
   /** Drafts whose delete ended without an answer: finding one missing on the retry means it went through. */
   private readonly unsure = new Set<string>();
 
-  /** ERPNext's delete right for this document (it differs per role, doctype and, for owner-only rules, document). */
+  /**
+   * ERPNext's delete right for this document (it differs per role, doctype and, for owner-only rules, document).
+   * Only a definite no is an answer; a lost connection or an expired session throws.
+   */
   async allowed(kind: DraftKind, name: string): Promise<boolean> {
     try {
       const answer = await firstValueFrom(
@@ -38,7 +41,7 @@ export class DraftDeletionService {
       );
       return answer?.has_permission === true;
     } catch (error) {
-      if (ErpnextError.from(error).kind === 'forbidden') {
+      if (ErpnextError.from(error).kind === 'forbidden' && !(await this.session.checkExpired())) {
         return false;
       }
       throw error;

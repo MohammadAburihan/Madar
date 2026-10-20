@@ -104,6 +104,26 @@ describe('injectDraftDeleter', () => {
     expect(TestBed.inject(DeletedDraftsService).latest()).toBeNull();
   });
 
+  it('tells the app the draft is gone before done runs, and a failing done is not an error', async () => {
+    setup({ delete: vi.fn().mockResolvedValue('deleted') });
+    let seenInDone: unknown = 'unset';
+    const done = vi.fn(() => {
+      seenInDone = TestBed.inject(DeletedDraftsService).latest();
+      throw new Error('navigation failed');
+    });
+    const deleter = TestBed.runInInjectionContext(() =>
+      injectDraftDeleter({ reload: vi.fn(), done }),
+    );
+
+    deleter.ask(TARGET);
+    deleter.answer('delete');
+    await vi.waitFor(() => expect(done).toHaveBeenCalled());
+    await vi.waitFor(() => expect(deleter.running()).toBe(false));
+
+    expect(seenInDone).toEqual({ kind: 'sale', name: 'SI-1', party: 'Lina Haddad' });
+    expect(deleter.problem()).toBeNull();
+  });
+
   it('starts no second delete while one is running', async () => {
     let finish: (value: string) => void = () => undefined;
     const remove = vi.fn(() => new Promise<string>((resolve) => (finish = resolve)));
@@ -159,7 +179,7 @@ describe('injectDeleteAllowed', () => {
     expect(no.result()).toBe(false);
   });
 
-  it('hides Delete when the check fails', async () => {
+  it('shows Delete when the check could not be made', async () => {
     const allowed = vi.fn().mockRejectedValue(new Error('offline'));
     setup({ allowed });
     const target = signal<{ kind: DraftKind; name: string; owner: string | null } | null>({
@@ -169,7 +189,6 @@ describe('injectDeleteAllowed', () => {
     });
     const result = TestBed.runInInjectionContext(() => injectDeleteAllowed(target));
     TestBed.tick();
-    await vi.waitFor(() => expect(allowed).toHaveBeenCalled());
-    expect(result()).toBe(false);
+    await vi.waitFor(() => expect(result()).toBe(true));
   });
 });

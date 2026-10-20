@@ -156,8 +156,8 @@ export class DraftsContainer {
   );
 
   constructor() {
-    // Whoever deleted a draft (this page, a draft's own page) tells the page; a delete from before it opened is old news.
-    let seen = this.deleted.latest();
+    // Whoever deleted a draft tells the page; an older delete is old news, but one that just opened the page is not.
+    let seen = this.deleted.isFresh() ? null : this.deleted.latest();
     effect(() => {
       const draft = this.deleted.latest();
       untracked(() => {
@@ -171,6 +171,11 @@ export class DraftsContainer {
       });
     });
     effect(() => {
+      if (this.deleter.problem()) {
+        untracked(() => this.lastDeleted.set(null));
+      }
+    });
+    effect(() => {
       const userId = this.session.user()?.id;
       untracked(() => {
         if (userId && this.hasAccess()) {
@@ -182,6 +187,9 @@ export class DraftsContainer {
 
   protected async load(): Promise<void> {
     const run = ++this.run;
+    if (run > 1) {
+      this.lastDeleted.set(null);
+    }
     this.state.set('loading');
     try {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);

@@ -16,7 +16,7 @@ export interface DeleteTarget {
 
 /**
  * Whether the signed-in user may delete this draft: Madar's rule first, then ERPNext's own delete right for it.
- * A lost connection leaves the button hidden; the page it sits on has loaded without it.
+ * Only a definite no hides the button; when the check can't be made ERPNext still refuses a delete the role can't make.
  */
 export function injectDeleteAllowed(
   target: Signal<{ kind: DraftKind; name: string; owner: string | null } | null>,
@@ -41,7 +41,7 @@ export function injectDeleteAllowed(
       deletion
         .allowed(draft.kind, draft.name)
         .then((answer) => thisTurn === turn && allowed.set(answer))
-        .catch(() => undefined);
+        .catch(() => thisTurn === turn && allowed.set(true));
     });
   });
   return allowed.asReadonly();
@@ -84,8 +84,12 @@ export function injectDraftDeleter(options: {
         options.reload();
         return;
       }
-      await options.done(target);
       deleted.publish({ kind: target.kind, name: target.name, party: target.party });
+      try {
+        await options.done(target);
+      } catch {
+        // The draft is gone; a failed hand-over is not a failed delete.
+      }
     } catch (error) {
       const failure = error instanceof DraftDeleteError ? error.failure : 'error';
       problem.set({ problem: failure, target });

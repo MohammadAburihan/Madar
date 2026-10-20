@@ -58,6 +58,13 @@ describe('DraftDeletionService.allowed', () => {
       kind: 'offline',
     });
   });
+
+  it('checks for an expired session after a refusal, and does not call that a no', async () => {
+    const { service, checkExpired } = setup({}, { 'frappe.client.has_permission': refused });
+    checkExpired.mockResolvedValue(true);
+    await expect(service.allowed('sale', 'SI-1')).rejects.toMatchObject({ kind: 'forbidden' });
+    expect(checkExpired).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('DraftDeletionService.delete', () => {

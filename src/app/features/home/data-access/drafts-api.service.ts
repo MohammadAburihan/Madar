@@ -55,6 +55,7 @@ export class DraftsApiService {
   /**
    * ERPNext's delete right depends on the role and doctype, and on the owner where a rule is owner-only, so one
    * answer per doctype and ownership is enough. The list holds only drafts Madar's rules let the user delete.
+   * A check that can't be made leaves Delete on: the delete re-checks, and the page must still load.
    */
   private async withDeleteRights(entries: DraftEntry[], userId: string): Promise<DraftEntry[]> {
     const groups = new Map<string, DraftEntry>();
@@ -67,7 +68,8 @@ export class DraftsApiService {
     const answers = new Map(
       await Promise.all(
         [...groups].map(
-          async ([key, e]) => [key, await this.deletion.allowed(e.kind, e.name)] as const,
+          async ([key, e]) =>
+            [key, await this.deletion.allowed(e.kind, e.name).catch(() => true)] as const,
         ),
       ),
     );

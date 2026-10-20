@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
+import { SessionService } from '../../../core/auth/session.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { DraftsApiService } from './drafts-api.service';
 import { DraftsScope } from './drafts.models';
@@ -140,6 +141,9 @@ describe('DraftsApiService', () => {
   });
 
   it('keeps the draft but hides Delete when ERPNext refuses the check', async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: SessionService, useValue: { checkExpired: async () => false } }],
+    });
     fakeErpnext(
       { 'Sales Invoice': () => [INVOICE], 'Sales Invoice Item': () => [] },
       {
@@ -151,6 +155,21 @@ describe('DraftsApiService', () => {
       scope({ orderPurchases: false, paySuppliers: false }),
     );
     expect(entries.map((e) => [e.name, e.deletable])).toEqual([['SI-1', false]]);
+  });
+
+  it('still loads the page, with Delete on, when the check fails for another reason', async () => {
+    fakeErpnext(
+      { 'Sales Invoice': () => [INVOICE], 'Sales Invoice Item': () => [] },
+      {
+        'frappe.client.has_permission': () => throwError(() => new ErpnextError('offline', 'down')),
+      },
+    );
+    const { entries } = await TestBed.inject(DraftsApiService).load(
+      scope({ orderPurchases: false, paySuppliers: false }),
+    );
+    expect(entries.map((e) => [e.name, e.deletable, e.continuable])).toEqual([
+      ['SI-1', true, true],
+    ]);
   });
 
   it('asks for drafts of the business only, and supplier payments only', async () => {
