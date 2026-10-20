@@ -159,11 +159,10 @@ export class DraftsContainer {
   constructor() {
     // Whoever deleted a draft tells the page; one that opened the page arrives in the navigation state.
     let seen = this.deleted.latest();
-    const fromPage = readDeletedDraft(
-      this.router.getCurrentNavigation()?.extras.state ?? history.state,
-    );
+    const fromPage = readDeletedDraft(this.router.getCurrentNavigation()?.extras.state);
     if (fromPage) {
       this.lastDeleted.set(fromPage);
+      history.replaceState({ ...history.state, deletedDraft: undefined }, '');
     }
     effect(() => {
       const draft = this.deleted.latest();

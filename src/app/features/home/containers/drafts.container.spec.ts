@@ -96,6 +96,24 @@ describe('DraftsContainer deleted notice', () => {
     expect(page.notice()).not.toBeNull();
   });
 
+  it('removes the notice from the history entry once read', async () => {
+    history.replaceState({ navigationId: 3, deletedDraft: { kind: 'sale' } }, '');
+    const { page, load } = setup(vi.fn(), {
+      deletedDraft: { kind: 'sale', name: 'SI-9', party: 'Lina Haddad' },
+    });
+    await vi.waitFor(() => expect(load).toHaveBeenCalled());
+    expect(page.notice()).not.toBeNull();
+    expect(history.state.deletedDraft).toBeUndefined();
+    expect(history.state.navigationId).toBe(3);
+  });
+
+  it('ignores a notice left in the history entry', async () => {
+    history.replaceState({ deletedDraft: { kind: 'sale', name: 'SI-9', party: 'Lina' } }, '');
+    const { page, load } = setup(vi.fn());
+    await vi.waitFor(() => expect(load).toHaveBeenCalled());
+    expect(page.notice()).toBeNull();
+  });
+
   it('shows no notice without navigation state, even after an earlier delete', async () => {
     const { page, load } = setup(vi.fn(), undefined, () =>
       TestBed.inject(DeletedDraftsService).publish({ kind: 'sale', name: 'SI-9', party: 'Lina' }),
