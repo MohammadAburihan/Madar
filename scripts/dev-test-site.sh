@@ -4,7 +4,7 @@
 set -eu
 
 SITE=madar-test.localhost
-PORT=8081
+PORT=18081
 FRAPPE_DOCKER="${FRAPPE_DOCKER:-$(dirname "$0")/../../frappe_docker}"
 cd "$FRAPPE_DOCKER"
 

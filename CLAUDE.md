@@ -30,15 +30,15 @@ All in `docs/`:
 ## Commands
 
 ```sh
-npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :8080
-                      # ERPNEXT_DEV_URL=http://localhost:8081 targets the seeded test site instead
+npm start             # dev server on http://localhost:4200, proxies /api and /files to ERPNext on :18080
+                      # ERPNEXT_DEV_URL=http://localhost:18081 targets the seeded test site instead
 npm test              # unit tests, single run
 npm run build         # production build to dist/madar/browser
 npm run cap:sync      # production build copied into the android/ and ios/ projects
 npm run android:dev   # dev build on the Android emulator, talking to local ERPNext
 npm run ios:dev       # dev build on the iOS simulator, talking to local ERPNext
 npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
-npm run e2e           # Playwright happy paths (e2e/): own dev server on :4321 → seeded test site :8081; phone and desktop
+npm run e2e           # Playwright happy paths (e2e/): own dev server on :4321 → seeded test site :18081; phone and desktop
 ```
 
 Runtime config: `public/config.json` (`erpnextUrl`, empty = same origin). In the Docker image it is written at
@@ -48,8 +48,8 @@ container start from `MADAR_ERPNEXT_URL`. nginx proxies `/api`, `/files`, `/priv
 ### Mobile
 
 - Native apps have no proxy: when `erpnextUrl` is empty they use `environment.nativeErpnextUrl[platform]`.
-  Dev builds point the Android emulator at `http://10.0.2.2:8080` and the iOS simulator at
-  `http://localhost:8080`; production builds have none until the business-connection flow supplies it.
+  Dev builds point the Android emulator at `http://10.0.2.2:18080` and the iOS simulator at
+  `http://localhost:18080`; production builds have none until the business-connection flow supplies it.
 - Plain HTTP to a local ERPNext is allowed only in debug builds, never in release:
   Android via `android/app/src/debug/` (network security config for `10.0.2.2`/`localhost`), iOS via the
   "Allow local networking in Debug" build phase, which adds `NSAllowsLocalNetworking` to the built
@@ -206,7 +206,9 @@ frappe/frappe_docker repo), using its `pwd.yml` compose file:
 cd ../frappe_docker && docker compose -f pwd.yml up -d
 ```
 
-- `madar-erpnext:v16.50.0-hrms` (ERPNext v16.50.0 with Frappe HR, for Workers & HR), served at http://localhost:8080.
+- `madar-erpnext:v16.50.0-hrms` (ERPNext v16.50.0 with Frappe HR, for Workers & HR), served at http://localhost:18080.
+  The local `pwd.yml` publishes `18080:8080` (changed 20 Oct 2026: 8080 and 8081 are taken on this machine); inside
+  Docker ERPNext still listens on 8080.
   Build it with `scripts/build-erpnext-image.sh` (apps pinned in `docker/erpnext/apps.json`); `pwd.yml` uses it in
   place of `frappe/erpnext`. A new site needs `--install-app hrms` as well as erpnext.
 - Site `frontend`, login `Administrator` / `admin` (local only; never reuse on AWS).
@@ -216,7 +218,7 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
   a server error (16 Oct 2026: `Unknown column 'send_read_receipt'` on `frontend`, after Frappe 16.51).
 - `pwd.yml` pins every request to the `frontend` site (`FRAPPE_SITE_NAME_HEADER`), whatever the Host header.
   Never write to `frontend` for testing: use `scripts/dev-test-site.sh`, which creates `madar-test.localhost`
-  behind its own web container on port 8081 and seeds it (users in the README).
+  behind its own web container on port 18081 and seeds it (users in the README).
 
 ### Release rules
 

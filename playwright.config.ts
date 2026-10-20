@@ -22,7 +22,7 @@ export default defineConfig({
     { name: 'desktop', use: { viewport: { width: 1440, height: 1000 } }, grep: /@desktop/ },
   ],
   webServer: {
-    command: 'ERPNEXT_DEV_URL=http://localhost:8081 npx ng serve --port 4321',
+    command: 'ERPNEXT_DEV_URL=http://localhost:18081 npx ng serve --port 4321',
     url: 'http://localhost:4321',
     reuseExistingServer: false,
     timeout: 240_000,
