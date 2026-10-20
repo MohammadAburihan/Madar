@@ -45,6 +45,8 @@ export class SalesReturnStore {
   readonly reason = signal('');
   /** What the user typed for each row that still has something to return. */
   readonly qtyInputs = signal<Record<string, string>>({});
+  /** Rows the user took out of this task; they read "Not included" until added back. */
+  readonly removed = signal<ReadonlySet<string>>(new Set());
   readonly draft = signal<string | null>(null);
   readonly state = signal<ReturnState>('idle');
   readonly failure = signal<ReturnFailure | null>(null);
@@ -101,6 +103,7 @@ export class SalesReturnStore {
     this.warehouse.set(null);
     this.reason.set('');
     this.qtyInputs.set({});
+    this.removed.set(new Set());
     this.draft.set(this.leftDrafts.get(invoice) ?? null);
     this.state.set('idle');
     this.failure.set(null);
@@ -139,6 +142,7 @@ export class SalesReturnStore {
     const only = from.size === 1 ? warehouses.find((w) => from.has(w.id)) : undefined;
     this.warehouse.set(source.movesStock ? (only?.id ?? AS_SOLD) : null);
     const open = source.lines.filter((l) => l.returnable > 0);
+    this.removed.set(new Set());
     this.qtyInputs.set(
       Object.fromEntries(
         open.map((l, i) => [l.row, i === 0 ? String(Math.min(1, l.returnable)) : '0']),
@@ -153,6 +157,23 @@ export class SalesReturnStore {
 
   setReason(reason: string): void {
     this.reason.set(reason);
+  }
+
+  removeRow(row: string): void {
+    this.setQty(row, '0');
+    this.removed.update((rows) => new Set(rows).add(row));
+  }
+
+  addBackRow(row: string): void {
+    const line = this.openLines().find((l) => l.row === row);
+    if (line) {
+      this.setQty(row, String(Math.min(1, line.returnable)));
+    }
+    this.removed.update((rows) => {
+      const next = new Set(rows);
+      next.delete(row);
+      return next;
+    });
   }
 
   setQty(row: string, input: string): void {

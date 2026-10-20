@@ -14,6 +14,7 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
@@ -35,6 +36,7 @@ const SEARCH_DELAY_MS = 250;
     FilterChipsComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     SearchFieldComponent,
     SelectFieldComponent,
@@ -114,6 +116,11 @@ const SEARCH_DELAY_MS = 250;
               [detail]="card.detail"
               [kind]="card.kind"
               (selected)="ctx.go('line/' + i)"
+            />
+            <app-line-remove
+              [label]="txt.remove"
+              [name]="removeName(line.item.name)"
+              (remove)="ctx.store.removeLine(i)"
             />
           } @empty {
             <p class="muted">{{ txt.panelEmpty }}</p>
@@ -245,6 +252,7 @@ export class SaleItemsContainer implements OnInit {
       hint: t('sale.workspace.hint'),
       addCustomer: t('sale.customer.add'),
       panelHeading: t('sale.basket.title'),
+      remove: t('taskLines.remove'),
       panelEmpty: t('sale.workspace.panelEmpty'),
       total: t('sale.total', { amount: total }),
       review: t('sale.workspace.review'),
@@ -329,6 +337,10 @@ export class SaleItemsContainer implements OnInit {
 
   protected panelLine(index: number) {
     return panelLineView(this.ctx.store.lines()[index], this.ctx.currency(), this.ctx.i18n.tr());
+  }
+
+  protected removeName(item: string): string {
+    return this.ctx.i18n.tr().t('taskLines.removeItem', { item });
   }
 
   protected addLabel(item: CatalogItem): string {

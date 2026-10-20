@@ -43,6 +43,8 @@ export class DeliveryStore {
   readonly stock = signal<Record<string, Record<string, number>>>({});
   /** What the user typed for each order row still to deliver. */
   readonly qtyInputs = signal<Record<string, string>>({});
+  /** Rows the user took out of this task; they read "Not included" until added back. */
+  readonly removed = signal<ReadonlySet<string>>(new Set());
   readonly draft = signal<string | null>(null);
   readonly state = signal<DeliveryState>('idle');
   readonly failure = signal<DeliveryFailure | null>(null);
@@ -129,6 +131,7 @@ export class DeliveryStore {
     this.warehouse.set(null);
     this.stock.set({});
     this.qtyInputs.set({});
+    this.removed.set(new Set());
     this.draft.set(null);
     this.state.set('idle');
     this.failure.set(null);
@@ -175,6 +178,7 @@ export class DeliveryStore {
         goods.reduce((sum, c) => sum + (stock[c]?.[a.id] ?? 0), 0),
     )[0];
     this.warehouse.set(best?.id ?? null);
+    this.removed.set(new Set());
     this.qtyInputs.set(
       Object.fromEntries(
         order.lines
@@ -187,6 +191,23 @@ export class DeliveryStore {
   setWarehouse(warehouse: string | null): void {
     this.clearFailure();
     this.warehouse.set(warehouse);
+  }
+
+  removeRow(row: string): void {
+    this.setQty(row, '0');
+    this.removed.update((rows) => new Set(rows).add(row));
+  }
+
+  addBackRow(row: string): void {
+    const line = this.openLines().find((l) => l.row === row);
+    if (line) {
+      this.setQty(row, String(toDeliver(line)));
+    }
+    this.removed.update((rows) => {
+      const next = new Set(rows);
+      next.delete(row);
+      return next;
+    });
   }
 
   setQty(row: string, input: string): void {

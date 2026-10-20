@@ -12,6 +12,7 @@ import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
@@ -27,6 +28,7 @@ import { returnHeading, returnLineCard, returnQtyLabel, returnSummary } from './
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     SelectFieldComponent,
     TextFieldComponent,
@@ -84,14 +86,26 @@ import { returnHeading, returnLineCard, returnQtyLabel, returnSummary } from './
           [meta]="line.card.meta"
           [detail]="line.card.detail"
         />
-        <app-text-field
-          [label]="line.label"
-          inputmode="decimal"
-          [ltr]="true"
-          [suffix]="line.uom"
-          [error]="line.error"
-          [value]="ctx.store.qtyInputs()[line.row] ?? ''"
-          (valueChange)="ctx.store.setQty(line.row, $event)"
+        @if (!line.removed) {
+          <app-text-field
+            [label]="line.label"
+            inputmode="decimal"
+            [ltr]="true"
+            [suffix]="line.uom"
+            [error]="line.error"
+            [value]="ctx.store.qtyInputs()[line.row] ?? ''"
+            (valueChange)="ctx.store.setQty(line.row, $event)"
+          />
+        }
+        <app-line-remove
+          [label]="txt.remove"
+          [name]="line.removeName"
+          [excluded]="line.removed"
+          [excludedLabel]="txt.notIncluded"
+          [addBackLabel]="txt.addBack"
+          [addBackName]="line.addBackName"
+          (remove)="ctx.store.removeRow(line.row)"
+          (addBack)="ctx.store.addBackRow(line.row)"
         />
       }
       @if (ctx.store.needsWarehouse()) {
@@ -108,6 +122,9 @@ import { returnHeading, returnLineCard, returnQtyLabel, returnSummary } from './
         [value]="ctx.store.reason()"
         (valueChange)="ctx.store.setReason($event)"
       />
+      @if (ctx.store.returningNow() <= 0) {
+        <p class="muted">{{ txt.nothingIncluded }}</p>
+      }
       <app-feedback-card [title]="txt.summaryTitle" [message]="f.summary" />
       <p class="muted">{{ txt.noRefund }}</p>
       @if (notice(); as n) {
@@ -148,6 +165,10 @@ export class ReturnFormContainer implements OnInit {
       summaryTitle: t('sales.return.summaryTitle'),
       noRefund: t('sales.return.noRefund'),
       confirm: t('sales.return.confirm'),
+      remove: t('taskLines.remove'),
+      addBack: t('taskLines.addBack'),
+      notIncluded: t('taskLines.notIncluded'),
+      nothingIncluded: t('taskLines.nothingIncluded'),
       confirming: t('sales.return.confirming'),
       reload: t('sales.return.reload'),
       viewSale: t('sales.return.viewSale'),
@@ -190,6 +211,9 @@ export class ReturnFormContainer implements OnInit {
         row: l.row,
         uom: l.uom,
         card: returnLineCard(l, quantities[l.row], currency, tr),
+        removed: store.removed().has(l.row),
+        removeName: tr.t('taskLines.removeItem', { item: l.name }),
+        addBackName: tr.t('taskLines.addBackItem', { item: l.name }),
         label: returnQtyLabel(l, lines.length, tr),
         error: store.qtyOk(l)
           ? null

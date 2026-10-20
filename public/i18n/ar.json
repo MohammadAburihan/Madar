@@ -437,6 +437,7 @@
       "detailDiscount": "{{qty}} × {{price}} · خصم {{discount}}%",
       "apply": "تطبيق على السلة",
       "remove": "إزالة من عملية البيع",
+      "removeName": "إزالة من عملية البيع · {{item}}",
       "priceLocked": {
         "title": "لا يمكن تغيير السعر",
         "message": "لا تسمح صلاحياتك بتغيير هذا السعر. اطلب المساعدة من مالك المنشأة."
@@ -3909,5 +3910,13 @@
       "purchase": "فتح أمر الشراء",
       "payment": "فتح الدفعة"
     }
+  },
+  "taskLines": {
+    "remove": "إزالة",
+    "removeItem": "إزالة {{item}}",
+    "addBack": "إعادة الإضافة",
+    "addBackItem": "إعادة إضافة {{item}}",
+    "notIncluded": "غير مشمول",
+    "nothingIncluded": "لا شيء مشمول بعد. أدخل كمية أو أعد إضافة صف للمتابعة."
   }
 }

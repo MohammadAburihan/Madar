@@ -190,4 +190,31 @@ describe('DeliveryStore', () => {
     await store.load();
     expect(store.openLines()).toEqual([]);
   });
+
+  it('takes a removed row out of the delivery until it is added back', async () => {
+    const { store, api } = setup();
+    await store.load();
+    store.setQty('visit', '1');
+
+    store.removeRow('tree');
+    expect([store.qtyInputs()['tree'], [...store.removed()], store.deliveringNow()]).toEqual([
+      '0',
+      ['tree'],
+      1,
+    ]);
+    api.deliver.mockResolvedValue('DN-1');
+    await store.confirm();
+    expect(api.deliver.mock.calls[0][0].lines).toEqual([{ row: 'visit', qty: 1 }]);
+
+    store.start('SO-1');
+    await store.load();
+    store.removeRow('tree');
+    expect(store.ready()).toBe(false);
+    store.addBackRow('tree');
+    expect([store.qtyInputs()['tree'], store.removed().size, store.ready()]).toEqual([
+      '2',
+      0,
+      true,
+    ]);
+  });
 });

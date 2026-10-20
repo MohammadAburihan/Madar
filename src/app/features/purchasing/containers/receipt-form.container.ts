@@ -12,6 +12,7 @@ import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LineRemoveComponent } from '../../../shared/ui/line-remove.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card.component';
@@ -43,6 +44,7 @@ import {
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LineRemoveComponent,
     PageHeadingComponent,
     SelectFieldComponent,
     StatCardComponent,
@@ -111,15 +113,30 @@ import {
             [detail]="line.card.detail"
           />
         }
-        <app-text-field
-          [label]="line.label"
-          inputmode="decimal"
-          [ltr]="true"
-          [suffix]="f.remainder ? null : line.uom"
-          [error]="line.error"
-          [value]="ctx.store.qtyInputs()[line.row] ?? ''"
-          (valueChange)="ctx.store.setQty(line.row, $event)"
+        @if (!line.removed) {
+          <app-text-field
+            [label]="line.label"
+            inputmode="decimal"
+            [ltr]="true"
+            [suffix]="f.remainder ? null : line.uom"
+            [error]="line.error"
+            [value]="ctx.store.qtyInputs()[line.row] ?? ''"
+            (valueChange)="ctx.store.setQty(line.row, $event)"
+          />
+        }
+        <app-line-remove
+          [label]="txt.remove"
+          [name]="line.removeName"
+          [excluded]="line.removed"
+          [excludedLabel]="txt.notIncluded"
+          [addBackLabel]="txt.addBack"
+          [addBackName]="line.addBackName"
+          (remove)="ctx.store.removeRow(line.row)"
+          (addBack)="ctx.store.addBackRow(line.row)"
         />
+      }
+      @if (ctx.store.receivingNow() <= 0) {
+        <p class="muted">{{ txt.nothingIncluded }}</p>
       }
       @if (f.remainder) {
         <app-feedback-card [title]="txt.reviewTitle" [message]="f.review" />
@@ -170,6 +187,10 @@ export class ReceiptFormContainer implements OnInit {
       partial: t('purchase.receive.partial'),
       reviewTitle: t('purchase.receive.reviewTitle'),
       recording: t('purchase.receive.recording'),
+      remove: t('taskLines.remove'),
+      addBack: t('taskLines.addBack'),
+      notIncluded: t('taskLines.notIncluded'),
+      nothingIncluded: t('taskLines.nothingIncluded'),
       cancel: t('purchase.receive.cancel'),
       reload: t('purchase.receive.reload'),
       openOrder: t('purchase.receipt.openOrder'),
@@ -223,6 +244,9 @@ export class ReceiptFormContainer implements OnInit {
           row: l.row,
           uom: l.uom,
           card: receiveLineCard(l, currency, tr),
+          removed: store.removed().has(l.row),
+          removeName: tr.t('taskLines.removeItem', { item: l.name }),
+          addBackName: tr.t('taskLines.addBackItem', { item: l.name }),
           label: qtyLabel(l, remainder, lines.length, tr),
           error: valid ? null : tr.t('purchase.receive.qtyError', { max: remainingQty(l) }),
         };
