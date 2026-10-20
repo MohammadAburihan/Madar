@@ -69,6 +69,10 @@ to the Owner.
 | Approvals inbox (leave waiting, and steps ERPNext's workflows let the user's roles take) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 | See and set salaries, make and confirm salary slips (Pay; needs HR User or HR Manager, as in ERPNext) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
 | Log a worker's hours (Timesheet; needs HR User or HR Manager, and a readable Activity Type, which HR Manager has) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
+| Change or remove item lines while a task is open (quantity, price and discount within the rules above) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Delete a draft (one they could make; salesperson and store associate their own sales drafts; only where ERPNext lets their roles delete it) | ✅ | own | own | own | own | own |
+| Cancel a confirmed record (ERPNext reverses its stock and money; it stays as Cancelled) | ✅ | — | — | — | — | — |
+| Cancel and edit (amend) a confirmed record: a corrected copy to confirm again | ✅ | — | — | — | — | — |
 
 ## Enforcement
 
@@ -79,5 +83,9 @@ to the Owner.
   quantity only: purchase rates, order values and supplier balances are hidden from them (ERPNext's Stock User can
   still read order rates through the API). These are enforced in the app; enforcing them on the server as well needs a small ERPNext
   customization, planned for when more than one front end writes sales.
+- Confirmed records are never edited or deleted, in Madar or ERPNext: they are **cancelled**, and "Cancel and edit"
+  opens a corrected copy (ERPNext's amend, linked through `amended_from`). A cancel ERPNext refuses because a later
+  record depends on it (a payment against an invoice, a receipt of an order) shows that record, to cancel first;
+  Madar never cancels a chain on its own (decided 20 Oct 2026).
 - Quick sales charge **no VAT**, the salesperson **picks the warehouse** on each sale, and anonymous sales use the
   shared **Walk-in Customer**.
