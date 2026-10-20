@@ -216,13 +216,20 @@ are cancelled, or cancelled and amended as a corrected copy (Owner only); drafts
 One PR each, in this order:
 
 1. Done (#67): the rules in `PERMISSIONS.md` and the overview.
-2. Lines inside tasks (this PR): **Remove** on every line of the sale basket (phone and desktop, services too), the
+2. Lines inside tasks (done: #69): **Remove** on every line of the sale basket (phone and desktop, services too), the
    sale line editor, quotation and purchase order; **Remove / Add back** on delivery, receipt and return rows (a
    removed row reads "Not included"; with none left, Confirm stays off and a note says why). Saved drafts and posted
    documents carry only the remaining lines (checked on v16: re-saving a draft drops the removed child rows). e2e:
    `35-remove-lines`. Review pass 1: low only (delivery Add back on a service row restored a quantity, now 0 as on
    load); reviewing stops.
-3. Delete drafts: on Unfinished work and draft detail pages, with a confirm step.
+3. Delete drafts (this PR): **Delete draft** on Unfinished work and on draft invoice, quotation, order, purchase order
+   and supplier payment pages, with a confirm step. Shown only when Madar's rule allows it and ERPNext's
+   `has_permission(…, 'delete')` doesn't say no (v16: Sales Invoice only Accounts Manager, so only the Owner;
+   Quotation and Sales Order Sales User; Purchase Order Purchase User; Payment Entry Accounts User). The draft is
+   re-read first (still a draft of this business); a lost answer is never taken as deleted. A task holding the draft
+   forgets it unless it is confirming. e2e: `36-delete-drafts`. Review pass 1 (1 medium, 3 low) fixed: a failed
+   permission check no longer hides Delete or breaks the page; the deletion is announced before navigating; the
+   notice clears on problems and reloads and travels to Unfinished work in navigation state.
 4. Cancel and amend, core and sales invoices: shared helpers, Cancelled in lists, Cancel / Cancel and edit on the invoice.
 5. Sales orders, quotations and deliveries.
 6. Purchasing: orders, receipts, supplier invoices and payments.
