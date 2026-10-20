@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
@@ -98,5 +99,26 @@ describe('SalesOrderStore', () => {
       Promise.reject(new HttpErrorResponse({ status: 0 }));
     await store.create('QT-1');
     expect([store.state(), store.failure()]).toEqual(['failed', 'offline']);
+  });
+});
+
+describe('SalesOrderStore when its draft is deleted', () => {
+  it('forgets the leftover draft, so the retry inserts a new order', async () => {
+    const { store, api } = setup();
+    api.fromQuotation.mockImplementationOnce(async (_request, _draft, onInserted) => {
+      onInserted('SO-LEFT');
+      throw new HttpErrorResponse({ status: 417 });
+    });
+    await store.create('QT-1');
+    expect(store.draft()).toBe('SO-LEFT');
+
+    TestBed.inject(DeletedDraftsService).publish({
+      kind: 'order',
+      name: 'SO-LEFT',
+      party: 'Lina Haddad',
+    });
+    TestBed.tick();
+
+    expect(store.draft()).toBeNull();
   });
 });

@@ -101,6 +101,58 @@ describe('DraftsApiService', () => {
     ]);
   });
 
+  it("asks ERPNext once per doctype and ownership whether the user's roles may delete", async () => {
+    const { getCalls } = fakeErpnext(
+      {
+        'Sales Invoice': () => [
+          { ...INVOICE, owner: 'lina@example.com' },
+          { ...INVOICE, name: 'SI-2', owner: 'lina@example.com' },
+          { ...INVOICE, name: 'SI-3', owner: 'sami@example.com' },
+        ],
+        'Sales Invoice Item': () => [],
+        'Purchase Order': () => [
+          { name: 'PO-1', modified: '2026-10-07 08:00:00', owner: 'sami@example.com' },
+        ],
+        'Purchase Order Item': () => [],
+      },
+      {
+        'frappe.client.has_permission': (params) => ({
+          has_permission: params['doctype'] === 'Purchase Order' || params['docname'] === 'SI-1',
+        }),
+      },
+    );
+
+    const { entries } = await TestBed.inject(DraftsApiService).load(scope({ paySuppliers: false }));
+
+    expect(getCalls.map((c) => [c.method, c.params['doctype'], c.params['perm_type']])).toEqual(
+      expect.arrayContaining([
+        ['frappe.client.has_permission', 'Sales Invoice', 'delete'],
+        ['frappe.client.has_permission', 'Purchase Order', 'delete'],
+      ]),
+    );
+    expect(getCalls).toHaveLength(3);
+    expect(entries.map((e) => [e.name, e.deletable]).sort()).toEqual([
+      ['PO-1', true],
+      ['SI-1', true],
+      ['SI-2', true],
+      ['SI-3', false],
+    ]);
+  });
+
+  it('keeps the draft but hides Delete when ERPNext refuses the check', async () => {
+    fakeErpnext(
+      { 'Sales Invoice': () => [INVOICE], 'Sales Invoice Item': () => [] },
+      {
+        'frappe.client.has_permission': () =>
+          throwError(() => new ErpnextError('forbidden', 'no', 403)),
+      },
+    );
+    const { entries } = await TestBed.inject(DraftsApiService).load(
+      scope({ orderPurchases: false, paySuppliers: false }),
+    );
+    expect(entries.map((e) => [e.name, e.deletable])).toEqual([['SI-1', false]]);
+  });
+
   it('asks for drafts of the business only, and supplier payments only', async () => {
     const { listCalls } = fakeErpnext();
     await TestBed.inject(DraftsApiService).load(scope());

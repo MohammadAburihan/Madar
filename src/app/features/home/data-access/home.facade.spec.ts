@@ -4,6 +4,7 @@ import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { SessionService, SessionUser } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { HomeApiService, HomeLoadResult } from './home-api.service';
 import { HomeFacade } from './home.facade';
@@ -64,6 +65,20 @@ describe('HomeFacade', () => {
     expect(api.load).toHaveBeenCalledWith(
       expect.objectContaining({ companyCurrency: 'ILS', today: new Date(2026, 9, 13, 9) }),
     );
+  });
+
+  it('loads again when a draft is deleted, so its draft count is right on the next visit', async () => {
+    const { facade, api } = setup({});
+    TestBed.tick();
+    TestBed.inject(DeletedDraftsService).publish({ kind: 'sale', name: 'SI-1', party: 'Lina' });
+    TestBed.tick();
+    expect(api.load).not.toHaveBeenCalled();
+
+    await facade.load();
+    TestBed.inject(DeletedDraftsService).publish({ kind: 'sale', name: 'SI-2', party: 'Lina' });
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(api.load).toHaveBeenCalledTimes(2));
   });
 
   it('shows the offline state, not an expired session, when the server is unreachable at start-up', async () => {

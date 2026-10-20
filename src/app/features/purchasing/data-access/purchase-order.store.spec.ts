@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { capabilitiesFor } from '../../../core/auth/capabilities';
@@ -425,5 +426,50 @@ describe('PurchaseOrderStore.openDraft', () => {
 
     expect([store.lines(), store.ready()]).toEqual([[], false]);
     expect(store.supplierInfo()).toEqual(supplier);
+  });
+});
+
+describe('PurchaseOrderStore when its draft is deleted', () => {
+  it('forgets the open draft and its lines', async () => {
+    const { store, api } = setup();
+    api.draftOrder.mockResolvedValue({
+      name: 'PO-DRAFT',
+      reference: 'PUR-0A1B2C3',
+      supplier: 'Green Clay',
+      project: null,
+      lines: [{ item: PLANTER, qty: 10, rate: 40 }],
+    });
+    await store.openDraft('PO-DRAFT');
+    const deleted = TestBed.inject(DeletedDraftsService);
+
+    deleted.publish({ kind: 'sale', name: 'PO-DRAFT', party: 'Green Clay' });
+    TestBed.tick();
+    expect(store.draft()).toBe('PO-DRAFT');
+
+    deleted.publish({ kind: 'purchase', name: 'PO-DRAFT', party: 'Green Clay' });
+    TestBed.tick();
+    expect([store.draft(), store.lines(), store.supplier()]).toEqual([null, [], null]);
+  });
+
+  it('keeps the draft while a confirmation is unresolved', async () => {
+    const { store, api } = setup();
+    api.draftOrder.mockResolvedValue({
+      name: 'PO-DRAFT',
+      reference: 'PUR-0A1B2C3',
+      supplier: 'Green Clay',
+      project: null,
+      lines: [{ item: PLANTER, qty: 10, rate: 40 }],
+    });
+    await store.openDraft('PO-DRAFT');
+    store.state.set('unresolved');
+
+    TestBed.inject(DeletedDraftsService).publish({
+      kind: 'purchase',
+      name: 'PO-DRAFT',
+      party: 'Green Clay',
+    });
+    TestBed.tick();
+
+    expect(store.draft()).toBe('PO-DRAFT');
   });
 });

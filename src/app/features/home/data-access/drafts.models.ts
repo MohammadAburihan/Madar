@@ -1,4 +1,6 @@
-export type DraftKind = 'sale' | 'quotation' | 'order' | 'purchase' | 'payment';
+import { DraftKind } from '../../../core/drafts/draft-kind';
+
+export type { DraftKind };
 
 /** One unfinished document, from any area, as the Unfinished work page lists it. */
 export interface DraftEntry {
@@ -17,6 +19,10 @@ export interface DraftEntry {
   continuable: boolean;
   /** For a payment, the supplier invoice it pays. */
   invoice: string | null;
+  /** Who made it. */
+  owner: string;
+  /** ERPNext lets the user's roles delete it, and Madar's rules agree. */
+  deletable: boolean;
 }
 
 export interface DraftsScope {

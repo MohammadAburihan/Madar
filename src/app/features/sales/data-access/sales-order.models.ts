@@ -21,6 +21,9 @@ export interface SalesOrderDetail {
   customer: string;
   customerName: string;
   docstatus: number;
+  /** The business and the user it belongs to, so a draft is deleted only by one allowed to. */
+  company?: string;
+  owner?: string;
   /** ERPNext's order status: "To Deliver and Bill", "Completed", "Closed", "On Hold"… */
   status: string;
   deliveryStatus: string;

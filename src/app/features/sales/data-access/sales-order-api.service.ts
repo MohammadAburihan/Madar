@@ -46,6 +46,8 @@ interface OrderDoc {
   delivery_date: string | null;
   base_grand_total: number;
   base_rounded_total: number;
+  company?: string;
+  owner?: string;
   utm_content?: string | null;
   items?: OrderItem[];
   [key: string]: unknown;
@@ -114,6 +116,8 @@ export class SalesOrderApiService {
       customer: doc.customer,
       customerName: doc.customer_name || doc.customer,
       docstatus: doc.docstatus,
+      company: doc.company,
+      owner: doc.owner,
       status: doc.status,
       deliveryStatus: doc.delivery_status,
       billingStatus: doc.billing_status,

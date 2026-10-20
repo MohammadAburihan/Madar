@@ -11,9 +11,11 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { DraftDeleteComponent } from '../../../shared/ui/draft-delete.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
@@ -28,6 +30,7 @@ import { paymentResult } from './payment-view';
   selector: 'app-supplier-payment',
   imports: [
     BackLinkComponent,
+    DraftDeleteComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
     PageHeadingComponent,
@@ -63,6 +66,17 @@ import { paymentResult } from './payment-view';
       >
         {{ txt.viewInvoice }}
       </button>
+      <app-draft-delete
+        [canDelete]="mayDelete()"
+        [label]="txt.deleteDraft"
+        [busyLabel]="txt.deleting"
+        [busy]="deleter.running()"
+        [open]="deleter.open()"
+        [dialog]="deleter.dialog()"
+        [problem]="deleter.problem()"
+        (asked)="askDelete()"
+        (chosen)="deleter.answer($event)"
+      />
       <button type="button" class="md-btn" (click)="workspace()">{{ txt.workspace }}</button>
     } @else if (failed()) {
       <app-page-heading [title]="txt.title" [subtitle]="name()" />
@@ -96,6 +110,22 @@ export class SupplierPaymentContainer {
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   private run = 0;
 
+  protected readonly mayDelete = injectDeleteAllowed(
+    computed(() => {
+      const payment = this.payment();
+      return payment &&
+        payment.docstatus === 0 &&
+        payment.toSupplier &&
+        payment.company === this.business.active()?.name
+        ? { kind: 'payment' as const, name: payment.name, owner: null }
+        : null;
+    }),
+  );
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => void this.load(this.name()),
+    done: () => this.router.navigate(['/drafts']),
+  });
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -104,6 +134,8 @@ export class SupplierPaymentContainer {
       paidFrom: t('purchase.payment.paidFrom'),
       viewInvoice: t('purchase.payment.viewInvoice'),
       continuePayment: t('purchase.payment.continue'),
+      deleteDraft: t('drafts.delete.button'),
+      deleting: t('drafts.delete.busy'),
       workspace: t('purchase.payment.workspace'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
@@ -180,6 +212,19 @@ export class SupplierPaymentContainer {
     void this.router.navigate(['/purchases/invoice', invoice, 'pay'], {
       queryParams: { draft: this.name() },
     });
+  }
+
+  protected askDelete(): void {
+    const payment = this.payment();
+    const company = this.business.active()?.name;
+    if (payment && company) {
+      this.deleter.ask({
+        kind: 'payment',
+        name: payment.name,
+        party: payment.supplierName,
+        company,
+      });
+    }
   }
 
   protected openInvoice(): void {

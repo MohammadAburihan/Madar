@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { capabilitiesFor } from '../../../core/auth/capabilities';
@@ -345,5 +346,28 @@ describe('SupplierPaymentStore.openDraft', () => {
     api.draftPayment.mockRejectedValue(new DraftUnavailableError('PAY-X'));
     await expect(store.openDraft('PAY-X')).rejects.toBeInstanceOf(DraftUnavailableError);
     expect(store.selected()).toBe('PINV-0068');
+  });
+});
+
+describe('SupplierPaymentStore when its draft is deleted', () => {
+  it('forgets the open draft and its amount', async () => {
+    const { store, api } = setup();
+    api.draftPayment.mockResolvedValue({
+      name: 'PAY-DRAFT',
+      reference: 'PAYS-0A1B2C3',
+      invoice: 'PINV-0068',
+      amount: 100,
+      mode: 'Cash',
+    });
+    await store.openDraft('PAY-DRAFT');
+
+    TestBed.inject(DeletedDraftsService).publish({
+      kind: 'payment',
+      name: 'PAY-DRAFT',
+      party: 'Green Clay',
+    });
+    TestBed.tick();
+
+    expect([store.draft(), store.amountInput(), store.account()]).toEqual([null, '', null]);
   });
 });

@@ -3790,6 +3790,42 @@
       "order": "Open order",
       "purchase": "Open order",
       "payment": "Open payment"
+    },
+    "delete": {
+      "button": "Delete draft",
+      "busy": "Deleting…",
+      "dialog": {
+        "title": "Delete this draft?",
+        "message": "{{draft}} will be deleted. This can't be undone.",
+        "confirm": "Delete",
+        "keep": "Keep"
+      },
+      "done": {
+        "title": "Draft deleted",
+        "message": "{{draft}} was deleted."
+      },
+      "problem": {
+        "permission": {
+          "title": "Can't delete this draft",
+          "message": "Your role isn't allowed to delete it in ERPNext. Ask the owner."
+        },
+        "linked": {
+          "title": "This draft is linked",
+          "message": "Another document refers to it, so it can't be deleted. Remove that link first, then try again."
+        },
+        "offline": {
+          "title": "Couldn't confirm the deletion",
+          "message": "Check the connection and try again. If the draft was deleted, trying again will find it gone."
+        },
+        "error": {
+          "title": "Couldn't delete the draft",
+          "message": "Something went wrong. Try again."
+        },
+        "changed": {
+          "title": "Already confirmed or gone",
+          "message": "This draft was confirmed, deleted or belongs to another business, so nothing was deleted. The page shows what's there now."
+        }
+      }
     }
   },
   "taskLines": {

@@ -12,6 +12,7 @@ export interface DialogAction {
   id: string;
   label: string;
   primary?: boolean;
+  danger?: boolean;
 }
 
 /** Modal built on <dialog>, so focus is trapped and Escape cancels natively. */
@@ -32,6 +33,7 @@ export interface DialogAction {
             type="button"
             class="md-btn"
             [class.md-btn--primary]="action.primary"
+            [class.md-btn--danger]="action.danger"
             (click)="chosen.emit(action.id)"
           >
             {{ action.label }}

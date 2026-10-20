@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
+import { forgetDeletedDrafts } from '../../../core/tasks/deleted-drafts.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -71,6 +72,7 @@ export class QuotationStore {
 
   constructor() {
     inject(OpenTasksService).register(this.busy);
+    forgetDeletedDrafts('quotation', this.draft, this.busy, () => this.start());
   }
 
   start(): void {
