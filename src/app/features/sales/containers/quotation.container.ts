@@ -11,6 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
 import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { formatMoney, formatShortDate, toIsoDate } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -173,7 +174,7 @@ export class QuotationContainer {
   );
   protected readonly deleter = injectDraftDeleter({
     reload: () => void this.load(this.name()),
-    done: () => this.router.navigate(['/drafts']),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
   });
 
   protected readonly text = computed(() => {

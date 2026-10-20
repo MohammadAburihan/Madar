@@ -36,7 +36,7 @@ interface Internals {
   deleter: { ask: (t: object) => void; answer: (id: string) => void; running: () => boolean };
 }
 
-function setup(remove: ReturnType<typeof vi.fn>) {
+function setup(remove: ReturnType<typeof vi.fn>, state?: unknown, before?: () => void) {
   const load = vi
     .fn()
     .mockResolvedValue({ entries: [entry('SI-1'), entry('SI-2')], allForbidden: false });
@@ -44,7 +44,13 @@ function setup(remove: ReturnType<typeof vi.fn>) {
   TestBed.configureTestingModule({
     imports: [translocoTesting()],
     providers: [
-      { provide: Router, useValue: { navigate: vi.fn() } },
+      {
+        provide: Router,
+        useValue: {
+          navigate: vi.fn(),
+          getCurrentNavigation: () => (state ? { extras: { state } } : null),
+        },
+      },
       { provide: DraftsApiService, useValue: { load } },
       { provide: DraftDeletionService, useValue: { delete: remove } },
       {
@@ -67,6 +73,7 @@ function setup(remove: ReturnType<typeof vi.fn>) {
       },
     ],
   });
+  before?.();
   const fixture = TestBed.createComponent(DraftsContainer);
   fixture.detectChanges();
   return { fixture, page: fixture.componentInstance as unknown as Internals, load };
@@ -80,6 +87,23 @@ const target = (name: string) => ({
 });
 
 describe('DraftsContainer deleted notice', () => {
+  it('shows the delete that opened the page, and keeps it through the first load', async () => {
+    const { fixture, page, load } = setup(vi.fn(), {
+      deletedDraft: { kind: 'sale', name: 'SI-9', party: 'Lina Haddad' },
+    });
+    await vi.waitFor(() => expect(load).toHaveBeenCalled());
+    await fixture.whenStable();
+    expect(page.notice()).not.toBeNull();
+  });
+
+  it('shows no notice without navigation state, even after an earlier delete', async () => {
+    const { page, load } = setup(vi.fn(), undefined, () =>
+      TestBed.inject(DeletedDraftsService).publish({ kind: 'sale', name: 'SI-9', party: 'Lina' }),
+    );
+    await vi.waitFor(() => expect(load).toHaveBeenCalled());
+    expect(page.notice()).toBeNull();
+  });
+
   it('goes away when the next delete fails, and when the list reloads', async () => {
     const remove = vi
       .fn()

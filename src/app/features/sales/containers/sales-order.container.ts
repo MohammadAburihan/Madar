@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
 import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
@@ -150,7 +151,7 @@ export class SalesOrderContainer {
   );
   protected readonly deleter = injectDraftDeleter({
     reload: () => void this.load(this.name()),
-    done: () => this.router.navigate(['/drafts']),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
   });
 
   protected readonly text = computed(() => {

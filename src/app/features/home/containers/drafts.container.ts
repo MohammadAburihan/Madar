@@ -14,6 +14,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { readDeletedDraft } from '../../../core/drafts/deleted-draft-state';
 import { deletedNoticeText } from '../../../core/drafts/draft-delete-view';
 import { injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
@@ -156,8 +157,14 @@ export class DraftsContainer {
   );
 
   constructor() {
-    // Whoever deleted a draft tells the page; an older delete is old news, but one that just opened the page is not.
-    let seen = this.deleted.isFresh() ? null : this.deleted.latest();
+    // Whoever deleted a draft tells the page; one that opened the page arrives in the navigation state.
+    let seen = this.deleted.latest();
+    const fromPage = readDeletedDraft(
+      this.router.getCurrentNavigation()?.extras.state ?? history.state,
+    );
+    if (fromPage) {
+      this.lastDeleted.set(fromPage);
+    }
     effect(() => {
       const draft = this.deleted.latest();
       untracked(() => {
