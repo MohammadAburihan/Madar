@@ -201,7 +201,7 @@ export class DeliveryStore {
   addBackRow(row: string): void {
     const line = this.openLines().find((l) => l.row === row);
     if (line) {
-      this.setQty(row, String(toDeliver(line)));
+      this.setQty(row, line.isStock ? String(toDeliver(line)) : '0');
     }
     this.removed.update((rows) => {
       const next = new Set(rows);

@@ -217,4 +217,20 @@ describe('DeliveryStore', () => {
       true,
     ]);
   });
+
+  it('restores a row’s default quantity when it is added back', async () => {
+    const { store } = setup();
+    await store.load();
+    store.setQty('visit', '1');
+    store.removeRow('visit');
+    store.removeRow('tree');
+
+    store.addBackRow('visit');
+    store.addBackRow('tree');
+    expect([store.qtyInputs()['visit'], store.qtyInputs()['tree'], store.removed().size]).toEqual([
+      '0',
+      '2',
+      0,
+    ]);
+  });
 });
