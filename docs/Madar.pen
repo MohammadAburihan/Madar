@@ -11013,7 +11013,7 @@
       "x": 6040,
       "y": 2003,
       "name": "04 Mobile / Drafts",
-      "context": " | Handoff: English LTR; counterpart f0you. Continue buttons sit inside each draft card: sale → MNbv4, purchase → CHgyq, quotation → gLucp. Opening a draft that can't be continued shows k3Dgxj. Sales invoice draft: j8Ruks; purchase order draft: Jk2W5; supplier payment draft: XXwGL. Runtime: not run—requires runnable application.",
+      "context": " | Delete draft opens L2jgh9; result e0Bvg. Handoff: English LTR; counterpart f0you. Continue buttons sit inside each draft card: sale → MNbv4, purchase → CHgyq, quotation → gLucp. Opening a draft that can't be continued shows k3Dgxj. Sales invoice draft: j8Ruks; purchase order draft: Jk2W5; supplier payment draft: XXwGL. Runtime: not run—requires runnable application.",
       "clip": true,
       "width": 390,
       "fill": "$md-bg",
@@ -11266,6 +11266,24 @@
                       "content": "Continue sale"
                     }
                   }
+                },
+                {
+                  "id": "q4XpS",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
                 }
               ]
             },
@@ -11318,6 +11336,24 @@
                       "content": "Continue purchase"
                     }
                   }
+                },
+                {
+                  "id": "m54cI",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
                 }
               ]
             },
@@ -11368,6 +11404,24 @@
                   "descendants": {
                     "JgY9L": {
                       "content": "Continue quotation"
+                    }
+                  }
+                },
+                {
+                  "id": "t8rtM",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
                     }
                   }
                 }
@@ -75914,7 +75968,7 @@
       "x": 20050,
       "y": 2042,
       "name": "Arabic / 04 Mobile / Drafts",
-      "context": " | Arabic counterpart of hJseP. Continue buttons sit inside each draft card: sale → xA2Bo, purchase → d0V8Km, quotation → j2MTn. Unavailable draft: p7hvVt. Language switch preserves business, route, input and draft. | Handoff: Arabic RTL; counterpart hJseP.",
+      "context": " | Delete draft (حذف المسودة) opens d2340; result qnFTS. Arabic counterpart of hJseP. Continue buttons sit inside each draft card: sale → xA2Bo, purchase → d0V8Km, quotation → j2MTn. Unavailable draft: p7hvVt. Language switch preserves business, route, input and draft. | Handoff: Arabic RTL; counterpart hJseP.",
       "metadata": {
         "type": "madar-localization",
         "source": "hJseP",
@@ -76184,6 +76238,24 @@
                       "textAlign": "right"
                     }
                   }
+                },
+                {
+                  "id": "NK5iI",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
                 }
               ]
             },
@@ -76241,6 +76313,24 @@
                       "textAlign": "right"
                     }
                   }
+                },
+                {
+                  "id": "IzfBS",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
                 }
               ]
             },
@@ -76296,6 +76386,24 @@
                       "fontFamily": "$md-arabic",
                       "lineHeight": 1.5,
                       "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "zLBJ9",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
                     }
                   }
                 }
@@ -126420,6 +126528,21 @@
               }
             },
             {
+              "id": "Ns3AH",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the Drafts list shows the notice e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Delete draft",
+                  "fill": "$md-danger"
+                }
+              }
+            },
+            {
               "id": "hKrWl",
               "type": "ref",
               "ref": "Ab7yc",
@@ -126751,6 +126874,24 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "vpniv",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the Drafts list shows the notice qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "حذف المسودة",
+                  "fill": "$md-danger",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "center"
                 }
               }
             },
@@ -127213,6 +127354,21 @@
               "descendants": {
                 "rPCdT": {
                   "content": "Continue purchase"
+                }
+              }
+            },
+            {
+              "id": "d3u1wc",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the Drafts list shows the notice e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Delete draft",
+                  "fill": "$md-danger"
                 }
               }
             },
@@ -127709,6 +127865,24 @@
               }
             },
             {
+              "id": "Frm7t",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the Drafts list shows the notice qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "حذف المسودة",
+                  "fill": "$md-danger",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "center"
+                }
+              }
+            },
+            {
               "id": "xePFv",
               "type": "ref",
               "ref": "S1PTe",
@@ -128021,6 +128195,21 @@
               "descendants": {
                 "JgY9L": {
                   "content": "View supplier invoice"
+                }
+              }
+            },
+            {
+              "id": "s9QnVS",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the Drafts list shows the notice e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Delete draft",
+                  "fill": "$md-danger"
                 }
               }
             },
@@ -128377,6 +128566,24 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "jMiW3",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Delete draft",
+              "width": "fill_container",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the Drafts list shows the notice qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "حذف المسودة",
+                  "fill": "$md-danger",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "center"
                 }
               }
             },
@@ -130501,6 +130708,1796 @@
                   "textAlign": "right"
                 }
               }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "L2jgh9",
+      "x": 8010,
+      "y": 2003,
+      "name": "04 Mobile / Drafts Delete confirm",
+      "context": " | Handoff: English LTR; counterpart d2340. State of hJseP after Delete draft is pressed on the sale card: confirm dialog over the list. Delete → e0Bvg; Keep → hJseP. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "S8y1F",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "K9N5dg",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "b9cUvk",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Awrxv",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "qtIvb",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U7IkUL",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "dCs2w",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "yFJsL",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "G6aOry",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "dIykj",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: d2340. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "RLHOV",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "qugAx",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "Vp5Mb",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Q5w5v",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Unfinished work",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "D1Hea",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "3 drafts · Rehan Nursery",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "zvTVh",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search Search drafts",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: Search. Route specification: L2jgh9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "type": "frame",
+              "id": "VuiOd",
+              "name": "Sale for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iD9aq",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Sale for Lina Haddad",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "AazkE",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 320.00 · 3 units · Updated 10 min ago",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "qLFfQ",
+                  "type": "ref",
+                  "ref": "wk3Ko",
+                  "name": "Continue sale",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue sale. Route specification: MNbv4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "rPCdT": {
+                      "content": "Continue sale"
+                    }
+                  }
+                },
+                {
+                  "id": "WKnZS",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "o2T0i",
+              "name": "Purchase from Green Clay",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "E3KPVs",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Purchase from Green Clay",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "Ij45V",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "10 planters · Updated yesterday",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "iMj7n",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue purchase. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue purchase"
+                    }
+                  }
+                },
+                {
+                  "id": "AtoT0",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xW1mm",
+              "name": "Quotation for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wzmDa",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Quotation for Lina Haddad",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "fTzpv",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · 1 unit · Updated 19 min ago",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "oDI35",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue quotation. Route specification: gLucp. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue quotation"
+                    }
+                  }
+                },
+                {
+                  "id": "x4GAB4",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "vGVKD",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Drafts have no confirmed invoice, payment or stock effect.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gfATy",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": -50,
+          "name": "Backdrop",
+          "opacity": 0.55,
+          "width": 390,
+          "height": 1259,
+          "fill": "#14302B"
+        },
+        {
+          "id": "ED93A",
+          "type": "ref",
+          "ref": "PAy28",
+          "name": "Delete draft decision",
+          "layoutPosition": "absolute",
+          "x": 20,
+          "y": 280,
+          "width": 350,
+          "context": "Role: dialog. Accessible name: Delete this draft?. Route specification: L2jgh9; opened by Delete draft in hJseP. Keep returns to hJseP with the draft untouched; Delete removes the draft and shows e0Bvg. Focus moves to the dialog and returns to Delete draft on Keep. Annotation only; native activation unavailable.",
+          "descendants": {
+            "MKPlV": {
+              "content": "Delete this draft?"
+            },
+            "o0VQ5": {
+              "content": "Sale for Lina Haddad will be deleted. This can't be undone."
+            },
+            "UAg1S": {
+              "id": "pgFOJ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Delete action",
+              "stroke": "$md-danger",
+              "context": "Role: button. Accessible name: Delete. Route specification: e0Bvg. Deletes the draft in ERPNext; shows Deleting… while busy; if it was already confirmed or gone, nothing is deleted. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Delete",
+                  "fill": "$md-danger"
+                }
+              }
+            },
+            "Qeacv": {
+              "name": "Keep action",
+              "context": "Role: button. Accessible name: Keep. Route specification: hJseP. Closes the dialog and keeps the draft. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+            },
+            "Qeacv/JgY9L": {
+              "content": "Keep"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "e0Bvg",
+      "x": 8480,
+      "y": 2003,
+      "name": "04 Mobile / Drafts Deleted",
+      "context": " | Handoff: English LTR; counterpart qnFTS. State of hJseP after the sale draft was deleted: notice above the list, one fewer card, count updated. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "gA1ZO",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "BdF1W",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Q8Ar9n",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YTrlZ",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Amvcn",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "b8B7P",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Reg6x",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "vDTOk",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ryY9t",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "UXrYh",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: qnFTS. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "l7XltN",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "g362Me",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "EeuN7",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "mq1kz",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Unfinished work",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "p7KMK",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "2 drafts · Rehan Nursery",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "kumQo",
+              "type": "ref",
+              "ref": "aFORo",
+              "name": "Draft deleted notice",
+              "width": "fill_container",
+              "descendants": {
+                "NxqlX": {
+                  "content": "Draft deleted"
+                },
+                "OhjBF": {
+                  "content": "Sale for Lina Haddad was deleted."
+                }
+              }
+            },
+            {
+              "id": "KHqdM",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search Search drafts",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: Search. Route specification: e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "type": "frame",
+              "id": "hlPmZ",
+              "name": "Purchase from Green Clay",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "TB84E",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Purchase from Green Clay",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "N1O7n",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "10 planters · Updated yesterday",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "SjvmQ",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue purchase. Route specification: CHgyq. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue purchase"
+                    }
+                  }
+                },
+                {
+                  "id": "BhETX",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ZVegw",
+              "name": "Quotation for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Z1rNi",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Quotation for Lina Haddad",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "TIc0F",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · 1 unit · Updated 19 min ago",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "mv2wZ",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Continue quotation. Route specification: gLucp. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Continue quotation"
+                    }
+                  }
+                },
+                {
+                  "id": "grlLY",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: Delete draft. Route specification: L2jgh9; after deletion the notice shows in e0Bvg. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Delete draft",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-font",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "THtW3",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Drafts have no confirmed invoice, payment or stock effect.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "d2340",
+      "x": 28016,
+      "y": 2042,
+      "name": "Arabic / 04 Mobile / Drafts Delete confirm",
+      "context": " | Arabic counterpart of L2jgh9. Confirm dialog over the list; Delete → qnFTS; Keep → f0you. | Handoff: Arabic RTL; counterpart L2jgh9.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "hJseP",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "v0c2F",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "SbBQY",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "FM0OF",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "URjg2",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "uHqg1",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "U6hwnU",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "qcVjt",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "h54jza",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "jxTUq",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "FGCCv",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: L2jgh9. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "ZbGx9",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "pCKXQ",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "pVYeE",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "KAJeG",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "أعمال غير مكتملة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "B0VWDM",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "3 مسودات · مشتل ريحان للنباتات والحدائق",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "dnw6m",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search Search drafts",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: بحث. Route specification: d2340. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "type": "frame",
+              "id": "O5r0Ig",
+              "name": "Sale for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AaBuL",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "بيع إلى لينا الحداد",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "p0MsVI",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 320.00 · 3 وحدات · حُدّث قبل 10 دقائق",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "u7b2j",
+                  "type": "ref",
+                  "ref": "V1NTE",
+                  "name": "Continue sale",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة البيع. Route specification: xA2Bo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "c6rXZg": {
+                      "content": "متابعة البيع",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "ucKY3",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EmW6N",
+              "name": "Purchase from Green Clay",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "RuySP",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "شراء من الطين الأخضر",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "A0QAqD",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "10 أوانٍ · حُدّث أمس",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "tNNuA",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة الشراء. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة الشراء",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "WmjFo",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "M1pTN",
+              "name": "Quotation for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Hhot4",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "عرض سعر إلى لينا الحداد",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "sNSC3",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · وحدة واحدة · حُدّث قبل 19 دقيقة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "heAJh",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة عرض السعر. Route specification: j2MTn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة عرض السعر",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "ZUEMf",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "LxPtV",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لا تنشئ المسودات فاتورة أو دفعة مؤكدة ولا تؤثر في المخزون.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rFTmC",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": -50,
+          "name": "Backdrop",
+          "opacity": 0.55,
+          "width": 390,
+          "height": 1259,
+          "fill": "#14302B"
+        },
+        {
+          "id": "z2CcG",
+          "type": "ref",
+          "ref": "CRDvr",
+          "name": "Delete draft decision",
+          "layoutPosition": "absolute",
+          "x": 20,
+          "y": 280,
+          "width": 350,
+          "context": "Role: dialog. Accessible name: حذف هذه المسودة؟. Route specification: d2340; opened by حذف المسودة in f0you. Keep returns to f0you with the draft untouched; Delete removes the draft and shows qnFTS. Focus moves to the dialog and returns to حذف المسودة on Keep. Annotation only; native activation unavailable.",
+          "descendants": {
+            "t6syd8": {
+              "content": "حذف هذه المسودة؟"
+            },
+            "J3G9QW": {
+              "content": "سيتم حذف بيع إلى لينا الحداد. لا يمكن التراجع عن ذلك."
+            },
+            "x98uP": {
+              "name": "Delete action",
+              "fill": "#FFFFFF",
+              "stroke": "$md-danger",
+              "strokeWidth": 1,
+              "context": "Role: button. Accessible name: حذف. Route specification: qnFTS. Deletes the draft in ERPNext; shows جارٍ الحذف… while busy; if it was already confirmed or gone, nothing is deleted. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+            },
+            "xTqUC": {
+              "content": "حذف",
+              "fill": "$md-danger"
+            },
+            "z5Dv9g": {
+              "name": "Keep action",
+              "context": "Role: button. Accessible name: إبقاء. Route specification: f0you. Closes the dialog and keeps the draft. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+            },
+            "DJBFT": {
+              "content": "إبقاء"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "qnFTS",
+      "x": 30080,
+      "y": 2042,
+      "name": "Arabic / 04 Mobile / Drafts Deleted",
+      "context": " | Arabic counterpart of e0Bvg. Notice above the list, one fewer card, count updated. | Handoff: Arabic RTL; counterpart e0Bvg.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "hJseP",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "IM4KM",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "f8gQB",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "cf2aK",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JSaWJ",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "H8cNIA",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wmg6G",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "E02E4",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "qZ0Zb",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ec8vJ",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "s1VWoH",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: e0Bvg. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "q5WG0K",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Uj6ED",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "Rnr2O",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "T5e1A",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "أعمال غير مكتملة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "rr1vR",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مسودتان · مشتل ريحان للنباتات والحدائق",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "CCaUq",
+              "type": "ref",
+              "ref": "X803zR",
+              "name": "Draft deleted notice",
+              "width": "fill_container",
+              "descendants": {
+                "HJXqj": {
+                  "content": "تم حذف المسودة"
+                },
+                "Mem91": {
+                  "content": "تم حذف بيع إلى لينا الحداد."
+                }
+              }
+            },
+            {
+              "id": "oyoSK",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search Search drafts",
+              "width": "fill_container",
+              "context": "Role: searchbox. Accessible name: بحث. Route specification: qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "height": "fit_content",
+              "padding": 0
+            },
+            {
+              "type": "frame",
+              "id": "BAAJr",
+              "name": "Purchase from Green Clay",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "h2391H",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "شراء من الطين الأخضر",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "U31Lpz",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "10 أوانٍ · حُدّث أمس",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "R4c30q",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue purchase",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة الشراء. Route specification: d0V8Km. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة الشراء",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "A0peN",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xX4l0",
+              "name": "Quotation for Lina Haddad",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZkXhR",
+                  "name": "Title",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "عرض سعر إلى لينا الحداد",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "XEbTY",
+                  "name": "Meta",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "ILS 45.00 · وحدة واحدة · حُدّث قبل 19 دقيقة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "SiboR",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Continue quotation",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: متابعة عرض السعر. Route specification: j2MTn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "متابعة عرض السعر",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "b7Tt0",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Delete draft",
+                  "width": "fill_container",
+                  "stroke": "$md-danger",
+                  "context": "Role: button. Accessible name: حذف المسودة. Route specification: d2340; after deletion the notice shows in qnFTS. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "حذف المسودة",
+                      "fill": "$md-danger",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "center"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "KDO8P",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لا تنشئ المسودات فاتورة أو دفعة مؤكدة ولا تؤثر في المخزون.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         }
