@@ -97,6 +97,15 @@ p {
   }
 }
 
+.md-btn--danger {
+  border-color: var(--md-danger);
+  color: var(--md-danger);
+
+  &:hover {
+    background: var(--md-danger-bg);
+  }
+}
+
 .md-btn--language {
   inline-size: 120px;
 }

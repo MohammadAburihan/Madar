@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
 import { SessionService } from '../../../core/auth/session.service';
@@ -339,5 +340,22 @@ describe('QuotationStore.openDraft', () => {
     expect([store.draft(), store.customer()]).toEqual([draft, customer]);
     store.removeLine(0);
     expect([store.lines(), store.ready()]).toEqual([[], false]);
+  });
+});
+
+describe('QuotationStore when its draft is deleted', () => {
+  it('forgets the open draft and its lines', async () => {
+    const { store, api } = setup();
+    api.draftQuotation.mockResolvedValue({ ...draftDetail('QT-DRAFT'), reference: 'QUO-0A1B2C3' });
+    await store.openDraft('QT-DRAFT');
+    const deleted = TestBed.inject(DeletedDraftsService);
+
+    deleted.publish({ kind: 'quotation', name: 'QT-OTHER', party: 'Lina Haddad' });
+    TestBed.tick();
+    expect(store.draft()).toBe('QT-DRAFT');
+
+    deleted.publish({ kind: 'quotation', name: 'QT-DRAFT', party: 'Lina Haddad' });
+    TestBed.tick();
+    expect([store.draft(), store.lines(), store.customer()]).toEqual([null, [], null]);
   });
 });

@@ -12,9 +12,12 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
+import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { DraftDeleteComponent } from '../../../shared/ui/draft-delete.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -30,6 +33,7 @@ import { orderChips, orderHeading, orderLineCard } from './sales-order-view';
   selector: 'app-sales-order',
   imports: [
     BackLinkComponent,
+    DraftDeleteComponent,
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
@@ -92,6 +96,17 @@ import { orderChips, orderHeading, orderLineCard } from './sales-order-view';
       @for (line of v.services; track $index) {
         <app-item-card [title]="line.title" [meta]="line.meta" [detail]="line.detail" />
       }
+      <app-draft-delete
+        [canDelete]="mayDelete()"
+        [label]="txt.deleteDraft"
+        [busyLabel]="txt.deleting"
+        [busy]="deleter.running()"
+        [open]="deleter.open()"
+        [dialog]="deleter.dialog()"
+        [problem]="deleter.problem()"
+        (asked)="askDelete()"
+        (chosen)="deleter.answer($event)"
+      />
       <button type="button" class="md-btn" (click)="router.navigate(['/sales'])">
         {{ txt.backToSales }}
       </button>
@@ -126,6 +141,19 @@ export class SalesOrderContainer {
   private readonly dateResult = signal<'saved' | 'permission' | 'offline' | 'error' | null>(null);
   private run = 0;
 
+  protected readonly mayDelete = injectDeleteAllowed(
+    computed(() => {
+      const order = this.order();
+      return order && order.docstatus === 0 && order.company === this.business.active()?.name
+        ? { kind: 'order' as const, name: order.name, owner: order.owner ?? null }
+        : null;
+    }),
+  );
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => void this.load(this.name()),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
+  });
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -139,6 +167,8 @@ export class SalesOrderContainer {
       deliver: t('sales.order.deliverAction'),
       invoice: t('sales.order.invoiceAction'),
       backToSales: t('sales.quote.backToSales'),
+      deleteDraft: t('drafts.delete.button'),
+      deleting: t('drafts.delete.busy'),
       loading: t('sales.records.loading'),
       retry: t('sales.records.retry'),
       loadFailed: {
@@ -229,6 +259,14 @@ export class SalesOrderContainer {
       if (run === this.run) {
         this.failed.set(true);
       }
+    }
+  }
+
+  protected askDelete(): void {
+    const order = this.order();
+    const company = this.business.active()?.name;
+    if (order && company) {
+      this.deleter.ask({ kind: 'order', name: order.name, party: order.customerName, company });
     }
   }
 

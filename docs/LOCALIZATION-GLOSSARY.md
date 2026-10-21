@@ -20,6 +20,7 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 | Sales invoice / supplier invoice | فاتورة البيع / فاتورة المورد |
 | Quotation / delivery | عرض السعر / التسليم |
 | Draft / save draft | مسودة / حفظ المسودة |
+| Delete draft / Keep (the draft) | حذف المسودة / إبقاء |
 | Confirmed | مؤكد |
 | Posted | مرحّل |
 | Recorded | مسجّل |

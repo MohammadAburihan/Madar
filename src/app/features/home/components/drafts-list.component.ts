@@ -18,6 +18,16 @@ import { DraftCardView } from '../containers/drafts-view';
         >
           {{ card.action }}
         </button>
+        @if (card.deletable) {
+          <button
+            type="button"
+            class="md-btn md-btn--danger"
+            [disabled]="busy()"
+            (click)="deleteAsked.emit(card.id)"
+          >
+            {{ card.deleteLabel }}
+          </button>
+        }
       </app-feedback-card>
     } @empty {
       <app-feedback-card [title]="empty().title" [message]="empty().message" />
@@ -34,5 +44,8 @@ import { DraftCardView } from '../containers/drafts-view';
 export class DraftsListComponent {
   readonly cards = input.required<readonly DraftCardView[]>();
   readonly empty = input.required<{ title: string; message: string }>();
+  /** A delete is running: no second one may start. */
+  readonly busy = input(false);
   readonly continued = output<string>();
+  readonly deleteAsked = output<string>();
 }

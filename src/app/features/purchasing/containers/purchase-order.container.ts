@@ -11,10 +11,13 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
+import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { formatMoney } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { DraftDeleteComponent } from '../../../shared/ui/draft-delete.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -36,6 +39,7 @@ import { receiveAction, receivedLineCard } from './receipt-view';
   selector: 'app-purchase-order',
   imports: [
     BackLinkComponent,
+    DraftDeleteComponent,
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
@@ -120,6 +124,17 @@ import { receiveAction, receivedLineCard } from './receipt-view';
           />
         }
       }
+      <app-draft-delete
+        [canDelete]="mayDelete()"
+        [label]="txt.deleteDraft"
+        [busyLabel]="txt.deleting"
+        [busy]="deleter.running()"
+        [open]="deleter.open()"
+        [dialog]="deleter.dialog()"
+        [problem]="deleter.problem()"
+        (asked)="askDelete()"
+        (chosen)="deleter.answer($event)"
+      />
       @if (!v.received) {
         <button type="button" class="md-btn" (click)="workspace()">{{ txt.workspace }}</button>
       }
@@ -154,6 +169,19 @@ export class PurchaseOrderContainer {
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   private run = 0;
 
+  protected readonly mayDelete = injectDeleteAllowed(
+    computed(() => {
+      const order = this.order();
+      return order && order.progress === 'draft' && order.company === this.business.active()?.name
+        ? { kind: 'purchase' as const, name: order.name, owner: null }
+        : null;
+    }),
+  );
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => void this.load(this.name()),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
+  });
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -165,6 +193,8 @@ export class PurchaseOrderContainer {
       viewInvoice: t('purchase.detail.viewInvoice'),
       invoicesHeading: t('purchase.detail.invoicesHeading'),
       continuePurchase: t('purchase.detail.continue'),
+      deleteDraft: t('drafts.delete.button'),
+      deleting: t('drafts.delete.busy'),
       loading: t('purchase.loading'),
       retry: t('purchase.retry'),
       loadFailed: {
@@ -293,6 +323,14 @@ export class PurchaseOrderContainer {
 
   protected continuePurchase(): void {
     void this.router.navigate(['/purchases/new'], { queryParams: { draft: this.name() } });
+  }
+
+  protected askDelete(): void {
+    const order = this.order();
+    const company = this.business.active()?.name;
+    if (order && company) {
+      this.deleter.ask({ kind: 'purchase', name: order.name, party: order.supplierName, company });
+    }
   }
 
   protected recordInvoice(): void {

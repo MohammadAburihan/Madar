@@ -1,7 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { HomeApiService } from './home-api.service';
 import { HomeData } from './home.models';
@@ -14,6 +15,7 @@ export class HomeFacade {
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
   private readonly clock = inject(SiteClockService);
+  private readonly deleted = inject(DeletedDraftsService);
 
   private readonly currentStatus = signal<HomeStatus>('loading');
   private readonly currentData = signal<HomeData | null>(null);
@@ -21,6 +23,18 @@ export class HomeFacade {
   private latestLoad = 0;
   /** User the running load is for, so a session restored mid-load doesn't start a second one. */
   private loadingFor: string | null = null;
+
+  constructor() {
+    // Home is kept alive behind the drafts pages, so its draft count would stay as it was.
+    effect(() => {
+      const draft = this.deleted.latest();
+      untracked(() => {
+        if (draft && this.currentData()) {
+          void this.load();
+        }
+      });
+    });
+  }
 
   readonly status = this.currentStatus.asReadonly();
   readonly data = this.currentData.asReadonly();

@@ -9,6 +9,9 @@ export interface DraftCardView {
   meta: string;
   action: string;
   primary: boolean;
+  /** Shows the Delete button; its label is `deleteLabel`. */
+  deletable: boolean;
+  deleteLabel: string;
 }
 
 export interface DraftsView {
@@ -93,6 +96,8 @@ export function buildDraftsView(input: DraftsViewInput, tr: Translator): DraftsV
         meta: parts.filter((p): p is string => p !== null).join(' · '),
         action: draftAction(e, tr),
         primary: e.kind === 'sale' && e.continuable,
+        deletable: e.deletable,
+        deleteLabel: tr.t('drafts.delete.button'),
       };
     }),
     empty: term

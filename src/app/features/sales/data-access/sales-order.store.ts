@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { forgetDeletedDrafts } from '../../../core/tasks/deleted-drafts.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import {
   PostedEarlierError,
@@ -33,6 +34,7 @@ export class SalesOrderStore {
 
   constructor() {
     inject(OpenTasksService).register(this.busy);
+    forgetDeletedDrafts('order', this.draft, this.busy, () => this.draft.set(null));
   }
 
   /** Makes and submits the order, expected for delivery on the site's today until changed on the order. */

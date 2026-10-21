@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { capabilitiesFor } from '../../../core/auth/capabilities';
@@ -469,5 +470,39 @@ describe('QuickSaleStore.openDraft', () => {
 
     store.removeLine(0);
     expect(store.lines()).toEqual([]);
+  });
+});
+
+describe('QuickSaleStore when its draft is deleted', () => {
+  it('forgets the open draft, and ignores other drafts, other kinds and a running confirmation', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue(DRAFT);
+    await store.openDraft('ACC-SINV-0001');
+    const deleted = TestBed.inject(DeletedDraftsService);
+
+    deleted.publish({ kind: 'sale', name: 'ACC-SINV-0002', party: 'Lina Haddad' });
+    deleted.publish({ kind: 'quotation', name: 'ACC-SINV-0001', party: 'Lina Haddad' });
+    TestBed.tick();
+    expect(store.draft()).toBe('ACC-SINV-0001');
+
+    deleted.publish({ kind: 'sale', name: 'ACC-SINV-0001', party: 'Lina Haddad' });
+    TestBed.tick();
+    expect([store.draft(), store.lines(), store.customer()]).toEqual([null, [], null]);
+  });
+
+  it('keeps the draft while a confirmation is running, since the confirm inserts a new one then', async () => {
+    const { store, api } = setup();
+    api.draftSale.mockResolvedValue(DRAFT);
+    await store.openDraft('ACC-SINV-0001');
+    store.state.set('confirming');
+
+    TestBed.inject(DeletedDraftsService).publish({
+      kind: 'sale',
+      name: 'ACC-SINV-0001',
+      party: 'Lina Haddad',
+    });
+    TestBed.tick();
+
+    expect(store.draft()).toBe('ACC-SINV-0001');
   });
 });

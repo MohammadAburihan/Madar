@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
+import { forgetDeletedDrafts } from '../../../core/tasks/deleted-drafts.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -69,6 +70,7 @@ export class PurchaseOrderStore {
 
   constructor() {
     inject(OpenTasksService).register(this.busy);
+    forgetDeletedDrafts('purchase', this.draft, this.busy, () => this.start());
   }
 
   start(): void {

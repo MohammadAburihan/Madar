@@ -11,9 +11,12 @@ import { Router } from '@angular/router';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
+import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { DraftDeleteComponent } from '../../../shared/ui/draft-delete.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
@@ -27,6 +30,7 @@ import { canContinueSale, invoiceView } from './invoice-view';
   selector: 'app-invoice-detail',
   imports: [
     BackLinkComponent,
+    DraftDeleteComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
     PageHeadingComponent,
@@ -68,6 +72,17 @@ import { canContinueSale, invoiceView } from './invoice-view';
           {{ text().returnItems }}
         </button>
       }
+      <app-draft-delete
+        [canDelete]="mayDelete()"
+        [label]="text().deleteDraft"
+        [busyLabel]="text().deleting"
+        [busy]="deleter.running()"
+        [open]="deleter.open()"
+        [dialog]="deleter.dialog()"
+        [problem]="deleter.problem()"
+        (asked)="askDelete()"
+        (chosen)="deleter.answer($event)"
+      />
       <button type="button" class="md-btn" (click)="router.navigate(['/sales'])">
         {{ text().backToSales }}
       </button>
@@ -112,6 +127,21 @@ export class InvoiceDetailContainer {
     );
   });
 
+  protected readonly mayDelete = injectDeleteAllowed(
+    computed(() => {
+      const invoice = this.invoice();
+      return invoice &&
+        invoice.status === 'draft' &&
+        invoice.company === this.business.active()?.name
+        ? { kind: 'sale' as const, name: invoice.name, owner: invoice.owner }
+        : null;
+    }),
+  );
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => this.reload(),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
+  });
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -119,6 +149,8 @@ export class InvoiceDetailContainer {
       history: t('invoice.history'),
       continueSale: t('invoice.continueSale'),
       backToSales: t('invoice.backToSales'),
+      deleteDraft: t('drafts.delete.button'),
+      deleting: t('drafts.delete.busy'),
       returnItems: t('sales.return.start'),
       loading: t('invoice.loading'),
       notFound: { title: t('invoice.notFound.title'), message: t('invoice.notFound.message') },
@@ -141,14 +173,34 @@ export class InvoiceDetailContainer {
   constructor() {
     void this.business.ensure().catch(() => undefined);
     effect(() => {
-      const name = this.name();
-      this.invoice.set(null);
-      this.failed.set(false);
-      this.api
-        .load(name)
-        .then((invoice) => name === this.name() && this.invoice.set(invoice))
-        .catch(() => name === this.name() && this.failed.set(true));
+      this.load(this.name());
     });
+  }
+
+  private load(name: string): void {
+    this.invoice.set(null);
+    this.failed.set(false);
+    this.api
+      .load(name)
+      .then((invoice) => name === this.name() && this.invoice.set(invoice))
+      .catch(() => name === this.name() && this.failed.set(true));
+  }
+
+  private reload(): void {
+    this.load(this.name());
+  }
+
+  protected askDelete(): void {
+    const invoice = this.invoice();
+    const company = this.business.active()?.name;
+    if (invoice && company) {
+      this.deleter.ask({
+        kind: 'sale',
+        name: invoice.name,
+        party: invoice.customerName,
+        company,
+      });
+    }
   }
 
   protected continueSale(): void {

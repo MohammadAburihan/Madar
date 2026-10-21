@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { forgetDeletedDrafts } from '../../../core/tasks/deleted-drafts.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
@@ -58,6 +59,7 @@ export class QuickSaleStore {
 
   constructor() {
     inject(OpenTasksService).register(this.openConfirmation);
+    forgetDeletedDrafts('sale', this.draft, this.openConfirmation, () => this.start());
   }
   readonly failure = signal<ConfirmFailure | null>(null);
   readonly result = signal<SaleResult | null>(null);

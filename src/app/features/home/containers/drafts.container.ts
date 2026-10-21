@@ -14,15 +14,20 @@ import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { readDeletedDraft } from '../../../core/drafts/deleted-draft-state';
+import { deletedNoticeText } from '../../../core/drafts/draft-delete-view';
+import { injectDraftDeleter } from '../../../core/drafts/draft-deleter';
+import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { DraftsListComponent } from '../components/drafts-list.component';
 import { DraftsApiService } from '../data-access/drafts-api.service';
-import { DraftEntry } from '../data-access/drafts.models';
+import { DraftEntry, DraftKind } from '../data-access/drafts.models';
 import { buildDraftsView, draftId, draftTarget } from './drafts-view';
 
 /** Unfinished work: every draft sale, quotation, order, purchase and supplier payment the user can continue. */
@@ -30,6 +35,7 @@ import { buildDraftsView, draftId, draftTarget } from './drafts-view';
   selector: 'app-drafts',
   imports: [
     BackLinkComponent,
+    ConfirmDialogComponent,
     DraftsListComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
@@ -59,10 +65,35 @@ import { buildDraftsView, draftId, draftTarget } from './drafts-view';
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
         <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
       } @else {
+        @if (notice(); as n) {
+          <app-feedback-card [title]="n.title" [message]="n.message" [status]="true" />
+        }
+        @if (deleter.problem(); as p) {
+          <app-feedback-card tone="danger" [title]="p.title" [message]="p.message" />
+        }
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
-        <app-drafts-list [cards]="v.cards" [empty]="v.empty" (continued)="open($event)" />
+        <app-drafts-list
+          [cards]="v.cards"
+          [empty]="v.empty"
+          [busy]="deleter.running()"
+          (continued)="open($event)"
+          (deleteAsked)="askDelete($event)"
+        />
         <p class="muted">{{ v.note }}</p>
       }
+    }
+    @if (deleter.dialog(); as d) {
+      <app-confirm-dialog
+        [open]="deleter.open()"
+        [title]="d.title"
+        [message]="d.message"
+        [actions]="[
+          { id: 'delete', label: d.confirm, danger: true },
+          { id: 'keep', label: d.keep },
+        ]"
+        cancelId="keep"
+        (chosen)="deleter.answer($event)"
+      />
     }
   `,
 })
@@ -79,6 +110,16 @@ export class DraftsContainer {
   protected readonly term = signal('');
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly entries = signal<DraftEntry[]>([]);
+  private readonly deleted = inject(DeletedDraftsService);
+  private readonly lastDeleted = signal<{ kind: DraftKind; party: string } | null>(null);
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => void this.load(),
+    done: () => undefined,
+  });
+  protected readonly notice = computed(() => {
+    const draft = this.lastDeleted();
+    return draft ? deletedNoticeText(this.i18n.tr(), draft.kind, draft.party) : null;
+  });
   private readonly now = signal(new Date());
   private run = 0;
 
@@ -116,6 +157,30 @@ export class DraftsContainer {
   );
 
   constructor() {
+    // Whoever deleted a draft tells the page; one that opened the page arrives in the navigation state.
+    let seen = this.deleted.latest();
+    const fromPage = readDeletedDraft(this.router.getCurrentNavigation()?.extras.state);
+    if (fromPage) {
+      this.lastDeleted.set(fromPage);
+      history.replaceState({ ...history.state, deletedDraft: undefined }, '');
+    }
+    effect(() => {
+      const draft = this.deleted.latest();
+      untracked(() => {
+        if (draft && draft !== seen) {
+          seen = draft;
+          this.entries.update((all) =>
+            all.filter((e) => !(e.kind === draft.kind && e.name === draft.name)),
+          );
+          this.lastDeleted.set(draft);
+        }
+      });
+    });
+    effect(() => {
+      if (this.deleter.problem()) {
+        untracked(() => this.lastDeleted.set(null));
+      }
+    });
     effect(() => {
       const userId = this.session.user()?.id;
       untracked(() => {
@@ -128,6 +193,9 @@ export class DraftsContainer {
 
   protected async load(): Promise<void> {
     const run = ++this.run;
+    if (run > 1) {
+      this.lastDeleted.set(null);
+    }
     this.state.set('loading');
     try {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
@@ -170,6 +238,15 @@ export class DraftsContainer {
       void this.router.navigate(target.commands, {
         queryParams: target.draft ? { draft: target.draft } : undefined,
       });
+    }
+  }
+
+  protected askDelete(id: string): void {
+    const entry = this.entries().find((e) => draftId(e) === id);
+    const company = this.business.active()?.name;
+    if (entry && company) {
+      this.lastDeleted.set(null);
+      this.deleter.ask({ kind: entry.kind, name: entry.name, party: entry.party, company });
     }
   }
 

@@ -11,12 +11,15 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { deletedDraftState } from '../../../core/drafts/deleted-draft-state';
+import { injectDeleteAllowed, injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { formatMoney, formatShortDate, toIsoDate } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FileExportService } from '../../../core/platform/file-export.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
+import { DraftDeleteComponent } from '../../../shared/ui/draft-delete.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -33,6 +36,7 @@ import { quotationHtml, quotationSummary } from './quotation-view';
   selector: 'app-quotation',
   imports: [
     BackLinkComponent,
+    DraftDeleteComponent,
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
@@ -103,6 +107,17 @@ import { quotationHtml, quotationSummary } from './quotation-view';
           {{ sharing() ? txt.preparing : txt.share }}
         </button>
       }
+      <app-draft-delete
+        [canDelete]="mayDelete()"
+        [label]="txt.deleteDraft"
+        [busyLabel]="txt.deleting"
+        [busy]="deleter.running()"
+        [open]="deleter.open()"
+        [dialog]="deleter.dialog()"
+        [problem]="deleter.problem()"
+        (asked)="askDelete()"
+        (chosen)="deleter.answer($event)"
+      />
       <button type="button" class="md-btn" (click)="router.navigate(['/sales'])">
         {{ txt.backToSales }}
       </button>
@@ -147,6 +162,21 @@ export class QuotationContainer {
   private readonly orderNotMade = signal(false);
   private run = 0;
 
+  protected readonly mayDelete = injectDeleteAllowed(
+    computed(() => {
+      const quotation = this.quotation();
+      return quotation &&
+        quotation.docstatus === 0 &&
+        quotation.company === this.business.active()?.name
+        ? { kind: 'quotation' as const, name: quotation.name, owner: quotation.owner ?? null }
+        : null;
+    }),
+  );
+  protected readonly deleter = injectDraftDeleter({
+    reload: () => void this.load(this.name()),
+    done: (target) => this.router.navigate(['/drafts'], { state: deletedDraftState(target) }),
+  });
+
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
     return {
@@ -156,6 +186,8 @@ export class QuotationContainer {
       edit: t('sales.quote.edit'),
       preparing: t('statements.preparing'),
       backToSales: t('sales.quote.backToSales'),
+      deleteDraft: t('drafts.delete.button'),
+      deleting: t('drafts.delete.busy'),
       createOrder: t('sales.quote.createOrder'),
       creatingOrder: t('sales.quote.creatingOrder'),
       otherOrder: t('sales.quote.otherOrder'),
@@ -335,6 +367,19 @@ export class QuotationContainer {
       // While another confirmation is open, the form shows that one first.
       this.store.edit(quotation);
       void this.router.navigate(['/sales/quote/new']);
+    }
+  }
+
+  protected askDelete(): void {
+    const quotation = this.quotation();
+    const company = this.business.active()?.name;
+    if (quotation && company) {
+      this.deleter.ask({
+        kind: 'quotation',
+        name: quotation.name,
+        party: quotation.customerName,
+        company,
+      });
     }
   }
 

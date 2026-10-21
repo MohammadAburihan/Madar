@@ -16,6 +16,8 @@ const entry = (overrides: Partial<DraftEntry>): DraftEntry => ({
   units: 3,
   continuable: true,
   invoice: null,
+  owner: 'lina@example.com',
+  deletable: true,
   ...overrides,
 });
 const ENTRIES = [
@@ -50,6 +52,8 @@ describe('buildDraftsView', () => {
         meta: 'ILS 320.00 · 3 units · Updated 10 min ago',
         action: 'Continue sale',
         primary: true,
+        deletable: true,
+        deleteLabel: 'Delete draft',
       },
       {
         id: 'purchase:PO-1',
@@ -57,6 +61,8 @@ describe('buildDraftsView', () => {
         meta: 'ILS 450.00 · 10 units · Updated 1 day ago',
         action: 'Continue purchase',
         primary: false,
+        deletable: true,
+        deleteLabel: 'Delete draft',
       },
     ]);
     expect(view.note).toBe('Drafts have no confirmed invoice, payment or stock effect.');
@@ -67,6 +73,17 @@ describe('buildDraftsView', () => {
     expect(view.subtitle).toBe('مسودتان · Rehan Nursery');
     expect(view.cards.map((c) => c.action)).toEqual(['متابعة البيع', 'متابعة الشراء']);
     expect(view.note).toBe('لا تنشئ المسودات فاتورة أو دفعة مؤكدة ولا تؤثر في المخزون.');
+  });
+
+  it('offers Delete only on the drafts the user may delete, in both languages', () => {
+    const entries = [entry({}), entry({ kind: 'purchase', name: 'PO-1', deletable: false })];
+    const en = visible(buildDraftsView(input({ entries }), realTranslator('en')));
+    expect(en.cards.map((c) => [c.deletable, c.deleteLabel])).toEqual([
+      [true, 'Delete draft'],
+      [false, 'Delete draft'],
+    ]);
+    const ar = visible(buildDraftsView(input({ entries }), realTranslator('ar')));
+    expect(ar.cards[0].deleteLabel).toBe('حذف المسودة');
   });
 
   it('counts the drafts shown, and filters by party or document name', () => {

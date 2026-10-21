@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { referenceIn } from '../../../core/erpnext/draft';
 import { ErpnextClient, Field, Filter } from '../../../core/erpnext/erpnext-client';
+import { DraftDeletionService } from '../../../core/drafts/draft-deletion.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { DraftEntry, DraftKind, DraftsLoadResult, DraftsScope } from './drafts.models';
 
@@ -17,6 +18,7 @@ interface Row {
 @Injectable({ providedIn: 'root' })
 export class DraftsApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly deletion = inject(DraftDeletionService);
 
   async load(scope: DraftsScope): Promise<DraftsLoadResult> {
     let forbidden = false;
@@ -43,10 +45,38 @@ export class DraftsApiService {
       scope.orderPurchases ? part(() => this.purchases(scope.company)) : [],
       scope.paySuppliers ? part(() => this.payments(scope.company)) : [],
     ]);
+    const entries = await this.withDeleteRights(parts.flat(), scope.userId);
     return {
-      entries: parts.flat().sort((a, b) => b.modified.localeCompare(a.modified)),
+      entries: entries.sort((a, b) => b.modified.localeCompare(a.modified)),
       allForbidden: forbidden && !succeeded,
     };
+  }
+
+  /**
+   * ERPNext's delete right depends on the role and doctype, and on the owner where a rule is owner-only, so one
+   * answer per doctype and ownership is enough. The list holds only drafts Madar's rules let the user delete.
+   * A check that can't be made leaves Delete on: the delete re-checks, and the page must still load.
+   */
+  private async withDeleteRights(entries: DraftEntry[], userId: string): Promise<DraftEntry[]> {
+    const groups = new Map<string, DraftEntry>();
+    for (const e of entries) {
+      const key = `${e.kind}:${e.owner === userId}`;
+      if (!groups.has(key)) {
+        groups.set(key, e);
+      }
+    }
+    const answers = new Map(
+      await Promise.all(
+        [...groups].map(
+          async ([key, e]) =>
+            [key, await this.deletion.allowed(e.kind, e.name).catch(() => true)] as const,
+        ),
+      ),
+    );
+    return entries.map((e) => ({
+      ...e,
+      deletable: answers.get(`${e.kind}:${e.owner === userId}`)!,
+    }));
   }
 
   private async invoices(company: string, own: Filter[]): Promise<DraftEntry[]> {
@@ -157,7 +187,7 @@ export class DraftsApiService {
     fields: Field[],
   ): Promise<Row[]> {
     return this.erpnext.listAll<Row>(doctype, {
-      fields: ['name', 'modified', ...fields],
+      fields: ['name', 'modified', 'owner', ...fields],
       filters: [['company', '=', company], ['docstatus', '=', 0], ...extra],
       orderBy: 'modified desc, name asc',
     });
@@ -216,6 +246,8 @@ function entry(
     units: kind === 'payment' ? null : (units ?? 0),
     continuable: extra.continuable ?? false,
     invoice: extra.invoice ?? null,
+    owner: String(row['owner'] ?? ''),
+    deletable: false,
   };
 }
 
