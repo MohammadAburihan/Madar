@@ -102,7 +102,7 @@ Icons and splash screens come from `assets/` (`npx capacitor-assets generate`).
 ## Release image
 
 ```sh
-npm run docker:build   # builds madar-web:<version> for linux/amd64
+npm run docker:build   # builds madar-web:<version> for linux/arm64 (the AWS server)
 ```
 
 Run it next to ERPNext:
