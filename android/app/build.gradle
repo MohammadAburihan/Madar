@@ -9,6 +9,14 @@ if (!versionMatch.matches()) {
 }
 def appVersionCode = (versionMatch.group(1) as int) * 1000000 + (versionMatch.group(2) as int) * 1000 + (versionMatch.group(3) as int)
 
+// Release signing comes from android/keystore.properties (git-ignored; storeFile, storePassword, keyAlias,
+// keyPassword). Without it, release builds stay unsigned, as in CI.
+def keystoreFile = rootProject.file('keystore.properties')
+def keystore = new Properties()
+if (keystoreFile.exists()) {
+    keystoreFile.withInputStream { keystore.load(it) }
+}
+
 android {
     namespace = "app.madar.mobile"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -25,8 +33,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (keystoreFile.exists()) {
+            release {
+                storeFile file(keystore['storeFile'])
+                storePassword keystore['storePassword']
+                keyAlias keystore['keyAlias']
+                keyPassword keystore['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (keystoreFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

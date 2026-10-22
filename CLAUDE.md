@@ -37,7 +37,7 @@ npm run build         # production build to dist/madar/browser
 npm run cap:sync      # production build copied into the android/ and ios/ projects
 npm run android:dev   # dev build on the Android emulator, talking to local ERPNext
 npm run ios:dev       # dev build on the iOS simulator, talking to local ERPNext
-npm run docker:build  # release image madar-web:<package.json version> for linux/amd64
+npm run docker:build  # release image madar-web:<package.json version> for linux/arm64
 npm run e2e           # Playwright happy paths (e2e/): own dev server on :4321 → seeded test site :18081; phone and desktop
 ```
 
@@ -229,11 +229,37 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 - The image tag matches the release version (`madar-web:X.Y.Z`). Deploy by explicit version, never only
   `latest`.
 - Never rebuild or overwrite an existing version tag; a fix is a new version.
-- Build images for the server's architecture: this Mac is Apple Silicon (arm64) and the AWS server is likely
-  x86_64, so use `docker buildx build --platform linux/amd64` unless the server is arm64.
+- Build images for the server's architecture: the AWS server is arm64 (Graviton), like this Mac, so release
+  images are `linux/arm64` (`npm run docker:build`; CI's smoke test still builds amd64 on its runner).
 - Keep environment-specific config (ERPNext URLs, keys, secrets) out of the image; supply it at container
   start. Never commit secrets.
 - Frontend deploys must not touch ERPNext containers, volumes, or data.
+
+### Production (AWS)
+
+Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
+
+- EC2 `i-03042dfbb1ba616cc` (t4g.medium, arm64, Ubuntu 26.04, `eu-north-1`), public IP 16.16.74.118, SSH
+  `ubuntu@` with the key `../../ERPNext/ERPNext.pem`. Images live in ECR `717090908140.dkr.ecr.eu-north-1.amazonaws.com`
+  (`madar-web`, `madar-erpnext`; tags immutable).
+- ERPNext is one shared multi-site bench in `~/erpnext` (`docker-compose.yml` + `.env`; `ERPNEXT_IMAGE` and
+  `ERPNEXT_VERSION` pick the image, now `madar-erpnext:v16.50.0-hrms`), serving `erp.aburehan.net`,
+  `issam.aburehan.net` and `rehannursery.aburehan.net` on 127.0.0.1:8080, sites chosen by Host header. Frappe HR is
+  installed on `rehannursery` only. This differs from "one ERPNext stack per business" above: the bench predates
+  Madar.
+- Madar for Rehan Nursery is the container `madar-rehannursery` (`madar-web:<version>`, network
+  `erpnext_default`, 127.0.0.1:8090, `ERPNEXT_UPSTREAM=http://frontend:8080`,
+  `ERPNEXT_SITE_HOST=rehannursery.aburehan.net`, `TRUST_FORWARDED_PROTO=1`). Host nginx
+  (`/etc/nginx/sites-available/madar-rehannursery`, Let's Encrypt via certbot) serves `rehannursery.aburehan.net` →
+  Madar and `desk.rehannursery.aburehan.net` → Desk (Host pinned to the site).
+- A new image reaches the server with `docker save … | gzip` → rsync to `~` (not `/tmp`, a 1.9 GB tmpfs) →
+  `docker load`, until the instance role can pull from ECR. Deploy = `docker rm -f` + `docker run` the container
+  with the new tag. Before an ERPNext image change: `bench backup --with-files` per site, an EBS snapshot, then
+  `bench --site <site> migrate` for every site. The sites volume keeps its own `sites/apps.txt`: add a new app there
+  before `install-app`.
+- Android release: `npm run cap:sync`, then `JAVA_HOME=$(/usr/libexec/java_home -v 21)
+  ANDROID_HOME=~/Library/Android/sdk ./gradlew bundleRelease` in `android/`; signing reads the git-ignored
+  `android/keystore.properties` (key and a copy of the properties in `../secrets/`, outside git).
 
 ## Roles and permissions
 
@@ -250,5 +276,6 @@ Madar role and `capabilitiesFor` (`core/auth/capabilities.ts`) holds the finer r
 
 ## Not decided yet
 
-ERPNext version for production, authentication, container registry, AWS server and domain setup, how the native
-apps connect to a business (the web side is decided above), and deployment automation (CD; CI is in place). Ask before choosing any of these; don't assume. See section 12 of the overview.
+Authentication beyond ERPNext's own login, and deployment automation (CD; CI is in place). Decided 22 Oct 2026:
+ERPNext v16.50 + Frappe HR in production, Amazon ECR, the EC2 server above, and the apps connect by asking for the
+business's Madar address on first launch (TestFlight and Play internal testing first). Ask before choosing any of these; don't assume. See section 12 of the overview.
