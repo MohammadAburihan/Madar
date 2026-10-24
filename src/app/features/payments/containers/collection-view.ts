@@ -1,7 +1,7 @@
 import { CustomerOption } from '../../../core/customers/customer-directory.service';
 import { daysUntil, formatMoney, formatShortDate } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
-import { Translator, isolate } from '../../../core/i18n/translator';
+import { Translator } from '../../../core/i18n/translator';
 import { TotalRow } from '../../../shared/ui/totals-card.component';
 import { Allocation, CollectionResult, UnpaidInvoice } from '../data-access/collection.models';
 
@@ -145,7 +145,7 @@ export function recordedView(result: CollectionResult, currency: string, tr: Tra
           due: money(due),
         })
       : tr.t('collect.allocatedMany', {
-          invoices: result.invoices.map((i) => isolate(i.invoice)).join(', '),
+          invoices: result.invoices.map((i) => tr.isolate(i.invoice)).join(', '),
           due: money(due),
         });
   return {

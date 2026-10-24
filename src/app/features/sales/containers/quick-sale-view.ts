@@ -1,5 +1,5 @@
 import { formatMoney } from '../../../core/format/format';
-import { isolate, Translator } from '../../../core/i18n/translator';
+import { Translator } from '../../../core/i18n/translator';
 import {
   CatalogItem,
   CustomerOption,
@@ -82,7 +82,7 @@ export function basketSummary(
 ): CardView {
   const units = lines.reduce((sum, line) => sum + line.qty, 0);
   const contents = lines
-    .map((line) => `${isolate(line.qty)} × ${isolate(line.item.name)}`)
+    .map((line) => `${tr.isolate(line.qty)} × ${tr.isolate(line.item.name)}`)
     .join(' + ');
   return {
     title: tr.plural('sale.items.basket', units),
@@ -160,7 +160,7 @@ export interface CreatesInput extends TotalsInput {
 export function createsMessage(input: CreatesInput, currency: string, tr: Translator): string {
   const stockLines = input.lines.filter((line) => line.item.isStock);
   const items = stockLines
-    .map((line) => `${isolate(line.qty)} × ${isolate(line.item.name)}`)
+    .map((line) => `${tr.isolate(line.qty)} × ${tr.isolate(line.item.name)}`)
     .join(' + ');
   const total = formatMoney(input.total, currency);
   const paid = formatMoney(input.paid, currency);
@@ -193,7 +193,9 @@ export function servicesNote(
   const services = lines.filter((line) => !line.item.isStock).map((line) => line.item.name);
   const parts = [
     services.length
-      ? tr.t('sale.review.servicesNote', { services: services.map(isolate).join(' · ') })
+      ? tr.t('sale.review.servicesNote', {
+          services: services.map((v) => tr.isolate(v)).join(' · '),
+        })
       : null,
     outstanding > 0
       ? tr.t('sale.review.owes', { amount: formatMoney(outstanding, currency) })

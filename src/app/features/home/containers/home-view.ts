@@ -2,7 +2,7 @@ import { Capabilities } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { daysUntil, formatLongDate, formatMoney } from '../../../core/format/format';
 import { Language } from '../../../core/i18n/language.service';
-import { isolate, Translator } from '../../../core/i18n/translator';
+import { Translator } from '../../../core/i18n/translator';
 import { Draft, HomeData } from '../data-access/home.models';
 import { DraftKind } from '../data-access/drafts.models';
 import { DraftTarget, draftAction, draftTarget } from './drafts-view';
@@ -231,7 +231,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
 
   const rows: (AttentionRow & { sort: string })[] = [
     ...deliveries.map((d) => ({
-      work: `${isolate(d.name)} · ${isolate(d.supplier)}`,
+      work: `${tr.isolate(d.name)} · ${tr.isolate(d.supplier)}`,
       due: dueLabel(d.scheduleDate),
       next: tr.t('home.next.receiveDelivery'),
       sort: `1${d.scheduleDate}`,
@@ -249,13 +249,13 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
       sort: `2${d.modified}`,
     })),
     ...supply.map((s) => ({
-      work: isolate(s.projectName),
+      work: tr.isolate(s.projectName),
       due: dueLabel(s.scheduleDate),
       next: tr.t('home.next.supply', { qty: s.qty, item: s.itemName }),
       sort: `3${s.scheduleDate}`,
     })),
     ...invoices.map((i) => ({
-      work: `${isolate(i.customer)} · ${isolate(i.name)}`,
+      work: `${tr.isolate(i.customer)} · ${tr.isolate(i.name)}`,
       due: dueLabel(i.dueDate),
       next: tr.t('home.next.receivePayment'),
       sort: `4${i.dueDate}`,
@@ -303,7 +303,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
         ? { title: tr.t('home.glance.noLowStock'), message: tr.t('home.glance.allStocked') }
         : {
             title: tr.plural('home.glance.lowStock', lowStock.count),
-            message: lowStock.warehouse ? isolate(lowStock.warehouse) : '',
+            message: lowStock.warehouse ? tr.isolate(lowStock.warehouse) : '',
           },
     );
   }
@@ -311,7 +311,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
   return {
     title,
     subtitle: `${roleLabel} · ${date}`,
-    desktopSubtitle: `${isolate(business.name)} · ${roleLabel} · ${date}`,
+    desktopSubtitle: `${tr.isolate(business.name)} · ${roleLabel} · ${date}`,
     roleLabel,
     actions: ACTIONS[persona]
       .filter(
