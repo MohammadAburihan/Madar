@@ -1,5 +1,5 @@
 import { formatMoney } from '../../../core/format/format';
-import { Translator, isolate } from '../../../core/i18n/translator';
+import { Translator } from '../../../core/i18n/translator';
 import { TableRow } from '../../../shared/ui/data-table.component';
 import { OpenBalance, PaymentRecord } from '../data-access/money-api.service';
 
@@ -32,7 +32,9 @@ export function paymentCard(payment: PaymentRecord, currency: string, tr: Transl
     message: [
       tr.t('money.partyAccount', { party: payment.party, account: payment.account }),
       payment.invoices.length
-        ? tr.t('money.allocatedTo', { invoices: payment.invoices.map(isolate).join(', ') })
+        ? tr.t('money.allocatedTo', {
+            invoices: payment.invoices.map((v) => tr.isolate(v)).join(', '),
+          })
         : tr.t('money.notAllocated'),
     ].join('\n'),
   };
