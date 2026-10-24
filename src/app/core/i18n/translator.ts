@@ -15,7 +15,7 @@ export const isolate = (value: unknown) => `\u2068${value}\u2069`;
 const RTL_SCRIPTS =
   /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}]/u;
 const LTR_OR_DIGIT =
-  /\p{N}|(?![\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}])\p{L}/u;
+  /\p{N}|(?![\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}ـ])\p{L}/u;
 
 /**
  * Arabic text keeps a value that is itself right-to-left unmarked: WebKit overlaps an isolated

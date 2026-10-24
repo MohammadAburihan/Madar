@@ -4,6 +4,7 @@ import { createTranslator, isolate, isolateFor } from './translator';
 describe('isolateFor', () => {
   it('leaves Arabic-only values unmarked in the Arabic UI', () => {
     expect(isolateFor('حنين حبش', 'ar')).toBe('حنين حبش');
+    expect(isolateFor('حـنين', 'ar')).toBe('حـنين');
   });
 
   it('isolates Latin names, mixed values, identifiers and amounts in the Arabic UI', () => {
