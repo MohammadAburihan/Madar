@@ -9,7 +9,7 @@ import { PrefillKind, PrefillPayloads, TaskPrefillService } from './task-prefill
 
 export type PrefillOpening = 'opened' | 'busy' | 'stale';
 export type PrefillPhase = 'ready' | 'loading';
-export type PrefillNotice = 'filled' | 'expired' | 'unavailable';
+export type PrefillNotice = 'filled' | 'expired' | 'unavailable' | 'busy';
 
 /** Something the proposal names is gone, disabled or not allowed for the user: nothing is filled in. */
 export class PrefillUnavailableError extends Error {
@@ -25,7 +25,7 @@ export class PrefillUnavailableError extends Error {
 export function injectPrefillEntry<K extends PrefillKind>(
   kind: K,
   open: (payload: PrefillPayloads[K]) => Promise<PrefillOpening>,
-  failed: (notice: 'expired' | 'unavailable') => void,
+  failed: (notice: 'expired' | 'unavailable' | 'busy') => void,
 ) {
   const route = inject(ActivatedRoute);
   const prefills = inject(TaskPrefillService);
@@ -44,8 +44,9 @@ export function injectPrefillEntry<K extends PrefillKind>(
     }
     handled = prefill;
     const mine = ++turn;
-    const payload = prefills.take(kind, prefill);
+    const payload = prefills.peek(kind, prefill);
     if (!payload) {
+      prefills.drop(kind, prefill);
       failed('expired');
       phase.set('ready');
       return;
@@ -53,10 +54,17 @@ export function injectPrefillEntry<K extends PrefillKind>(
     phase.set('loading');
     try {
       const opening = await open(payload);
+      if (opening !== 'busy') {
+        prefills.drop(kind, prefill);
+      }
       if (mine !== turn || opening === 'stale') {
         return;
       }
+      if (opening === 'busy') {
+        failed('busy');
+      }
     } catch (error) {
+      prefills.drop(kind, prefill);
       if (mine !== turn) {
         return;
       }

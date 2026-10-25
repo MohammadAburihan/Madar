@@ -3933,6 +3933,10 @@
     "unavailable": {
       "title": "This proposal can't be opened.",
       "message": "Something it names is no longer available. Ask the assistant again."
+    },
+    "busy": {
+      "title": "Finish the current task first",
+      "message": "The assistant's proposal wasn't opened."
     }
   }
 }

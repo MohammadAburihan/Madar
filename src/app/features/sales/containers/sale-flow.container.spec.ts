@@ -28,7 +28,8 @@ function setup(
       {
         provide: TaskPrefillService,
         useValue: {
-          take: vi.fn((_kind: string, id: string) =>
+          drop: vi.fn(),
+          peek: vi.fn((_kind: string, id: string) =>
             prefill && id === prefill.id ? prefill.payload : null,
           ),
         },

@@ -202,7 +202,11 @@ export class PurchaseOrderStore {
     return 'opened';
   }
 
-  prefillFailed(notice: 'expired' | 'unavailable'): void {
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.proposed.set(notice);
+      return;
+    }
     if (!this.busy() && !(this.state() === 'confirmed' && !this.resultShown())) {
       this.start();
       this.proposed.set(notice);

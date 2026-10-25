@@ -254,6 +254,70 @@ describe('AssistantProposalsService', () => {
       ]);
     });
 
+    it('resolves a picked label to the customer it was made from', async () => {
+      const { run, customers } = setup();
+      customers.exact.mockImplementation(async (term: string) =>
+        term === 'C-2' ? [{ ...LINA, id: 'C-2', disabled: false }] : [],
+      );
+      const found = await run('propose_quick_sale', sale({ customer: 'Lina Haddad (C-2)' }));
+      expect(found.proposals![0].request).toMatchObject({ payload: { customer: 'C-2' } });
+      expect(customers.exact).toHaveBeenCalledWith('C-2');
+    });
+
+    it('ignores a customer label whose name is not the record’s name', async () => {
+      const { run, customers } = setup();
+      customers.exact.mockImplementation(async (term: string) =>
+        term === 'C-2' ? [{ ...LINA, id: 'C-2', name: 'Someone Else', disabled: false }] : [],
+      );
+      customers.find.mockResolvedValue([]);
+      await expect(
+        run('propose_quick_sale', sale({ customer: 'Lina Haddad (C-2)' })),
+      ).rejects.toThrow('not found: customer "Lina Haddad (C-2)"');
+    });
+
+    it('resolves a picked label to the item it was made from', async () => {
+      const { run } = setup();
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'Ceramic planter (POT-31)', qty: 1 }] }),
+      );
+      expect(found.proposals![0].request).toMatchObject({
+        payload: { lines: [{ item_code: 'POT-31', qty: 1 }] },
+      });
+    });
+
+    it('falls back to normal resolution when an item label names another item', async () => {
+      const { run } = setup();
+      await expect(
+        run(
+          'propose_quick_sale',
+          sale({ items: [{ item: 'Olive tree · 20 L (POT-31)', qty: 1 }] }),
+        ),
+      ).rejects.toThrow('not found: item "Olive tree · 20 L (POT-31)"');
+    });
+
+    it('resolves a picked label to the warehouse it was made from', async () => {
+      const { run, warehouses } = setup();
+      warehouses.list.mockResolvedValue([
+        { id: 'Main - RN', name: 'Shop' },
+        { id: 'Garden - RN', name: 'Shop' },
+      ]);
+      const found = await run('propose_quick_sale', sale({ warehouse: 'Shop (Garden - RN)' }));
+      expect(found.proposals![0].request).toMatchObject({ payload: { warehouse: 'Garden - RN' } });
+    });
+
+    it('resolves a picked label to the supplier it was made from', async () => {
+      const { run, suppliers } = setup();
+      suppliers.exact.mockImplementation(async (term: string) =>
+        term === 'SUP-2' ? [{ id: 'SUP-2', name: 'Green Clay', city: null, disabled: false }] : [],
+      );
+      const found = await run('propose_purchase_order', {
+        supplier: 'Green Clay (SUP-2)',
+        items: [{ item: 'POT-30', qty: 1 }],
+      });
+      expect(found.proposals![0].request).toMatchObject({ payload: { supplier: 'SUP-2' } });
+    });
+
     it('asks which item when a name fits several', async () => {
       const { run } = setup();
       const found = await run('propose_quick_sale', sale({ items: [{ item: 'olive', qty: 1 }] }));

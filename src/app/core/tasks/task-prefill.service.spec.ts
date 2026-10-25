@@ -45,6 +45,17 @@ describe('TaskPrefillService', () => {
     expect(service.take('quick_sale', id)).toBeNull();
   });
 
+  it('keeps a proposal that is only peeked at, until it is dropped', () => {
+    const { service } = setup();
+    const id = service.put(SALE)!;
+    expect(service.peek('quick_sale', id)).toEqual(SALE.payload);
+    expect(service.peek('quick_sale', id)).toEqual(SALE.payload);
+    service.drop('quick_sale', 'PF-0000000');
+    expect(service.peek('quick_sale', id)).toEqual(SALE.payload);
+    service.drop('quick_sale', id);
+    expect(service.peek('quick_sale', id)).toBeNull();
+  });
+
   it('keeps one proposal per task: a newer one replaces the older, other tasks are left alone', () => {
     const { service } = setup();
     const first = service.put(SALE)!;

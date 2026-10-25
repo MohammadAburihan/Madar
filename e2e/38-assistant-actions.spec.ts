@@ -229,6 +229,58 @@ test('asks which customer when a name fits several, and sends the pick as the ne
   }
 });
 
+test('tells two customers with one name apart, and resolves the picked label to that customer @phone', async ({
+  page,
+}) => {
+  await signIn(page, 'owner');
+  const name = `E2E Twin ${runId()} Haddad`;
+  const made: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    const doc = await post<{ name: string }>(page, 'frappe.client.insert', {
+      doc: { doctype: 'Customer', customer_name: name, customer_type: 'Individual' },
+    });
+    made.push(doc.name);
+  }
+  try {
+    const items = [{ item: ITEM.code, qty: 1 }];
+    const requests = await scriptAssistant(page, [
+      () => ({ body: toolCall('t1', 'propose_quick_sale', { customer: name, items }) }),
+      () => ({ body: answer('Which one do you mean?') }),
+      (body) => ({
+        body: toolCall('t2', 'propose_quick_sale', {
+          customer: body.messages.at(-1)!.content as string,
+          items,
+        }),
+      }),
+      () => ({ body: answer('Review the sale and confirm.') }),
+    ]);
+    await page.goto('/assistant');
+    await ask(page, 'Sell a planter to Haddad');
+
+    const buttons = page.locator('app-assistant-choices button');
+    await expect(buttons).toHaveCount(2, { timeout: 30_000 });
+    const labels = made.map((id) => `${name} (${id})`);
+    expect((await buttons.allInnerTexts()).sort()).toEqual([...labels].sort());
+
+    await buttons.filter({ hasText: `(${made[1]})` }).click();
+    expect(requests[2].messages.at(-1)).toEqual({ role: 'user', content: labels[1] });
+    await expect(card(page)).toBeVisible({ timeout: 30_000 });
+    const resolved = JSON.parse(
+      (requests[3].messages.at(-1)!.content as { content: string }[])[0].content,
+    ) as { proposal_id?: string; needs_choice?: boolean };
+    expect(resolved.needs_choice).toBeUndefined();
+    expect(resolved.proposal_id).toBeTruthy();
+    await card(page).getByRole('button').first().click();
+    await expect(page.getByText(name).first()).toBeVisible();
+  } finally {
+    for (const id of made) {
+      await page.request.post('/api/method/frappe.client.delete', {
+        data: { doctype: 'Customer', name: id },
+      });
+    }
+  }
+});
+
 test('proposes a purchase order, opens it filled in, and confirms it @phone', async ({ page }) => {
   await signIn(page, 'owner');
   await scriptAssistant(page, [

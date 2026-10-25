@@ -252,7 +252,11 @@ export class QuickSaleStore {
     return 'opened';
   }
 
-  prefillFailed(notice: 'expired' | 'unavailable'): void {
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.prefill.set(notice);
+      return;
+    }
     if (!this.openConfirmation()) {
       this.start();
       this.prefill.set(notice);

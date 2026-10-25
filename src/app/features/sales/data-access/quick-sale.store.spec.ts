@@ -719,6 +719,25 @@ describe('QuickSaleStore.openPrefill', () => {
     expect(store.lines().length).toBe(2);
   });
 
+  it('keeps a sale being confirmed and says the proposal was not opened', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    store.prefillFailed('busy');
+    expect(store.prefill()).toBe('busy');
+    expect(store.state()).toBe('confirming');
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('keeps a sale in progress and does not start over when a proposal is busy', async () => {
+    const { store } = prepared();
+    withBasket(store);
+    store.prefillFailed('busy');
+    expect(store.prefill()).toBe('busy');
+    expect(store.lines().length).toBe(2);
+  });
+
   it('clears the notice when the sale starts over', async () => {
     const { store } = prepared();
     await store.openPrefill(PROPOSAL);

@@ -25,14 +25,15 @@ function setup(
   const query = new BehaviorSubject(convertToParamMap(first ? { prefill: first } : {}));
   const failed = vi.fn();
   const checkExpired = vi.fn();
-  const take = vi.fn((_kind: string, id: string) => held[id] ?? null);
+  const peek = vi.fn((_kind: string, id: string) => held[id] ?? null);
+  const drop = vi.fn();
   @Component({ template: '' })
   class Host {
     readonly entry = injectPrefillEntry('quotation', (p) => open(p), failed);
   }
   TestBed.configureTestingModule({
     providers: [
-      { provide: TaskPrefillService, useValue: { take } },
+      { provide: TaskPrefillService, useValue: { peek, drop } },
       { provide: SessionService, useValue: { checkExpired } },
       {
         provide: ActivatedRoute,
@@ -42,24 +43,33 @@ function setup(
   });
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
-  return { fixture, entry: fixture.componentInstance.entry, query, failed, take, checkExpired };
+  return {
+    fixture,
+    entry: fixture.componentInstance.entry,
+    query,
+    failed,
+    peek,
+    drop,
+    checkExpired,
+  };
 }
 
 describe('injectPrefillEntry', () => {
   it('is ready at once when the address names no proposal', () => {
     const open = vi.fn();
-    const { entry, take } = setup(open, {}, null);
+    const { entry, peek } = setup(open, {}, null);
     expect(entry.phase()).toBe('ready');
-    expect(take).not.toHaveBeenCalled();
+    expect(peek).not.toHaveBeenCalled();
     expect(open).not.toHaveBeenCalled();
   });
 
   it('loads the proposal before the task is shown, then is ready', async () => {
     const open = vi.fn().mockResolvedValue('opened');
-    const { fixture, entry, failed, take } = setup(open);
+    const { fixture, entry, failed, peek, drop } = setup(open);
     expect(entry.phase()).toBe('loading');
     await fixture.whenStable();
-    expect(take).toHaveBeenCalledWith('quotation', 'PF-1');
+    expect(drop).toHaveBeenCalledWith('quotation', 'PF-1');
+    expect(peek).toHaveBeenCalledWith('quotation', 'PF-1');
     expect(open).toHaveBeenCalledWith(PAYLOAD);
     expect(entry.phase()).toBe('ready');
     expect(failed).not.toHaveBeenCalled();
@@ -91,22 +101,23 @@ describe('injectPrefillEntry', () => {
     expect(failed).toHaveBeenCalledWith('unavailable');
   });
 
-  it('leaves a task that is busy as it is, saying nothing', async () => {
+  it('tells a busy task its proposal was not opened and keeps the proposal', async () => {
     const open = vi.fn().mockResolvedValue('busy');
-    const { fixture, entry, failed } = setup(open);
+    const { fixture, entry, failed, drop } = setup(open);
     await fixture.whenStable();
     expect(entry.phase()).toBe('ready');
-    expect(failed).not.toHaveBeenCalled();
+    expect(failed).toHaveBeenCalledWith('busy');
+    expect(drop).not.toHaveBeenCalled();
   });
 
   it('takes each id once: stepping back to the same address keeps the user’s edits', async () => {
     const open = vi.fn().mockResolvedValue('opened');
-    const { fixture, query, take } = setup(open);
+    const { fixture, query, peek } = setup(open);
     await fixture.whenStable();
     query.next(convertToParamMap({}));
     query.next(convertToParamMap({ prefill: 'PF-1' }));
     await fixture.whenStable();
-    expect(take).toHaveBeenCalledTimes(1);
+    expect(peek).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledTimes(1);
   });
 
@@ -171,6 +182,16 @@ describe('prefillNoticeText', () => {
       tone: 'warning',
       title: 'انتهت صلاحية هذا الاقتراح.',
       message: 'اطلب من المساعد مرة أخرى.',
+    });
+    expect(prefillNoticeText(realTranslator('en'), 'busy', 'quotation')).toEqual({
+      tone: 'warning',
+      title: 'Finish the current task first',
+      message: "The assistant's proposal wasn't opened.",
+    });
+    expect(prefillNoticeText(realTranslator('ar'), 'busy', 'quotation')).toEqual({
+      tone: 'warning',
+      title: 'أنهِ المهمة الحالية أولاً',
+      message: 'لم يُفتح اقتراح المساعد.',
     });
     expect(prefillNoticeText(realTranslator('en'), 'unavailable', 'quotation').tone).toBe(
       'warning',

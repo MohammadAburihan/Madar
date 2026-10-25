@@ -71,14 +71,25 @@ export class TaskPrefillService {
   }
 
   take<K extends PrefillKind>(kind: K, id: string): PrefillPayloads[K] | null {
+    const payload = this.peek(kind, id);
+    this.drop(kind, id);
+    return payload;
+  }
+
+  peek<K extends PrefillKind>(kind: K, id: string): PrefillPayloads[K] | null {
     const held = this.pending.get(kind);
     if (!held || held.id !== id) {
       return null;
     }
-    this.pending.delete(kind);
     const fresh = Date.now() - held.createdAt < PREFILL_TTL_MS;
     const mine =
       held.userId === this.session.user()?.id && held.company === this.business.active()?.name;
     return fresh && mine ? (held.payload as PrefillPayloads[K]) : null;
+  }
+
+  drop(kind: PrefillKind, id: string): void {
+    if (this.pending.get(kind)?.id === id) {
+      this.pending.delete(kind);
+    }
   }
 }

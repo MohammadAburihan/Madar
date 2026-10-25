@@ -72,6 +72,12 @@ const DOCUMENTS: Record<DocKind, { doctype: string; kind: RecordKind; sales: boo
   purchase_order: { doctype: 'Purchase Order', kind: 'purchaseOrder', sales: false },
 };
 
+/** A choice label for a repeated name, `Lina Haddad (C-2)`, split back into the name and the id it was made from. */
+function labelParts(text: string): { name: string; id: string } | null {
+  const match = /^(.*\S)\s+\(([^()]+)\)$/.exec(text.trim());
+  return match ? { name: match[1], id: match[2].trim() } : null;
+}
+
 const like = (term: string) => `%${term.trim()}%`;
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const money = (currency: string, amount: number) => `${currency} ${amount.toFixed(2)}`;
@@ -453,7 +459,13 @@ export class AssistantProposalsService {
   }
 
   private async customer(text: string, allowDisabled = false): Promise<Party> {
-    const exact = await this.customers.exact(text);
+    const label = labelParts(text);
+    const tagged = label
+      ? (await this.customers.exact(label.id)).filter(
+          (c) => c.id === label.id && same(c.name, label.name),
+        )
+      : [];
+    const exact = tagged.length ? tagged : await this.customers.exact(text);
     const usable = allowDisabled ? exact : exact.filter((c) => !c.disabled);
     if (exact.length && !usable.length) {
       throw new ToolFailure(`customer is disabled: ${exact[0].name}`);
@@ -469,7 +481,13 @@ export class AssistantProposalsService {
   }
 
   private async supplier(text: string, allowDisabled = false): Promise<Party> {
-    const exact = await this.suppliers.exact(text);
+    const label = labelParts(text);
+    const tagged = label
+      ? (await this.suppliers.exact(label.id)).filter(
+          (s) => s.id === label.id && same(s.name, label.name),
+        )
+      : [];
+    const exact = tagged.length ? tagged : await this.suppliers.exact(text);
     const usable = allowDisabled ? exact : exact.filter((s) => !s.disabled);
     if (exact.length && !usable.length) {
       throw new ToolFailure(`supplier is disabled: ${exact[0].name}`);
@@ -506,18 +524,28 @@ export class AssistantProposalsService {
         : use === 'buy'
           ? !!row.is_purchase_item
           : !!row.is_stock_item);
-    const exact = await this.list<ItemRow>(
-      'Item',
-      ITEM_FIELDS,
-      [['has_variants', '=', 0]],
-      MAX_OPTIONS,
-      {
-        orFilters: [
-          ['name', '=', westernDigits(term)],
-          ['item_name', '=', term],
-        ] as Filter[],
-      },
-    );
+    const label = labelParts(term);
+    const tagged = label
+      ? (
+          await this.list<ItemRow>(
+            'Item',
+            ITEM_FIELDS,
+            [
+              ['has_variants', '=', 0],
+              ['name', '=', westernDigits(label.id)],
+            ],
+            1,
+          )
+        ).filter((row) => same(row.item_name, label.name))
+      : [];
+    const exact = tagged.length
+      ? tagged
+      : await this.list<ItemRow>('Item', ITEM_FIELDS, [['has_variants', '=', 0]], MAX_OPTIONS, {
+          orFilters: [
+            ['name', '=', westernDigits(term)],
+            ['item_name', '=', term],
+          ] as Filter[],
+        });
     const usable = exact.filter((row) => (!row.disabled || use === 'any') && eligible(row));
     if (exact.length && !usable.length) {
       const [row] = exact;
@@ -609,6 +637,13 @@ export class AssistantProposalsService {
   private async warehouse(field: string, text: string, scope: ToolScope): Promise<Party> {
     const term = text.trim();
     const all = await this.warehouses.list(scope.company);
+    const label = labelParts(term);
+    const tagged = label
+      ? all.find((w) => same(w.id, label.id) && same(w.name, label.name))
+      : undefined;
+    if (tagged) {
+      return tagged;
+    }
     const exact = all.filter((w) => same(w.id, term) || same(w.name, term));
     if (exact.length === 1) {
       return exact[0];
