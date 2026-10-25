@@ -6,6 +6,8 @@ import { translocoTesting } from '../../../../testing/real-translator';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
+import { SPEECH_OUTPUT } from '../../../core/speech/speech.tokens';
+import { SpeechInputProblem, SpeechLanguage } from '../../../core/speech/speech.models';
 import { Viewport, ViewportService } from '../../../core/layout/viewport.service';
 import { AssistantState, AssistantStore } from '../data-access/assistant.store';
 import {
@@ -39,9 +41,20 @@ function setup(viewport: Viewport = 'mobile') {
     state: signal<AssistantState>('idle'),
     activeTools: signal<string[]>([]),
     problem: signal<ProblemKind | null>(null),
+    voiceSupported: signal(true),
+    listening: signal(false),
+    voiceProblem: signal<SpeechInputProblem | null>(null),
     send: vi.fn().mockResolvedValue(undefined),
     stop: vi.fn(),
     clear: vi.fn(),
+    listen: vi.fn().mockResolvedValue(undefined),
+    stopListening: vi.fn(),
+    cancelListening: vi.fn(),
+  };
+  const output = {
+    languages: signal<readonly SpeechLanguage[]>(['en', 'ar']),
+    speak: vi.fn(),
+    stop: vi.fn(),
   };
   const prefills = { put: vi.fn().mockReturnValue('PF-1') };
   const user = signal<{ id: string } | null>({ id: 'lina@rehan.example' });
@@ -57,12 +70,22 @@ function setup(viewport: Viewport = 'mobile') {
       { provide: TaskPrefillService, useValue: prefills },
       provideRouter([]),
       { provide: AssistantStore, useValue: store },
+      { provide: SPEECH_OUTPUT, useValue: output },
       { provide: ViewportService, useValue: { viewport: signal(viewport) } },
     ],
   });
   const fixture = TestBed.createComponent(AssistantContainer);
   const root = fixture.nativeElement as HTMLElement;
-  return { fixture, root, store, user, business, prefills, router: TestBed.inject(Router) };
+  return {
+    fixture,
+    root,
+    store,
+    output,
+    user,
+    business,
+    prefills,
+    router: TestBed.inject(Router),
+  };
 }
 
 describe('AssistantContainer', () => {
@@ -112,7 +135,7 @@ describe('AssistantContainer', () => {
     expect(root.querySelector('app-assistant-suggestions')).toBeNull();
     expect([...root.querySelectorAll('app-assistant-message')].map(text)).toEqual([
       'Who is Lina?',
-      'Lina Haddad is a customer.',
+      'Lina Haddad is a customer. Read aloud',
     ]);
     expect(text(root.querySelector('.activity'))).toBe('Looking up customers…');
     expect(root.querySelector('button.stop')).not.toBeNull();
@@ -264,6 +287,87 @@ describe('AssistantContainer', () => {
     fixture.destroy();
     expect(store.stop).toHaveBeenCalled();
     expect(store.clear).not.toHaveBeenCalled();
+  });
+
+  describe('voice', () => {
+    const answered = (store: ReturnType<typeof setup>['store']) =>
+      store.messages.set([
+        { role: 'user', content: 'Who is Lina?' },
+        { role: 'assistant', content: [{ type: 'text', text: 'Lina is **a customer**.' }] },
+      ]);
+
+    it('leaves listening when the page is left or destroyed', async () => {
+      const { fixture, store, output } = setup();
+      await fixture.whenStable();
+      fixture.componentInstance.ionViewWillLeave();
+      expect(store.cancelListening).toHaveBeenCalledTimes(1);
+      expect(output.stop).toHaveBeenCalled();
+      fixture.destroy();
+      expect(store.cancelListening).toHaveBeenCalledTimes(2);
+    });
+
+    it('starts listening on the microphone, adds what is heard to what was typed, and never sends', async () => {
+      const { fixture, root, store } = setup();
+      await fixture.whenStable();
+      const field = root.querySelector('textarea')!;
+      field.value = 'Who owes';
+      field.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      root.querySelector<HTMLButtonElement>('button.mic')!.click();
+      const onText = store.listen.mock.calls[0][0] as (text: string) => void;
+      onText('money today');
+      await fixture.whenStable();
+      expect(field.value).toBe('Who owes money today');
+      expect(store.send).not.toHaveBeenCalled();
+    });
+
+    it('stops listening on a second press, and has no microphone without recognition', async () => {
+      const { fixture, root, store } = setup();
+      store.listening.set(true);
+      await fixture.whenStable();
+      expect(root.querySelector('.listening')).not.toBeNull();
+      root.querySelector<HTMLButtonElement>('button.mic')!.click();
+      expect(store.stopListening).toHaveBeenCalled();
+      expect(store.listen).not.toHaveBeenCalled();
+      store.voiceSupported.set(false);
+      await fixture.whenStable();
+      expect(root.querySelector('button.mic')).toBeNull();
+    });
+
+    it('shows the notice for a microphone that is off', async () => {
+      const { fixture, root, store } = setup();
+      store.voiceProblem.set('denied');
+      await fixture.whenStable();
+      expect(text(root.querySelector('app-feedback-card'))).toContain('Microphone access is off');
+    });
+
+    it('reads a reply aloud as plain text, and stops on a second press', async () => {
+      const { fixture, root, store, output } = setup();
+      answered(store);
+      await fixture.whenStable();
+      const read = () => root.querySelector<HTMLButtonElement>('button.read')!;
+      read().click();
+      expect(output.speak).toHaveBeenCalledWith('Lina is a customer.', 'en', expect.any(Function));
+      await fixture.whenStable();
+      expect(read().getAttribute('aria-pressed')).toBe('true');
+      read().click();
+      expect(output.stop).toHaveBeenCalled();
+      await fixture.whenStable();
+      expect(read().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('returns to idle when the reading ends, and has no button without a voice', async () => {
+      const { fixture, root, store, output } = setup();
+      answered(store);
+      await fixture.whenStable();
+      root.querySelector<HTMLButtonElement>('button.read')!.click();
+      (output.speak.mock.calls[0][2] as () => void)();
+      await fixture.whenStable();
+      expect(root.querySelector('button.read')!.getAttribute('aria-pressed')).toBe('false');
+      output.languages.set([]);
+      await fixture.whenStable();
+      expect(root.querySelector('button.read')).toBeNull();
+    });
   });
 
   describe('the unsent text', () => {

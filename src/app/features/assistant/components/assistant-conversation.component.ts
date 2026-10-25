@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { SpeechLanguage } from '../../../core/speech/speech.models';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ConversationItemView } from '../containers/assistant-view';
 import { AssistantMessageComponent } from './assistant-message.component';
@@ -13,6 +14,9 @@ import { AssistantMessageComponent } from './assistant-message.component';
       @for (item of items(); track item.id) {
         <app-assistant-message
           [item]="item"
+          [voices]="voices()"
+          [speaking]="speakingId() === item.id"
+          (readAloud)="readAloud.emit(item.id)"
           (opened)="opened.emit($event)"
           (proposalOpened)="proposalOpened.emit($event)"
           (choicePicked)="choicePicked.emit($event)"
@@ -46,7 +50,12 @@ export class AssistantConversationComponent {
   readonly activity = input<readonly string[]>([]);
   readonly problem = input<string | null>(null);
   readonly busy = input(false);
+  readonly voices = input<readonly SpeechLanguage[]>([]);
+  /** The id of the reply being read aloud. */
+  readonly speakingId = input<string | null>(null);
   readonly opened = output<string>();
   readonly proposalOpened = output<string>();
   readonly choicePicked = output<string>();
+  /** The id of the reply whose Read aloud was pressed. */
+  readonly readAloud = output<string>();
 }

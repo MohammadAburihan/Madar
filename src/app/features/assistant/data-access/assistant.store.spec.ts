@@ -4,6 +4,8 @@ import { vi } from 'vitest';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { SpeechInput } from '../../../core/speech/speech.models';
+import { SPEECH_INPUT } from '../../../core/speech/speech.tokens';
 import { AssistantApiService } from './assistant-api.service';
 import { AssistantToolsService } from './assistant-tools.service';
 import {
@@ -57,8 +59,26 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-function setup() {
+function fakeSpeech() {
+  const session: {
+    lang: string;
+    partial: (text: string) => void;
+    end: () => void;
+    fail: (problem: 'denied' | 'nospeech') => void;
+  }[] = [];
+  const speech = {
+    supported: vi.fn().mockResolvedValue(true),
+    start: vi.fn(async (lang, partial, end, fail) => {
+      session.push({ lang, partial, end, fail });
+    }),
+    stop: vi.fn(),
+  } satisfies SpeechInput;
+  return { speech, session };
+}
+
+function setup(language = 'ar') {
   TestBed.resetTestingModule();
+  const { speech, session: recognitions } = fakeSpeech();
   const requests: ChatRequest[] = [];
   const api = { chat: vi.fn() };
   const tools = {
@@ -76,7 +96,8 @@ function setup() {
       { provide: AssistantToolsService, useValue: tools },
       { provide: SessionService, useValue: session },
       { provide: BusinessService, useValue: { active: business } },
-      { provide: LanguageService, useValue: { language: () => 'ar' } },
+      { provide: LanguageService, useValue: { language: () => language } },
+      { provide: SPEECH_INPUT, useValue: speech },
     ],
   });
   const replies = (...next: (AssistantReply | Error)[]) => {
@@ -99,6 +120,8 @@ function setup() {
     business,
     requests,
     replies,
+    speech,
+    recognitions,
   };
 }
 
@@ -741,6 +764,84 @@ describe('AssistantStore', () => {
       await store.send('Sell 2 olive trees to Lina');
       await store.send('Lina Khoury');
       expect(requests[2].messages.at(-1)).toEqual({ role: 'user', content: 'Lina Khoury' });
+    });
+  });
+
+  describe('voice', () => {
+    it('knows whether the device can recognise speech', async () => {
+      const { store, speech } = setup();
+      await Promise.resolve();
+      expect(store.voiceSupported()).toBe(true);
+      speech.supported.mockResolvedValue(false);
+      TestBed.resetTestingModule();
+    });
+
+    it('listens in the language of the app: Arabic as ar-SA, English as en-US', async () => {
+      const arabic = setup('ar');
+      await arabic.store.listen(vi.fn());
+      expect(arabic.recognitions[0].lang).toBe('ar-SA');
+      const english = setup('en');
+      await english.store.listen(vi.fn());
+      expect(english.recognitions[0].lang).toBe('en-US');
+    });
+
+    it('passes what is heard on while listening, and stops listening when it ends', async () => {
+      const { store, recognitions } = setup();
+      const heard: string[] = [];
+      await store.listen((text) => heard.push(text));
+      expect(store.listening()).toBe(true);
+      recognitions[0].partial('who owes');
+      recognitions[0].end();
+      expect(heard).toEqual(['who owes']);
+      expect(store.listening()).toBe(false);
+    });
+
+    it('keeps a second press from starting a second recording, and stops on request', async () => {
+      const { store, speech, recognitions } = setup();
+      await store.listen(vi.fn());
+      await store.listen(vi.fn());
+      expect(recognitions).toHaveLength(1);
+      store.stopListening();
+      expect(speech.stop).toHaveBeenCalledTimes(1);
+      expect(store.listening()).toBe(true);
+    });
+
+    it('keeps the problem for the notice and clears it on the next try', async () => {
+      const { store, recognitions } = setup();
+      await store.listen(vi.fn());
+      recognitions[0].fail('denied');
+      recognitions[0].end();
+      expect(store.voiceProblem()).toBe('denied');
+      await store.listen(vi.fn());
+      expect(store.voiceProblem()).toBeNull();
+    });
+
+    it('stops listening before it sends, and drops words that arrive later', async () => {
+      const { store, speech, recognitions, replies } = setup();
+      const heard = vi.fn();
+      await store.listen(heard);
+      replies(text('Done'));
+      await store.send('Who owes money?');
+      expect(speech.stop).toHaveBeenCalled();
+      expect(store.listening()).toBe(false);
+      recognitions[0].partial('late words');
+      recognitions[0].end();
+      expect(heard).not.toHaveBeenCalled();
+    });
+
+    it('stops listening when the conversation is cleared and when the user signs out', async () => {
+      const { store, speech, user, recognitions } = setup();
+      TestBed.tick();
+      await store.listen(vi.fn());
+      store.clear();
+      expect(speech.stop).toHaveBeenCalledTimes(1);
+      expect(store.listening()).toBe(false);
+      await store.listen(vi.fn());
+      user.set(null);
+      TestBed.tick();
+      expect(speech.stop).toHaveBeenCalledTimes(2);
+      expect(store.listening()).toBe(false);
+      expect(recognitions).toHaveLength(2);
     });
   });
 });

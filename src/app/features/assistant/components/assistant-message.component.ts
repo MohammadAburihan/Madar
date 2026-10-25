@@ -1,5 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { LucideDynamicIcon, LucideVolume2 } from '@lucide/angular';
+import { SpeechLanguage } from '../../../core/speech/speech.models';
 import { ConversationItemView } from '../containers/assistant-view';
 import { AssistantChoicesComponent } from './assistant-choices.component';
 import { AssistantProposalComponent } from './assistant-proposal.component';
@@ -7,7 +9,12 @@ import { AssistantProposalComponent } from './assistant-proposal.component';
 /** One bubble: the user's question at the end side, the assistant's reply at the start side. */
 @Component({
   selector: 'app-assistant-message',
-  imports: [AssistantChoicesComponent, AssistantProposalComponent, NgTemplateOutlet],
+  imports: [
+    AssistantChoicesComponent,
+    AssistantProposalComponent,
+    LucideDynamicIcon,
+    NgTemplateOutlet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': 'item().role' },
   template: `
@@ -29,6 +36,17 @@ import { AssistantProposalComponent } from './assistant-proposal.component';
           }
         }
       </div>
+      @if (speech(); as speech) {
+        <button
+          type="button"
+          class="md-btn read"
+          [attr.aria-pressed]="speaking()"
+          (click)="readAloud.emit()"
+        >
+          <svg [lucideIcon]="readIcon" [size]="16" aria-hidden="true"></svg>
+          <span>{{ speech.label }}</span>
+        </button>
+      }
       @if (item().links.length) {
         <div class="links">
           @for (link of item().links; track link.key) {
@@ -118,18 +136,35 @@ import { AssistantProposalComponent } from './assistant-proposal.component';
       gap: 8px;
     }
 
+    .read,
     .links .md-btn {
       inline-size: auto;
       min-block-size: 40px;
       padding-block: 7px;
       font-size: 14px;
     }
+
+    .read {
+      inline-size: auto;
+      align-self: flex-start;
+      gap: 8px;
+    }
   `,
 })
 export class AssistantMessageComponent {
+  protected readonly readIcon = LucideVolume2;
+
   readonly item = input.required<ConversationItemView>();
+  /** The languages the device can read aloud; a reply in another has no button. */
+  readonly voices = input<readonly SpeechLanguage[]>([]);
+  readonly speaking = input(false);
+  protected readonly speech = computed(() => {
+    const speech = this.item().speech;
+    return speech && this.voices().includes(speech.lang) ? speech : null;
+  });
   /** The key of the record whose button was pressed. */
   readonly opened = output<string>();
   readonly proposalOpened = output<string>();
   readonly choicePicked = output<string>();
+  readonly readAloud = output<void>();
 }

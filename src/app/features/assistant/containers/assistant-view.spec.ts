@@ -19,10 +19,12 @@ const EMPTY: AssistantViewInput = {
   state: 'idle',
   activeTools: [],
   problem: null,
+  voiceProblem: null,
+  language: 'en',
 };
 
 const build = (over: Partial<AssistantViewInput> = {}, language: Language = 'en') =>
-  buildAssistantView({ ...EMPTY, ...over }, realTranslator(language));
+  buildAssistantView({ ...EMPTY, language, ...over }, realTranslator(language));
 const plain = (value: string) => value.replace(/[⁦-⁩]/g, '');
 
 const invoice = (id: string): RecordLink => ({ kind: 'invoice', id, label: id, mentions: [id] });
@@ -85,6 +87,7 @@ describe('buildAssistantView', () => {
         proposals: [],
         choices: [],
         choicesLabel: 'Choose one',
+        speech: null,
       },
       {
         id: 'm1',
@@ -104,9 +107,61 @@ describe('buildAssistantView', () => {
         proposals: [],
         choices: [],
         choicesLabel: 'Choose one',
+        speech: { text: 'Lina owes ILS 250.00.', lang: 'en', label: 'Read aloud' },
       },
     ]);
     expect(build({ messages }, 'ar').items.map((i) => i.author)).toEqual(['أنت', 'المساعد']);
+  });
+
+  it('reads a reply as plain text without bold marks or list dashes, in Arabic when it is written in Arabic', () => {
+    const messages: ApiMessage[] = [
+      { role: 'user', content: 'Stock?' },
+      {
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Low:\n- **POT-30**: 2\n- Seed mix: 0\n\nDone.' }],
+      },
+      { role: 'user', content: 'وبالعربية؟' },
+      { role: 'assistant', content: [{ type: 'text', text: 'المخزون **منخفض**' }] },
+    ];
+    const speech = build({ messages }, 'en').items.map((i) => i.speech);
+    expect(speech[0]).toBeNull();
+    expect(speech[1]).toMatchObject({
+      text: 'Low:\n\nPOT-30: 2\nSeed mix: 0\n\nDone.',
+      lang: 'en',
+    });
+    expect(speech[3]).toMatchObject({ text: 'المخزون منخفض', lang: 'ar', label: 'Read aloud' });
+    expect(build({ messages }, 'ar').items[1].speech).toMatchObject({
+      lang: 'ar',
+      label: 'قراءة بصوت عالٍ',
+    });
+  });
+
+  it('has no Read aloud for a reply still streaming', () => {
+    const item = build({ messages: [{ role: 'user', content: 'Hi' }], streaming: 'Hel' }).items.at(
+      -1,
+    );
+    expect(item).toMatchObject({ id: 'streaming', speech: null });
+  });
+
+  it('words the voice controls and notices in both languages', () => {
+    expect(build({ voiceProblem: 'denied' })).toMatchObject({
+      speak: 'Speak',
+      stopListening: 'Stop listening',
+      listeningLine: 'Listening… speak in Arabic or English',
+      voiceProblem:
+        'Microphone access is off. Allow it in your settings to speak to the assistant.',
+    });
+    expect(build({ voiceProblem: 'nospeech' }).voiceProblem).toBe("Couldn't hear that. Try again.");
+    expect(build({ voiceProblem: 'denied' }, 'ar')).toMatchObject({
+      speak: 'تحدّث',
+      stopListening: 'إيقاف الاستماع',
+      listeningLine: 'أستمع… تحدّث بالعربية أو الإنجليزية',
+      voiceProblem: 'الوصول إلى الميكروفون متوقف. اسمح به من الإعدادات للتحدث إلى المساعد.',
+    });
+    expect(build({ voiceProblem: 'nospeech' }, 'ar').voiceProblem).toBe(
+      'لم أتمكن من السماع. حاول مرة أخرى.',
+    );
+    expect(build().voiceProblem).toBeNull();
   });
 
   it('leaves out tool results, tool calls and thinking, which are not conversation', () => {

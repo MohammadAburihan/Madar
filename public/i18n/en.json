@@ -3915,6 +3915,14 @@
         "draft": "Draft {{name}}"
       },
       "anywhere": "any location"
+    },
+    "voice": {
+      "speak": "Speak",
+      "stopListening": "Stop listening",
+      "listening": "Listening… speak in Arabic or English",
+      "denied": "Microphone access is off. Allow it in your settings to speak to the assistant.",
+      "noSpeech": "Couldn't hear that. Try again.",
+      "readAloud": "Read aloud"
     }
   },
   "prefill": {

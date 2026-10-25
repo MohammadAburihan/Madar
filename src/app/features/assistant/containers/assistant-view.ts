@@ -1,5 +1,7 @@
 import { formatMoney } from '../../../core/format/format';
+import { Language } from '../../../core/i18n/language.service';
 import { Translator } from '../../../core/i18n/translator';
+import { SpeechInputProblem, SpeechLanguage } from '../../../core/speech/speech.models';
 import { PrefillKind } from '../../../core/tasks/task-prefill.service';
 import {
   ApiMessage,
@@ -34,6 +36,13 @@ export interface ChoiceView {
   label: string;
 }
 
+/** What "Read aloud" speaks: the reply as plain text, and the language of the voice for it. */
+export interface SpeechView {
+  text: string;
+  lang: SpeechLanguage;
+  label: string;
+}
+
 export interface ConversationItemView {
   id: string;
   role: 'user' | 'assistant';
@@ -45,6 +54,8 @@ export interface ConversationItemView {
   /** The matches the assistant asked the user to pick from, while that question is the last thing said. */
   choices: ChoiceView[];
   choicesLabel: string;
+  /** Only finished assistant replies can be read aloud. */
+  speech: SpeechView | null;
 }
 
 export interface AssistantView {
@@ -54,6 +65,11 @@ export interface AssistantView {
   composerLabel: string;
   send: string;
   stop: string;
+  speak: string;
+  stopListening: string;
+  listeningLine: string;
+  /** The notice for a microphone that is off or a recording nothing could be made of. */
+  voiceProblem: string | null;
   note: string;
   newChat: string;
   conversation: string;
@@ -79,6 +95,8 @@ export interface AssistantViewInput {
   state: AssistantState;
   activeTools: readonly ToolName[];
   problem: ProblemKind | null;
+  voiceProblem: SpeechInputProblem | null;
+  language: Language;
 }
 
 const MAX_LINKS = 5;
@@ -90,6 +108,20 @@ const textOf = (content: string | ContentBlock[]): string =>
         .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
         .map((block) => block.text)
         .join('\n\n');
+
+const ARABIC = /\p{Script=Arabic}/u;
+
+/** A reply in Arabic script is read with an Arabic voice, any other with the voice of the app's language. */
+export const speechLanguage = (text: string, ui: Language): SpeechLanguage =>
+  ARABIC.test(text) ? 'ar' : ui;
+
+function plainText(blocks: readonly ReplyBlock[]): string {
+  const run = (segments: readonly { text: string }[]) => segments.map((s) => s.text).join('');
+  return blocks
+    .map((block) => (block.kind === 'list' ? block.items.map(run).join('\n') : run(block.segments)))
+    .join('\n\n')
+    .trim();
+}
 
 const BUTTON: Record<PrefillKind, string> = {
   quick_sale: 'sale',
@@ -270,11 +302,13 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       return;
     }
     const user = message.role === 'user';
+    const blocks = user ? plainBlocks(text) : parseReplyText(text);
+    const spoken = user ? '' : plainText(blocks);
     items.push({
       id: `m${index}`,
       role: message.role,
       author: user ? you : assistant,
-      blocks: user ? plainBlocks(text) : parseReplyText(text),
+      blocks,
       links: user ? [] : linksFor(text, input.links[index] ?? [], tr),
       proposals: user
         ? []
@@ -284,6 +318,13 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
           ? []
           : (input.choices[index] ?? []).map(({ id, label }) => ({ id, label })),
       choicesLabel: t('assistant.choices.label'),
+      speech: spoken
+        ? {
+            text: spoken,
+            lang: speechLanguage(spoken, input.language),
+            label: t('assistant.voice.readAloud'),
+          }
+        : null,
     });
   });
   if (input.streaming.trim()) {
@@ -296,6 +337,7 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       proposals: [],
       choices: [],
       choicesLabel: '',
+      speech: null,
     });
   }
   const busy = input.state === 'sending' || input.state === 'running-tool';
@@ -306,6 +348,12 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
     composerLabel: t('assistant.composerLabel'),
     send: t('assistant.send'),
     stop: t('assistant.stop'),
+    speak: t('assistant.voice.speak'),
+    stopListening: t('assistant.voice.stopListening'),
+    listeningLine: t('assistant.voice.listening'),
+    voiceProblem: input.voiceProblem
+      ? t(`assistant.voice.${input.voiceProblem === 'denied' ? 'denied' : 'noSpeech'}`)
+      : null,
     note: t('assistant.note'),
     newChat: t('assistant.newChat'),
     conversation: t('assistant.conversation'),

@@ -16,6 +16,8 @@ import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
+import { SPEECH_OUTPUT } from '../../../core/speech/speech.tokens';
+import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { AssistantComposerComponent } from '../components/assistant-composer.component';
@@ -29,6 +31,7 @@ import { buildAssistantView, proposalTarget, recordRoute } from './assistant-vie
   selector: 'app-assistant',
   imports: [
     AssistantComposerComponent,
+    FeedbackCardComponent,
     AssistantConversationComponent,
     AssistantSuggestionsComponent,
     LanguageSwitcherComponent,
@@ -74,6 +77,9 @@ import { buildAssistantView, proposalTarget, recordRoute } from './assistant-vie
         [activity]="v.activity"
         [problem]="v.problem"
         [busy]="v.busy"
+        [voices]="voices()"
+        [speakingId]="speakingId()"
+        (readAloud)="readAloud($event)"
         (opened)="open($event)"
         (proposalOpened)="openProposal($event)"
         (choicePicked)="send($event)"
@@ -85,6 +91,9 @@ import { buildAssistantView, proposalTarget, recordRoute } from './assistant-vie
         (picked)="send($event)"
       />
     }
+    @if (v.voiceProblem; as message) {
+      <app-feedback-card tone="warning" [title]="message" />
+    }
     <app-assistant-composer
       #composer
       class="composer"
@@ -95,8 +104,14 @@ import { buildAssistantView, proposalTarget, recordRoute } from './assistant-vie
       [sendLabel]="v.send"
       [stopLabel]="v.stop"
       [busy]="v.busy"
+      [micAvailable]="store.voiceSupported()"
+      [listening]="store.listening()"
+      [speakLabel]="v.speak"
+      [stopListeningLabel]="v.stopListening"
+      [listeningLine]="v.listeningLine"
       (send)="send($event)"
       (stop)="store.stop()"
+      (microphone)="toggleListening()"
     />
   `,
 })
@@ -106,11 +121,14 @@ export class AssistantContainer implements OnDestroy {
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
   private readonly prefills = inject(TaskPrefillService);
+  private readonly speechOutput = inject(SPEECH_OUTPUT);
   private readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly draft = signal('');
+  protected readonly voices = this.speechOutput.languages;
+  protected readonly speakingId = signal<string | null>(null);
   private readonly composer = viewChild('composer', { read: ElementRef });
 
   protected readonly view = computed(() =>
@@ -125,6 +143,8 @@ export class AssistantContainer implements OnDestroy {
         state: this.store.state(),
         activeTools: this.store.activeTools(),
         problem: this.store.problem(),
+        voiceProblem: this.store.voiceProblem(),
+        language: this.i18n.language(),
       },
       this.i18n.tr(),
     ),
@@ -147,6 +167,11 @@ export class AssistantContainer implements OnDestroy {
       }
     });
     this.visitedUser = this.session.user()?.id ?? null;
+    effect(() => {
+      if (!this.store.messages().length) {
+        untracked(() => this.stopReading());
+      }
+    });
     // The newest line sits above the pinned composer, so the composer is what is brought into view.
     effect(() => {
       const view = this.view();
@@ -164,8 +189,46 @@ export class AssistantContainer implements OnDestroy {
     this.visitedUser = current;
   }
 
+  ionViewWillLeave(): void {
+    this.store.cancelListening();
+    this.stopReading();
+  }
+
   ngOnDestroy(): void {
     this.store.stop();
+    this.store.cancelListening();
+    this.stopReading();
+  }
+
+  protected toggleListening(): void {
+    if (this.store.listening()) {
+      this.store.stopListening();
+      return;
+    }
+    this.stopReading();
+    const typed = this.draft().trim();
+    void this.store.listen((text) => this.draft.set(typed ? `${typed} ${text}` : text));
+  }
+
+  protected readAloud(id: string): void {
+    if (this.speakingId() === id) {
+      this.stopReading();
+      return;
+    }
+    const speech = this.view().items.find((item) => item.id === id)?.speech;
+    if (speech) {
+      this.speakingId.set(id);
+      this.speechOutput.speak(speech.text, speech.lang, () => {
+        if (this.speakingId() === id) {
+          this.speakingId.set(null);
+        }
+      });
+    }
+  }
+
+  private stopReading(): void {
+    this.speakingId.set(null);
+    this.speechOutput.stop();
   }
 
   protected send(text: string): void {

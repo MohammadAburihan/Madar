@@ -2,6 +2,8 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { RECOGNITION_TAGS, SpeechInputProblem } from '../../../core/speech/speech.models';
+import { SPEECH_INPUT } from '../../../core/speech/speech.tokens';
 import { AssistantApiService } from './assistant-api.service';
 import { AssistantToolsService } from './assistant-tools.service';
 import { ToolName, isToolName } from './assistant-tools';
@@ -54,6 +56,7 @@ export class AssistantStore {
   private readonly session = inject(SessionService);
   private readonly languages = inject(LanguageService);
   private readonly business = inject(BusinessService);
+  private readonly speech = inject(SPEECH_INPUT);
 
   /** Exactly what the service is sent next: assistant replies keep their thinking and tool_use blocks. */
   readonly messages = signal<ApiMessage[]>([]);
@@ -66,12 +69,18 @@ export class AssistantStore {
   readonly links = signal<Record<number, readonly RecordLink[]>>({});
   readonly proposals = signal<Record<number, readonly Proposal[]>>({});
   readonly choices = signal<Record<number, readonly ChoiceOption[]>>({});
+  /** Whether this device can turn speech into text; the microphone button waits for it. */
+  readonly voiceSupported = signal(false);
+  readonly listening = signal(false);
+  readonly voiceProblem = signal<SpeechInputProblem | null>(null);
   readonly busy = computed(() => this.state() === 'sending' || this.state() === 'running-tool');
 
   private controller: AbortController | null = null;
   private turn = 0;
+  private listenTurn = 0;
 
   constructor() {
+    void this.speech.supported().then((supported) => this.voiceSupported.set(supported));
     // A conversation holds one user's business data: it never carries over to another user or business.
     let user: string | null | undefined;
     let company: string | null = null;
@@ -93,6 +102,7 @@ export class AssistantStore {
     if (!content || this.busy()) {
       return;
     }
+    this.cancelListening();
     const turn = ++this.turn;
     const controller = new AbortController();
     this.controller = controller;
@@ -229,8 +239,43 @@ export class AssistantStore {
     this.controller?.abort();
   }
 
+  /** Listens in the language of the app; `onText` gets everything heard so far until listening ends. */
+  async listen(onText: (text: string) => void): Promise<void> {
+    if (this.listening()) {
+      return;
+    }
+    const turn = ++this.listenTurn;
+    const live = () => turn === this.listenTurn;
+    this.voiceProblem.set(null);
+    this.listening.set(true);
+    await this.speech.start(
+      RECOGNITION_TAGS[this.languages.language()],
+      (text) => live() && onText(text),
+      () => live() && this.listening.set(false),
+      (problem) => live() && this.voiceProblem.set(problem),
+    );
+  }
+
+  /** Ends listening at the user's request: the last words still arrive. */
+  stopListening(): void {
+    if (this.listening()) {
+      this.speech.stop();
+    }
+  }
+
+  /** Ends listening and drops anything still on its way: for sending, leaving the page and sign-out. */
+  cancelListening(): void {
+    this.listenTurn++;
+    if (this.listening()) {
+      this.listening.set(false);
+      this.speech.stop();
+    }
+  }
+
   /** Starts a new conversation. */
   clear(): void {
+    this.cancelListening();
+    this.voiceProblem.set(null);
     this.turn++;
     this.controller?.abort();
     this.controller = null;
