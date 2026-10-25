@@ -48,10 +48,9 @@ describe('tool registry', () => {
       expect(required(name), name).toEqual([]);
   });
 
-  it('selects the requested tools in order and caches the last', () => {
+  it('selects the requested tools in order without cache markers (the system breakpoint covers them)', () => {
     const tools = selectTools(['find_invoices', 'get_invoice', 'find_invoices', 'nope']);
     expect(tools.map((t) => t.name)).toEqual(['find_invoices', 'get_invoice']);
-    expect(tools[0]).not.toHaveProperty('cache_control');
-    expect(tools[1]).toMatchObject({ cache_control: { type: 'ephemeral' } });
+    expect(tools.some((t) => 'cache_control' in t)).toBe(false);
   });
 });
