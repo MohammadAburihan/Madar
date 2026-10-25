@@ -201,6 +201,7 @@ describe('AssistantToolsService', () => {
       expect(directory.find).toHaveBeenCalledWith('lina', 3);
       expect(outcome.json).toEqual({
         currency: 'ILS',
+        scope: 'all sales',
         customers: [{ id: 'Lina Haddad', name: 'Lina Haddad', phone: '0599', outstanding: 275.1 }],
       });
       expect(outcome.records).toEqual([
@@ -221,7 +222,8 @@ describe('AssistantToolsService', () => {
       async (persona) => {
         const { run, directory, listCalls } = setup({ persona, lists: balances() });
         directory.find.mockResolvedValue([lina]);
-        await run('search_customers', { query: 'lina' });
+        const { json } = await run('search_customers', { query: 'lina' });
+        expect(json.scope).toBe('your own sales');
         expect(listCalls.find((c) => c.doctype === 'Sales Invoice')!.query.filters).toContainEqual([
           'owner',
           '=',

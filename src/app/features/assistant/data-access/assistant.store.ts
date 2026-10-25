@@ -134,7 +134,12 @@ export class AssistantStore {
         }
         this.messages.update((messages) => [
           ...messages,
-          { role: 'assistant', content: reply.content },
+          {
+            role: 'assistant',
+            content: reply.content.filter(
+              (block) => block.type !== 'text' || String((block as TextBlock).text ?? '').trim(),
+            ),
+          },
         ]);
         if (round >= MAX_TOOL_ROUNDS) {
           throw new AssistantError('unavailable');

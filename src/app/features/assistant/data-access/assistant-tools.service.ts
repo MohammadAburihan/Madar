@@ -230,6 +230,7 @@ export class AssistantToolsService {
     return {
       payload: {
         currency: scope.currency,
+        scope: OWN_SALES_ONLY.includes(scope.persona) ? 'your own sales' : 'all sales',
         ...(balances ? {} : { balance_note: NOT_AVAILABLE }),
         customers: rows.map((c) => ({
           id: c.id,

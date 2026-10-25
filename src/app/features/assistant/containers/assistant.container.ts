@@ -7,9 +7,12 @@ import {
   effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -97,6 +100,8 @@ import { buildAssistantView, recordRoute } from './assistant-view';
 export class AssistantContainer implements OnDestroy {
   protected readonly store = inject(AssistantStore);
   private readonly router = inject(Router);
+  private readonly session = inject(SessionService);
+  private readonly business = inject(BusinessService);
   private readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
@@ -118,7 +123,23 @@ export class AssistantContainer implements OnDestroy {
     ),
   );
 
+  private visitedUser: string | null = null;
+
   constructor() {
+    let user: string | null | undefined;
+    let company: string | null = null;
+    effect(() => {
+      const nextUser = this.session.user()?.id ?? null;
+      const nextCompany = this.business.active()?.name ?? null;
+      const userChanged = user !== undefined && user !== nextUser;
+      const companyChanged = company !== null && nextCompany !== null && company !== nextCompany;
+      user = nextUser;
+      company = nextCompany ?? company;
+      if (userChanged || companyChanged) {
+        untracked(() => this.draft.set(''));
+      }
+    });
+    this.visitedUser = this.session.user()?.id ?? null;
     // The newest line sits above the pinned composer, so the composer is what is brought into view.
     effect(() => {
       const view = this.view();
@@ -126,6 +147,14 @@ export class AssistantContainer implements OnDestroy {
         queueMicrotask(() => this.composer()?.nativeElement.scrollIntoView?.({ block: 'end' }));
       }
     });
+  }
+
+  ionViewWillEnter(): void {
+    const current = this.session.user()?.id ?? null;
+    if (current !== this.visitedUser) {
+      this.draft.set('');
+    }
+    this.visitedUser = current;
   }
 
   ngOnDestroy(): void {

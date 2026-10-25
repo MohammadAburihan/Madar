@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { vi } from 'vitest';
 import { translocoTesting } from '../../../../testing/real-translator';
+import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
 import { Viewport, ViewportService } from '../../../core/layout/viewport.service';
 import { AssistantState, AssistantStore } from '../data-access/assistant.store';
 import { ApiMessage, ProblemKind, RecordLink } from '../data-access/assistant.models';
@@ -22,9 +24,13 @@ function setup(viewport: Viewport = 'mobile') {
     stop: vi.fn(),
     clear: vi.fn(),
   };
+  const user = signal<{ id: string } | null>({ id: 'lina@rehan.example' });
+  const business = signal<{ name: string } | null>({ name: 'Rehan Nursery' });
   TestBed.configureTestingModule({
     imports: [translocoTesting()],
     providers: [
+      { provide: SessionService, useValue: { user } },
+      { provide: BusinessService, useValue: { active: business } },
       provideRouter([]),
       { provide: AssistantStore, useValue: store },
       { provide: ViewportService, useValue: { viewport: signal(viewport) } },
@@ -32,7 +38,7 @@ function setup(viewport: Viewport = 'mobile') {
   });
   const fixture = TestBed.createComponent(AssistantContainer);
   const root = fixture.nativeElement as HTMLElement;
-  return { fixture, root, store, router: TestBed.inject(Router) };
+  return { fixture, root, store, user, business, router: TestBed.inject(Router) };
 }
 
 describe('AssistantContainer', () => {
@@ -129,5 +135,61 @@ describe('AssistantContainer', () => {
     fixture.destroy();
     expect(store.stop).toHaveBeenCalled();
     expect(store.clear).not.toHaveBeenCalled();
+  });
+
+  describe('the unsent text', () => {
+    async function typed() {
+      const ctx = setup();
+      await ctx.fixture.whenStable();
+      const field = ctx.root.querySelector('textarea')!;
+      const type = async (value: string) => {
+        field.value = value;
+        field.dispatchEvent(new Event('input'));
+        await ctx.fixture.whenStable();
+      };
+      await type('Half a question');
+      return { ...ctx, field };
+    }
+
+    it('is kept while the same user and business stay', async () => {
+      const { fixture, field, business } = await typed();
+      business.set({ name: 'Rehan Nursery' });
+      await fixture.whenStable();
+      expect(field.value).toBe('Half a question');
+    });
+
+    it('is emptied for another user or on sign-out', async () => {
+      const { fixture, field, user } = await typed();
+      user.set({ id: 'sam@rehan.example' });
+      await fixture.whenStable();
+      expect(field.value).toBe('');
+      field.value = 'Again';
+      field.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      user.set(null);
+      await fixture.whenStable();
+      expect(field.value).toBe('');
+    });
+
+    it('is emptied when the active business changes, not on its first load', async () => {
+      const { fixture, field, business } = await typed();
+      business.set({ name: 'Other Co' });
+      await fixture.whenStable();
+      expect(field.value).toBe('');
+    });
+
+    it('is emptied on entering the page only when the user changed since the last visit', async () => {
+      const { fixture, field, user } = await typed();
+      fixture.componentInstance.ionViewWillEnter();
+      await fixture.whenStable();
+      expect(field.value).toBe('Half a question');
+      user.set({ id: 'sam@rehan.example' });
+      field.value = 'Sam typed';
+      field.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      fixture.componentInstance.ionViewWillEnter();
+      await fixture.whenStable();
+      expect(field.value).toBe('');
+    });
   });
 });

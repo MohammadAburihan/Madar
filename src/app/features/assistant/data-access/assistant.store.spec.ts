@@ -335,6 +335,28 @@ describe('AssistantStore', () => {
       expect(sent.some((m) => JSON.stringify(m).includes('tool_use'))).toBe(false);
     });
 
+    it('drops blank text from a reply that asks for a lookup, keeping the rest in order', async () => {
+      const { store, replies } = setup();
+      replies(
+        calls(
+          { type: 'text', text: '  ' },
+          { type: 'thinking', thinking: 'hm', signature: 's' } as ContentBlock,
+          { type: 'text', text: 'Checking.' },
+          toolUse('t1', 'get_today_summary'),
+        ),
+        text('Done'),
+      );
+      await store.send('Hi');
+      expect(store.messages()[1]).toEqual({
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'hm', signature: 's' },
+          { type: 'text', text: 'Checking.' },
+          toolUse('t1', 'get_today_summary'),
+        ],
+      });
+    });
+
     it('does nothing when nothing is running', () => {
       const { store } = setup();
       expect(() => store.stop()).not.toThrow();
