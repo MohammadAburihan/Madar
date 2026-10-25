@@ -143,6 +143,8 @@ describe('buildAssistantView', () => {
     expect(speechLanguage('Lina Haddad (ليلى) owes ILS 250.', 'ar')).toBe('en');
     expect(speechLanguage('123 - 45.6', 'ar')).toBe('ar');
     expect(speechLanguage('', 'en')).toBe('en');
+    expect(speechLanguage('الفاتورة SINV-0001 للصنف POT-30 بمبلغ ILS 250 مدفوعة', 'en')).toBe('ar');
+    expect(speechLanguage('Lina owes ILS 250 on SINV-0001', 'ar')).toBe('en');
   });
 
   it('has no Read aloud for a reply still streaming', () => {

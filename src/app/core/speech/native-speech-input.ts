@@ -9,7 +9,14 @@ interface Session {
 }
 
 const DENIED = new Set(['INSUFFICIENT_PERMISSIONS', 'MICROPHONE_PERMISSION_DENIED']);
-const NETWORK = new Set(['NETWORK', 'NETWORK_TIMEOUT', 'SERVER_DISCONNECTED']);
+const NETWORK = new Set([
+  'NETWORK',
+  'NETWORK_TIMEOUT',
+  'SERVER_DISCONNECTED',
+  'SERVER',
+  'RECOGNIZER_UNAVAILABLE',
+]);
+const NO_MICROPHONE = new Set(['AUDIO', 'AUDIO_SESSION_FAILED', 'AUDIO_ENGINE_START_FAILED']);
 
 const problemFor = (code: string | undefined): SpeechInputProblem => {
   if (code && DENIED.has(code)) {
@@ -18,7 +25,7 @@ const problemFor = (code: string | undefined): SpeechInputProblem => {
   if (code && NETWORK.has(code)) {
     return 'network';
   }
-  return code === 'AUDIO' ? 'nomicrophone' : 'nospeech';
+  return code && NO_MICROPHONE.has(code) ? 'nomicrophone' : 'nospeech';
 };
 
 /** The phone's own recognizer (Apple's on iOS, Google's or the device's on Android). */
@@ -63,7 +70,7 @@ export class NativeSpeechInput implements SpeechInput {
     };
     const fail = (problem: SpeechInputProblem) => {
       failed = true;
-      if (!ended) {
+      if (!ended && !(heard && problem === 'nospeech')) {
         onError(problem);
       }
     };

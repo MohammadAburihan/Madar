@@ -119,10 +119,19 @@ const VOICE_PROBLEM_KEY: Record<SpeechInputProblem, string> = {
 const ARABIC_LETTERS = /\p{Script=Arabic}/gu;
 const LATIN_LETTERS = /\p{Script=Latin}/gu;
 
+const IDENTIFIER = /\d|[A-Z]{2,}/;
+
+const withoutIdentifiers = (text: string) =>
+  text
+    .split(/\s+/)
+    .filter((token) => !IDENTIFIER.test(token))
+    .join(' ');
+
 /** A reply is read with the voice of its dominant script; the app's language breaks a tie. */
 export const speechLanguage = (text: string, ui: Language): SpeechLanguage => {
-  const arabic = text.match(ARABIC_LETTERS)?.length ?? 0;
-  const latin = text.match(LATIN_LETTERS)?.length ?? 0;
+  const words = withoutIdentifiers(text);
+  const arabic = words.match(ARABIC_LETTERS)?.length ?? 0;
+  const latin = words.match(LATIN_LETTERS)?.length ?? 0;
   return arabic > latin ? 'ar' : latin > arabic ? 'en' : ui;
 };
 

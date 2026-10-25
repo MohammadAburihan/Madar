@@ -160,7 +160,11 @@ describe('NativeSpeechInput', () => {
   it('maps plugin error codes to what the user can act on', async () => {
     for (const [code, problem] of [
       ['AUDIO', 'nomicrophone'],
+      ['AUDIO_SESSION_FAILED', 'nomicrophone'],
+      ['AUDIO_ENGINE_START_FAILED', 'nomicrophone'],
       ['NETWORK', 'network'],
+      ['SERVER', 'network'],
+      ['RECOGNIZER_UNAVAILABLE', 'network'],
       ['SERVER_DISCONNECTED', 'network'],
       ['INSUFFICIENT_PERMISSIONS', 'denied'],
       ['NO_MATCH', 'nospeech'],
@@ -171,6 +175,23 @@ describe('NativeSpeechInput', () => {
       emit('listeningState', { state: 'stopped' });
       expect(events).toEqual([`error:${problem}`, 'end']);
     }
+  });
+
+  it('does not report silence as a problem once words were heard', async () => {
+    const { start, emit, events } = run();
+    await start();
+    emit('partialResults', { matches: ['two pots'] });
+    emit('error', { code: 'NO_MATCH', message: 'x' });
+    emit('listeningState', { state: 'stopped' });
+    expect(events).toEqual(['partial:two pots', 'end']);
+  });
+
+  it('still reports a real problem after words were heard', async () => {
+    const { start, emit, events } = run();
+    await start();
+    emit('partialResults', { matches: ['two pots'] });
+    emit('error', { code: 'NETWORK', message: 'x' });
+    expect(events).toEqual(['partial:two pots', 'error:network']);
   });
 
   it('ends with a problem when starting fails', async () => {
