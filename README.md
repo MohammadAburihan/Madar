@@ -118,6 +118,7 @@ docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<versi
 | `NGINX_RESOLVER` | the container's DNS servers | DNS server nginx uses to re-resolve `ERPNEXT_UPSTREAM` |
 | `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
 | `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
+| `ASSISTANT_UPSTREAM` | empty | madar-assistant address nginx proxies `/assistant/` to; empty answers 404 |
 
 ### One business per deployment
 
@@ -137,6 +138,43 @@ Each container's address (behind its own domain on the server) is that business'
 opening the other address; "Your businesses" in Settings remembers the addresses on their device.
 
 Health check: `GET /healthz`. The deployed version is served at `/version.txt`.
+
+## Assistant service
+
+`assistant/` is `madar-assistant`, a small Node 24 service that relays the in-app assistant chat to Claude Haiku 5.5, so
+the Anthropic API key never reaches the client. Every request needs the user's ERPNext session cookie (forwarded by
+madar-web's nginx); the service checks it with ERPNext. It is not part of the Angular build.
+
+```sh
+cd assistant && npm ci
+ANTHROPIC_API_KEY=… ERPNEXT_UPSTREAM=http://localhost:18081 ERPNEXT_SITE_HOST=madar-test.localhost npm run dev
+npm test && npm run build
+```
+
+API: `POST /assistant/chat` with `{ language, context: { business, currency, today, persona }, tools, messages }`
+answers with Server-Sent Events: `text` deltas, then one `message` (`content`, `stop_reason`) or an `error`
+(`{ code }`: `refusal`, `rate_limited`, `unavailable`, `bad_request`, `unauthorized`). Requests refused before the
+stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 400, 413 or 429.
+`GET /assistant/healthz` answers `ok`.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | required | Anthropic API key |
+| `ERPNEXT_SITE_HOST` | required | Host header sent to ERPNext when checking the session |
+| `ERPNEXT_UPSTREAM` | `http://frontend:8080` | ERPNext address |
+| `PORT` | `8080` | Listen port |
+| `ASSISTANT_MODEL` | `claude-haiku-5-5` | Model id |
+| `ASSISTANT_RATE_PER_MIN` | `20` | Requests per user per minute |
+| `ASSISTANT_DAILY_OUTPUT_TOKENS` | `50000` | Output tokens per user per UTC day |
+
+On the server, run it beside madar-web on the ERPNext network, with the key in an env file (mode 600, never in git):
+
+```sh
+docker buildx build --platform linux/arm64 -t madar-assistant:<version> --load assistant
+docker run -d --name madar-assistant-rehannursery --network erpnext_default \
+  --env-file ~/madar-assistant.env madar-assistant:<version>
+# madar-web: add -e ASSISTANT_UPSTREAM=http://madar-assistant-rehannursery:8080
+```
 
 ## Continuous integration
 

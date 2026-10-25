@@ -35,6 +35,10 @@ server {
         proxy_read_timeout 120s;
     }
 
+    location /assistant/ {
+        ${ASSISTANT_PROXY}
+    }
+
     # Only content-hashed build output is immutable; fixed names like favicon.ico must revalidate.
     location ~ "^/(?:[a-z]+-[A-Za-z0-9_-]{8}\.(?:js|css)|media/.+)$" {
         include /etc/nginx/snippets/security-headers.conf;

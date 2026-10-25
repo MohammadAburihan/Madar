@@ -670,6 +670,20 @@ for a Desk invoice billing several orders, the order page's paid/outstanding lin
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
 
+## Assistant (Haiku 5.5)
+
+In-app chat assistant on Claude Haiku 5.5, relayed by the `madar-assistant` service (`assistant/`) so the API key stays
+on the server. Four PRs:
+
+- **A: service** (this PR): the relay behind ERPNext sign-in, limits, SSE, one proof tool (`get_today_summary`), nginx
+  `/assistant/`, image and CI.
+- **B: chat UI and read-only tools**: the chat screen; the client runs the lookups the service declares.
+- **C: actions as pre-filled tasks with confirmation**: the assistant proposes, the user confirms in Madar.
+- **D: voice**.
+
+Defaults: all signed-in users; tools gated by role on the client; no server-side chat history (the client keeps the
+messages); effort low; 20 requests a minute and 50,000 output tokens a day per user.
+
 ## Not started yet
 
 | Step | What | Notes |
