@@ -218,4 +218,34 @@ describe('CustomerDirectoryService.walkIn', () => {
     fail = false;
     expect(await directory.walkIn()).toBe(WALK_IN_CUSTOMER);
   });
+
+  it('finds customers by exact id or name, disabled ones included and marked', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [
+        {
+          name: 'CUST-1',
+          customer_name: 'Lina Haddad',
+          mobile_no: '059',
+          primary_address: 'Ramallah<br>Palestine',
+          disabled: 1,
+        },
+        {
+          name: 'CUST-2',
+          customer_name: 'Lina Haddad',
+          mobile_no: null,
+          primary_address: null,
+          disabled: 0,
+        },
+      ],
+    });
+    expect(await TestBed.inject(CustomerDirectoryService).exact(' Lina Haddad ')).toEqual([
+      { id: 'CUST-1', name: 'Lina Haddad', phone: '059', city: 'Ramallah', disabled: true },
+      { id: 'CUST-2', name: 'Lina Haddad', phone: null, city: null, disabled: false },
+    ]);
+    expect(listCalls[0].query.orFilters).toEqual([
+      ['name', '=', 'Lina Haddad'],
+      ['customer_name', '=', 'Lina Haddad'],
+    ]);
+    expect(listCalls[0].query.filters).toBeUndefined();
+  });
 });

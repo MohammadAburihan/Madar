@@ -124,6 +124,50 @@ export class SalesApiService {
         limit: SEARCH_LIMIT,
       }),
     );
+    return this.catalogItems(rows, company, warehouses);
+  }
+
+  /** The sellable items with exactly these codes, as the catalog shows them; a code with none is absent. */
+  async itemsByCode(
+    codes: string[],
+    company: string,
+    warehouses: string[],
+  ): Promise<CatalogItem[]> {
+    if (!codes.length) {
+      return [];
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        item_name: string;
+        stock_uom: string;
+        is_stock_item: number;
+      }>('Item', {
+        fields: ['name', 'item_name', 'stock_uom', 'is_stock_item'],
+        filters: [
+          ['name', 'in', codes],
+          ['disabled', '=', 0],
+          ['is_sales_item', '=', 1],
+          ['has_variants', '=', 0],
+        ],
+        limit: 0,
+      }),
+    );
+    return this.catalogItems(rows, company, warehouses);
+  }
+
+  customer(
+    id: string,
+    company: { name: string; currency: string },
+  ): Promise<CustomerOption | null> {
+    return this.customers.byId(id, company);
+  }
+
+  private async catalogItems(
+    rows: { name: string; item_name: string; stock_uom: string; is_stock_item: number }[],
+    company: string,
+    warehouses: string[],
+  ): Promise<CatalogItem[]> {
     if (!rows.length) {
       return [];
     }

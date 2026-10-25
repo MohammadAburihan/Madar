@@ -35,6 +35,13 @@ import { injectSaleContext } from './sale-context';
     />
     <app-back-link [label]="txt.back" (back)="ctx.go('items')" />
     <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
+    @if (ctx.prefillNotice(); as proposal) {
+      <app-feedback-card
+        [tone]="proposal.tone"
+        [title]="proposal.title"
+        [message]="proposal.message"
+      />
+    }
     @if (draftNotice(); as notice) {
       <app-feedback-card [tone]="notice.tone" [title]="notice.title" [message]="notice.message" />
     }

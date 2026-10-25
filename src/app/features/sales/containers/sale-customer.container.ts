@@ -47,6 +47,13 @@ const SEARCH_DELAY_MS = 250;
       [subtitle]="text().subtitle"
       [layout]="ctx.desktop() ? 'desktop' : 'mobile'"
     />
+    @if (ctx.prefillNotice(); as proposal) {
+      <app-feedback-card
+        [tone]="proposal.tone"
+        [title]="proposal.title"
+        [message]="proposal.message"
+      />
+    }
     @if (!ctx.session.capabilities().sell) {
       <app-feedback-card
         tone="warning"

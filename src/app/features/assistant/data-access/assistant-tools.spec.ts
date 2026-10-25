@@ -2,11 +2,13 @@ import { capabilitiesFor } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { toolRegistry } from '../../../../../assistant/src/tools';
 import {
+  RECORD_KINDS,
   RESULT_LIMIT_BYTES,
   TOOL_NAMES,
   TOOL_SCHEMAS,
   ToolName,
   toToolContent,
+  openableKinds,
   toolsFor,
   validateInput,
 } from './assistant-tools';
@@ -27,7 +29,81 @@ describe('tools offered by role', () => {
       'find_invoices',
       'get_invoice',
       'list_drafts',
+      'propose_quick_sale',
+      'propose_quotation',
+      'propose_collect_payment',
+      'open_record',
     ]);
+  });
+
+  it('offers a sale and a quotation only to roles that sell, walk-ins aside', () => {
+    for (const persona of ['owner', 'salesperson', 'storeAssociate'] as Persona[]) {
+      expect(namesFor(persona), persona).toContain('propose_quick_sale');
+      expect(namesFor(persona), persona).toContain('propose_quotation');
+    }
+    for (const persona of ['warehouse', 'purchasing', 'projectManager'] as Persona[]) {
+      expect(namesFor(persona), persona).not.toContain('propose_quick_sale');
+      expect(namesFor(persona), persona).not.toContain('propose_quotation');
+    }
+  });
+
+  it('offers a purchase order to those who order purchases, and a payment to those who collect', () => {
+    expect(namesFor('owner')).toContain('propose_purchase_order');
+    expect(namesFor('purchasing')).toContain('propose_purchase_order');
+    for (const persona of [
+      'salesperson',
+      'storeAssociate',
+      'warehouse',
+      'projectManager',
+    ] as Persona[]) {
+      expect(namesFor(persona), persona).not.toContain('propose_purchase_order');
+    }
+    for (const persona of ['owner', 'salesperson', 'storeAssociate'] as Persona[]) {
+      expect(namesFor(persona), persona).toContain('propose_collect_payment');
+    }
+    for (const persona of ['warehouse', 'purchasing', 'projectManager'] as Persona[]) {
+      expect(namesFor(persona), persona).not.toContain('propose_collect_payment');
+    }
+  });
+
+  it('offers a stock move to those who may transfer stock', () => {
+    for (const persona of ['owner', 'storeAssociate', 'warehouse'] as Persona[]) {
+      expect(namesFor(persona), persona).toContain('propose_stock_move');
+    }
+    for (const persona of ['salesperson', 'purchasing', 'projectManager'] as Persona[]) {
+      expect(namesFor(persona), persona).not.toContain('propose_stock_move');
+    }
+  });
+
+  it('narrows a role by its ERPNext roles: an owner who may not order purchases gets no purchase order', () => {
+    const caps = capabilitiesFor('owner', ['System Manager', 'Accounts Manager']);
+    expect(toolsFor(caps)).not.toContain('propose_purchase_order');
+    expect(toolsFor(caps)).not.toContain('propose_stock_move');
+  });
+
+  it('opens only the kinds of record a role can read', () => {
+    const owner = capabilitiesFor('owner');
+    expect(openableKinds(owner)).toEqual([...RECORD_KINDS]);
+    expect(openableKinds(capabilitiesFor('salesperson'))).toEqual([
+      'invoice',
+      'quotation',
+      'sales_order',
+      'customer',
+      'item',
+      'draft',
+    ]);
+    expect(openableKinds(capabilitiesFor('warehouse'))).toEqual([
+      'purchase_order',
+      'supplier',
+      'item',
+    ]);
+    expect(openableKinds(capabilitiesFor('purchasing'))).toEqual([
+      'purchase_order',
+      'supplier',
+      'item',
+      'draft',
+    ]);
+    expect(openableKinds(capabilitiesFor('projectManager'))).toEqual(['customer', 'item']);
   });
 
   it('gives store associates purchase orders too, since they receive goods', () => {
@@ -36,15 +112,26 @@ describe('tools offered by role', () => {
   });
 
   it('keeps sales and customers from the warehouse worker', () => {
-    expect(namesFor('warehouse')).toEqual(['search_items', 'find_purchase_orders']);
+    expect(namesFor('warehouse')).toEqual([
+      'search_items',
+      'find_purchase_orders',
+      'propose_stock_move',
+      'open_record',
+    ]);
   });
 
-  it('gives the purchasing officer items, drafts and purchase orders only', () => {
-    expect(namesFor('purchasing')).toEqual(['search_items', 'list_drafts', 'find_purchase_orders']);
+  it('gives the purchasing officer items, drafts, purchase orders and their own proposals', () => {
+    expect(namesFor('purchasing')).toEqual([
+      'search_items',
+      'list_drafts',
+      'find_purchase_orders',
+      'propose_purchase_order',
+      'open_record',
+    ]);
   });
 
   it('gives the project manager customers and items only', () => {
-    expect(namesFor('projectManager')).toEqual(['search_customers', 'search_items']);
+    expect(namesFor('projectManager')).toEqual(['search_customers', 'search_items', 'open_record']);
   });
 });
 
@@ -81,6 +168,107 @@ describe('validateInput', () => {
   it('accepts a leap day and the largest limits', () => {
     expect(validateInput('find_invoices', { from: '2028-02-29', limit: 20 }).ok).toBe(true);
     expect(validateInput('search_customers', { query: '', limit: 10 }).ok).toBe(true);
+  });
+});
+
+describe('validateInput for proposals', () => {
+  const sale = { customer: 'Lina', items: [{ item: 'Olive', qty: 2 }] };
+
+  it('accepts a sale with lines, a typed price and a warehouse', () => {
+    const input = {
+      customer: 'walk-in',
+      items: [
+        { item: 'Olive tree', qty: 2, rate: 80 },
+        { item: 'POT-30', qty: 0.5 },
+      ],
+      warehouse: 'Main',
+    };
+    expect(validateInput('propose_quick_sale', input)).toEqual({ ok: true, input });
+    expect(validateInput('propose_collect_payment', { customer: 'Lina' }).ok).toBe(true);
+    expect(validateInput('propose_collect_payment', { customer: 'Lina', amount: 12.5 }).ok).toBe(
+      true,
+    );
+    expect(
+      validateInput('propose_stock_move', { item: 'OLV-20', qty: 3, from: 'a', to: 'b' }).ok,
+    ).toBe(true);
+    expect(validateInput('open_record', { kind: 'draft', name: 'SI-1' }).ok).toBe(true);
+  });
+
+  it.each([
+    ['no lines', 'propose_quick_sale', { customer: 'Lina', items: [] }],
+    ['lines that are not a list', 'propose_quotation', { customer: 'Lina', items: 'Olive' }],
+    [
+      'more than twenty lines',
+      'propose_quotation',
+      {
+        customer: 'Lina',
+        items: Array.from({ length: 21 }, () => ({ item: 'a', qty: 1 })),
+      },
+    ],
+    ['a line without a quantity', 'propose_quick_sale', { customer: 'L', items: [{ item: 'a' }] }],
+    ['a quantity of zero', 'propose_quick_sale', { customer: 'L', items: [{ item: 'a', qty: 0 }] }],
+    [
+      'a negative quantity',
+      'propose_quick_sale',
+      { customer: 'L', items: [{ item: 'a', qty: -1 }] },
+    ],
+    [
+      'a quantity above 10000',
+      'propose_quick_sale',
+      { customer: 'L', items: [{ item: 'a', qty: 10001 }] },
+    ],
+    [
+      'a quantity that is not a number',
+      'propose_quick_sale',
+      { customer: 'L', items: [{ item: 'a', qty: 'many' }] },
+    ],
+    [
+      'a negative price',
+      'propose_purchase_order',
+      { supplier: 'S', items: [{ item: 'a', qty: 1, rate: -1 }] },
+    ],
+    [
+      'an unknown field on a line',
+      'propose_quick_sale',
+      { customer: 'L', items: [{ item: 'a', qty: 1, discount: 5 }] },
+    ],
+    ['a line that is not an object', 'propose_quick_sale', { customer: 'L', items: ['a'] }],
+    ['a missing customer', 'propose_quick_sale', { items: [{ item: 'a', qty: 1 }] }],
+    ['a payment of zero', 'propose_collect_payment', { customer: 'L', amount: 0 }],
+    ['a stock move without a quantity', 'propose_stock_move', { item: 'a' }],
+    ['an unknown kind of record', 'open_record', { kind: 'payment', name: 'PAY-1' }],
+    ['a record without a name', 'open_record', { kind: 'invoice' }],
+  ] as [string, ToolName, unknown][])('rejects %s', (_, name, input) => {
+    expect(validateInput(name, input)).toMatchObject({ ok: false, error: expect.any(String) });
+  });
+
+  it('names the line and field that failed', () => {
+    expect(
+      validateInput('propose_quick_sale', {
+        customer: 'L',
+        items: [
+          { item: 'a', qty: 1 },
+          { item: 'b', qty: 0 },
+        ],
+      }),
+    ).toEqual({ ok: false, error: 'Field "items[1].qty" must be more than 0.' });
+  });
+
+  it('reads typed numbers with Arabic digits and separators', () => {
+    expect(
+      validateInput('propose_quick_sale', {
+        customer: 'L',
+        items: [{ item: 'a', qty: '٣', rate: '٨٥٫٥' }],
+      }),
+    ).toEqual({ ok: true, input: { customer: 'L', items: [{ item: 'a', qty: 3, rate: 85.5 }] } });
+    expect(validateInput('propose_collect_payment', { customer: 'L', amount: '١٢٠' })).toEqual({
+      ok: true,
+      input: { customer: 'L', amount: 120 },
+    });
+  });
+
+  it('takes the sale as given when it is valid', () => {
+    expect(validateInput('propose_quotation', sale)).toEqual({ ok: true, input: sale });
   });
 });
 
@@ -127,18 +315,33 @@ describe('the service registry', () => {
   });
 
   it('describes the same fields, types and required fields as the app checks', () => {
-    for (const name of TOOL_NAMES) {
-      const schema = toolRegistry[name].input_schema as {
-        properties: Record<string, { type: string; format?: string }>;
-        required?: string[];
-      };
-      const mine = TOOL_SCHEMAS[name];
-      expect(Object.keys(mine.properties), name).toEqual(Object.keys(schema.properties));
-      expect(mine.required, name).toEqual(schema.required ?? []);
+    interface Node {
+      properties: Record<string, { type: string; format?: string; enum?: string[]; items?: Node }>;
+      required?: string[];
+    }
+    interface Mine {
+      properties: Record<
+        string,
+        { type: string; format?: string; enum?: readonly string[]; items?: Mine }
+      >;
+      required: string[];
+    }
+    const compare = (mine: Mine, theirs: Node, where: string) => {
+      expect(Object.keys(mine.properties), where).toEqual(Object.keys(theirs.properties));
+      expect(mine.required, where).toEqual(theirs.required ?? []);
       for (const [field, property] of Object.entries(mine.properties)) {
-        expect(property.type, `${name}.${field}`).toBe(schema.properties[field].type);
-        expect(property.format, `${name}.${field}`).toBe(schema.properties[field].format);
+        const other = theirs.properties[field];
+        expect(property.type, `${where}.${field}`).toBe(other.type);
+        expect(property.format, `${where}.${field}`).toBe(other.format);
+        expect(property.enum, `${where}.${field}`).toEqual(other.enum);
+        expect(!!property.items, `${where}.${field} items`).toBe(!!other.items);
+        if (property.items && other.items) {
+          compare(property.items, other.items, `${where}.${field}[]`);
+        }
       }
+    };
+    for (const name of TOOL_NAMES) {
+      compare(TOOL_SCHEMAS[name] as Mine, toolRegistry[name].input_schema as unknown as Node, name);
     }
   });
 });

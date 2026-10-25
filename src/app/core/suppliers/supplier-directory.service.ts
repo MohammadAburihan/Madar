@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../erpnext/erpnext-client';
 
 export interface SupplierOption {
@@ -27,6 +28,32 @@ export class SupplierDirectoryService {
       id: r.name,
       name: r.supplier_name,
       city: r.primary_address?.split(/<br\s*\/?>/i)[0]?.trim() || null,
+    }));
+  }
+
+  /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */
+  async exact(term: string): Promise<(SupplierOption & { disabled: boolean })[]> {
+    const text = term.trim();
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        supplier_name: string;
+        primary_address: string | null;
+        disabled: number;
+      }>('Supplier', {
+        fields: ['name', 'supplier_name', 'primary_address', 'disabled'],
+        orFilters: [
+          ['name', '=', text],
+          ['supplier_name', '=', text],
+        ],
+        limit: 5,
+      }),
+    );
+    return rows.map((r) => ({
+      id: r.name,
+      name: r.supplier_name,
+      city: r.primary_address?.split(/<br\s*\/?>/i)[0]?.trim() || null,
+      disabled: !!r.disabled,
     }));
   }
 }

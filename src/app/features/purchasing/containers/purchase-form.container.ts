@@ -69,6 +69,13 @@ const SEARCH_DELAY_MS = 250;
     />
     <app-back-link [label]="txt.back" (back)="ctx.router.navigate(['/purchases'])" />
     <app-page-heading [title]="txt.title" [subtitle]="txt.step" />
+    @if (ctx.prefillNotice(); as proposal) {
+      <app-feedback-card
+        [tone]="proposal.tone"
+        [title]="proposal.title"
+        [message]="proposal.message"
+      />
+    }
     @if (!ctx.session.capabilities().orderPurchases) {
       <app-feedback-card
         tone="warning"

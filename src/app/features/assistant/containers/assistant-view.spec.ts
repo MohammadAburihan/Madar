@@ -1,11 +1,20 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { Language } from '../../../core/i18n/language.service';
-import { ApiMessage, ProblemKind, RecordLink } from '../data-access/assistant.models';
-import { AssistantViewInput, buildAssistantView, recordRoute } from './assistant-view';
+import { ApiMessage, ProblemKind, Proposal, RecordLink } from '../data-access/assistant.models';
+import {
+  AssistantViewInput,
+  buildAssistantView,
+  proposalCard,
+  proposalTarget,
+  recordRoute,
+} from './assistant-view';
 
 const EMPTY: AssistantViewInput = {
   messages: [],
   links: {},
+  proposals: {},
+  choices: {},
+  currency: 'ILS',
   streaming: '',
   state: 'idle',
   activeTools: [],
@@ -73,6 +82,9 @@ describe('buildAssistantView', () => {
           },
         ],
         links: [],
+        proposals: [],
+        choices: [],
+        choicesLabel: 'Choose one',
       },
       {
         id: 'm1',
@@ -89,6 +101,9 @@ describe('buildAssistantView', () => {
           },
         ],
         links: [],
+        proposals: [],
+        choices: [],
+        choicesLabel: 'Choose one',
       },
     ]);
     expect(build({ messages }, 'ar').items.map((i) => i.author)).toEqual(['أنت', 'المساعد']);
@@ -258,5 +273,258 @@ describe('recordRoute', () => {
     expect(recordRoute('item:A:B')).toEqual(['/catalog', 'A:B']);
     expect(recordRoute('quote:Q-1')).toBeNull();
     expect(recordRoute('nonsense')).toBeNull();
+  });
+});
+
+const proposal = (over: Partial<Proposal> = {}): Proposal => ({
+  id: 'PRP-1',
+  kind: 'quick_sale',
+  party: 'Lina Haddad',
+  item: null,
+  lines: [{ name: 'Olive tree · 20 L', qty: 2, amount: 170 }],
+  total: 170,
+  amount: null,
+  due: null,
+  from: null,
+  to: null,
+  record: null,
+  request: {
+    kind: 'quick_sale',
+    payload: { customer: 'Lina Haddad', lines: [{ item_code: 'OLV-20', qty: 2 }] },
+  },
+  ...over,
+});
+
+const card = (p: Proposal, language: Language = 'en') => {
+  const view = proposalCard(p, 'ILS', realTranslator(language));
+  return { ...view, title: plain(view.title), lines: view.lines.map(plain) };
+};
+
+describe('proposalCard', () => {
+  it('words a sale with its lines from the real prices, the total and the reminder, in English', () => {
+    expect(card(proposal())).toEqual({
+      id: 'PRP-1',
+      title: 'Sale to Lina Haddad',
+      lines: ['2 × Olive tree · 20 L — ILS 170.00', 'Total ILS 170.00'],
+      note: 'Nothing is saved until you confirm.',
+      action: 'Review sale',
+    });
+  });
+
+  it('words a sale in Arabic', () => {
+    expect(card(proposal({ party: 'لينا الحداد' }), 'ar')).toEqual({
+      id: 'PRP-1',
+      title: 'بيع إلى لينا الحداد',
+      lines: ['2 × Olive tree · 20 L — ILS 170.00', 'الإجمالي ILS 170.00'],
+      note: 'لا يُحفظ شيء حتى تؤكّد.',
+      action: 'مراجعة البيع',
+    });
+  });
+
+  it('words a walk-in sale without a name', () => {
+    expect(card(proposal({ party: null })).title).toBe('Walk-in sale');
+    expect(card(proposal({ party: null }), 'ar').title).toBe('بيع لعميل نقدي');
+  });
+
+  it('words a quotation, with a line that has no price and no total', () => {
+    expect(
+      card(
+        proposal({
+          kind: 'quotation',
+          lines: [{ name: 'Garden consultation', qty: 1, amount: null }],
+          total: null,
+        }),
+      ),
+    ).toEqual({
+      id: 'PRP-1',
+      title: 'Quotation for Lina Haddad',
+      lines: ['1 × Garden consultation'],
+      note: 'Nothing is saved until you confirm.',
+      action: 'Review quotation',
+    });
+    expect(card(proposal({ kind: 'quotation' }), 'ar')).toMatchObject({
+      title: 'عرض سعر لـ Lina Haddad',
+      action: 'مراجعة عرض السعر',
+    });
+  });
+
+  it('words a purchase order', () => {
+    const order = proposal({ kind: 'purchase_order', party: 'Green Clay' });
+    expect(card(order)).toMatchObject({
+      title: 'Purchase from Green Clay',
+      action: 'Review purchase order',
+    });
+    expect(card(order, 'ar')).toMatchObject({
+      title: 'شراء من Green Clay',
+      action: 'مراجعة أمر الشراء',
+    });
+  });
+
+  it('words a payment to collect, with what is owed', () => {
+    const base = proposal({ kind: 'collect_payment', lines: [], total: null, due: 460 });
+    expect(card({ ...base, amount: 100 })).toEqual({
+      id: 'PRP-1',
+      title: 'Payment from Lina Haddad',
+      lines: ['Amount to collect: ILS 100.00', 'Outstanding: ILS 460.00'],
+      note: 'Nothing is saved until you confirm.',
+      action: 'Collect payment',
+    });
+    expect(card(base).lines).toEqual(['The full amount due', 'Outstanding: ILS 460.00']);
+    expect(card({ ...base, due: null, amount: 100 }).lines).toEqual([
+      'Amount to collect: ILS 100.00',
+    ]);
+    expect(card({ ...base, amount: 100 }, 'ar')).toMatchObject({
+      title: 'دفعة من Lina Haddad',
+      lines: ['المبلغ المراد تحصيله: ILS 100.00', 'المتبقي: ILS 460.00'],
+      action: 'تحصيل دفعة',
+    });
+  });
+
+  it('words a stock move with its locations, and "any location" for one not named', () => {
+    const move = proposal({
+      kind: 'stock_move',
+      party: null,
+      item: 'Olive tree · 20 L',
+      lines: [{ name: 'Olive tree · 20 L', qty: 5, amount: null }],
+      total: null,
+      from: 'Main warehouse',
+      to: 'Garden shop',
+    });
+    expect(card(move)).toEqual({
+      id: 'PRP-1',
+      title: 'Stock move: Olive tree · 20 L',
+      lines: ['5 × Olive tree · 20 L', 'Main warehouse → Garden shop'],
+      note: 'Nothing is saved until you confirm.',
+      action: 'Review stock move',
+    });
+    expect(card({ ...move, to: null }).lines[1]).toBe('Main warehouse → any location');
+    expect(card({ ...move, from: null, to: null }).lines).toEqual(['5 × Olive tree · 20 L']);
+    expect(card(move, 'ar')).toMatchObject({
+      title: 'نقل مخزون: Olive tree · 20 L',
+      lines: ['5 × Olive tree · 20 L', 'Main warehouse ← Garden shop'],
+      action: 'مراجعة نقل المخزون',
+    });
+  });
+
+  it('words a record to open, with no reminder, a draft as a draft', () => {
+    const record = proposal({
+      kind: 'open_record',
+      party: 'SI-1042',
+      lines: [],
+      total: null,
+      request: null,
+      record: { kind: 'invoice', id: 'SI-1042', label: 'SI-1042', draft: false },
+    });
+    expect(card(record)).toEqual({
+      id: 'PRP-1',
+      title: 'Invoice SI-1042',
+      lines: [],
+      note: null,
+      action: 'Open record',
+    });
+    expect(card(record, 'ar')).toMatchObject({
+      title: 'فاتورة البيع SI-1042',
+      action: 'فتح السجل',
+    });
+    const draft = { ...record.record!, draft: true };
+    expect(card({ ...record, record: draft }).title).toBe('Draft SI-1042');
+    expect(card({ ...record, record: draft }, 'ar').title).toBe('مسودة SI-1042');
+    for (const [kind, title] of [
+      ['quotation', 'Quotation SI-1042'],
+      ['salesOrder', 'Sales order SI-1042'],
+      ['purchaseOrder', 'Purchase order SI-1042'],
+      ['customer', 'Customer SI-1042'],
+      ['supplier', 'Supplier SI-1042'],
+      ['item', 'Item SI-1042'],
+    ] as const) {
+      expect(card({ ...record, record: { ...record.record!, kind } }).title).toBe(title);
+    }
+  });
+});
+
+describe('proposalTarget', () => {
+  it('opens each task at its first step with the proposal’s id', () => {
+    const each: [Proposal['request'], string[]][] = [
+      [{ kind: 'quick_sale', payload: { walkIn: true, lines: [] } }, ['/sales/new', 'basket']],
+      [{ kind: 'quotation', payload: { customer: 'L', lines: [] } }, ['/sales/quote/new']],
+      [{ kind: 'purchase_order', payload: { supplier: 'S', lines: [] } }, ['/purchases/new']],
+      [{ kind: 'collect_payment', payload: { customer: 'L' } }, ['/money/receive']],
+      [{ kind: 'stock_move', payload: { item_code: 'I', qty: 1 } }, ['/inventory/transfer']],
+    ];
+    for (const [request, commands] of each) {
+      expect(proposalTarget(proposal({ request }), 'PF-1')).toEqual({
+        commands,
+        queryParams: { prefill: 'PF-1' },
+      });
+    }
+  });
+
+  it('goes nowhere for a task whose proposal could not be handed over', () => {
+    expect(proposalTarget(proposal(), null)).toBeNull();
+  });
+
+  it('opens a record on its own page, with no proposal to hand over', () => {
+    const open = (kind: 'invoice' | 'quotation' | 'salesOrder' | 'supplier', id: string) =>
+      proposalTarget(
+        proposal({
+          kind: 'open_record',
+          request: null,
+          record: { kind, id, label: id, draft: false },
+        }),
+        null,
+      );
+    expect(open('invoice', 'SI-1')).toEqual({ commands: ['/sales/invoices', 'SI-1'] });
+    expect(open('quotation', 'QN-1')).toEqual({ commands: ['/sales/quotes', 'QN-1'] });
+    expect(open('salesOrder', 'SO-1')).toEqual({ commands: ['/sales/orders', 'SO-1'] });
+    expect(open('supplier', 'SUP-1')).toEqual({ commands: ['/contacts/suppliers', 'SUP-1'] });
+  });
+});
+
+describe('buildAssistantView proposals and choices', () => {
+  const messages: ApiMessage[] = [
+    { role: 'user', content: 'Sell 2 olive trees to Lina' },
+    { role: 'assistant', content: [{ type: 'text', text: 'Please review it.' }] },
+  ];
+
+  it('puts the cards under the reply that made them, built in the business currency', () => {
+    const view = build({ messages, proposals: { 1: [proposal()] } });
+    expect(view.items[0].proposals).toEqual([]);
+    expect(view.items[1].proposals.map((c) => c.id)).toEqual(['PRP-1']);
+    expect(plain(view.items[1].proposals[0].lines[0])).toBe('2 × Olive tree · 20 L — ILS 170.00');
+    expect(
+      build({ messages, proposals: { 1: [proposal()] }, currency: 'USD' }).items[1].proposals[0]
+        .lines[0],
+    ).toContain('USD 170.00');
+  });
+
+  it('offers the choices only while that question is the last thing said', () => {
+    const choices = {
+      1: [
+        { id: 'C-1', label: 'Lina Haddad' },
+        { id: 'C-2', label: 'Lina Khoury' },
+      ],
+    };
+    const open = build({ messages, choices });
+    expect(open.items[1].choices).toEqual([
+      { id: 'C-1', label: 'Lina Haddad' },
+      { id: 'C-2', label: 'Lina Khoury' },
+    ]);
+    expect(open.items[1].choicesLabel).toBe('Choose one');
+    expect(build({ messages, choices }, 'ar').items[1].choicesLabel).toBe('اختر واحداً');
+    const answered = build({
+      messages: [...messages, { role: 'user', content: 'Lina Khoury' }],
+      choices,
+    });
+    expect(answered.items[1].choices).toEqual([]);
+  });
+
+  it('gives the user’s own messages no cards and no choices', () => {
+    const view = build({
+      messages,
+      proposals: { 0: [proposal()] },
+      choices: { 0: [{ id: 'x', label: 'x' }] },
+    });
+    expect(view.items[0].proposals).toEqual([]);
+    expect(view.items[0].choices).toEqual([]);
   });
 });

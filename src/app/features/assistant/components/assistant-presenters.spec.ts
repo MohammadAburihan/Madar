@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConversationItemView } from '../containers/assistant-view';
+import { AssistantChoicesComponent } from './assistant-choices.component';
 import { AssistantComposerComponent } from './assistant-composer.component';
 import { AssistantConversationComponent } from './assistant-conversation.component';
 import { AssistantMessageComponent } from './assistant-message.component';
+import { AssistantProposalComponent } from './assistant-proposal.component';
 import { AssistantSuggestionsComponent } from './assistant-suggestions.component';
 
 const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim();
@@ -36,6 +38,9 @@ const REPLY: ConversationItemView = {
     { key: 'invoice:SI-1042', label: 'Open SI-1042' },
     { key: 'customer:Lina Haddad', label: 'Open Lina Haddad' },
   ],
+  proposals: [],
+  choices: [],
+  choicesLabel: 'Choose one',
 };
 const QUESTION: ConversationItemView = {
   id: 'm0',
@@ -43,6 +48,9 @@ const QUESTION: ConversationItemView = {
   author: 'You',
   blocks: [{ kind: 'paragraph', segments: [{ text: 'How much does Lina owe?', bold: false }] }],
   links: [],
+  proposals: [],
+  choices: [],
+  choicesLabel: 'Choose one',
 };
 
 async function render<T>(component: new () => T, inputs: Record<string, unknown>) {
@@ -280,5 +288,133 @@ describe('AssistantComposerComponent', () => {
     expect(field(fixture).value).toBe('Draft');
     await type(fixture, 'Draft!');
     expect(fixture.componentInstance.value()).toBe('Draft!');
+  });
+});
+
+const CARD = {
+  id: 'PRP-1',
+  title: 'Sale to Lina Haddad',
+  lines: ['2 × Olive tree — ILS 170.00', 'Total ILS 170.00'],
+  note: 'Nothing is saved until you confirm.',
+  action: 'Review sale',
+};
+
+describe('AssistantProposalComponent', () => {
+  it('shows the title, each line, the reminder and the button, as a labelled group', async () => {
+    const fixture = await render(AssistantProposalComponent, { card: CARD });
+    const group = el(fixture).querySelector('[role="group"]')!;
+    expect(group.getAttribute('aria-label')).toBe('Sale to Lina Haddad');
+    expect(text(el(fixture).querySelector('.title'))).toBe('Sale to Lina Haddad');
+    expect([...el(fixture).querySelectorAll('li')].map(text)).toEqual(CARD.lines);
+    expect(text(el(fixture).querySelector('.note'))).toBe('Nothing is saved until you confirm.');
+    expect(text(el(fixture).querySelector('button'))).toBe('Review sale');
+  });
+
+  it('emits the proposal’s id when the button is pressed', async () => {
+    const fixture = await render(AssistantProposalComponent, { card: CARD });
+    const opened: string[] = [];
+    fixture.componentInstance.opened.subscribe((id) => opened.push(id));
+    el(fixture).querySelector('button')!.click();
+    expect(opened).toEqual(['PRP-1']);
+  });
+
+  it('leaves out the list and the reminder for a plain record', async () => {
+    const fixture = await render(AssistantProposalComponent, {
+      card: { id: 'PRP-2', title: 'Draft SI-1', lines: [], note: null, action: 'Open record' },
+    });
+    expect(el(fixture).querySelector('ul')).toBeNull();
+    expect(el(fixture).querySelector('.note')).toBeNull();
+    expect(text(el(fixture).querySelector('button'))).toBe('Open record');
+  });
+
+  it('lets each line and the title follow their own direction', async () => {
+    const fixture = await render(AssistantProposalComponent, { card: CARD });
+    expect(el(fixture).querySelector('.title')?.getAttribute('dir')).toBe('auto');
+    expect(el(fixture).querySelector('li')?.getAttribute('dir')).toBe('auto');
+  });
+});
+
+describe('AssistantChoicesComponent', () => {
+  const inputs = {
+    label: 'Choose one',
+    options: [
+      { id: 'C-1', label: 'Lina Haddad' },
+      { id: 'C-2', label: 'Lina Khoury' },
+    ],
+  };
+
+  it('shows each match as a button in a labelled group', async () => {
+    const fixture = await render(AssistantChoicesComponent, inputs);
+    expect(el(fixture).querySelector('[role="group"]')?.getAttribute('aria-label')).toBe(
+      'Choose one',
+    );
+    expect([...el(fixture).querySelectorAll('button')].map(text)).toEqual([
+      'Lina Haddad',
+      'Lina Khoury',
+    ]);
+  });
+
+  it('emits the label of the match pressed, which becomes the user’s message', async () => {
+    const fixture = await render(AssistantChoicesComponent, inputs);
+    const picked: string[] = [];
+    fixture.componentInstance.picked.subscribe((label) => picked.push(label));
+    el(fixture).querySelectorAll('button')[1].click();
+    expect(picked).toEqual(['Lina Khoury']);
+  });
+});
+
+describe('AssistantMessageComponent with proposals and choices', () => {
+  const item = (over: Partial<ConversationItemView>): ConversationItemView => ({
+    ...REPLY,
+    links: [],
+    ...over,
+  });
+
+  it('shows the cards after the bubble and passes on the button pressed', async () => {
+    const fixture = await render(AssistantMessageComponent, { item: item({ proposals: [CARD] }) });
+    const children = [...el(fixture).querySelector('article')!.children].map((c) => c.tagName);
+    expect(children).toEqual(['DIV', 'APP-ASSISTANT-PROPOSAL']);
+    const opened: string[] = [];
+    fixture.componentInstance.proposalOpened.subscribe((id) => opened.push(id));
+    el(fixture).querySelector<HTMLButtonElement>('app-assistant-proposal button')!.click();
+    expect(opened).toEqual(['PRP-1']);
+  });
+
+  it('shows the choices and passes on the one picked', async () => {
+    const fixture = await render(AssistantMessageComponent, {
+      item: item({ choices: [{ id: 'C-1', label: 'Lina Haddad' }] }),
+    });
+    const picked: string[] = [];
+    fixture.componentInstance.choicePicked.subscribe((label) => picked.push(label));
+    el(fixture).querySelector<HTMLButtonElement>('app-assistant-choices button')!.click();
+    expect(picked).toEqual(['Lina Haddad']);
+  });
+
+  it('shows neither when the message has none', async () => {
+    const fixture = await render(AssistantMessageComponent, { item: item({}) });
+    expect(el(fixture).querySelector('app-assistant-proposal')).toBeNull();
+    expect(el(fixture).querySelector('app-assistant-choices')).toBeNull();
+  });
+});
+
+describe('AssistantConversationComponent with proposals and choices', () => {
+  it('passes the card button and the choice up', async () => {
+    const fixture = await render(AssistantConversationComponent, {
+      label: 'Conversation',
+      items: [
+        {
+          ...REPLY,
+          links: [],
+          proposals: [CARD],
+          choices: [{ id: 'C-1', label: 'Lina Haddad' }],
+        },
+      ],
+    });
+    const events: string[] = [];
+    fixture.componentInstance.proposalOpened.subscribe((id) => events.push(`card:${id}`));
+    fixture.componentInstance.choicePicked.subscribe((label) => events.push(`pick:${label}`));
+    el(fixture).querySelector<HTMLButtonElement>('app-assistant-proposal button')!.click();
+    el(fixture).querySelector<HTMLButtonElement>('app-assistant-choices button')!.click();
+    expect(events).toEqual(['card:PRP-1', 'pick:Lina Haddad']);
   });
 });

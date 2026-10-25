@@ -2,6 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
+import { PrefillUnavailableError } from '../../../core/tasks/prefill-entry';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import {
@@ -53,7 +55,9 @@ const RESULT: CollectionResult = {
   invoices: [],
 };
 
-function setup() {
+function setup(persona: Persona = 'salesperson') {
+  TestBed.resetTestingModule();
+  const byId = vi.fn().mockResolvedValue(LINA);
   const api = {
     unpaidInvoices: vi.fn().mockResolvedValue(INVOICES),
     confirm: vi.fn(),
@@ -67,16 +71,16 @@ function setup() {
       { provide: PaymentAccountsService, useValue: accounts },
       {
         provide: CustomerDirectoryService,
-        useValue: { search: vi.fn().mockResolvedValue([LINA]) },
+        useValue: { search: vi.fn().mockResolvedValue([LINA]), byId },
       },
-      { provide: SessionService, useValue: { capabilities: () => capabilitiesFor('salesperson') } },
+      { provide: SessionService, useValue: { capabilities: () => capabilitiesFor(persona) } },
       {
         provide: BusinessService,
         useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery', currency: 'ILS' }) },
       },
     ],
   });
-  return { store: TestBed.inject(CollectionStore), api, accounts };
+  return { store: TestBed.inject(CollectionStore), api, accounts, byId };
 }
 
 async function ready() {
@@ -398,5 +402,98 @@ describe('CollectionStore', () => {
     expect(await store.checkResult()).toBe('pending');
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
+  });
+});
+
+describe('CollectionStore.openPrefill', () => {
+  it('opens a fresh collection on the customer, with their unpaid invoices chosen and everything due asked', async () => {
+    const { store, api, byId } = setup();
+    expect(await store.openPrefill({ customer: 'Lina Haddad' })).toBe('opened');
+    expect(byId).toHaveBeenCalledWith('Lina Haddad', { name: 'Rehan Nursery', currency: 'ILS' });
+    expect(api.unpaidInvoices).toHaveBeenCalledWith('Lina Haddad', 'Rehan Nursery', 'ILS');
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect([...store.selected()]).toEqual(['SI-1', 'SI-2']);
+    expect(store.amountInput()).toBe('250.00');
+    expect(store.prefill()).toBe('filled');
+    expect(store.reference()).toMatch(/^COLL-/);
+    expect(store.draft()).toBeNull();
+  });
+
+  it('puts the proposed amount in the field', async () => {
+    const { store } = setup();
+    await store.openPrefill({ customer: 'Lina Haddad', amount: 120.5 });
+    expect(store.amountInput()).toBe('120.50');
+    expect(store.amount()).toBe(120.5);
+    expect(store.amountValid()).toBe(true);
+  });
+
+  it('shows an amount above what is due as it is, so the form can say it is too much', async () => {
+    const { store } = setup();
+    await store.openPrefill({ customer: 'Lina Haddad', amount: 900 });
+    expect(store.amountInput()).toBe('900.00');
+    expect(store.amountValid()).toBe(false);
+  });
+
+  it('ignores a proposed amount that is not above zero', async () => {
+    const { store } = setup();
+    await store.openPrefill({ customer: 'Lina Haddad', amount: 0 });
+    expect(store.amountInput()).toBe('250.00');
+  });
+
+  it('starts over from a collection that was only being filled in', async () => {
+    const { store } = await ready();
+    store.toggle('SI-1');
+    await store.openPrefill({ customer: 'Lina Haddad' });
+    expect([...store.selected()]).toEqual(['SI-1', 'SI-2']);
+  });
+
+  it('refuses a disabled or missing customer, before touching the task', async () => {
+    const { store, byId, api } = await ready();
+    byId.mockResolvedValue(null);
+    await expect(store.openPrefill({ customer: 'Gone' })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect(store.prefill()).toBeNull();
+    expect(api.unpaidInvoices).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses a role that may not collect', async () => {
+    const { store } = setup('warehouse');
+    await expect(store.openPrefill({ customer: 'Lina Haddad' })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+  });
+
+  it('keeps a confirmation that is running or a result not yet seen', async () => {
+    const { store, byId } = setup();
+    store.state.set('unresolved');
+    expect(await store.openPrefill({ customer: 'Lina Haddad' })).toBe('busy');
+    expect(byId).not.toHaveBeenCalled();
+    store.state.set('confirmed');
+    expect(await store.openPrefill({ customer: 'Lina Haddad' })).toBe('busy');
+    store.resultShown.set(true);
+    expect(await store.openPrefill({ customer: 'Lina Haddad' })).toBe('opened');
+  });
+
+  it('keeps a confirmation that starts while the customer loads', async () => {
+    const { store, byId } = setup();
+    let release: (customer: CustomerOption) => void = () => undefined;
+    byId.mockReturnValue(new Promise((resolve) => (release = resolve)));
+    const opening = store.openPrefill({ customer: 'Lina Haddad' });
+    store.state.set('confirming');
+    release(LINA);
+    expect(await opening).toBe('busy');
+    expect(store.customer()).toBeNull();
+  });
+
+  it('leaves a fresh collection with a notice when a proposal could not be opened', async () => {
+    const { store } = await ready();
+    store.prefillFailed('expired');
+    expect(store.customer()).toBeNull();
+    expect(store.prefill()).toBe('expired');
+    store.state.set('confirming');
+    store.prefillFailed('unavailable');
+    expect(store.prefill()).toBe('expired');
   });
 });

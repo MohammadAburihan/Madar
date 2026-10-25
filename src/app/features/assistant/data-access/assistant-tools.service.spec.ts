@@ -26,7 +26,7 @@ interface Options {
 function setup({ persona = 'owner', lists = {}, posts = {}, counts = {} }: Options = {}) {
   TestBed.resetTestingModule();
   const erpnext = fakeErpnext(lists, posts, {}, counts);
-  const directory = { find: vi.fn().mockResolvedValue([]) };
+  const directory = { find: vi.fn().mockResolvedValue([]), exact: vi.fn().mockResolvedValue([]) };
   const warehouses = {
     list: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
   };
@@ -727,6 +727,136 @@ describe('AssistantToolsService', () => {
     it('is not offered to a salesperson', async () => {
       const { run } = setup({ persona: 'salesperson' });
       expect((await run('find_purchase_orders')).content).toBe('not allowed for your role');
+    });
+  });
+
+  describe('proposals', () => {
+    const lina = { id: 'Lina Haddad', name: 'Lina Haddad', phone: null, city: null };
+    const sale = { customer: 'Lina Haddad', items: [{ item: 'POT-30', qty: 2 }] };
+    const planter = {
+      name: 'POT-30',
+      item_name: 'Ceramic planter',
+      stock_uom: 'Unit',
+      is_stock_item: 1,
+      disabled: 0,
+      is_sales_item: 1,
+      is_purchase_item: 1,
+    };
+    const lists = (): Record<string, Lister> => ({ Item: () => [planter] });
+
+    it('offers the proposal tools the role may use, and no others', async () => {
+      const { tools } = setup({ persona: 'salesperson' });
+      const { tools: names } = await tools.prepare();
+      expect(names).toEqual(
+        expect.arrayContaining(['propose_quick_sale', 'propose_quotation', 'open_record']),
+      );
+      expect(names).not.toContain('propose_purchase_order');
+      expect(names).not.toContain('propose_stock_move');
+    });
+
+    it('runs a proposal and returns the card for the chat with the result for the assistant', async () => {
+      const { run, directory } = setup({ lists: lists() });
+      directory.exact.mockResolvedValue([{ ...lina, disabled: false }]);
+      const outcome = await run('propose_quick_sale', sale);
+      expect(outcome).toMatchObject({ isError: false, forbidden: false, records: [] });
+      expect(outcome.proposals).toHaveLength(1);
+      expect(outcome.proposals![0]).toMatchObject({ kind: 'quick_sale', party: 'Lina Haddad' });
+      expect(outcome.json).toEqual({
+        proposal_id: outcome.proposals![0].id,
+        summary: expect.stringContaining('Sale to Lina Haddad'),
+        notes: expect.any(Array),
+      });
+      expect(outcome.choices).toEqual([]);
+    });
+
+    it('returns the matches for the chat when a name fits several, and no card', async () => {
+      const { run, directory } = setup({ lists: lists() });
+      directory.find.mockResolvedValue([
+        { ...lina, id: 'C-1', name: 'Lina Haddad' },
+        { ...lina, id: 'C-2', name: 'Lina Khoury' },
+      ]);
+      const outcome = await run('propose_quick_sale', { ...sale, customer: 'Lina' });
+      expect(outcome.isError).toBe(false);
+      expect(outcome.proposals).toEqual([]);
+      expect(outcome.choices).toEqual([
+        { id: 'C-1', label: 'Lina Haddad' },
+        { id: 'C-2', label: 'Lina Khoury' },
+      ]);
+      expect(outcome.json).toMatchObject({ needs_choice: true, field: 'customer' });
+    });
+
+    it('says why in an error result when a name matches nothing or is disabled', async () => {
+      const { run, directory } = setup({ lists: lists() });
+      expect(await run('propose_quick_sale', sale)).toMatchObject({
+        isError: true,
+        forbidden: false,
+        content: 'not found: customer "Lina Haddad"',
+        proposals: [],
+      });
+      directory.exact.mockResolvedValue([{ ...lina, disabled: true }]);
+      expect(await run('propose_quick_sale', sale)).toMatchObject({
+        isError: true,
+        content: 'customer is disabled: Lina Haddad',
+      });
+    });
+
+    it('refuses a proposal tool the role is not offered, without asking ERPNext', async () => {
+      const { run, listCalls, directory } = setup({ persona: 'salesperson', lists: lists() });
+      const order = { supplier: 'Green Clay', items: [{ item: 'POT-30', qty: 1 }] };
+      expect(await run('propose_purchase_order', order)).toMatchObject({
+        isError: true,
+        content: 'not allowed for your role',
+      });
+      expect(await run('propose_stock_move', { item: 'POT-30', qty: 1 })).toMatchObject({
+        isError: true,
+        content: 'not allowed for your role',
+      });
+      expect(directory.exact).not.toHaveBeenCalled();
+      expect(listCalls).toEqual([]);
+    });
+
+    it('refuses invalid input with the reason, without asking ERPNext', async () => {
+      const { run, listCalls, directory } = setup({ lists: lists() });
+      const outcome = await run('propose_quick_sale', {
+        customer: 'Lina Haddad',
+        items: [{ item: 'POT-30', qty: 0 }],
+      });
+      expect(outcome).toMatchObject({
+        isError: true,
+        content: 'Field "items[0].qty" must be more than 0.',
+      });
+      expect(
+        (await run('propose_quick_sale', { customer: 'Lina Haddad', items: [] })).isError,
+      ).toBe(true);
+      expect(directory.exact).not.toHaveBeenCalled();
+      expect(listCalls).toEqual([]);
+    });
+
+    it('says "not allowed for your role" and flags it when ERPNext refuses a read', async () => {
+      const { run, directory } = setup({ lists: { Item: refused } });
+      directory.exact.mockResolvedValue([{ ...lina, disabled: false }]);
+      expect(await run('propose_quick_sale', sale)).toMatchObject({
+        isError: true,
+        forbidden: true,
+        content: 'not allowed for your role',
+      });
+    });
+
+    it('says "lookup failed" when a lookup breaks', async () => {
+      const { run, directory } = setup({ lists: { Item: broken } });
+      directory.exact.mockResolvedValue([{ ...lina, disabled: false }]);
+      expect(await run('propose_quick_sale', sale)).toMatchObject({
+        isError: true,
+        forbidden: false,
+        content: 'lookup failed',
+      });
+    });
+
+    it('does not turn the lookup tools into proposals', async () => {
+      const { run } = setup({ lists: { 'Sales Invoice': () => [] } });
+      const outcome = await run('find_invoices');
+      expect(outcome.proposals).toEqual([]);
+      expect(outcome.choices).toEqual([]);
     });
   });
 });

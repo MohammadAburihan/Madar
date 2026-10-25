@@ -65,6 +65,13 @@ const SEARCH_DELAY_MS = 250;
         [language]="ctx.i18n.language()"
         (languageChange)="ctx.i18n.use($event)"
       />
+      @if (ctx.prefillNotice(); as proposal) {
+        <app-feedback-card
+          [tone]="proposal.tone"
+          [title]="proposal.title"
+          [message]="proposal.message"
+        />
+      }
       @if (draftNotice(); as notice) {
         <app-feedback-card [tone]="notice.tone" [title]="notice.title" [message]="notice.message" />
       }

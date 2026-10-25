@@ -8,6 +8,8 @@ import { ToolName, isToolName } from './assistant-tools';
 import {
   ApiMessage,
   AssistantError,
+  ChoiceOption,
+  Proposal,
   ContentBlock,
   TextBlock,
   ProblemKind,
@@ -62,6 +64,8 @@ export class AssistantStore {
   readonly activeTools = signal<ToolName[]>([]);
   /** Records the lookups returned for each assistant message, by its position in `messages`. */
   readonly links = signal<Record<number, readonly RecordLink[]>>({});
+  readonly proposals = signal<Record<number, readonly Proposal[]>>({});
+  readonly choices = signal<Record<number, readonly ChoiceOption[]>>({});
   readonly busy = computed(() => this.state() === 'sending' || this.state() === 'running-tool');
 
   private controller: AbortController | null = null;
@@ -103,6 +107,8 @@ export class AssistantStore {
     this.messages.update((messages) => [...messages, { role: 'user', content }]);
     this.state.set('sending');
     const records: RecordLink[] = [];
+    const proposals: Proposal[] = [];
+    let choices: ChoiceOption[] = [];
     try {
       const { tools, context } = await this.tools.prepare();
       check();
@@ -125,9 +131,15 @@ export class AssistantStore {
             throw new AssistantError('unavailable');
           }
           this.messages.update((messages) => [...messages, { role: 'assistant', content: answer }]);
+          const index = this.messages().length - 1;
           if (records.length) {
-            const index = this.messages().length - 1;
             this.links.update((links) => ({ ...links, [index]: records }));
+          }
+          if (proposals.length) {
+            this.proposals.update((all) => ({ ...all, [index]: proposals }));
+          }
+          if (choices.length) {
+            this.choices.update((all) => ({ ...all, [index]: choices }));
           }
           this.state.set('idle');
           return;
@@ -157,6 +169,10 @@ export class AssistantStore {
         }
         check();
         records.push(...outcomes.flatMap((outcome) => outcome.records));
+        proposals.push(...outcomes.flatMap((outcome) => outcome.proposals ?? []));
+        // Only the question asked last is open: a choice made since has been answered.
+        const asked = outcomes.flatMap((outcome) => outcome.choices ?? []);
+        choices = asked.length ? asked : choices;
         const results: ToolResultBlock[] = calls.map((call, i) => ({
           type: 'tool_result',
           tool_use_id: call.id,
@@ -200,6 +216,14 @@ export class AssistantStore {
     }
   }
 
+  proposal(id: string): Proposal | null {
+    return (
+      Object.values(this.proposals())
+        .flat()
+        .find((proposal) => proposal.id === id) ?? null
+    );
+  }
+
   /** Stops the answer being written: what has streamed so far stays in the conversation. */
   stop(): void {
     this.controller?.abort();
@@ -212,6 +236,8 @@ export class AssistantStore {
     this.controller = null;
     this.messages.set([]);
     this.links.set({});
+    this.proposals.set({});
+    this.choices.set({});
     this.streaming.set('');
     this.activeTools.set([]);
     this.problem.set(null);

@@ -7,6 +7,32 @@ const limit = (max: number, fallback: number) => ({
   description: `How many to return, 1 to ${max}. Defaults to ${fallback}.`,
 });
 
+const lineItems = (what: string) => ({
+  type: 'array',
+  description: `The ${what}, 1 to 20 lines. Each line is an item by name or code with a quantity above 0 and up to 10000. Only give a price when the user stated one.`,
+  items: {
+    type: 'object',
+    properties: {
+      item: { type: 'string', description: 'The item name or code.' },
+      qty: { type: 'number', description: 'How many, more than 0 and up to 10000.' },
+      rate: { type: 'number', description: 'The unit price, only if the user stated one.' },
+    },
+    required: ['item', 'qty'],
+    additionalProperties: false,
+  },
+});
+
+const RECORD_KINDS = [
+  'invoice',
+  'quotation',
+  'sales_order',
+  'purchase_order',
+  'customer',
+  'supplier',
+  'item',
+  'draft',
+];
+
 export const toolRegistry: Record<string, ToolDef> = {
   get_today_summary: {
     description:
@@ -91,6 +117,117 @@ export const toolRegistry: Record<string, ToolDef> = {
         },
         limit: limit(20, 10),
       },
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_quick_sale: {
+    description:
+      'Prepares a sale for the user to review and confirm in Madar. Nothing is saved by this call: it returns a card with a button that opens the sale filled in. If a name matches several records the result asks which one is meant; ask the user and call again with their answer.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        customer: {
+          type: 'string',
+          description: 'The customer name or id, or "walk-in" for a customer who is not on file.',
+        },
+        items: lineItems('items to sell'),
+        warehouse: {
+          type: 'string',
+          description: 'The warehouse to sell from, only if the user named one.',
+        },
+      },
+      required: ['customer', 'items'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_quotation: {
+    description:
+      'Prepares a quotation for the user to review and confirm in Madar. Nothing is saved by this call: it returns a card with a button that opens the quotation filled in. If a name matches several records the result asks which one is meant; ask the user and call again with their answer.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        customer: { type: 'string', description: 'The customer name or id.' },
+        items: lineItems('items to quote'),
+      },
+      required: ['customer', 'items'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_purchase_order: {
+    description:
+      'Prepares a purchase order for the user to review and confirm in Madar. Nothing is saved by this call: it returns a card with a button that opens the order filled in. If a name matches several records the result asks which one is meant; ask the user and call again with their answer.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        supplier: { type: 'string', description: 'The supplier name or id.' },
+        items: lineItems('items to buy'),
+      },
+      required: ['supplier', 'items'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_collect_payment: {
+    description:
+      'Prepares collecting a payment from a customer for the user to review and confirm in Madar. Nothing is saved by this call: it returns a card with a button that opens the payment filled in. Without an amount the full amount due is proposed.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        customer: { type: 'string', description: 'The customer name or id.' },
+        amount: {
+          type: 'number',
+          description: 'How much to collect, more than 0, only if the user stated an amount.',
+        },
+      },
+      required: ['customer'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_stock_move: {
+    description:
+      'Prepares moving stock of one item between two locations for the user to review and confirm in Madar. Nothing is saved by this call: it returns a card with a button that opens the move filled in.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        item: { type: 'string', description: 'The item name or code.' },
+        qty: {
+          type: 'number',
+          description: 'How many units to move: a whole number above 0, up to 10000.',
+        },
+        from: {
+          type: 'string',
+          description: 'The location to move from, only if the user named one.',
+        },
+        to: { type: 'string', description: 'The location to move to, only if the user named one.' },
+      },
+      required: ['item', 'qty'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  open_record: {
+    description:
+      "Gives the user a button that opens a record's page in Madar. Use it when the user wants to edit or delete something: a draft's page has Continue and Delete; a confirmed record cannot be cancelled or amended in Madar yet, so say so. Nothing is changed by this call.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        kind: {
+          type: 'string',
+          enum: RECORD_KINDS,
+          description:
+            'What kind of record it is. Use draft for an unfinished document of any kind.',
+        },
+        name: {
+          type: 'string',
+          description:
+            'The record id such as SI-1042, or the name for a customer, supplier or item.',
+        },
+      },
+      required: ['kind', 'name'],
       additionalProperties: false,
     },
     strict: true,

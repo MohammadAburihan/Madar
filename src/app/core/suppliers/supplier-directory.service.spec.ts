@@ -16,4 +16,25 @@ describe('SupplierDirectoryService', () => {
     ]);
     expect(listCalls[0].query.limit).toBeUndefined();
   });
+
+  it('finds suppliers by exact id or name, disabled ones included and marked', async () => {
+    const { listCalls } = fakeErpnext({
+      Supplier: () => [
+        {
+          name: 'SUP-1',
+          supplier_name: 'Green Clay',
+          primary_address: 'Hebron<br>Main St',
+          disabled: 1,
+        },
+      ],
+    });
+    expect(await TestBed.inject(SupplierDirectoryService).exact('Green Clay')).toEqual([
+      { id: 'SUP-1', name: 'Green Clay', city: 'Hebron', disabled: true },
+    ]);
+    expect(listCalls[0].query.orFilters).toEqual([
+      ['name', '=', 'Green Clay'],
+      ['supplier_name', '=', 'Green Clay'],
+    ]);
+    expect(listCalls[0].query.filters).toBeUndefined();
+  });
 });

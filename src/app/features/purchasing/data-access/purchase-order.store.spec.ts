@@ -7,6 +7,7 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { DraftUnavailableError } from '../../../core/erpnext/draft';
+import { PrefillUnavailableError } from '../../../core/tasks/prefill-entry';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { PurchaseApiService } from './purchase-api.service';
@@ -22,6 +23,7 @@ const PLANTER: PurchaseItem = {
 };
 
 function setup(capabilities = () => capabilitiesFor('owner')) {
+  TestBed.resetTestingModule();
   const api = {
     searchItems: vi.fn().mockResolvedValue([PLANTER]),
     item: vi.fn().mockResolvedValue(PLANTER),
@@ -471,5 +473,109 @@ describe('PurchaseOrderStore when its draft is deleted', () => {
     TestBed.tick();
 
     expect(store.draft()).toBe('PO-DRAFT');
+  });
+});
+
+describe('PurchaseOrderStore.openPrefill', () => {
+  const PROPOSAL = { supplier: 'Green Clay', lines: [{ item_code: 'POT-30', qty: 10 }] };
+
+  it('fills a fresh order with the supplier and each item at that supplier’s buying price', async () => {
+    const { store, api } = setup();
+    expect(await store.openPrefill(PROPOSAL)).toBe('opened');
+    expect(api.item).toHaveBeenCalledWith('POT-30', {
+      company: 'Rehan Nursery',
+      supplier: 'Green Clay',
+      currency: 'ILS',
+      date: '2026-10-14',
+    });
+    expect(store.supplier()).toBe('Green Clay');
+    expect(store.suppliers().map((s) => s.id)).toEqual(['Green Clay']);
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate])).toEqual([['POT-30', 10, 45]]);
+    expect(store.total()).toBe(450);
+    expect(store.proposed()).toBe('filled');
+    expect(store.reference()).toMatch(/^PUR-/);
+    expect(store.draft()).toBeNull();
+    expect(store.ready()).toBe(true);
+  });
+
+  it('starts over from an order that was only being edited', async () => {
+    const { store } = await ready();
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'POT-30', qty: 2 }] });
+    expect(store.lines().map((l) => l.qty)).toEqual([2]);
+  });
+
+  it('keeps a proposed price for a role that sees costs', async () => {
+    const { store } = setup();
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'POT-30', qty: 10, rate: 40 }] });
+    expect(store.lines()[0].rate).toBe(40);
+    expect(store.total()).toBe(400);
+  });
+
+  it('ignores a proposed price for a role that may not see costs', async () => {
+    const { store } = setup(() => ({ ...capabilitiesFor('owner'), seeCosts: false }));
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'POT-30', qty: 10, rate: 40 }] });
+    expect(store.lines()[0].rate).toBe(45);
+  });
+
+  it('refuses a supplier that is disabled or gone, before touching the order', async () => {
+    const { store, api } = await ready();
+    await expect(store.openPrefill({ ...PROPOSAL, supplier: 'Gone Ltd' })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+    expect(api.item).not.toHaveBeenCalled();
+    expect(store.supplier()).toBe('Green Clay');
+    expect(store.proposed()).toBeNull();
+  });
+
+  it('refuses an item that can not be bought instead of leaving it out', async () => {
+    const { store, api } = setup();
+    api.item.mockResolvedValue(null);
+    await expect(store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    expect(store.lines()).toEqual([]);
+    expect(store.supplier()).toBeNull();
+  });
+
+  it('refuses a role that may not order purchases, and bad lines', async () => {
+    const { store } = setup(() => capabilitiesFor('salesperson'));
+    await expect(store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    const owner = setup();
+    for (const lines of [[], [{ item_code: 'POT-30', qty: 0 }]]) {
+      await expect(owner.store.openPrefill({ ...PROPOSAL, lines })).rejects.toBeInstanceOf(
+        PrefillUnavailableError,
+      );
+    }
+  });
+
+  it('keeps a confirmation that is running or a result not yet seen', async () => {
+    const { store, api } = setup();
+    store.state.set('confirming');
+    expect(await store.openPrefill(PROPOSAL)).toBe('busy');
+    expect(api.item).not.toHaveBeenCalled();
+    store.state.set('confirmed');
+    expect(await store.openPrefill(PROPOSAL)).toBe('busy');
+    store.resultShown.set(true);
+    expect(await store.openPrefill(PROPOSAL)).toBe('opened');
+  });
+
+  it('keeps a confirmation that starts while the proposal loads', async () => {
+    const { store, api } = setup();
+    let release: (item: PurchaseItem) => void = () => undefined;
+    api.item.mockReturnValue(new Promise((resolve) => (release = resolve)));
+    const opening = store.openPrefill(PROPOSAL);
+    await new Promise((resolve) => setTimeout(resolve));
+    store.state.set('confirming');
+    release(PLANTER);
+    expect(await opening).toBe('busy');
+    expect(store.lines()).toEqual([]);
+  });
+
+  it('leaves a fresh order with a notice when a proposal could not be opened', async () => {
+    const { store } = await ready();
+    store.prefillFailed('expired');
+    expect(store.lines()).toEqual([]);
+    expect(store.proposed()).toBe('expired');
+    store.state.set('confirming');
+    store.prefillFailed('unavailable');
+    expect(store.proposed()).toBe('expired');
   });
 });

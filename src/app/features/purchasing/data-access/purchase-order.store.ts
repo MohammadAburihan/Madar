@@ -11,6 +11,13 @@ import {
 import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
+import { lineRate, mergeLines, validQty } from '../../../core/tasks/prefill-lines';
+import {
+  PrefillNotice,
+  PrefillOpening,
+  PrefillUnavailableError,
+} from '../../../core/tasks/prefill-entry';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import {
   SupplierDirectoryService,
   SupplierOption,
@@ -42,6 +49,8 @@ export class PurchaseOrderStore {
   /** The project's item can't be bought (disabled or not a purchase item), so no line was added. */
   readonly prefillMissing = signal<string | null>(null);
   readonly draft = signal<string | null>(null);
+  /** The assistant's proposal opened here, or why it could not be. */
+  readonly proposed = signal<PrefillNotice | null>(null);
   readonly state = signal<OrderState>('idle');
   readonly failure = signal<OrderFailure | null>(null);
   /** The confirmed order's name. */
@@ -87,6 +96,7 @@ export class PurchaseOrderStore {
     this.prefillMissing.set(null);
     this.added.set(null);
     this.draft.set(null);
+    this.proposed.set(null);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
@@ -134,6 +144,69 @@ export class PurchaseOrderStore {
     this.draft.set(order.name);
     this.draftSaved.set(true);
     return 'opened';
+  }
+
+  /** Opens an assistant proposal as a fresh order at the supplier's buying prices; anything missing throws first. */
+  async openPrefill(proposal: PrefillPayloads['purchase_order']): Promise<PrefillOpening> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    const caps = this.session.capabilities();
+    const lines = mergeLines(proposal.lines);
+    if (
+      !caps.orderPurchases ||
+      !proposal.supplier ||
+      !lines.length ||
+      lines.some((l) => !validQty(l.qty))
+    ) {
+      throw new PrefillUnavailableError('purchase order');
+    }
+    const run = ++this.openRun;
+    const business = await this.business.ensure();
+    await this.clock.ensure();
+    if (!business) {
+      throw new PrefillUnavailableError('business');
+    }
+    const suppliers = await this.suppliersDirectory.list();
+    if (!suppliers.some((s) => s.id === proposal.supplier)) {
+      throw new PrefillUnavailableError('supplier');
+    }
+    const context = {
+      company: business.name,
+      supplier: proposal.supplier,
+      currency: business.currency,
+      date: toIsoDate(this.clock.now()),
+    };
+    const items = await Promise.all(lines.map((line) => this.api.item(line.item_code, context)));
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    const missing = lines.find((_, i) => !items[i]);
+    if (missing) {
+      throw new PrefillUnavailableError(`item ${missing.item_code}`);
+    }
+    this.start();
+    this.suppliers.set(suppliers);
+    this.supplier.set(proposal.supplier);
+    this.lines.set(
+      lines.map((line, i) => ({
+        item: items[i]!,
+        qty: line.qty,
+        rate: lineRate(line, caps.seeCosts, items[i]!.rate),
+      })),
+    );
+    this.proposed.set('filled');
+    return 'opened';
+  }
+
+  prefillFailed(notice: 'expired' | 'unavailable'): void {
+    if (!this.busy() && !(this.state() === 'confirmed' && !this.resultShown())) {
+      this.start();
+      this.proposed.set(notice);
+    }
   }
 
   /** Left to add a new item to the catalog: coming back from there keeps the order (once). */

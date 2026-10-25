@@ -5,17 +5,36 @@ import { vi } from 'vitest';
 import { translocoTesting } from '../../../../testing/real-translator';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
+import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
 import { Viewport, ViewportService } from '../../../core/layout/viewport.service';
 import { AssistantState, AssistantStore } from '../data-access/assistant.store';
-import { ApiMessage, ProblemKind, RecordLink } from '../data-access/assistant.models';
+import {
+  ApiMessage,
+  ChoiceOption,
+  ProblemKind,
+  Proposal,
+  RecordLink,
+} from '../data-access/assistant.models';
 import { AssistantContainer } from './assistant.container';
 
 const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim();
+const plain = (el: Element | null | undefined) =>
+  el?.textContent
+    ?.replace(/[\u2066-\u2069]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 function setup(viewport: Viewport = 'mobile') {
   const store = {
     messages: signal<ApiMessage[]>([]),
     links: signal<Record<number, readonly RecordLink[]>>({}),
+    proposals: signal<Record<number, readonly Proposal[]>>({}),
+    choices: signal<Record<number, readonly ChoiceOption[]>>({}),
+    proposal: vi.fn((id: string) =>
+      Object.values(store.proposals())
+        .flat()
+        .find((p) => p.id === id),
+    ),
     streaming: signal(''),
     state: signal<AssistantState>('idle'),
     activeTools: signal<string[]>([]),
@@ -24,13 +43,18 @@ function setup(viewport: Viewport = 'mobile') {
     stop: vi.fn(),
     clear: vi.fn(),
   };
+  const prefills = { put: vi.fn().mockReturnValue('PF-1') };
   const user = signal<{ id: string } | null>({ id: 'lina@rehan.example' });
-  const business = signal<{ name: string } | null>({ name: 'Rehan Nursery' });
+  const business = signal<{ name: string; currency?: string } | null>({
+    name: 'Rehan Nursery',
+    currency: 'ILS',
+  });
   TestBed.configureTestingModule({
     imports: [translocoTesting()],
     providers: [
       { provide: SessionService, useValue: { user } },
       { provide: BusinessService, useValue: { active: business } },
+      { provide: TaskPrefillService, useValue: prefills },
       provideRouter([]),
       { provide: AssistantStore, useValue: store },
       { provide: ViewportService, useValue: { viewport: signal(viewport) } },
@@ -38,7 +62,7 @@ function setup(viewport: Viewport = 'mobile') {
   });
   const fixture = TestBed.createComponent(AssistantContainer);
   const root = fixture.nativeElement as HTMLElement;
-  return { fixture, root, store, user, business, router: TestBed.inject(Router) };
+  return { fixture, root, store, user, business, prefills, router: TestBed.inject(Router) };
 }
 
 describe('AssistantContainer', () => {
@@ -109,6 +133,111 @@ describe('AssistantContainer', () => {
     );
     root.querySelector<HTMLButtonElement>('button.stop')!.click();
     expect(store.stop).toHaveBeenCalled();
+  });
+
+  describe('proposals', () => {
+    const SALE: Proposal = {
+      id: 'PRP-1',
+      kind: 'quick_sale',
+      party: 'Lina Haddad',
+      item: null,
+      lines: [{ name: 'Olive tree', qty: 2, amount: 170 }],
+      total: 170,
+      amount: null,
+      due: null,
+      from: null,
+      to: null,
+      record: null,
+      request: {
+        kind: 'quick_sale',
+        payload: { customer: 'Lina Haddad', lines: [{ item_code: 'OLV-20', qty: 2 }] },
+      },
+    };
+    const RECORD: Proposal = {
+      ...SALE,
+      id: 'PRP-2',
+      kind: 'open_record',
+      party: 'SI-1',
+      lines: [],
+      total: null,
+      record: { kind: 'invoice', id: 'SI-1', label: 'SI-1', draft: true },
+      request: null,
+    };
+    const conversation = (store: ReturnType<typeof setup>['store'], proposals: Proposal[]) => {
+      store.messages.set([
+        { role: 'user', content: 'Sell 2 olive trees to Lina' },
+        { role: 'assistant', content: [{ type: 'text', text: 'Please review it.' }] },
+      ]);
+      store.proposals.set({ 1: proposals });
+    };
+
+    it('shows the card under the reply with what is proposed and that nothing is saved yet', async () => {
+      const { fixture, root, store } = setup();
+      conversation(store, [SALE]);
+      await fixture.whenStable();
+      const card = root.querySelector('app-assistant-proposal')!;
+      expect(plain(card)).toContain('Sale to Lina Haddad');
+      expect(plain(card)).toContain('2 × Olive tree — ILS 170.00');
+      expect(plain(card)).toContain('Total ILS 170.00');
+      expect(plain(card)).toContain('Nothing is saved until you confirm.');
+      expect(text(card.querySelector('button'))).toBe('Review sale');
+    });
+
+    it('hands the proposal over once and opens the task with its id', async () => {
+      const { fixture, root, store, router, prefills } = setup();
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      conversation(store, [SALE]);
+      await fixture.whenStable();
+      root.querySelector<HTMLButtonElement>('app-assistant-proposal button')!.click();
+      expect(prefills.put).toHaveBeenCalledWith(SALE.request);
+      expect(navigate).toHaveBeenCalledWith(['/sales/new', 'basket'], {
+        queryParams: { prefill: 'PF-1' },
+      });
+    });
+
+    it('opens a record straight to its page, with nothing handed over', async () => {
+      const { fixture, root, store, router, prefills } = setup();
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      conversation(store, [RECORD]);
+      await fixture.whenStable();
+      const card = root.querySelector('app-assistant-proposal')!;
+      expect(plain(card)).toContain('Draft SI-1');
+      expect(plain(card)).not.toContain('Nothing is saved');
+      card.querySelector('button')!.click();
+      expect(prefills.put).not.toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith(['/sales/invoices', 'SI-1'], {
+        queryParams: undefined,
+      });
+    });
+
+    it('goes nowhere when nobody is signed in to hand the proposal to', async () => {
+      const { fixture, root, store, router, prefills } = setup();
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      prefills.put.mockReturnValue(null);
+      conversation(store, [SALE]);
+      await fixture.whenStable();
+      root.querySelector<HTMLButtonElement>('app-assistant-proposal button')!.click();
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('offers the matches as buttons that send the chosen label as the next message', async () => {
+      const { fixture, root, store } = setup();
+      store.messages.set([
+        { role: 'user', content: 'Sell 2 olive trees to Lina' },
+        { role: 'assistant', content: [{ type: 'text', text: 'Which Lina?' }] },
+      ]);
+      store.choices.set({
+        1: [
+          { id: 'C-1', label: 'Lina Haddad' },
+          { id: 'C-2', label: 'Lina Khoury' },
+        ],
+      });
+      await fixture.whenStable();
+      const buttons = [...root.querySelectorAll<HTMLButtonElement>('app-assistant-choices button')];
+      expect(buttons.map(text)).toEqual(['Lina Haddad', 'Lina Khoury']);
+      buttons[1].click();
+      expect(store.send).toHaveBeenCalledWith('Lina Khoury');
+    });
   });
 
   it('opens the record a reply names, and keeps the New chat action in the desktop heading', async () => {

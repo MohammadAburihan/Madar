@@ -96,6 +96,35 @@ export class CustomerDirectoryService {
     }));
   }
 
+  /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */
+  async exact(term: string): Promise<(CustomerMatch & { disabled: boolean })[]> {
+    const text = term.trim();
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        customer_name: string;
+        mobile_no: string | null;
+        primary_address: string | null;
+        disabled: number;
+      }>('Customer', {
+        fields: ['name', 'customer_name', 'mobile_no', 'primary_address', 'disabled'],
+        orFilters: [
+          ['name', '=', text],
+          ['customer_name', '=', text],
+        ],
+        orderBy: 'modified desc',
+        limit: 5,
+      }),
+    );
+    return rows.map((r) => ({
+      id: r.name,
+      name: r.customer_name,
+      phone: r.mobile_no,
+      city: firstAddressLine(r.primary_address),
+      disabled: !!r.disabled,
+    }));
+  }
+
   /**
    * One customer by exact id, for a page opened on a known customer; null when there is none. For a task
    * (`company` given) a disabled customer counts as none, and the balance is filled in as `search` does.

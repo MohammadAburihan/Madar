@@ -11,7 +11,12 @@ import { AssistantMessageComponent } from './assistant-message.component';
   template: `
     <section role="log" aria-live="polite" [attr.aria-label]="label()" [attr.aria-busy]="busy()">
       @for (item of items(); track item.id) {
-        <app-assistant-message [item]="item" (opened)="opened.emit($event)" />
+        <app-assistant-message
+          [item]="item"
+          (opened)="opened.emit($event)"
+          (proposalOpened)="proposalOpened.emit($event)"
+          (choicePicked)="choicePicked.emit($event)"
+        />
       }
       @for (line of activity(); track line) {
         <p class="activity">{{ line }}</p>
@@ -42,4 +47,6 @@ export class AssistantConversationComponent {
   readonly problem = input<string | null>(null);
   readonly busy = input(false);
   readonly opened = output<string>();
+  readonly proposalOpened = output<string>();
+  readonly choicePicked = output<string>();
 }

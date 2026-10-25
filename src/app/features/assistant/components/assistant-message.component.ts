@@ -1,11 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { ConversationItemView } from '../containers/assistant-view';
+import { AssistantChoicesComponent } from './assistant-choices.component';
+import { AssistantProposalComponent } from './assistant-proposal.component';
 
 /** One bubble: the user's question at the end side, the assistant's reply at the start side. */
 @Component({
   selector: 'app-assistant-message',
-  imports: [NgTemplateOutlet],
+  imports: [AssistantChoicesComponent, AssistantProposalComponent, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': 'item().role' },
   template: `
@@ -35,6 +37,16 @@ import { ConversationItemView } from '../containers/assistant-view';
             </button>
           }
         </div>
+      }
+      @for (card of item().proposals; track card.id) {
+        <app-assistant-proposal [card]="card" (opened)="proposalOpened.emit($event)" />
+      }
+      @if (item().choices.length) {
+        <app-assistant-choices
+          [label]="item().choicesLabel"
+          [options]="item().choices"
+          (picked)="choicePicked.emit($event)"
+        />
       }
     </article>
     <ng-template #runs let-segments>
@@ -118,4 +130,6 @@ export class AssistantMessageComponent {
   readonly item = input.required<ConversationItemView>();
   /** The key of the record whose button was pressed. */
   readonly opened = output<string>();
+  readonly proposalOpened = output<string>();
+  readonly choicePicked = output<string>();
 }

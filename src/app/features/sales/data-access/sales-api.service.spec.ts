@@ -182,6 +182,72 @@ describe('SalesApiService', () => {
     expect(listCalls[0].query.filters).toContainEqual(['warehouse_name', '!=', 'Project sites']);
   });
 
+  it('reads the items with exactly these codes as the catalog does, and none that are disabled or not for sale', async () => {
+    const { api, listCalls, postCalls } = setup(
+      {
+        Item: () => [
+          { name: 'OLV-20', item_name: 'Olive tree', stock_uom: 'Unit', is_stock_item: 1 },
+        ],
+        'Price List': () => [{ name: 'Standard Selling' }],
+        Bin: () => [{ item_code: 'OLV-20', warehouse: 'Main warehouse - RN', actual_qty: 24 }],
+      },
+      {
+        'erpnext.stock.get_item_details.apply_price_list': () => ({
+          children: [{ name: 'OLV-20', price_list_rate: 85 }],
+        }),
+      },
+    );
+    expect(
+      await api.itemsByCode(['OLV-20', 'GONE'], 'Rehan Nursery', ['Main warehouse - RN']),
+    ).toEqual([
+      {
+        code: 'OLV-20',
+        name: 'Olive tree',
+        uom: 'Unit',
+        isStock: true,
+        price: 85,
+        stock: { 'Main warehouse - RN': 24 },
+      },
+    ]);
+    const query = listCalls.find((c) => c.doctype === 'Item')!.query;
+    expect(query.filters).toEqual([
+      ['name', 'in', ['OLV-20', 'GONE']],
+      ['disabled', '=', 0],
+      ['is_sales_item', '=', 1],
+      ['has_variants', '=', 0],
+    ]);
+    expect(query.orFilters).toBeUndefined();
+    expect(postCalls).toHaveLength(1);
+  });
+
+  it('asks for nothing when there are no codes', async () => {
+    const { api, listCalls } = setup();
+    expect(await api.itemsByCode([], 'Rehan Nursery', [])).toEqual([]);
+    expect(listCalls).toEqual([]);
+  });
+
+  it('reads one enabled customer by exact id with what they owe', async () => {
+    const { api, listCalls } = setup({
+      Customer: () => [
+        {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          mobile_no: null,
+          primary_address: null,
+        },
+      ],
+      'Sales Invoice': () => [
+        { customer: 'Lina Haddad', 'SUM(`outstanding_amount`)': 460, 'COUNT(`name`)': 2 },
+      ],
+    });
+    const lina = await api.customer('Lina Haddad', { name: 'Rehan Nursery', currency: 'ILS' });
+    expect(lina).toMatchObject({ id: 'Lina Haddad', outstanding: 460, unpaidInvoices: 2 });
+    expect(listCalls[0].query.filters).toEqual([
+      ['name', '=', 'Lina Haddad'],
+      ['disabled', '=', 0],
+    ]);
+  });
+
   it('filters the catalog to products or services', async () => {
     const { api, listCalls } = setup();
     await api.searchItems('', 'services', 'Rehan Nursery', []);

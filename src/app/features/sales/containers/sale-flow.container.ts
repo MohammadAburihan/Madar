@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CanDeactivateFn, Router, RouterOutlet } from '@angular/router';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { draftGateText, injectDraftEntry } from '../../../core/tasks/draft-entry';
+import { injectPrefillEntry } from '../../../core/tasks/prefill-entry';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { DraftGateComponent } from '../../../shared/ui/draft-gate.component';
 import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog.component';
@@ -13,8 +14,17 @@ import { QuickSaleStore } from '../data-access/quick-sale.store';
   imports: [ConfirmDialogComponent, DraftGateComponent, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (entry.phase() === 'ready') {
+    @if (entry.phase() === 'ready' && proposal.phase() === 'ready') {
       <router-outlet />
+    } @else if (entry.phase() === 'ready') {
+      <app-draft-gate
+        [failed]="false"
+        [desktop]="desktop()"
+        [loading]="gate().prefillLoading"
+        title=""
+        message=""
+        backLabel=""
+      />
     } @else {
       <app-draft-gate
         [failed]="entry.phase() !== 'loading'"
@@ -52,10 +62,18 @@ export class SaleFlowContainer {
         this.store.state() === 'confirming' ? 'review' : 'checking',
       ]),
   );
+  protected readonly proposal = injectPrefillEntry(
+    'quick_sale',
+    (payload) => this.store.openPrefill(payload),
+    (notice) => this.store.prefillFailed(notice),
+  );
   protected readonly asking = signal(false);
   private resolveLeave?: (leave: boolean) => void;
 
-  protected readonly gate = computed(() => draftGateText(this.i18n.tr(), this.entry.phase()));
+  protected readonly gate = computed(() => ({
+    ...draftGateText(this.i18n.tr(), this.entry.phase()),
+    prefillLoading: this.i18n.tr().t('prefill.loading'),
+  }));
 
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();

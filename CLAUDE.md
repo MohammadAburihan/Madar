@@ -119,7 +119,12 @@ src/app/
   plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
 - The Assistant (`features/assistant`) runs its read-only tools in the app with the user's own session; the `assistant/`
   service never reaches ERPNext. `assistant/src/tools.ts` and `TOOL_SCHEMAS` in `assistant-tools.ts` must stay the same
-  (a spec compares them). `toolsFor` offers each role only the lookups its capabilities allow, results stay under 4 KB.
+  (a spec compares them). `toolsFor` offers each role only the tools its capabilities allow, results stay under 4 KB.
+- Assistant `propose_*` tools write nothing: they resolve names to ids (`AssistantProposalsService`) and the card's
+  button hands the payload to `core/tasks/task-prefill.service.ts`, opening the task at `?prefill=<id>`. A task flow
+  calls `injectPrefillEntry` (`core/tasks/prefill-entry.ts`) and its store's `openPrefill` re-looks everything up and
+  fills a fresh task (busy keeps the open confirmation; failure leaves a fresh task plus a notice). The assistant
+  feature never imports another feature's stores.
 
 ## Design fidelity
 

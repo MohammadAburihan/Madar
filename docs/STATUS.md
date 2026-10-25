@@ -687,7 +687,21 @@ on the server. Four PRs:
   the user or business changes; a reply that is not asking for lookups is stored without tool_use blocks, and an
   empty or tool-only reply shows the unavailable notice (refusals show the refusal notice); `get_invoice` orders
   lines by `items.idx` and reports `line_count`.
-- **C: actions as pre-filled tasks with confirmation**: the assistant proposes, the user confirms in Madar.
+- **C: actions as pre-filled tasks with confirmation** (this PR): the assistant proposes, the user confirms in Madar.
+  Six more tools, run in the app like the lookups: `propose_quick_sale`, `propose_quotation`,
+  `propose_purchase_order`, `propose_collect_payment`, `propose_stock_move` and `open_record`. Each finds the records
+  its words name (an exact id or name first, then a limited search; a disabled customer or supplier is refused with
+  the reason; several matches come back as `needs_choice` and the chat shows them as buttons that send the picked
+  label as the next message) and returns `{ proposal_id, summary }`. The chat shows a card under the reply; its button
+  hands the resolved payload to `core/tasks/task-prefill.service.ts` (in memory, one per task, once, same user and
+  business, under ten minutes) and opens the task at `?prefill=<id>`; each task flow (`injectPrefillEntry`) takes it
+  and the store's `openPrefill` fills a fresh task from its own lookups (today's prices and stock; a typed price only
+  where the role may set prices). A task with a confirmation open, or a result not yet seen, keeps it. A proposal that
+  is gone, expired or can no longer be applied leaves a fresh task with a notice, never a half-filled form. Nothing is
+  written until the user confirms in the task, under that task's own reference. `open_record` sends edit and delete
+  requests to the record's page (a draft's page has Continue and Delete; a confirmed record can't be cancelled or
+  amended by the assistant). Buying prices for the purchase order card share `core/pricing/buying-prices.service.ts`
+  with the purchase form. Not covered: discounts, fractional stock moves, several items in one stock move.
 - **D: voice**.
 
 Defaults: all signed-in users; tools gated by role on the client; no server-side chat history (the client keeps the
