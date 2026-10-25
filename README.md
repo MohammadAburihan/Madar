@@ -159,6 +159,12 @@ stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with
 60 s for the per-minute rate, and the seconds to UTC midnight for a spent daily budget (both `rate_limited`).
 `GET /assistant/healthz` answers `ok`.
 
+Caching: an explicit breakpoint on the stable system block caches the tools and system prompt together (tools render
+first, so they carry no marker of their own), and top-level automatic caching moves a second breakpoint to the end of the
+growing conversation. The per-request context block sits after the breakpoint so it never breaks the prefix, and
+messages are rebuilt byte-for-byte the same on every request. Haiku 5.5 caches nothing below 512 tokens; check
+`cache_read` and `cache_write` in the logs to confirm hits.
+
 Clients must send `Content-Type: application/json` and the header `X-Madar-Assistant: 1` on every chat request (the
 service answers 403 `forbidden` otherwise, which keeps cross-site form posts out). An `Origin` header, when present,
 must have the same host and port as the request's `Host` header (the scheme is ignored, because TLS ends at a proxy), or be `capacitor://localhost`, `http://localhost` or `https://localhost`. Only

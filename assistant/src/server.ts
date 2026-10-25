@@ -196,6 +196,7 @@ export function createApp(deps: Deps): Server {
         model: deps.config.model,
         max_tokens: MAX_TOKENS,
         output_config: { effort: 'low' },
+        cache_control: { type: 'ephemeral' },
         system: buildSystem(request.context, request.language),
         messages: request.messages,
         ...(tools.length > 0 ? { tools, tool_choice: { type: 'auto' as const } } : {}),
