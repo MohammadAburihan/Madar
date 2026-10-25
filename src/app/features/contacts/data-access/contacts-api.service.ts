@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
+import { PartyBalancesService, inCompany } from '../../../core/customers/party-balances.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import {
@@ -36,11 +37,6 @@ const lines = (address: string | null | undefined) =>
     .map((l) => l.trim())
     .filter(Boolean);
 
-/** An amount kept in the party's account currency, in the company currency. */
-const inCompany = (amount: unknown, row: Record<string, unknown>, currency: string) =>
-  Number(amount ?? 0) *
-  (row['party_account_currency'] === currency ? 1 : Number(row['conversion_rate']) || 1);
-
 /** A role that may not read one kind of record still sees the rest; other failures stay failures. */
 const forbiddenAsNone = (error: unknown): never[] => {
   if (ErpnextError.from(error).kind === 'forbidden') {
@@ -56,6 +52,7 @@ const owed = (row: Record<string, unknown>) =>
 @Injectable({ providedIn: 'root' })
 export class ContactsApiService {
   private readonly erpnext = inject(ErpnextClient);
+  private readonly balances = inject(PartyBalancesService);
 
   /** Customers matching the term, with what each owes across currencies, as their page totals it. */
   /** `owner` limits the balances to that user's own sales (salespeople, store associates). */
@@ -92,13 +89,15 @@ export class ContactsApiService {
     );
     // Roles that can't read Sales Invoices still see the customers.
     const balances = rows.length
-      ? await this.balances(
-          'Sales Invoice',
-          'customer',
-          rows.map((r) => r.name),
-          company,
-          owner,
-        ).catch(() => null)
+      ? await this.balances
+          .outstanding(
+            'Sales Invoice',
+            'customer',
+            rows.map((r) => r.name),
+            company,
+            owner,
+          )
+          .catch(() => null)
       : null;
     return rows.map((r) => ({
       id: r.name,
@@ -139,13 +138,15 @@ export class ContactsApiService {
     );
     const balances =
       withBalances && rows.length
-        ? await this.balances(
-            'Purchase Invoice',
-            'supplier',
-            rows.map((r) => r.name),
-            company,
-            null,
-          ).catch(() => null)
+        ? await this.balances
+            .outstanding(
+              'Purchase Invoice',
+              'supplier',
+              rows.map((r) => r.name),
+              company,
+              null,
+            )
+            .catch(() => null)
         : null;
     return rows.map((r) => ({
       id: r.name,
@@ -549,39 +550,6 @@ export class ContactsApiService {
       }),
     ).catch(() => []);
     return new Map(rows.map((r) => [r['name'], r[field]]));
-  }
-
-  /** Outstanding per party in the company currency: each is kept in its party's account currency. */
-  private async balances(
-    doctype: 'Sales Invoice' | 'Purchase Invoice',
-    party: 'customer' | 'supplier',
-    parties: string[],
-    company: Company,
-    owner: string | null,
-  ) {
-    const groups = await firstValueFrom(
-      this.erpnext.list<Record<string, number | string>>(doctype, {
-        fields: [party, 'party_account_currency', 'conversion_rate', { SUM: 'outstanding_amount' }],
-        filters: [
-          [party, 'in', parties],
-          ['company', '=', company.name],
-          ['docstatus', '=', 1],
-          ['outstanding_amount', '!=', 0],
-          ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
-        ],
-        groupBy: `${party}, party_account_currency, conversion_rate`,
-        limit: 0,
-      }),
-    );
-    const balances = new Map<string, number>();
-    for (const g of groups) {
-      const id = String(g[party]);
-      balances.set(
-        id,
-        (balances.get(id) ?? 0) + inCompany(g['SUM(`outstanding_amount`)'], g, company.currency),
-      );
-    }
-    return balances;
   }
 }
 

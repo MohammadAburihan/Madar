@@ -31,6 +31,7 @@ describe('buildShellView', () => {
       'Money',
       'Projects',
       'Reports',
+      'Assistant',
       'Settings',
     ]);
     expect(view.mobileNav.map((i) => i.label)).toEqual(['Home', 'Sales', 'Stock', 'More']);
@@ -67,12 +68,33 @@ describe('buildShellView', () => {
     );
   });
 
+  it('shows the Assistant to every role, in English and Arabic', () => {
+    for (const persona of [
+      'owner',
+      'salesperson',
+      'storeAssociate',
+      'warehouse',
+      'purchasing',
+      'projectManager',
+    ] as const) {
+      expect(build(persona).desktopNav.find((i) => i.id === 'assistant')).toMatchObject({
+        label: 'Assistant',
+        route: '/assistant',
+      });
+      expect(build(persona).mobileNav.map((i) => i.id)).not.toContain('assistant');
+    }
+    expect(build('owner', 'ar').desktopNav.find((i) => i.id === 'assistant')?.label).toBe(
+      'المساعد',
+    );
+  });
+
   it('hides Sales, Money and Projects from the purchasing officer', () => {
     expect(build('purchasing').desktopNav.map((i) => i.id)).toEqual([
       'home',
       'purchases',
       'inventory',
       'contacts',
+      'assistant',
       'settings',
     ]);
     expect(build('purchasing').mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
@@ -115,6 +137,7 @@ describe('buildShellView', () => {
       'inventory',
       'contacts',
       'projects',
+      'assistant',
       'settings',
     ]);
   });
@@ -143,6 +166,7 @@ describe('buildMoreView', () => {
       'Money',
       'Projects',
       'Reports',
+      'Assistant',
       'Settings',
       'Switch business',
     ]);
@@ -151,7 +175,7 @@ describe('buildMoreView', () => {
 
   it('follows the role: a warehouse worker has no Sales tab, so nothing is duplicated or missing', () => {
     const ids = more('warehouse', ['Stock User']).items.map((i) => i.id);
-    expect(ids).toEqual(['purchases', 'contacts', 'settings', 'businesses']);
+    expect(ids).toEqual(['purchases', 'contacts', 'assistant', 'settings', 'businesses']);
   });
 });
 

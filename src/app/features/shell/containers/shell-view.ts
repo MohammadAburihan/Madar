@@ -9,6 +9,7 @@ import {
   LucideReceipt,
   LucideSettings,
   LucideShoppingBag,
+  LucideSparkles,
   LucideUsers,
   LucideWallet,
 } from '@lucide/angular';
@@ -71,6 +72,7 @@ const DESKTOP_NAV: NavDefinition[] = [
     route: '/reports',
     shownIf: (caps) => caps.seeReports,
   },
+  { id: 'assistant', icon: LucideSparkles, route: '/assistant' },
   { id: 'settings', icon: LucideSettings, route: '/settings' },
 ];
 
@@ -95,6 +97,7 @@ const MOBILE_NAV: NavDefinition[] = [
       '/approvals',
       '/projects',
       '/reports',
+      '/assistant',
       '/settings',
       '/businesses',
     ],
