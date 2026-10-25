@@ -117,6 +117,9 @@ src/app/
   not-yet-shown confirmation is kept. Moving between steps, including the back button, keeps the work.
 - Containers turn data into display strings with a pure `*-view.ts` builder (see `home-view.ts`), so wording,
   plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
+- The Assistant (`features/assistant`) runs its read-only tools in the app with the user's own session; the `assistant/`
+  service never reaches ERPNext. `assistant/src/tools.ts` and `TOOL_SCHEMAS` in `assistant-tools.ts` must stay the same
+  (a spec compares them). `toolsFor` offers each role only the lookups its capabilities allow, results stay under 4 KB.
 
 ## Design fidelity
 

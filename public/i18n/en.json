@@ -27,7 +27,8 @@
     "drafts": "Drafts",
     "new": "New",
     "workers": "Workers",
-    "approvals": "Approvals"
+    "approvals": "Approvals",
+    "assistant": "Assistant"
   },
   "home": {
     "greeting": {
@@ -3835,5 +3836,40 @@
     "addBackItem": "Add back {{item}}",
     "notIncluded": "Not included",
     "nothingIncluded": "Nothing is included yet. Enter a quantity or add a row back to continue."
+  },
+  "assistant": {
+    "title": "Assistant",
+    "subtitle": "Ask about customers, items, sales and stock",
+    "placeholder": "Ask the assistant…",
+    "composerLabel": "Your message",
+    "send": "Send",
+    "stop": "Stop",
+    "newChat": "New chat",
+    "note": "The assistant looks things up. It never changes anything without you.",
+    "conversation": "Conversation",
+    "you": "You",
+    "assistant": "Assistant",
+    "open": "Open {{name}}",
+    "suggestions": {
+      "label": "Suggestions",
+      "sales": "Today's sales",
+      "owed": "Who owes money?",
+      "lowStock": "Low stock items"
+    },
+    "activity": {
+      "get_today_summary": "Checking today's figures…",
+      "search_customers": "Looking up customers…",
+      "search_items": "Looking up items…",
+      "find_invoices": "Looking up invoices…",
+      "get_invoice": "Looking up invoices…",
+      "list_drafts": "Looking up drafts…",
+      "find_purchase_orders": "Looking up purchase orders…"
+    },
+    "problem": {
+      "busy": "The assistant is busy. Try again in a moment.",
+      "rate_limited": "You've reached today's assistant limit.",
+      "unavailable": "The assistant isn't available right now.",
+      "refusal": "The assistant can't help with that."
+    }
   }
 }

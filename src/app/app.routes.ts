@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth/auth.guards';
+import { assistantRoutes } from './features/assistant/assistant.routes';
 import { approvalRoutes } from './features/approvals/approvals.routes';
 import { contactRoutes } from './features/contacts/contacts.routes';
 import { inventoryRoutes } from './features/inventory/inventory.routes';
@@ -54,6 +55,7 @@ export const routes: Routes = [
       ...contactRoutes,
       ...workerRoutes,
       ...approvalRoutes,
+      ...assistantRoutes,
       ...settingsRoutes,
       {
         path: 'more',
