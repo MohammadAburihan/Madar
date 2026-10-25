@@ -2,15 +2,17 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import Anthropic from '@anthropic-ai/sdk';
 import type { Auth } from './auth.js';
 import type { Config } from './config.js';
-import type { Limits } from './limits.js';
+import { billedTokens, emptyUsage, type Limits, type Usage } from './limits.js';
 import { buildSystem } from './prompt.js';
 import { selectTools } from './tools.js';
 import { MAX_BODY_BYTES, validateChat } from './validate.js';
 
-export type ErrorCode = 'refusal' | 'rate_limited' | 'unavailable' | 'bad_request' | 'unauthorized';
+export type ErrorCode =
+  'refusal' | 'rate_limited' | 'unavailable' | 'bad_request' | 'unauthorized' | 'forbidden';
 
 export interface MessageStreamLike {
   on(event: 'text', listener: (delta: string) => void): unknown;
+  on(event: 'streamEvent', listener: (event: Anthropic.MessageStreamEvent) => void): unknown;
   finalMessage(): Promise<Anthropic.Message>;
   abort(): void;
 }
@@ -31,14 +33,61 @@ export interface Deps {
 const MAX_TOKENS = 4096;
 
 export function errorCodeFor(error: unknown): ErrorCode {
-  if (error instanceof Anthropic.RateLimitError) return 'rate_limited';
   if (error instanceof Anthropic.BadRequestError) return 'bad_request';
   return 'unavailable';
 }
 
+const ALLOWED_ORIGINS = new Set(['capacitor://localhost', 'https://localhost', 'http://localhost']);
+
+function crossSite(req: IncomingMessage): boolean {
+  const origin = req.headers.origin;
+  if (origin === undefined) return false;
+  const proto = String(req.headers['x-forwarded-proto'] ?? 'http')
+    .split(',')[0]!
+    .trim();
+  return origin !== `${proto}://${req.headers.host}` && !ALLOWED_ORIGINS.has(origin);
+}
+
+function isJsonRequest(req: IncomingMessage): boolean {
+  const type = (req.headers['content-type'] ?? '').split(';')[0]!.trim().toLowerCase();
+  return type === 'application/json' && req.headers['x-madar-assistant'] === '1';
+}
+
+const mergeUsage = (seen: Usage, next: Partial<Usage>): void => {
+  seen.input = Math.max(seen.input, next.input ?? 0);
+  seen.cacheWrite = Math.max(seen.cacheWrite, next.cacheWrite ?? 0);
+  seen.cacheRead = Math.max(seen.cacheRead, next.cacheRead ?? 0);
+  seen.output = Math.max(seen.output, next.output ?? 0);
+};
+
+function fromUsage(u: {
+  input_tokens?: number | null;
+  cache_creation_input_tokens?: number | null;
+  cache_read_input_tokens?: number | null;
+  output_tokens?: number | null;
+}): Usage {
+  return {
+    input: u.input_tokens ?? 0,
+    cacheWrite: u.cache_creation_input_tokens ?? 0,
+    cacheRead: u.cache_read_input_tokens ?? 0,
+    output: u.output_tokens ?? 0,
+  };
+}
+
+const describe = (u: Usage): string =>
+  `in=${u.input} out=${u.output} cache_read=${u.cacheRead} cache_write=${u.cacheWrite}`;
+
+// Only the class and status are logged: never headers, cookies or message content.
+function describeError(error: unknown): string {
+  const name = error instanceof Error ? error.constructor.name : 'unknown';
+  const status = error instanceof Anthropic.APIError ? (error.status ?? 'none') : 'none';
+  const throttled = error instanceof Anthropic.RateLimitError ? ' provider_rate_limited' : '';
+  return ` error=${name} status=${status}${throttled}`;
+}
+
 class BodyTooLarge extends Error {}
 
-async function readBody(req: IncomingMessage): Promise<unknown> {
+async function readBody(req: IncomingMessage): Promise<{ value: unknown; bytes: number }> {
   const declared = Number(req.headers['content-length']);
   if (declared > MAX_BODY_BYTES) throw new BodyTooLarge();
   const chunks: Buffer[] = [];
@@ -48,7 +97,7 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
     if (size > MAX_BODY_BYTES) throw new BodyTooLarge();
     chunks.push(chunk as Buffer);
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  return { value: JSON.parse(Buffer.concat(chunks).toString('utf8')), bytes: size };
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
@@ -69,10 +118,16 @@ export function createApp(deps: Deps): Server {
 
   async function chat(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const started = now();
+    let stream: MessageStreamLike | undefined;
+    res.on('close', () => {
+      if (stream && !res.writableEnded) stream.abort();
+    });
+
+    if (!isJsonRequest(req) || crossSite(req)) return sendError(res, 403, 'forbidden');
     const user = await deps.auth.userFor(req.headers.cookie);
     if (!user) return sendError(res, 401, 'unauthorized');
 
-    let body: unknown;
+    let body: { value: unknown; bytes: number };
     try {
       body = await readBody(req);
     } catch (error) {
@@ -82,53 +137,65 @@ export function createApp(deps: Deps): Server {
       }
       return sendError(res, 400, 'bad_request');
     }
-    const parsed = validateChat(body);
+    const parsed = validateChat(body.value);
     if (!parsed.ok) return sendError(res, 400, 'bad_request');
     const request = parsed.value;
 
-    if (!deps.limits.check(user)) return sendError(res, 429, 'rate_limited');
-
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-store',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    });
-
-    const tools = selectTools(request.tools);
-    const stream = deps.client.messages.stream({
-      model: deps.config.model,
-      max_tokens: MAX_TOKENS,
-      output_config: { effort: 'low' },
-      system: buildSystem(request.context, request.language),
-      messages: request.messages,
-      ...(tools.length > 0 ? { tools, tool_choice: { type: 'auto' as const } } : {}),
-    });
-    res.on('close', () => {
-      if (!res.writableEnded) stream.abort();
-    });
-    stream.on('text', (delta) => sendEvent(res, 'text', { text: delta }));
-
+    const reserved = deps.limits.reserve(user, Math.ceil(body.bytes / 3) + MAX_TOKENS);
+    if (!reserved.ok) return sendError(res, 429, 'rate_limited');
+    const { reservation } = reserved;
+    const seen = emptyUsage();
+    let usageLine = 'in=0 out=0 cache_read=0 cache_write=0';
     let stopReason = 'error';
-    let usage = '';
+    let failure = '';
     try {
-      const message = await stream.finalMessage();
-      stopReason = message.stop_reason ?? 'unknown';
-      const u = message.usage;
-      deps.limits.addOutputTokens(user, u.output_tokens);
-      usage = `in=${u.input_tokens} out=${u.output_tokens} cache_read=${u.cache_read_input_tokens ?? 0} cache_write=${u.cache_creation_input_tokens ?? 0}`;
-      if (message.stop_reason === 'refusal') sendEvent(res, 'error', { code: 'refusal' });
-      else
-        sendEvent(res, 'message', { content: message.content, stop_reason: message.stop_reason });
-    } catch (error) {
-      const code = errorCodeFor(error);
-      stopReason = `error:${code}`;
-      if (!res.writableEnded && !res.destroyed) sendEvent(res, 'error', { code });
+      if (req.socket.destroyed || res.destroyed || res.writableEnded) {
+        stopReason = 'disconnected';
+        return;
+      }
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-store',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+
+      const tools = selectTools(request.tools);
+      stream = deps.client.messages.stream({
+        model: deps.config.model,
+        max_tokens: MAX_TOKENS,
+        output_config: { effort: 'low' },
+        system: buildSystem(request.context, request.language),
+        messages: request.messages,
+        ...(tools.length > 0 ? { tools, tool_choice: { type: 'auto' as const } } : {}),
+      });
+      if (res.destroyed) stream.abort();
+      stream.on('text', (delta) => sendEvent(res, 'text', { text: delta }));
+      stream.on('streamEvent', (event) => {
+        if (event.type === 'message_start') mergeUsage(seen, fromUsage(event.message.usage));
+        else if (event.type === 'message_delta') mergeUsage(seen, fromUsage(event.usage));
+      });
+
+      try {
+        const message = await stream.finalMessage();
+        stopReason = message.stop_reason ?? 'unknown';
+        mergeUsage(seen, fromUsage(message.usage));
+        usageLine = describe(seen);
+        if (message.stop_reason === 'refusal') sendEvent(res, 'error', { code: 'refusal' });
+        else
+          sendEvent(res, 'message', { content: message.content, stop_reason: message.stop_reason });
+      } catch (error) {
+        const code = errorCodeFor(error);
+        stopReason = `error:${code}`;
+        usageLine = describe(seen);
+        failure = describeError(error);
+        if (!res.writableEnded && !res.destroyed) sendEvent(res, 'error', { code });
+      }
+      res.end();
+    } finally {
+      reservation.settle(billedTokens(seen));
+      log(`assistant user=${user} ${usageLine} stop=${stopReason}${failure} ms=${now() - started}`);
     }
-    res.end();
-    log(
-      `assistant user=${user} ${usage || 'in=0 out=0 cache_read=0 cache_write=0'} stop=${stopReason} ms=${now() - started}`,
-    );
   }
 
   return createServer((req, res) => {
@@ -141,7 +208,7 @@ export function createApp(deps: Deps): Server {
     if (path === '/assistant/chat') {
       if (req.method !== 'POST') return sendJson(res, 405, { code: 'bad_request' });
       chat(req, res).catch((error: unknown) => {
-        log(`assistant error ${error instanceof Error ? error.message : 'unknown'}`);
+        log(`assistant error ${error instanceof Error ? error.name : 'unknown'}`);
         if (!res.headersSent) sendError(res, 500, 'unavailable');
         else res.end();
       });

@@ -7,7 +7,6 @@ export const toolRegistry: Record<string, ToolDef> = {
     description: "Returns the business's sales and amounts due for today.",
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
     strict: true,
-    eager_input_streaming: true,
   },
 };
 

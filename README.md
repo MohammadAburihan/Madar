@@ -118,7 +118,7 @@ docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<versi
 | `NGINX_RESOLVER` | the container's DNS servers | DNS server nginx uses to re-resolve `ERPNEXT_UPSTREAM` |
 | `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
 | `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
-| `ASSISTANT_UPSTREAM` | empty | madar-assistant address nginx proxies `/assistant/` to; empty answers 404 |
+| `ASSISTANT_UPSTREAM` | empty | madar-assistant address nginx proxies `/assistant/` to, limited to 30 requests per minute per client (burst 10); empty answers 404 |
 
 ### One business per deployment
 
@@ -154,8 +154,17 @@ npm test && npm run build
 API: `POST /assistant/chat` with `{ language, context: { business, currency, today, persona }, tools, messages }`
 answers with Server-Sent Events: `text` deltas, then one `message` (`content`, `stop_reason`) or an `error`
 (`{ code }`: `refusal`, `rate_limited`, `unavailable`, `bad_request`, `unauthorized`). Requests refused before the
-stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 400, 413 or 429.
+stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 403, 400, 413 or 429.
 `GET /assistant/healthz` answers `ok`.
+
+Clients must send `Content-Type: application/json` and the header `X-Madar-Assistant: 1` on every chat request (the
+service answers 403 `forbidden` otherwise, which keeps cross-site form posts out). An `Origin` header, when present,
+must be the service's own origin or `capacitor://localhost`, `http://localhost` or `https://localhost`. Only
+ERPNext desk users (a role with desk access) are accepted. One request per user can run at a time (a second gets 429
+`rate_limited`), and bodies are capped at 64 KB, 60 messages and 60,000 characters. Messages may hold only `text`,
+`tool_result`, `thinking`, `redacted_thinking` and `tool_use` blocks; every `tool_use` must name a tool that is both
+known to the service and listed in the request's `tools`. `strict: true` is set on tools, but the service does not
+check what the model returns: clients must still validate tool inputs before acting on them.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -165,7 +174,8 @@ stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with
 | `PORT` | `8080` | Listen port |
 | `ASSISTANT_MODEL` | `claude-haiku-5-5` | Model id |
 | `ASSISTANT_RATE_PER_MIN` | `20` | Requests per user per minute |
-| `ASSISTANT_DAILY_OUTPUT_TOKENS` | `50000` | Output tokens per user per UTC day |
+| `ASSISTANT_DAILY_TOKENS` | `400000` | Billed tokens per user per UTC day: input + cache writes + cache reads at 0.1 + output |
+| `ASSISTANT_GLOBAL_DAILY_TOKENS` | `3000000` | The same count across all users |
 
 On the server, run it beside madar-web on the ERPNext network, with the key in an env file (mode 600, never in git):
 

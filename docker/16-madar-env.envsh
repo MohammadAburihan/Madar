@@ -34,6 +34,7 @@ fi
 # The assistant is optional: without an upstream, /assistant/ answers 404 and nothing is resolved.
 assistant="${ASSISTANT_UPSTREAM:-}"
 assistant="${assistant%/}"
+ASSISTANT_ZONE=''
 case "$assistant" in
   '')
     ASSISTANT_PROXY='return 404;'
@@ -43,7 +44,21 @@ case "$assistant" in
     exit 1
     ;;
   http://* | https://*)
-    ASSISTANT_PROXY="set \$assistant_upstream $assistant;
+    # The last X-Forwarded-For entry is the one the proxy in front appended, so a client can't forge it;
+    # without a trusted proxy only the socket address counts. nginx's realip module is avoided because
+    # it would also change the X-Forwarded-For sent to ERPNext.
+    if [ "${TRUST_FORWARDED_PROTO:-0}" = "1" ]; then
+      ASSISTANT_ZONE='map $http_x_forwarded_for $assistant_client {
+    default $remote_addr;
+    "~(?<last>[^,[:space:]]+)[[:space:]]*$" $last;
+}
+limit_req_zone $assistant_client zone=assistant:10m rate=30r/m;'
+    else
+      ASSISTANT_ZONE='limit_req_zone $remote_addr zone=assistant:10m rate=30r/m;'
+    fi
+    ASSISTANT_PROXY="limit_req zone=assistant burst=10 nodelay;
+        limit_req_status 429;
+        set \$assistant_upstream $assistant;
         proxy_pass \$assistant_upstream;
         proxy_ssl_server_name on;
         proxy_http_version 1.1;
@@ -51,11 +66,11 @@ case "$assistant" in
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_buffering off;
         proxy_read_timeout 120s;
-        client_max_body_size 256k;"
+        client_max_body_size 64k;"
     ;;
   *)
     echo "ASSISTANT_UPSTREAM must start with http:// or https://, got: $ASSISTANT_UPSTREAM" >&2
     exit 1
     ;;
 esac
-export ASSISTANT_PROXY
+export ASSISTANT_PROXY ASSISTANT_ZONE

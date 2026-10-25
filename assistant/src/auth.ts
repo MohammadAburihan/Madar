@@ -6,6 +6,8 @@ export interface AuthOptions {
   fetch: typeof fetch;
   now?: () => number;
   ttlMs?: number;
+  failTtlMs?: number;
+  maxEntries?: number;
 }
 
 export interface Auth {
@@ -15,24 +17,66 @@ export interface Auth {
 export function createAuth(options: AuthOptions): Auth {
   const now = options.now ?? Date.now;
   const ttlMs = options.ttlMs ?? 60_000;
-  const cache = new Map<string, { user: string; expires: number }>();
+  const failTtlMs = options.failTtlMs ?? 20_000;
+  const maxEntries = options.maxEntries ?? 5000;
+  const cache = new Map<string, { user: string | null; expires: number }>();
+  const inFlight = new Map<string, Promise<string | null>>();
 
+  async function call(path: string, params: Record<string, string>, cookie: string) {
+    const query = new URLSearchParams(params).toString();
+    const response = await options.fetch(
+      `${options.upstream}/api/method/${path}${query && `?${query}`}`,
+      {
+        headers: { Cookie: cookie, Host: options.siteHost, Accept: 'application/json' },
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+    if (response.status !== 200) return undefined;
+    return ((await response.json()) as { message?: unknown }).message;
+  }
+
+  // Frappe makes a user a System User exactly when one of their roles has desk access, and hides
+  // user_type from non-admins, so we read the roles (allowed on own record) and check Role.desk_access.
   async function lookup(cookie: string): Promise<string | null> {
     try {
-      const response = await options.fetch(
-        `${options.upstream}/api/method/frappe.auth.get_logged_user`,
+      const user = await call('frappe.auth.get_logged_user', {}, cookie);
+      if (typeof user !== 'string' || !user || user === 'Guest') return null;
+      const roles = await call(
+        'frappe.client.get_list',
         {
-          headers: { Cookie: cookie, Host: options.siteHost, Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
+          doctype: 'Has Role',
+          parent: 'User',
+          fields: JSON.stringify(['role']),
+          filters: JSON.stringify({ parent: user, parenttype: 'User' }),
+          limit_page_length: '0',
         },
+        cookie,
       );
-      if (response.status !== 200) return null;
-      const body = (await response.json()) as { message?: unknown };
-      const user = typeof body.message === 'string' ? body.message : '';
-      return user && user !== 'Guest' ? user : null;
+      if (!Array.isArray(roles) || roles.length === 0) return null;
+      const names = roles
+        .map((r: { role?: unknown }) => r.role)
+        .filter((r) => typeof r === 'string');
+      const desk = await call(
+        'frappe.client.get_list',
+        {
+          doctype: 'Role',
+          fields: JSON.stringify(['name']),
+          filters: JSON.stringify({ name: ['in', names], desk_access: 1 }),
+          limit_page_length: '1',
+        },
+        cookie,
+      );
+      return Array.isArray(desk) && desk.length > 0 ? user : null;
     } catch {
       return null;
     }
+  }
+
+  function remember(key: string, user: string | null, time: number): void {
+    cache.delete(key);
+    for (const [k, v] of cache) if (v.expires <= time) cache.delete(k);
+    while (cache.size >= maxEntries) cache.delete(cache.keys().next().value as string);
+    cache.set(key, { user, expires: time + (user ? ttlMs : failTtlMs) });
   }
 
   return {
@@ -41,14 +85,16 @@ export function createAuth(options: AuthOptions): Auth {
       const key = createHash('sha256').update(cookie).digest('hex');
       const hit = cache.get(key);
       if (hit && hit.expires > now()) return hit.user;
-      cache.delete(key);
-      const user = await lookup(cookie);
-      if (user) {
-        const time = now();
-        for (const [k, v] of cache) if (v.expires <= time) cache.delete(k);
-        cache.set(key, { user, expires: time + ttlMs });
-      }
-      return user;
+      const pending = inFlight.get(key);
+      if (pending) return pending;
+      const run = lookup(cookie)
+        .then((user) => {
+          remember(key, user, now());
+          return user;
+        })
+        .finally(() => inFlight.delete(key));
+      inFlight.set(key, run);
+      return run;
     },
   };
 }

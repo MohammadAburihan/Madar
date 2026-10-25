@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { STABLE_PROMPT } from '../src/prompt.js';
 import { selectTools } from '../src/tools.js';
 import { body, fakeMessage, parseSse, startHarness, type Harness } from './helpers.js';
@@ -46,8 +46,10 @@ describe('relay', () => {
     const rate = new Anthropic.RateLimitError(429, {}, 'slow down', new Headers());
     h = await startHarness({ failWith: rate });
     expect(parseSse(await (await h.post(body())).text())).toEqual([
-      { event: 'error', data: { code: 'rate_limited' } },
+      { event: 'error', data: { code: 'unavailable' } },
     ]);
+    expect(h.logs[0]).toMatch(/error=RateLimitError status=429 provider_rate_limited/);
+    expect(h.logs[0]).not.toContain('slow down');
     await h.close();
     h = await startHarness({ failWith: new Anthropic.APIConnectionError({ message: 'offline' }) });
     expect(parseSse(await (await h.post(body())).text())).toEqual([
@@ -78,9 +80,9 @@ describe('prompt and tools', () => {
     ).text();
     const tools = h.params[0]!.tools as Anthropic.Tool[];
     expect(tools.map((t) => t.name)).toEqual(['get_today_summary']);
+    expect(tools[0]).not.toHaveProperty('eager_input_streaming');
     expect(tools[0]).toMatchObject({
       strict: true,
-      eager_input_streaming: true,
       cache_control: { type: 'ephemeral' },
     });
   });
@@ -150,6 +152,121 @@ describe('validation', () => {
       { messages: Array.from({ length: 61 }, () => ({ role: 'user', content: 'x' })) },
     ],
   ];
+  const toolTurn = (id = 't1', name = 'get_today_summary') => ({
+    role: 'assistant',
+    content: [{ type: 'tool_use', id, name, input: {} }],
+  });
+  const user = (content: unknown) => ({ role: 'user', content });
+  const q = user('hi');
+  cases.push(
+    [
+      'unknown persona',
+      { context: { business: 'b', currency: 'ILS', today: '2026-10-25', persona: 'admin' } },
+    ],
+    [
+      'long business',
+      {
+        context: {
+          business: 'b'.repeat(81),
+          currency: 'ILS',
+          today: '2026-10-25',
+          persona: 'owner',
+        },
+      },
+    ],
+    ['user image block', { messages: [user([{ type: 'image', source: {} }])] }],
+    ['user document block', { messages: [user([{ type: 'document', source: {} }])] }],
+    [
+      'user tool_use block',
+      { messages: [user([{ type: 'tool_use', id: 'x', name: 'get_today_summary', input: {} }])] },
+    ],
+    [
+      'user thinking block',
+      { messages: [user([{ type: 'thinking', thinking: 'x', signature: 's' }])] },
+    ],
+    [
+      'tool_result image content',
+      {
+        messages: [
+          q,
+          toolTurn(),
+          user([
+            { type: 'tool_result', tool_use_id: 't1', content: [{ type: 'image', source: {} }] },
+          ]),
+        ],
+      },
+    ],
+    [
+      'assistant server_tool_use',
+      {
+        messages: [
+          q,
+          {
+            role: 'assistant',
+            content: [{ type: 'server_tool_use', id: 's', name: 'web_search', input: {} }],
+          },
+          q,
+        ],
+      },
+    ],
+    [
+      'assistant search_result',
+      {
+        messages: [q, { role: 'assistant', content: [{ type: 'search_result', content: [] }] }, q],
+      },
+    ],
+    [
+      'tool_use not in registry',
+      {
+        tools: ['get_today_summary'],
+        messages: [
+          q,
+          toolTurn('t1', 'evil'),
+          user([{ type: 'tool_result', tool_use_id: 't1', content: 'x' }]),
+        ],
+      },
+    ],
+    [
+      'tool_use not in request tools',
+      {
+        tools: [],
+        messages: [q, toolTurn(), user([{ type: 'tool_result', tool_use_id: 't1', content: 'x' }])],
+      },
+    ],
+    [
+      'orphan tool_result',
+      {
+        messages: [q, user([{ type: 'tool_result', tool_use_id: 'nope', content: 'x' }])]
+          .slice(0, 1)
+          .concat([
+            { role: 'assistant', content: 'a' },
+            user([{ type: 'tool_result', tool_use_id: 'nope', content: 'x' }]),
+          ]),
+      },
+    ],
+    [
+      'tool_result from an earlier turn',
+      {
+        messages: [
+          q,
+          toolTurn(),
+          user([{ type: 'tool_result', tool_use_id: 't1', content: 'x' }]),
+          { role: 'assistant', content: 'ok' },
+          user([{ type: 'tool_result', tool_use_id: 't1', content: 'x' }]),
+        ],
+      },
+    ],
+    [
+      'too much text',
+      {
+        messages: [
+          user('x'.repeat(30_000)),
+          { role: 'assistant', content: 'y'.repeat(30_000) },
+          user('z'.repeat(2000)),
+        ],
+      },
+    ],
+  );
   for (const [name, over] of cases) {
     it(`rejects ${name}`, async () => {
       h = await startHarness();
@@ -159,6 +276,42 @@ describe('validation', () => {
       expect(h.params).toHaveLength(0);
     });
   }
+
+  it('strips cache_control from client blocks', async () => {
+    h = await startHarness();
+    const res = await h.post(
+      body({
+        messages: [
+          user([{ type: 'text', text: 'hi', cache_control: { type: 'ephemeral', ttl: '1h' } }]),
+          {
+            role: 'assistant',
+            content: [
+              { type: 'thinking', thinking: 'x', signature: 's' },
+              {
+                type: 'tool_use',
+                id: 't1',
+                name: 'get_today_summary',
+                input: {},
+                cache_control: { type: 'ephemeral' },
+              },
+            ],
+          },
+          user([
+            {
+              type: 'tool_result',
+              tool_use_id: 't1',
+              content: [{ type: 'text', text: '{}', cache_control: { type: 'ephemeral' } }],
+              cache_control: { type: 'ephemeral' },
+            },
+          ]),
+        ],
+      }),
+    );
+    expect(res.status).toBe(200);
+    await res.text();
+    expect(JSON.stringify(h.params[0]!.messages)).not.toContain('cache_control');
+    expect(JSON.stringify(h.params[0]!.messages)).toContain('"signature":"s"');
+  });
 
   it('accepts exactly 60 messages', async () => {
     const messages = Array.from({ length: 59 }, (_, i) => ({
@@ -176,14 +329,23 @@ describe('validation', () => {
     expect((await h.post(null, 'sid=1', '{nope')).status).toBe(400);
   });
 
-  it('rejects a body over 200 KB', async () => {
+  it('rejects a body over 64 KB', async () => {
     h = await startHarness();
     const res = await h.post(
-      body({ messages: [{ role: 'user', content: 'x'.repeat(201 * 1024) }] }),
+      body({ messages: [{ role: 'user', content: 'x'.repeat(65 * 1024) }] }),
     );
     expect(res.status).toBe(413);
     expect(h.params).toHaveLength(0);
   });
+});
+
+const heavy = fakeMessage({
+  usage: {
+    input_tokens: 1000,
+    output_tokens: 100,
+    cache_read_input_tokens: 5000,
+    cache_creation_input_tokens: 0,
+  } as Anthropic.Usage,
 });
 
 describe('limits', () => {
@@ -195,17 +357,151 @@ describe('limits', () => {
     expect(await res.json()).toEqual({ code: 'rate_limited' });
   });
 
-  it('limits daily output tokens per user', async () => {
-    h = await startHarness({ dailyOutputTokens: 5 });
+  it('counts input, cache and output tokens against the daily budget', async () => {
+    h = await startHarness({ dailyTokens: 5500, message: heavy });
     await (await h.post(body())).text();
     const res = await h.post(body());
     expect(res.status).toBe(429);
     expect(h.params).toHaveLength(1);
   });
 
+  it('rejects a request whose reservation exceeds the remaining budget before calling Anthropic', async () => {
+    h = await startHarness({ dailyTokens: 4000 });
+    const res = await h.post(body());
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ code: 'rate_limited' });
+    expect(h.params).toHaveLength(0);
+  });
+
+  it('applies a global daily budget across users', async () => {
+    h = await startHarness({ globalDailyTokens: 5500, message: heavy });
+    await (await h.post(body())).text();
+    expect((await h.post(body())).status).toBe(429);
+  });
+
+  it('allows one request in flight per user', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => (release = r));
+    h = await startHarness({ hold: () => gate });
+    const first = h.post(body());
+    await vi.waitFor(() => expect(h.params).toHaveLength(1));
+    const second = await h.post(body());
+    expect(second.status).toBe(429);
+    expect(await second.json()).toEqual({ code: 'rate_limited' });
+    release();
+    await (await first).text();
+    const third = await h.post(body());
+    expect(third.status).toBe(200);
+    await third.text();
+  });
+
+  it('releases the in-flight slot when the request fails', async () => {
+    h = await startHarness({ failWith: new Anthropic.APIConnectionError({ message: 'x' }) });
+    await (await h.post(body())).text();
+    await (await h.post(body())).text();
+    expect(h.params).toHaveLength(2);
+  });
+
   it('answers the health check', async () => {
     h = await startHarness();
     const res = await fetch(`${h.url}/assistant/healthz`);
     expect(await res.text()).toBe('ok\n');
+  });
+});
+
+describe('cross-site protection', () => {
+  it('requires the assistant header', async () => {
+    h = await startHarness();
+    const res = await fetch(`${h.url}/assistant/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: 'sid=1' },
+      body: JSON.stringify(body()),
+    });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ code: 'forbidden' });
+    expect(h.params).toHaveLength(0);
+  });
+
+  it('requires a JSON content type but ignores its parameters', async () => {
+    h = await startHarness();
+    const bad = await fetch(`${h.url}/assistant/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain', 'X-Madar-Assistant': '1', Cookie: 'sid=1' },
+      body: JSON.stringify(body()),
+    });
+    expect(bad.status).toBe(403);
+    const ok = await h.post(body(), 'sid=1', undefined, {
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+    expect(ok.status).toBe(200);
+    await ok.text();
+  });
+
+  it('rejects a foreign Origin and accepts its own and the app origins', async () => {
+    h = await startHarness();
+    const foreign = await h.post(body(), 'sid=1', undefined, { Origin: 'https://evil.example' });
+    expect(foreign.status).toBe(403);
+    const own = await h.post(body(), 'sid=1', undefined, { Origin: h.url });
+    expect(own.status).toBe(200);
+    await own.text();
+    await h.close();
+    h = await startHarness();
+    const app = await h.post(body(), 'sid=1', undefined, { Origin: 'capacitor://localhost' });
+    expect(app.status).toBe(200);
+    await app.text();
+  });
+
+  it('takes the scheme from X-Forwarded-Proto', async () => {
+    h = await startHarness();
+    const host = new URL(h.url).host;
+    const res = await h.post(body(), 'sid=1', undefined, {
+      Origin: `https://${host}`,
+      'X-Forwarded-Proto': 'https',
+    });
+    expect(res.status).toBe(200);
+    await res.text();
+  });
+});
+
+describe('disconnects', () => {
+  it('aborts the stream and settles to the usage seen when the client leaves', async () => {
+    let abort: () => void = () => {};
+    const aborted = new Promise<void>((r) => (abort = r));
+    h = await startHarness({
+      events: [
+        {
+          type: 'message_start',
+          message: fakeMessage({
+            usage: { input_tokens: 100, output_tokens: 1 } as Anthropic.Usage,
+          }),
+        } as Anthropic.MessageStreamEvent,
+        {
+          type: 'message_delta',
+          delta: {},
+          usage: { output_tokens: 40, input_tokens: null },
+        } as unknown as Anthropic.MessageStreamEvent,
+      ],
+      hold: async (isAborted) => {
+        while (!isAborted()) await new Promise((r) => setTimeout(r, 5));
+      },
+      onAbort: abort,
+    });
+    const pending = h.post(body(), 'sid=abc', undefined, {}).catch(() => undefined);
+    await vi.waitFor(() => expect(h.params).toHaveLength(1));
+    h.server.closeAllConnections();
+    await aborted;
+    await pending;
+    await vi.waitFor(() => expect(h.logs).toHaveLength(1));
+    expect(h.logs[0]).toMatch(/in=100 out=40 .* stop=error:unavailable/);
+  });
+
+  it('does not call Anthropic when the client left before the stream started', async () => {
+    let close: () => void = () => {};
+    h = await startHarness({ afterReserve: () => close() });
+    close = () => h.server.closeAllConnections();
+    await h.post(body()).catch(() => undefined);
+    await vi.waitFor(() => expect(h.logs).toHaveLength(1));
+    expect(h.logs[0]).toMatch(/stop=disconnected/);
+    expect(h.params).toHaveLength(0);
   });
 });

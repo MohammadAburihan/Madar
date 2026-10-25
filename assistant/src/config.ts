@@ -5,7 +5,8 @@ export interface Config {
   erpnextSiteHost: string;
   port: number;
   ratePerMin: number;
-  dailyOutputTokens: number;
+  dailyTokens: number;
+  globalDailyTokens: number;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv): Config {
@@ -23,10 +24,11 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
     erpnextSiteHost,
     port: positive(env['PORT'], 8080, 'PORT'),
     ratePerMin: positive(env['ASSISTANT_RATE_PER_MIN'], 20, 'ASSISTANT_RATE_PER_MIN'),
-    dailyOutputTokens: positive(
-      env['ASSISTANT_DAILY_OUTPUT_TOKENS'],
-      50000,
-      'ASSISTANT_DAILY_OUTPUT_TOKENS',
+    dailyTokens: positive(env['ASSISTANT_DAILY_TOKENS'], 400000, 'ASSISTANT_DAILY_TOKENS'),
+    globalDailyTokens: positive(
+      env['ASSISTANT_GLOBAL_DAILY_TOKENS'],
+      3000000,
+      'ASSISTANT_GLOBAL_DAILY_TOKENS',
     ),
   };
 }
