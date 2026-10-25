@@ -1,4 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { lineRate, mergeLines, validQty } from '../../../core/tasks/prefill-lines';
+import {
+  PrefillNotice,
+  PrefillOpening,
+  PrefillUnavailableError,
+} from '../../../core/tasks/prefill-entry';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import { forgetDeletedDrafts } from '../../../core/tasks/deleted-drafts.service';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { OWN_SALES_ONLY } from '../../../core/auth/persona';
@@ -53,6 +60,7 @@ export class QuickSaleStore {
   /** The opened draft's customer is disabled: ERPNext refuses any sale to them until another is chosen. */
   readonly customerInactive = signal(false);
   readonly state = signal<ConfirmState>('idle');
+  readonly prefill = signal<PrefillNotice | null>(null);
   private readonly openConfirmation = computed(() =>
     ['confirming', 'unresolved', 'checking'].includes(this.state()),
   );
@@ -108,6 +116,7 @@ export class QuickSaleStore {
     this.account.set(null);
     this.draft.set(null);
     this.customerInactive.set(false);
+    this.prefill.set(null);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
@@ -167,6 +176,111 @@ export class QuickSaleStore {
       this.warehouse.set(null);
     }
     return 'opened';
+  }
+
+  /** Opens an assistant proposal as a fresh sale from today's prices and stock; anything missing throws first. */
+  async openPrefill(proposal: PrefillPayloads['quick_sale']): Promise<PrefillOpening> {
+    if (this.openConfirmation()) {
+      return 'busy';
+    }
+    const caps = this.session.capabilities();
+    const lines = mergeLines(proposal.lines);
+    if (
+      !caps.sell ||
+      (proposal.walkIn && !caps.sellToWalkIn) ||
+      (!proposal.walkIn && !proposal.customer) ||
+      !lines.length ||
+      lines.some((line) => !validQty(line.qty))
+    ) {
+      throw new PrefillUnavailableError('sale');
+    }
+    const run = ++this.openRun;
+    const business = await this.business.ensure();
+    if (!business) {
+      throw new PrefillUnavailableError('business');
+    }
+    const warehouses = await this.api.warehouses(business.name);
+    const [customer, items] = await Promise.all([
+      proposal.walkIn
+        ? Promise.resolve(null)
+        : this.api.customer(proposal.customer!, {
+            name: business.name,
+            currency: business.currency,
+          }),
+      this.api.itemsByCode(
+        lines.map((line) => line.item_code),
+        business.name,
+        warehouses.map((w) => w.id),
+      ),
+    ]);
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.openConfirmation()) {
+      return 'busy';
+    }
+    if (!proposal.walkIn && !customer) {
+      throw new PrefillUnavailableError('customer');
+    }
+    const found = new Map(items.map((item) => [item.code, item]));
+    const missing = lines.find((line) => !found.has(line.item_code));
+    if (missing) {
+      throw new PrefillUnavailableError(`item ${missing.item_code}`);
+    }
+    const chosen = proposal.warehouse ?? this.bestWarehouse(warehouses, lines, found);
+    this.start();
+    this.warehouses.set(warehouses);
+    if (customer) {
+      this.selectCustomer(customer);
+    } else {
+      this.useWalkIn();
+    }
+    this.lines.set(
+      lines.map((line) => {
+        const item = found.get(line.item_code)!;
+        return {
+          item,
+          qty: line.qty,
+          rate: lineRate(line, caps.editPrice, item.price),
+          discount: 0,
+        };
+      }),
+    );
+    this.warehouse.set(warehouses.some((w) => w.id === chosen) ? chosen : null);
+    this.prefill.set('filled');
+    await this.loadOptions().catch(() => undefined);
+    return 'opened';
+  }
+
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.prefill.set(notice);
+      return;
+    }
+    if (!this.openConfirmation()) {
+      this.start();
+      this.prefill.set(notice);
+    }
+  }
+
+  /** Without a named warehouse: the one that holds the most of what is being sold, if it can supply every item. */
+  private bestWarehouse(
+    warehouses: WarehouseOption[],
+    lines: { item_code: string; qty: number }[],
+    items: Map<string, CatalogItem>,
+  ): string | null {
+    const supplies = warehouses
+      .map((w) => ({
+        id: w.id,
+        covers: lines.every((line) => {
+          const item = items.get(line.item_code)!;
+          return !item.isStock || (item.stock[w.id] ?? 0) >= line.qty;
+        }),
+        held: lines.reduce((sum, line) => sum + (items.get(line.item_code)!.stock[w.id] ?? 0), 0),
+      }))
+      .filter((w) => w.covers)
+      .sort((a, b) => b.held - a.held);
+    return supplies[0]?.id ?? null;
   }
 
   async loadOptions(): Promise<void> {

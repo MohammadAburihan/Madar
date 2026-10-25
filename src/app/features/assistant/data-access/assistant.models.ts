@@ -1,3 +1,7 @@
+import { Capabilities } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
+import { PrefillKind, PrefillRequest } from '../../../core/tasks/task-prefill.service';
+
 export interface TextBlock {
   type: 'text';
   text: string;
@@ -58,7 +62,15 @@ export class AssistantError extends Error {
   }
 }
 
-export type RecordKind = 'invoice' | 'customer' | 'item' | 'purchaseOrder' | 'draft';
+export type RecordKind =
+  | 'invoice'
+  | 'quotation'
+  | 'salesOrder'
+  | 'purchaseOrder'
+  | 'customer'
+  | 'supplier'
+  | 'item'
+  | 'draft';
 
 /** A record a tool returned, which the reply may open: shown only when the reply mentions it. */
 export interface RecordLink {
@@ -68,10 +80,64 @@ export interface RecordLink {
   mentions: string[];
 }
 
+export type ProposalKind = PrefillKind | 'open_record';
+
+export interface ProposalLine {
+  name: string;
+  qty: number;
+  /** What the line comes to; null when the task will price it (no price set, or not shown to the role). */
+  amount: number | null;
+}
+
+/** What a tool prepared for the chat's card: a task to fill in (`request`) or a record's page (`record`). */
+export interface Proposal {
+  id: string;
+  kind: ProposalKind;
+  party: string | null;
+  item: string | null;
+  lines: ProposalLine[];
+  total: number | null;
+  /** A collection: the amount proposed (null = everything due) and what the customer owes. */
+  amount: number | null;
+  due: number | null;
+  from: string | null;
+  to: string | null;
+  record: { kind: RecordKind; id: string; label: string; draft: boolean } | null;
+  request: PrefillRequest | null;
+}
+
+/** One of the matches a name could mean; `label` is what the user sends back to pick it. */
+export interface ChoiceOption {
+  id: string;
+  label: string;
+}
+
 export interface ToolOutcome {
   content: string;
   isError: boolean;
   /** ERPNext refused the read: the caller checks whether the session ended. */
   forbidden: boolean;
   records: RecordLink[];
+  proposals?: Proposal[];
+  choices?: ChoiceOption[];
+}
+
+/** The tool refuses with a reason the assistant can pass on, as opposed to a lookup that broke. */
+export class ToolFailure extends Error {}
+
+export interface ToolScope {
+  persona: Persona;
+  caps: Capabilities;
+  userId: string;
+  company: string;
+  currency: string;
+  today: string;
+}
+
+export interface ToolFound {
+  payload: Record<string, unknown>;
+  listKey: string | null;
+  records: RecordLink[];
+  proposals?: Proposal[];
+  choices?: ChoiceOption[];
 }

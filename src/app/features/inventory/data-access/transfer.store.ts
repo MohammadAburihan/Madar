@@ -8,6 +8,14 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { parseNumber } from '../../../core/format/number';
+import { SessionService } from '../../../core/auth/session.service';
+import {
+  PrefillNotice,
+  PrefillOpening,
+  PrefillUnavailableError,
+} from '../../../core/tasks/prefill-entry';
+import { validQty } from '../../../core/tasks/prefill-lines';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import { InventoryApiService } from './inventory-api.service';
 import {
   StockItem,
@@ -26,6 +34,7 @@ export type TransferFailure = 'permission' | 'offline' | 'stock' | 'changed' | '
 export class TransferStore {
   private readonly api = inject(InventoryApiService);
   private readonly business = inject(BusinessService);
+  private readonly session = inject(SessionService);
 
   readonly reference = signal(newReference('TRF'));
   readonly warehouses = signal<WarehouseInfo[]>([]);
@@ -34,6 +43,7 @@ export class TransferStore {
   readonly to = signal<string | null>(null);
   readonly qtyInput = signal('');
   readonly draft = signal<string | null>(null);
+  readonly prefill = signal<PrefillNotice | null>(null);
   readonly state = signal<TransferState>('idle');
   readonly failure = signal<TransferFailure | null>(null);
   readonly result = signal<TransferResult | null>(null);
@@ -80,6 +90,7 @@ export class TransferStore {
     this.to.set(null);
     this.qtyInput.set('');
     this.draft.set(null);
+    this.prefill.set(null);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
@@ -132,6 +143,78 @@ export class TransferStore {
     );
     if (item) {
       this.selectItem(item);
+    }
+  }
+
+  private openRun = 0;
+
+  /** Opens an assistant proposal as a fresh move from today's lookups; anything missing or not movable throws first. */
+  async openPrefill(proposal: PrefillPayloads['stock_move']): Promise<PrefillOpening> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    if (
+      !this.session.capabilities().transferStock ||
+      !proposal.item_code ||
+      !validQty(proposal.qty) ||
+      (proposal.from_warehouse && proposal.from_warehouse === proposal.to_warehouse)
+    ) {
+      throw new PrefillUnavailableError('stock move');
+    }
+    const run = ++this.openRun;
+    const business = await this.business.ensure();
+    if (!business) {
+      throw new PrefillUnavailableError('business');
+    }
+    const warehouses = await this.api.movableWarehouses(business.name);
+    const item = await this.api.item(
+      proposal.item_code,
+      warehouses.map((w) => w.id),
+    );
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    const places = new Set(warehouses.map((w) => w.id));
+    const named = [proposal.from_warehouse, proposal.to_warehouse].filter(
+      (id): id is string => !!id,
+    );
+    if (!item || named.some((id) => !places.has(id))) {
+      throw new PrefillUnavailableError(item ? 'location' : `item ${proposal.item_code}`);
+    }
+    this.start();
+    this.warehouses.set(warehouses);
+    this.selectItem(item);
+    if (proposal.from_warehouse) {
+      this.setFrom(proposal.from_warehouse);
+    }
+    if (proposal.to_warehouse) {
+      this.setTo(proposal.to_warehouse);
+      if (this.from() === proposal.to_warehouse) {
+        // Only the destination was named, and it is where the item has the most: the source is the next one.
+        this.from.set(
+          warehouses
+            .map((w) => w.id)
+            .filter((id) => id !== proposal.to_warehouse)
+            .sort((a, b) => (item.stock[b] ?? 0) - (item.stock[a] ?? 0))[0] ?? null,
+        );
+      }
+    }
+    this.qtyInput.set(String(proposal.qty));
+    this.prefill.set('filled');
+    return 'opened';
+  }
+
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.prefill.set(notice);
+      return;
+    }
+    if (!this.busy() && !(this.state() === 'confirmed' && !this.resultShown())) {
+      this.start();
+      this.prefill.set(notice);
     }
   }
 

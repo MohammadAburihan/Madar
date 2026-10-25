@@ -3,11 +3,13 @@ import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { QuickSaleStore } from './quick-sale.store';
 import { CatalogItem, SaleResult } from './sale.models';
 import { UnresolvedError } from '../../../core/erpnext/confirmation';
+import { PrefillUnavailableError } from '../../../core/tasks/prefill-entry';
 import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { SalesApiService, WALK_IN_CUSTOMER } from './sales-api.service';
 
@@ -38,8 +40,13 @@ const RESULT: SaleResult = {
   paymentFailed: false,
 };
 
-function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
+function setup(
+  user: { id: string } | null = { id: 'lina@example.com' },
+  persona: Persona = 'salesperson',
+) {
   const api = {
+    customer: vi.fn(),
+    itemsByCode: vi.fn(),
     warehouses: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
     paymentAccounts: vi.fn().mockResolvedValue([CASH]),
     confirm: vi.fn(),
@@ -54,15 +61,16 @@ function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
       {
         provide: SessionService,
         useValue: {
-          capabilities: () => capabilitiesFor('salesperson'),
-          persona: () => 'salesperson',
+          capabilities: () => capabilitiesFor(persona),
+          persona: () => persona,
           user: () => user,
         },
       },
       {
         provide: BusinessService,
         useValue: {
-          ensure: () => Promise.resolve({ name: 'Rehan Nursery', country: 'Palestine' }),
+          ensure: () =>
+            Promise.resolve({ name: 'Rehan Nursery', country: 'Palestine', currency: 'ILS' }),
         },
       },
     ],
@@ -504,5 +512,236 @@ describe('QuickSaleStore when its draft is deleted', () => {
     TestBed.tick();
 
     expect(store.draft()).toBe('ACC-SINV-0001');
+  });
+});
+
+describe('QuickSaleStore.openPrefill', () => {
+  const LINA = {
+    id: 'Lina Haddad',
+    name: 'Lina Haddad',
+    phone: null,
+    city: null,
+    outstanding: 0,
+    unpaidInvoices: 0,
+  };
+  const GARDEN = { id: 'Garden - RN', name: 'Garden shop' };
+  const MAIN = { id: 'Main - RN', name: 'Main warehouse' };
+  const OLIVE_STOCKED = { ...OLIVE, stock: { 'Main - RN': 24, 'Garden - RN': 6 } };
+  const PROPOSAL = {
+    customer: 'Lina Haddad',
+    lines: [{ item_code: 'OLV-20', qty: 2 }],
+  };
+
+  function prepared(persona: Persona = 'salesperson') {
+    const ctx = setup({ id: 'lina@example.com' }, persona);
+    ctx.api.warehouses.mockResolvedValue([GARDEN, MAIN]);
+    ctx.api.customer.mockResolvedValue(LINA);
+    ctx.api.itemsByCode.mockResolvedValue([OLIVE_STOCKED, CONSULTATION]);
+    return ctx;
+  }
+
+  it('fills a fresh sale with the customer and each item at its looked-up price and notes it', async () => {
+    const { store, api } = prepared();
+    expect(await store.openPrefill(PROPOSAL)).toBe('opened');
+    expect(api.customer).toHaveBeenCalledWith('Lina Haddad', {
+      name: 'Rehan Nursery',
+      currency: 'ILS',
+    });
+    expect(api.itemsByCode).toHaveBeenCalledWith(['OLV-20'], 'Rehan Nursery', [
+      'Garden - RN',
+      'Main - RN',
+    ]);
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect(store.walkIn()).toBe(false);
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate, l.discount])).toEqual([
+      ['OLV-20', 2, 85, 0],
+    ]);
+    expect(store.total()).toBe(170);
+    expect(store.prefill()).toBe('filled');
+    expect(store.state()).toBe('idle');
+    expect(store.draft()).toBeNull();
+    expect(store.reference()).toMatch(/^SALE-/);
+    expect(store.dirty()).toBe(true);
+  });
+
+  it('takes a fresh reference, so the sale is confirmed under its own', async () => {
+    const { store } = prepared();
+    const before = store.reference();
+    await store.openPrefill(PROPOSAL);
+    expect(store.reference()).not.toBe(before);
+  });
+
+  it('replaces a sale that was only being edited', async () => {
+    const { store } = prepared();
+    withBasket(store);
+    store.add(CONSULTATION);
+    await store.openPrefill(PROPOSAL);
+    expect(store.lines().map((l) => l.item.code)).toEqual(['OLV-20']);
+  });
+
+  it('adds up an item named twice into one line', async () => {
+    const { store } = prepared();
+    await store.openPrefill({
+      ...PROPOSAL,
+      lines: [
+        { item_code: 'OLV-20', qty: 1 },
+        { item_code: 'OLV-20', qty: 2 },
+      ],
+    });
+    expect(store.lines().map((l) => [l.item.code, l.qty])).toEqual([['OLV-20', 3]]);
+  });
+
+  it('opens a walk-in sale for a role that may', async () => {
+    const { store, api } = prepared();
+    await store.openPrefill({ walkIn: true, lines: PROPOSAL.lines });
+    expect(api.customer).not.toHaveBeenCalled();
+    expect(store.walkIn()).toBe(true);
+    expect(store.customer()).toBeNull();
+    expect(store.hasCustomer()).toBe(true);
+  });
+
+  it('picks the warehouse that can supply every item, the fullest first', async () => {
+    const { store } = prepared();
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 8 }] });
+    expect(store.warehouse()).toBe('Main - RN');
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 30 }] });
+    expect(store.warehouse()).toBeNull();
+  });
+
+  it('uses the warehouse the proposal names when it exists', async () => {
+    const { store } = prepared();
+    await store.openPrefill({ ...PROPOSAL, warehouse: 'Garden - RN' });
+    expect(store.warehouse()).toBe('Garden - RN');
+    await store.openPrefill({ ...PROPOSAL, warehouse: 'Gone - RN' });
+    expect(store.warehouse()).toBeNull();
+  });
+
+  it('ignores a proposed price for a role that may not change prices', async () => {
+    const { store } = prepared('salesperson');
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 2, rate: 10 }] });
+    expect(store.lines()[0].rate).toBe(85);
+    expect(store.total()).toBe(170);
+  });
+
+  it('keeps a proposed price for the owner, who may', async () => {
+    const { store } = prepared('owner');
+    await store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 2, rate: 80 }] });
+    expect(store.lines()[0].rate).toBe(80);
+    expect(store.total()).toBe(160);
+  });
+
+  it('refuses a disabled or missing customer before touching the sale', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    api.customer.mockResolvedValue(null);
+    await expect(store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    expect(store.lines().length).toBe(2);
+    expect(store.prefill()).toBeNull();
+  });
+
+  it('refuses an item that is gone or disabled instead of leaving it out', async () => {
+    const { store, api } = prepared();
+    api.itemsByCode.mockResolvedValue([]);
+    await expect(store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    expect(store.lines()).toEqual([]);
+    expect(store.customer()).toBeNull();
+  });
+
+  it('refuses a sale the role may not make', async () => {
+    const { store } = prepared('warehouse');
+    await expect(store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+  });
+
+  it('refuses a bad quantity, an empty sale and a sale with no customer', async () => {
+    const { store } = prepared();
+    for (const proposal of [
+      { ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 0 }] },
+      { ...PROPOSAL, lines: [{ item_code: 'OLV-20', qty: 10001 }] },
+      { ...PROPOSAL, lines: [] },
+      { lines: PROPOSAL.lines },
+    ]) {
+      await expect(store.openPrefill(proposal)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    }
+  });
+
+  it('keeps a confirmation that is running, and does not look anything up', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    expect(await store.openPrefill(PROPOSAL)).toBe('busy');
+    expect(api.customer).not.toHaveBeenCalled();
+    expect(store.state()).toBe('confirming');
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('keeps a confirmation that starts while the proposal loads', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    let release: (items: CatalogItem[]) => void = () => undefined;
+    api.itemsByCode.mockReturnValue(new Promise((resolve) => (release = resolve)));
+    const opening = store.openPrefill(PROPOSAL);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    release([OLIVE]);
+    expect(await opening).toBe('busy');
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('lets a newer proposal win over one still loading', async () => {
+    const { store, api } = prepared();
+    let release: (items: CatalogItem[]) => void = () => undefined;
+    api.itemsByCode.mockReturnValueOnce(new Promise((resolve) => (release = resolve)));
+    const first = store.openPrefill(PROPOSAL);
+    api.itemsByCode.mockResolvedValue([CONSULTATION]);
+    const second = store.openPrefill({ ...PROPOSAL, lines: [{ item_code: 'SRV-GARDEN', qty: 1 }] });
+    expect(await second).toBe('opened');
+    release([OLIVE]);
+    expect(await first).toBe('stale');
+    expect(store.lines().map((l) => l.item.code)).toEqual(['SRV-GARDEN']);
+  });
+
+  it('leaves a fresh sale with a notice when a proposal could not be opened', async () => {
+    const { store } = prepared();
+    withBasket(store);
+    store.prefillFailed('expired');
+    expect(store.lines()).toEqual([]);
+    expect(store.prefill()).toBe('expired');
+  });
+
+  it('keeps a sale being confirmed when a proposal could not be opened', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    store.prefillFailed('unavailable');
+    expect(store.prefill()).toBeNull();
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('keeps a sale being confirmed and says the proposal was not opened', async () => {
+    const { store, api } = prepared();
+    withBasket(store);
+    api.confirm.mockReturnValue(new Promise(() => undefined));
+    void store.confirm();
+    store.prefillFailed('busy');
+    expect(store.prefill()).toBe('busy');
+    expect(store.state()).toBe('confirming');
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('keeps a sale in progress and does not start over when a proposal is busy', async () => {
+    const { store } = prepared();
+    withBasket(store);
+    store.prefillFailed('busy');
+    expect(store.prefill()).toBe('busy');
+    expect(store.lines().length).toBe(2);
+  });
+
+  it('clears the notice when the sale starts over', async () => {
+    const { store } = prepared();
+    await store.openPrefill(PROPOSAL);
+    store.start();
+    expect(store.prefill()).toBeNull();
   });
 });

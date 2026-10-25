@@ -1,8 +1,12 @@
+import { formatMoney } from '../../../core/format/format';
 import { Translator } from '../../../core/i18n/translator';
+import { PrefillKind } from '../../../core/tasks/task-prefill.service';
 import {
   ApiMessage,
+  ChoiceOption,
   ContentBlock,
   ProblemKind,
+  Proposal,
   RecordKind,
   RecordLink,
 } from '../data-access/assistant.models';
@@ -16,6 +20,20 @@ export interface LinkView {
   label: string;
 }
 
+/** A card for something the assistant prepared: what it is, what it holds, and the button that opens it. */
+export interface ProposalCardView {
+  id: string;
+  title: string;
+  lines: string[];
+  note: string | null;
+  action: string;
+}
+
+export interface ChoiceView {
+  id: string;
+  label: string;
+}
+
 export interface ConversationItemView {
   id: string;
   role: 'user' | 'assistant';
@@ -23,6 +41,10 @@ export interface ConversationItemView {
   author: string;
   blocks: ReplyBlock[];
   links: LinkView[];
+  proposals: ProposalCardView[];
+  /** The matches the assistant asked the user to pick from, while that question is the last thing said. */
+  choices: ChoiceView[];
+  choicesLabel: string;
 }
 
 export interface AssistantView {
@@ -49,6 +71,9 @@ export interface AssistantView {
 export interface AssistantViewInput {
   messages: readonly ApiMessage[];
   links: Readonly<Record<number, readonly RecordLink[]>>;
+  proposals: Readonly<Record<number, readonly Proposal[]>>;
+  choices: Readonly<Record<number, readonly ChoiceOption[]>>;
+  currency: string;
   /** The reply being written, as far as it has streamed. */
   streaming: string;
   state: AssistantState;
@@ -66,6 +91,129 @@ const textOf = (content: string | ContentBlock[]): string =>
         .map((block) => block.text)
         .join('\n\n');
 
+const BUTTON: Record<PrefillKind, string> = {
+  quick_sale: 'sale',
+  quotation: 'quotation',
+  purchase_order: 'purchase',
+  collect_payment: 'payment',
+  stock_move: 'move',
+};
+
+export const PROPOSAL_ROUTES: Record<PrefillKind, string[]> = {
+  quick_sale: ['/sales/new', 'basket'],
+  quotation: ['/sales/quote/new'],
+  purchase_order: ['/purchases/new'],
+  collect_payment: ['/money/receive'],
+  stock_move: ['/inventory/transfer'],
+};
+
+export function proposalCard(
+  proposal: Proposal,
+  currency: string,
+  tr: Translator,
+): ProposalCardView {
+  const { t } = tr;
+  const money = (amount: number) => formatMoney(amount, currency);
+  const lines = proposal.lines.map((line) =>
+    line.amount === null
+      ? t('assistant.proposal.lineNoPrice', { qty: line.qty, item: line.name })
+      : t('assistant.proposal.line', {
+          qty: line.qty,
+          item: line.name,
+          amount: money(line.amount),
+        }),
+  );
+  const name = proposal.party ?? '';
+  switch (proposal.kind) {
+    case 'quick_sale':
+    case 'quotation':
+    case 'purchase_order': {
+      const title =
+        proposal.kind === 'quotation'
+          ? t('assistant.proposal.quotation', { name })
+          : proposal.kind === 'purchase_order'
+            ? t('assistant.proposal.purchase', { name })
+            : proposal.party
+              ? t('assistant.proposal.sale', { name })
+              : t('assistant.proposal.walkInSale');
+      return {
+        id: proposal.id,
+        title,
+        lines:
+          proposal.total === null
+            ? lines
+            : [...lines, t('assistant.proposal.total', { amount: money(proposal.total) })],
+        note: t('assistant.proposal.note'),
+        action: t(`assistant.proposal.button.${BUTTON[proposal.kind]}`),
+      };
+    }
+    case 'collect_payment':
+      return {
+        id: proposal.id,
+        title: t('assistant.proposal.payment', { name }),
+        lines: [
+          proposal.amount === null
+            ? t('assistant.proposal.amountAll')
+            : t('assistant.proposal.amount', { amount: money(proposal.amount) }),
+          ...(proposal.due === null
+            ? []
+            : [t('assistant.proposal.due', { amount: money(proposal.due) })]),
+        ],
+        note: t('assistant.proposal.note'),
+        action: t('assistant.proposal.button.payment'),
+      };
+    case 'stock_move': {
+      const anywhere = t('assistant.proposal.anywhere');
+      return {
+        id: proposal.id,
+        title: t('assistant.proposal.move', { item: proposal.item ?? '' }),
+        lines: [
+          ...proposal.lines.map((line) =>
+            t('assistant.proposal.moveLine', { qty: line.qty, item: line.name }),
+          ),
+          ...(proposal.from || proposal.to
+            ? [
+                t('assistant.proposal.route', {
+                  from: proposal.from ?? anywhere,
+                  to: proposal.to ?? anywhere,
+                }),
+              ]
+            : []),
+        ],
+        note: t('assistant.proposal.note'),
+        action: t('assistant.proposal.button.move'),
+      };
+    }
+    case 'open_record': {
+      const record = proposal.record;
+      return {
+        id: proposal.id,
+        title: record
+          ? t(`assistant.proposal.record.${record.draft ? 'draft' : record.kind}`, {
+              name: record.label,
+            })
+          : '',
+        lines: [],
+        note: null,
+        action: t('assistant.proposal.button.record'),
+      };
+    }
+  }
+}
+
+export function proposalTarget(
+  proposal: Proposal,
+  prefill: string | null,
+): { commands: string[]; queryParams?: Record<string, string> } | null {
+  if (proposal.request) {
+    return prefill
+      ? { commands: PROPOSAL_ROUTES[proposal.request.kind], queryParams: { prefill } }
+      : null;
+  }
+  const route = proposal.record && recordRoute(`${proposal.record.kind}:${proposal.record.id}`);
+  return route ? { commands: route } : null;
+}
+
 export const recordKey = (link: Pick<RecordLink, 'kind' | 'id'>) => `${link.kind}:${link.id}`;
 
 /** Where a record's button goes: the page Madar already has for it. */
@@ -76,8 +224,14 @@ export function recordRoute(key: string): string[] | null {
   switch (kind) {
     case 'invoice':
       return ['/sales/invoices', id];
+    case 'quotation':
+      return ['/sales/quotes', id];
+    case 'salesOrder':
+      return ['/sales/orders', id];
     case 'customer':
       return ['/contacts/customers', id];
+    case 'supplier':
+      return ['/contacts/suppliers', id];
     case 'item':
       return ['/catalog', id];
     case 'purchaseOrder':
@@ -122,6 +276,14 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       author: user ? you : assistant,
       blocks: user ? plainBlocks(text) : parseReplyText(text),
       links: user ? [] : linksFor(text, input.links[index] ?? [], tr),
+      proposals: user
+        ? []
+        : (input.proposals[index] ?? []).map((p) => proposalCard(p, input.currency, tr)),
+      choices:
+        user || index !== input.messages.length - 1
+          ? []
+          : (input.choices[index] ?? []).map(({ id, label }) => ({ id, label })),
+      choicesLabel: t('assistant.choices.label'),
     });
   });
   if (input.streaming.trim()) {
@@ -131,6 +293,9 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       author: assistant,
       blocks: parseReplyText(input.streaming),
       links: [],
+      proposals: [],
+      choices: [],
+      choicesLabel: '',
     });
   }
   const busy = input.state === 'sending' || input.state === 'running-tool';

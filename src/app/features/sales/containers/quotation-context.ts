@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
+import { prefillNoticeText } from '../../../core/tasks/prefill-entry';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { QuotationStore } from '../data-access/quotation.store';
 
@@ -20,6 +21,10 @@ export function injectQuotationContext() {
     router,
     i18n,
     desktop: computed(() => viewport() !== 'mobile'),
+    prefillNotice: computed(() => {
+      const notice = store.prefill();
+      return notice ? prefillNoticeText(i18n.tr(), notice, 'quotation') : null;
+    }),
     currency: computed(() => business.active()?.currency ?? ''),
     go: (path: string, extras?: Parameters<Router['navigate']>[1]) =>
       router.navigate(['/sales/quote/new', ...path.split('/').filter(Boolean)], extras),

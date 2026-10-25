@@ -73,7 +73,7 @@ to the Owner.
 | Delete a draft (one they could make; salesperson and store associate their own sales drafts; only where ERPNext lets their roles delete it) | ✅ | own | own | own | own | own |
 | Cancel a confirmed record (ERPNext reverses its stock and money; it stays as Cancelled) | ✅ | — | — | — | — | — |
 | Cancel and edit (amend) a confirmed record: a corrected copy to confirm again | ✅ | — | — | — | — | — |
-| Use the assistant (looks things up with the user's own access; changes nothing) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Use the assistant (looks things up with the user's own access; its proposals open the normal task filled in, and nothing is written until the user confirms there) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## Enforcement
 
@@ -91,6 +91,11 @@ to the Owner.
 - The assistant reads ERPNext with the signed-in user's own session, and is offered only the lookups the role's rules
   allow: sales figures and invoices for roles that sell (salespeople and store associates see their own sales only),
   customers for roles that see Contacts, drafts for roles that sell or order, purchase orders for roles that order or
-  receive, and buying prices and order values only for roles that see costs. It changes nothing.
+  receive, and buying prices and order values only for roles that see costs. It changes nothing itself: it may propose a
+  quick sale or quotation (roles that sell; walk-in only where walk-in sales are allowed), a purchase order (roles that
+  order purchases), collecting a payment (roles that collect), a stock move (roles that move stock) and opening a record
+  (roles that can read it). A proposal opens the same task a user would open, filled in, and the user confirms there
+  with that task's own rules; a typed price counts only for a role that may set prices (buying prices: roles that see
+  costs), and a discount is never proposed.
 - Quick sales charge **no VAT**, the salesperson **picks the warehouse** on each sale, and anonymous sales use the
   shared **Walk-in Customer**.

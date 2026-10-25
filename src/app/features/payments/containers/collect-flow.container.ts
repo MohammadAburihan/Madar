@@ -1,19 +1,48 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { injectI18n } from '../../../core/i18n/i18n';
+import { ViewportService } from '../../../core/layout/viewport.service';
+import { injectPrefillEntry } from '../../../core/tasks/prefill-entry';
+import { DraftGateComponent } from '../../../shared/ui/draft-gate.component';
 import { CollectionStore } from '../data-access/collection.store';
 
 /**
  * Hosts the "Receive payment" steps. It is created only when the task is entered from elsewhere, so that
  * is where a fresh visit starts over; moving between steps (including the back button) keeps the work.
+ * `?prefill=<id>` opens a proposal from the assistant.
  */
 @Component({
   selector: 'app-collect-flow',
-  imports: [RouterOutlet],
+  imports: [DraftGateComponent, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<router-outlet />`,
+  template: `
+    @if (proposal.phase() === 'ready') {
+      <router-outlet />
+    } @else {
+      <app-draft-gate
+        [failed]="false"
+        [desktop]="desktop()"
+        [loading]="loading()"
+        title=""
+        message=""
+        backLabel=""
+      />
+    }
+  `,
 })
 export class CollectFlowContainer {
+  private readonly store = inject(CollectionStore);
+  private readonly i18n = injectI18n();
+  private readonly viewport = inject(ViewportService).viewport;
+  protected readonly desktop = computed(() => this.viewport() !== 'mobile');
+  protected readonly loading = computed(() => this.i18n.tr().t('prefill.loading'));
+  protected readonly proposal = injectPrefillEntry(
+    'collect_payment',
+    (payload) => this.store.openPrefill(payload),
+    (notice) => this.store.prefillFailed(notice),
+  );
+
   constructor() {
-    inject(CollectionStore).resume();
+    this.store.resume();
   }
 }

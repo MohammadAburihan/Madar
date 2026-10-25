@@ -12,8 +12,16 @@ import {
 import { DraftUnavailableError } from '../../../core/erpnext/draft';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
+import { lineRate, mergeLines, validQty } from '../../../core/tasks/prefill-lines';
+import {
+  PrefillNotice,
+  PrefillOpening,
+  PrefillUnavailableError,
+} from '../../../core/tasks/prefill-entry';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { QuotationApiService } from './quotation-api.service';
+import { SalesApiService } from './sales-api.service';
 import { QuoteLine, QuotationDetail, QuotationRequest, quoteTotal } from './quotation.models';
 import { CatalogItem } from './sale.models';
 
@@ -30,6 +38,7 @@ export class QuotationStore {
   private readonly business = inject(BusinessService);
   private readonly clock = inject(SiteClockService);
   private readonly session = inject(SessionService);
+  private readonly sales = inject(SalesApiService);
 
   readonly reference = signal(newReference('QUO'));
   readonly customer = signal<{ id: string; name: string; meta: string | null } | null>(null);
@@ -39,6 +48,7 @@ export class QuotationStore {
   /** The site's today, the earliest a quotation can be valid until. */
   readonly today = signal('');
   readonly draft = signal<string | null>(null);
+  readonly prefill = signal<PrefillNotice | null>(null);
   readonly state = signal<QuoteState>('idle');
   readonly failure = signal<QuoteFailure | null>(null);
   /** The confirmed quotation's name. */
@@ -86,6 +96,7 @@ export class QuotationStore {
     this.lines.set([]);
     this.validTill.set('');
     this.draft.set(null);
+    this.prefill.set(null);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
@@ -140,6 +151,70 @@ export class QuotationStore {
     }
     this.load(detail);
     return 'opened';
+  }
+
+  /** Opens an assistant proposal as a fresh quotation from today's prices; anything missing throws first. */
+  async openPrefill(proposal: PrefillPayloads['quotation']): Promise<PrefillOpening> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    const caps = this.session.capabilities();
+    const lines = mergeLines(proposal.lines);
+    if (!caps.sell || !proposal.customer || !lines.length || lines.some((l) => !validQty(l.qty))) {
+      throw new PrefillUnavailableError('quotation');
+    }
+    const run = ++this.openRun;
+    const business = await this.business.ensure();
+    if (!business) {
+      throw new PrefillUnavailableError('business');
+    }
+    const [customer, items] = await Promise.all([
+      this.sales.customer(proposal.customer, { name: business.name, currency: business.currency }),
+      this.sales.itemsByCode(
+        lines.map((line) => line.item_code),
+        business.name,
+        [],
+      ),
+    ]);
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    if (!customer) {
+      throw new PrefillUnavailableError('customer');
+    }
+    const found = new Map(items.map((item) => [item.code, item]));
+    const missing = lines.find((line) => !found.has(line.item_code));
+    if (missing) {
+      throw new PrefillUnavailableError(`item ${missing.item_code}`);
+    }
+    this.start();
+    this.customer.set({
+      id: customer.id,
+      name: customer.name,
+      meta: [customer.phone, customer.city].filter(Boolean).join(' · ') || null,
+    });
+    this.lines.set(
+      lines.map((line) => {
+        const item = found.get(line.item_code)!;
+        return { item, qty: line.qty, rate: lineRate(line, caps.editPrice, item.price) };
+      }),
+    );
+    this.prefill.set('filled');
+    return 'opened';
+  }
+
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.prefill.set(notice);
+      return;
+    }
+    if (!this.busy() && !(this.state() === 'confirmed' && !this.resultShown())) {
+      this.start();
+      this.prefill.set(notice);
+    }
   }
 
   private draftOwner(name: string): string | null {

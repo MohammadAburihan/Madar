@@ -15,15 +15,16 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { AssistantComposerComponent } from '../components/assistant-composer.component';
 import { AssistantConversationComponent } from '../components/assistant-conversation.component';
 import { AssistantSuggestionsComponent } from '../components/assistant-suggestions.component';
 import { AssistantStore } from '../data-access/assistant.store';
-import { buildAssistantView, recordRoute } from './assistant-view';
+import { buildAssistantView, proposalTarget, recordRoute } from './assistant-view';
 
-/** Ask the assistant about customers, items, sales and stock: it looks things up and never changes anything. */
+/** Ask the assistant about customers, items, sales and stock; it looks things up and proposes tasks the user confirms. */
 @Component({
   selector: 'app-assistant',
   imports: [
@@ -74,6 +75,8 @@ import { buildAssistantView, recordRoute } from './assistant-view';
         [problem]="v.problem"
         [busy]="v.busy"
         (opened)="open($event)"
+        (proposalOpened)="openProposal($event)"
+        (choicePicked)="send($event)"
       />
     } @else {
       <app-assistant-suggestions
@@ -102,6 +105,7 @@ export class AssistantContainer implements OnDestroy {
   private readonly router = inject(Router);
   private readonly session = inject(SessionService);
   private readonly business = inject(BusinessService);
+  private readonly prefills = inject(TaskPrefillService);
   private readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
@@ -114,6 +118,9 @@ export class AssistantContainer implements OnDestroy {
       {
         messages: this.store.messages(),
         links: this.store.links(),
+        proposals: this.store.proposals(),
+        choices: this.store.choices(),
+        currency: this.business.active()?.currency ?? '',
         streaming: this.store.streaming(),
         state: this.store.state(),
         activeTools: this.store.activeTools(),
@@ -164,6 +171,18 @@ export class AssistantContainer implements OnDestroy {
   protected send(text: string): void {
     this.draft.set('');
     void this.store.send(text);
+  }
+
+  protected openProposal(id: string): void {
+    const proposal = this.store.proposal(id);
+    if (!proposal) {
+      return;
+    }
+    const prefill = proposal.request ? this.prefills.put(proposal.request) : null;
+    const target = proposalTarget(proposal, prefill);
+    if (target) {
+      void this.router.navigate(target.commands, { queryParams: target.queryParams });
+    }
   }
 
   protected open(key: string): void {

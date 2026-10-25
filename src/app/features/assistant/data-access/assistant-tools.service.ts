@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { Capabilities } from '../../../core/auth/capabilities';
-import { OWN_SALES_ONLY, Persona } from '../../../core/auth/persona';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
@@ -13,7 +12,15 @@ import { toIsoDate } from '../../../core/format/format';
 import { round2, westernDigits } from '../../../core/format/number';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
-import { ChatContext, RecordLink, ToolOutcome } from './assistant.models';
+import {
+  ChatContext,
+  RecordLink,
+  ToolFailure,
+  ToolFound as Found,
+  ToolOutcome,
+  ToolScope as Scope,
+} from './assistant.models';
+import { AssistantProposalsService } from './assistant-proposals.service';
 import {
   ToolInput,
   ToolName,
@@ -22,21 +29,6 @@ import {
   toolsFor,
   validateInput,
 } from './assistant-tools';
-
-interface Scope {
-  persona: Persona;
-  caps: Capabilities;
-  userId: string;
-  company: string;
-  currency: string;
-  today: string;
-}
-
-interface Found {
-  payload: Record<string, unknown>;
-  listKey: string | null;
-  records: RecordLink[];
-}
 
 const NOT_ALLOWED = 'not allowed for your role';
 const FAILED = 'lookup failed';
@@ -81,6 +73,7 @@ export class AssistantToolsService {
   private readonly balances = inject(PartyBalancesService);
   private readonly sellingPrices = inject(SellingPricesService);
   private readonly warehouses = inject(WarehouseDirectoryService);
+  private readonly proposals = inject(AssistantProposalsService);
 
   /** The tools this user's role may be offered, and what the assistant is told about the business. */
   async prepare(): Promise<{ tools: ToolName[]; context: ChatContext }> {
@@ -102,6 +95,8 @@ export class AssistantToolsService {
       isError: true,
       forbidden,
       records: [],
+      proposals: [],
+      choices: [],
     });
     try {
       const scope = await this.scope();
@@ -118,8 +113,13 @@ export class AssistantToolsService {
         isError: false,
         forbidden: false,
         records: found.records,
+        proposals: found.proposals ?? [],
+        choices: found.choices ?? [],
       };
     } catch (error) {
+      if (error instanceof ToolFailure) {
+        return fail(error.message);
+      }
       return ErpnextError.from(error).kind === 'forbidden' ? fail(NOT_ALLOWED, true) : fail(FAILED);
     }
   }
@@ -156,6 +156,8 @@ export class AssistantToolsService {
         return this.listDrafts(scope);
       case 'find_purchase_orders':
         return this.findPurchaseOrders(input, scope);
+      default:
+        return this.proposals.run(name, input, scope);
     }
   }
 

@@ -3863,13 +3863,80 @@
       "find_invoices": "Looking up invoices…",
       "get_invoice": "Looking up invoices…",
       "list_drafts": "Looking up drafts…",
-      "find_purchase_orders": "Looking up purchase orders…"
+      "find_purchase_orders": "Looking up purchase orders…",
+      "propose_quick_sale": "Preparing a sale…",
+      "propose_quotation": "Preparing a quotation…",
+      "propose_purchase_order": "Preparing a purchase order…",
+      "propose_collect_payment": "Preparing a payment…",
+      "propose_stock_move": "Preparing a stock move…",
+      "open_record": "Finding the record…"
     },
     "problem": {
       "busy": "The assistant is busy. Try again in a moment.",
       "rate_limited": "You've reached today's assistant limit.",
       "unavailable": "The assistant isn't available right now.",
       "refusal": "The assistant can't help with that."
+    },
+    "choices": {
+      "label": "Choose one"
+    },
+    "proposal": {
+      "sale": "Sale to {{name}}",
+      "walkInSale": "Walk-in sale",
+      "quotation": "Quotation for {{name}}",
+      "purchase": "Purchase from {{name}}",
+      "payment": "Payment from {{name}}",
+      "move": "Stock move: {{item}}",
+      "line": "{{qty}} × {{item}} — {{amount}}",
+      "lineNoPrice": "{{qty}} × {{item}}",
+      "total": "Total {{amount}}",
+      "amount": "Amount to collect: {{amount}}",
+      "amountAll": "The full amount due",
+      "due": "Outstanding: {{amount}}",
+      "moveLine": "{{qty}} × {{item}}",
+      "route": "{{from}} → {{to}}",
+      "note": "Nothing is saved until you confirm.",
+      "button": {
+        "sale": "Review sale",
+        "quotation": "Review quotation",
+        "purchase": "Review purchase order",
+        "payment": "Collect payment",
+        "move": "Review stock move",
+        "record": "Open record"
+      },
+      "record": {
+        "invoice": "Invoice {{name}}",
+        "quotation": "Quotation {{name}}",
+        "salesOrder": "Sales order {{name}}",
+        "purchaseOrder": "Purchase order {{name}}",
+        "customer": "Customer {{name}}",
+        "supplier": "Supplier {{name}}",
+        "item": "Item {{name}}",
+        "draft": "Draft {{name}}"
+      },
+      "anywhere": "any location"
+    }
+  },
+  "prefill": {
+    "loading": "Opening the assistant's proposal…",
+    "filled": {
+      "title": "Filled in by the assistant",
+      "sale": "Check the items, prices and customer, then confirm.",
+      "purchase": "Check the items, prices and supplier, then confirm.",
+      "payment": "Check the customer, invoices and amount, then confirm.",
+      "move": "Check the item, locations and quantity, then confirm."
+    },
+    "expired": {
+      "title": "This proposal has expired.",
+      "message": "Ask the assistant again."
+    },
+    "unavailable": {
+      "title": "This proposal can't be opened.",
+      "message": "Something it names is no longer available. Ask the assistant again."
+    },
+    "busy": {
+      "title": "Finish the current task first",
+      "message": "The assistant's proposal wasn't opened."
     }
   }
 }

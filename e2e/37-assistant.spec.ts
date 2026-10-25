@@ -1,70 +1,15 @@
-import { Page, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import {
+  answer,
+  ask,
+  bubbles,
+  field,
+  problem,
+  scriptAssistant,
+  sse,
+  toolCall,
+} from './assistant-support';
 import { CUSTOMER, ITEM, erp, expectHeading, ils, named, signIn, toArabic } from './support';
-
-interface ChatBody {
-  language: string;
-  context: { business: string; currency: string; today: string; persona: string };
-  tools: string[];
-  messages: { role: string; content: unknown }[];
-}
-
-type Reply = (body: ChatBody) => {
-  status?: number;
-  headers?: Record<string, string>;
-  body: string;
-};
-
-const sse = (...events: [string, unknown][]) =>
-  events.map(([name, data]) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`).join('');
-
-const answer = (content: string) =>
-  sse(
-    ['text', { text: content }],
-    ['message', { content: [{ type: 'text', text: content }], stop_reason: 'end_turn' }],
-  );
-
-const toolCall = (id: string, name: string, input: unknown, say = '') =>
-  sse([
-    'message',
-    {
-      content: [
-        ...(say ? [{ type: 'text', text: say }] : []),
-        { type: 'tool_use', id, name, input },
-      ],
-      stop_reason: 'tool_use',
-    },
-  ]);
-
-const problem = (status: number, code: string, headers: Record<string, string> = {}) => ({
-  status,
-  headers: { 'Content-Type': 'application/json', ...headers },
-  body: JSON.stringify({ code }),
-});
-
-/** Answers POST /assistant/chat from a script, recording every request; no real model is called. */
-async function scriptAssistant(page: Page, replies: Reply[]): Promise<ChatBody[]> {
-  const requests: ChatBody[] = [];
-  await page.route('**/assistant/chat', async (route) => {
-    const body = route.request().postDataJSON() as ChatBody;
-    requests.push(body);
-    const reply = replies[Math.min(requests.length, replies.length) - 1](body);
-    await route.fulfill({
-      status: reply.status ?? 200,
-      headers: reply.headers ?? { 'Content-Type': 'text/event-stream' },
-      body: reply.body,
-    });
-  });
-  return requests;
-}
-
-const field = (page: Page) => page.locator('app-assistant-composer textarea');
-const bubbles = (page: Page, role: 'user' | 'assistant') =>
-  page.locator(`app-assistant-message.${role}`);
-
-async function ask(page: Page, question: string) {
-  await field(page).fill(question);
-  await field(page).press('Enter');
-}
 
 /** What ERPNext says Lina Haddad owes on confirmed invoices, the truth the lookup must report. */
 async function linaOwes(page: Page): Promise<number> {
@@ -140,7 +85,7 @@ async function askAboutLina(page: Page) {
       context: { currency: 'ILS', persona: 'owner' },
       messages: [{ role: 'user', content: `How much does ${CUSTOMER} owe?` }],
     });
-    expect(requests[0].tools).toHaveLength(7);
+    expect(requests[0].tools).toHaveLength(13);
     const [question, call, result] = requests[1].messages;
     expect(question.role).toBe('user');
     expect(call).toEqual({
@@ -369,6 +314,10 @@ test('sends a salesperson only the lookups their role allows, and only their own
     'find_invoices',
     'get_invoice',
     'list_drafts',
+    'propose_quick_sale',
+    'propose_quotation',
+    'propose_collect_payment',
+    'open_record',
   ]);
   expect(requests[0].tools).not.toContain('find_purchase_orders');
   const [result] = requests[1].messages.at(-1)!.content as { content: string }[];

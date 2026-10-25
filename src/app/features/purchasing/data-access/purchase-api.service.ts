@@ -12,7 +12,7 @@ import {
   referenceIn,
 } from '../../../core/erpnext/draft';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
-import { shareInFlight } from '../../../core/util/share-in-flight';
+import { BuyingPricesService } from '../../../core/pricing/buying-prices.service';
 import {
   DraftOrder,
   OrderDetail,
@@ -79,17 +79,7 @@ const SEARCH_LIMIT = 10;
 @Injectable({ providedIn: 'root' })
 export class PurchaseApiService {
   private readonly erpnext = inject(ErpnextClient);
-
-  /** Buying Settings' price list; purchase roles can read it but not Item Price itself. */
-  readonly priceList = shareInFlight(async () => {
-    const settings = await firstValueFrom(
-      this.erpnext.post<{ buying_price_list: string | null }>('frappe.client.get_value', {
-        doctype: 'Buying Settings',
-        fieldname: 'buying_price_list',
-      }),
-    );
-    return settings?.buying_price_list ?? null;
-  });
+  private readonly buying = inject(BuyingPricesService);
 
   async overview(company: string, companyCurrency: string): Promise<PurchasingOverview> {
     const submitted: Filter[] = [
@@ -225,14 +215,14 @@ export class PurchaseApiService {
         limit: SEARCH_LIMIT,
       }),
     );
-    const priceList = await this.priceList().catch(() => null);
+    const priceList = await this.buying.priceList().catch(() => null);
     return Promise.all(
       rows.map(async (r) => ({
         code: r.name,
         name: r.item_name,
         uom: r.stock_uom,
         kind,
-        rate: await this.rate(r.name, priceList, ctx).catch(() => 0),
+        rate: await this.buying.rate(r.name, priceList, ctx).catch(() => 0),
       })),
     );
   }
@@ -262,13 +252,13 @@ export class PurchaseApiService {
     if (!row) {
       return null;
     }
-    const priceList = await this.priceList().catch(() => null);
+    const priceList = await this.buying.priceList().catch(() => null);
     return {
       code: row.name,
       name: row.item_name,
       uom: row.stock_uom,
       kind: row.is_stock_item ? 'product' : 'service',
-      rate: await this.rate(row.name, priceList, ctx).catch(() => 0),
+      rate: await this.buying.rate(row.name, priceList, ctx).catch(() => 0),
     };
   }
 
@@ -465,39 +455,6 @@ export class PurchaseApiService {
         ...(request.project ? { project: request.project } : {}),
       })),
     };
-  }
-
-  private async rate(
-    item: string,
-    priceList: string | null,
-    ctx: { company: string; supplier: string; currency: string; date: string },
-  ): Promise<number> {
-    const details = await firstValueFrom(
-      this.erpnext.post<{ price_list_rate: number; last_purchase_rate: number }>(
-        'erpnext.stock.get_item_details.get_item_details',
-        {
-          ctx: {
-            item_code: item,
-            company: ctx.company,
-            doctype: 'Purchase Order',
-            supplier: ctx.supplier,
-            currency: ctx.currency,
-            conversion_rate: 1,
-            qty: 1,
-            transaction_date: ctx.date,
-            // Without the price list ERPNext returns no list price, only the last purchase rate.
-            ...(priceList
-              ? {
-                  buying_price_list: priceList,
-                  price_list_currency: ctx.currency,
-                  plc_conversion_rate: 1,
-                }
-              : {}),
-          },
-        },
-      ),
-    );
-    return details.price_list_rate || details.last_purchase_rate || 0;
   }
 
   private async quantities(

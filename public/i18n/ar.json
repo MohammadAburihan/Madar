@@ -3982,13 +3982,80 @@
       "find_invoices": "يبحث في الفواتير…",
       "get_invoice": "يبحث في الفواتير…",
       "list_drafts": "يبحث في المسودات…",
-      "find_purchase_orders": "يبحث في أوامر الشراء…"
+      "find_purchase_orders": "يبحث في أوامر الشراء…",
+      "propose_quick_sale": "يجهّز عملية بيع…",
+      "propose_quotation": "يجهّز عرض سعر…",
+      "propose_purchase_order": "يجهّز أمر شراء…",
+      "propose_collect_payment": "يجهّز تحصيل دفعة…",
+      "propose_stock_move": "يجهّز نقل مخزون…",
+      "open_record": "يبحث عن السجل…"
     },
     "problem": {
       "busy": "المساعد مشغول. حاول بعد لحظة.",
       "rate_limited": "وصلت إلى حدّ المساعد لهذا اليوم.",
       "unavailable": "المساعد غير متاح الآن.",
       "refusal": "لا يستطيع المساعد المساعدة في هذا الطلب."
+    },
+    "choices": {
+      "label": "اختر واحداً"
+    },
+    "proposal": {
+      "sale": "بيع إلى {{name}}",
+      "walkInSale": "بيع لعميل نقدي",
+      "quotation": "عرض سعر لـ {{name}}",
+      "purchase": "شراء من {{name}}",
+      "payment": "دفعة من {{name}}",
+      "move": "نقل مخزون: {{item}}",
+      "line": "{{qty}} × {{item}} — {{amount}}",
+      "lineNoPrice": "{{qty}} × {{item}}",
+      "total": "الإجمالي {{amount}}",
+      "amount": "المبلغ المراد تحصيله: {{amount}}",
+      "amountAll": "كامل المبلغ المستحق",
+      "due": "المتبقي: {{amount}}",
+      "moveLine": "{{qty}} × {{item}}",
+      "route": "{{from}} ← {{to}}",
+      "note": "لا يُحفظ شيء حتى تؤكّد.",
+      "button": {
+        "sale": "مراجعة البيع",
+        "quotation": "مراجعة عرض السعر",
+        "purchase": "مراجعة أمر الشراء",
+        "payment": "تحصيل دفعة",
+        "move": "مراجعة نقل المخزون",
+        "record": "فتح السجل"
+      },
+      "record": {
+        "invoice": "فاتورة البيع {{name}}",
+        "quotation": "عرض السعر {{name}}",
+        "salesOrder": "أمر البيع {{name}}",
+        "purchaseOrder": "أمر الشراء {{name}}",
+        "customer": "العميل {{name}}",
+        "supplier": "المورد {{name}}",
+        "item": "الصنف {{name}}",
+        "draft": "مسودة {{name}}"
+      },
+      "anywhere": "أي موقع"
+    }
+  },
+  "prefill": {
+    "loading": "جارٍ فتح اقتراح المساعد…",
+    "filled": {
+      "title": "عبّأه المساعد",
+      "sale": "راجع الأصناف والأسعار والعميل، ثم أكّد.",
+      "purchase": "راجع الأصناف والأسعار والمورد، ثم أكّد.",
+      "payment": "راجع العميل والفواتير والمبلغ، ثم أكّد.",
+      "move": "راجع الصنف والمواقع والكمية، ثم أكّد."
+    },
+    "expired": {
+      "title": "انتهت صلاحية هذا الاقتراح.",
+      "message": "اطلب من المساعد مرة أخرى."
+    },
+    "unavailable": {
+      "title": "تعذّر فتح هذا الاقتراح.",
+      "message": "لم يعد شيء ورد فيه متاحاً. اطلب من المساعد مرة أخرى."
+    },
+    "busy": {
+      "title": "أنهِ المهمة الحالية أولاً",
+      "message": "لم يُفتح اقتراح المساعد."
     }
   }
 }

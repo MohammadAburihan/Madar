@@ -1,6 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
+import { SessionService } from '../../../core/auth/session.service';
+import { PrefillUnavailableError } from '../../../core/tasks/prefill-entry';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { InventoryApiService } from './inventory-api.service';
@@ -27,7 +31,8 @@ const RESULT: TransferResult = {
   totalQty: 30,
 };
 
-function setup() {
+function setup(persona: Persona = 'owner') {
+  TestBed.resetTestingModule();
   const api = {
     movableWarehouses: vi.fn().mockResolvedValue([
       { id: STORES, name: 'Stores' },
@@ -43,6 +48,7 @@ function setup() {
   TestBed.configureTestingModule({
     providers: [
       { provide: InventoryApiService, useValue: api },
+      { provide: SessionService, useValue: { capabilities: () => capabilitiesFor(persona) } },
       {
         provide: BusinessService,
         useValue: { ensure: () => Promise.resolve({ name: 'Rehan Nursery', currency: 'ILS' }) },
@@ -342,5 +348,112 @@ describe('TransferStore', () => {
     expect(await store.checkResult()).toBe('pending');
     expect(api.find).not.toHaveBeenCalled();
     expect(store.state()).toBe('confirming');
+  });
+});
+
+describe('TransferStore.openPrefill', () => {
+  it('opens a fresh move on the item at today’s stock, with the proposed quantity', async () => {
+    const { store, api } = setup();
+    expect(await store.openPrefill({ item_code: 'OLV-20', qty: 5 })).toBe('opened');
+    expect(api.item).toHaveBeenCalledWith('OLV-20', [STORES, MAIN, SHOP]);
+    expect(store.item()?.code).toBe('OLV-20');
+    expect(store.from()).toBe(MAIN);
+    expect(store.to()).toBe(SHOP);
+    expect(store.qtyInput()).toBe('5');
+    expect(store.qtyValid()).toBe(true);
+    expect(store.prefill()).toBe('filled');
+    expect(store.reference()).toMatch(/^TRF-/);
+    expect(store.ready()).toBe(true);
+  });
+
+  it('uses the locations the proposal names', async () => {
+    const { store } = setup();
+    await store.openPrefill({
+      item_code: 'OLV-20',
+      qty: 2,
+      from_warehouse: SHOP,
+      to_warehouse: STORES,
+    });
+    expect([store.from(), store.to()]).toEqual([SHOP, STORES]);
+  });
+
+  it('takes the next location as the source when only the destination is named and it is the fullest', async () => {
+    const { store } = setup();
+    await store.openPrefill({ item_code: 'OLV-20', qty: 2, to_warehouse: MAIN });
+    expect([store.from(), store.to()]).toEqual([SHOP, MAIN]);
+  });
+
+  it('moves the destination when only the source is named and it was the default destination', async () => {
+    const { store } = setup();
+    await store.openPrefill({ item_code: 'OLV-20', qty: 2, from_warehouse: SHOP });
+    expect(store.from()).toBe(SHOP);
+    expect(store.to()).not.toBe(SHOP);
+  });
+
+  it('leaves a quantity above the stock for the form to flag', async () => {
+    const { store } = setup();
+    await store.openPrefill({ item_code: 'OLV-20', qty: 999 });
+    expect(store.qtyInput()).toBe('999');
+    expect(store.qtyValid()).toBe(false);
+  });
+
+  it('starts over from a move that was only being filled in', async () => {
+    const { store } = await ready('3');
+    await store.openPrefill({ item_code: 'OLV-20', qty: 7 });
+    expect(store.qtyInput()).toBe('7');
+  });
+
+  it('refuses an item that is gone, a location that is not movable, and the same location twice', async () => {
+    const { store } = await ready('3');
+    for (const proposal of [
+      { item_code: 'GONE', qty: 1 },
+      { item_code: 'OLV-20', qty: 1, to_warehouse: 'Site - RN' },
+      { item_code: 'OLV-20', qty: 1, from_warehouse: MAIN, to_warehouse: MAIN },
+      { item_code: 'OLV-20', qty: 0 },
+    ]) {
+      await expect(store.openPrefill(proposal)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    }
+    expect(store.qtyInput()).toBe('3');
+    expect(store.prefill()).toBeNull();
+  });
+
+  it('refuses a role that may not move stock', async () => {
+    const { store } = setup('salesperson');
+    await expect(store.openPrefill({ item_code: 'OLV-20', qty: 1 })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+  });
+
+  it('keeps a confirmation that is running or a result not yet seen', async () => {
+    const { store, api } = setup();
+    store.state.set('confirming');
+    expect(await store.openPrefill({ item_code: 'OLV-20', qty: 1 })).toBe('busy');
+    expect(api.item).not.toHaveBeenCalled();
+    store.state.set('confirmed');
+    expect(await store.openPrefill({ item_code: 'OLV-20', qty: 1 })).toBe('busy');
+    store.resultShown.set(true);
+    expect(await store.openPrefill({ item_code: 'OLV-20', qty: 1 })).toBe('opened');
+  });
+
+  it('keeps a confirmation that starts while the item loads', async () => {
+    const { store, api } = setup();
+    let release: (item: StockItem | null) => void = () => undefined;
+    api.item.mockReturnValue(new Promise((resolve) => (release = resolve)));
+    const opening = store.openPrefill({ item_code: 'OLV-20', qty: 1 });
+    await new Promise((resolve) => setTimeout(resolve));
+    store.state.set('confirming');
+    release(OLIVE);
+    expect(await opening).toBe('busy');
+    expect(store.item()).toBeNull();
+  });
+
+  it('leaves a fresh move with a notice when a proposal could not be opened', async () => {
+    const { store } = await ready('3');
+    store.prefillFailed('unavailable');
+    expect(store.item()).toBeNull();
+    expect(store.prefill()).toBe('unavailable');
+    store.state.set('confirming');
+    store.prefillFailed('expired');
+    expect(store.prefill()).toBe('unavailable');
   });
 });

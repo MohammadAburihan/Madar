@@ -3,21 +3,31 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { draftGateText, injectDraftEntry } from '../../../core/tasks/draft-entry';
+import { injectPrefillEntry } from '../../../core/tasks/prefill-entry';
 import { DraftGateComponent } from '../../../shared/ui/draft-gate.component';
 import { PurchaseOrderStore } from '../data-access/purchase-order.store';
 
 /**
  * Hosts the "New purchase order" steps. It is created only when the task is entered from elsewhere, so that
  * is where a fresh visit starts over; moving between steps (including the back button) keeps the work.
- * `?draft=<name>` continues a saved order instead.
+ * `?draft=<name>` continues a saved order instead, and `?prefill=<id>` opens a proposal from the assistant.
  */
 @Component({
   selector: 'app-purchase-flow',
   imports: [DraftGateComponent, RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (entry.phase() === 'ready') {
+    @if (entry.phase() === 'ready' && proposal.phase() === 'ready') {
       <router-outlet />
+    } @else if (entry.phase() === 'ready') {
+      <app-draft-gate
+        [failed]="false"
+        [desktop]="desktop()"
+        [loading]="prefillLoading()"
+        title=""
+        message=""
+        backLabel=""
+      />
     } @else {
       <app-draft-gate
         [failed]="entry.phase() !== 'loading'"
@@ -45,6 +55,12 @@ export class PurchaseFlowContainer {
     () => undefined,
   );
   protected readonly gate = computed(() => draftGateText(this.i18n.tr(), this.entry.phase()));
+  protected readonly proposal = injectPrefillEntry(
+    'purchase_order',
+    (payload) => this.store.openPrefill(payload),
+    (notice) => this.store.prefillFailed(notice),
+  );
+  protected readonly prefillLoading = computed(() => this.i18n.tr().t('prefill.loading'));
 
   constructor() {
     if (this.entry.phase() === 'ready') {

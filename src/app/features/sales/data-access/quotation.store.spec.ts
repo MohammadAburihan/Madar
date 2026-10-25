@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
+import { capabilitiesFor } from '../../../core/auth/capabilities';
+import { Persona } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
+import { PrefillUnavailableError } from '../../../core/tasks/prefill-entry';
 import { BusinessService } from '../../../core/business/business.service';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { DraftUnavailableError } from '../../../core/erpnext/draft';
@@ -10,6 +13,7 @@ import { SiteClockService } from '../../../core/time/site-clock.service';
 import { QuotationApiService } from './quotation-api.service';
 import { QuotationStore } from './quotation.store';
 import { CatalogItem } from './sale.models';
+import { SalesApiService } from './sales-api.service';
 
 const PLANTER: CatalogItem = {
   code: 'POT-30',
@@ -20,7 +24,12 @@ const PLANTER: CatalogItem = {
   stock: {},
 };
 
-function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
+function setup(
+  user: { id: string } | null = { id: 'lina@example.com' },
+  persona: Persona = 'salesperson',
+) {
+  TestBed.resetTestingModule();
+  const sales = { customer: vi.fn(), itemsByCode: vi.fn() };
   const api = {
     confirm: vi.fn(),
     saveDraft: vi.fn(),
@@ -31,9 +40,14 @@ function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
   TestBed.configureTestingModule({
     providers: [
       { provide: QuotationApiService, useValue: api },
+      { provide: SalesApiService, useValue: sales },
       {
         provide: SessionService,
-        useValue: { persona: () => 'salesperson', user: () => user },
+        useValue: {
+          persona: () => persona,
+          capabilities: () => capabilitiesFor(persona),
+          user: () => user,
+        },
       },
       {
         provide: BusinessService,
@@ -45,7 +59,7 @@ function setup(user: { id: string } | null = { id: 'lina@example.com' }) {
       },
     ],
   });
-  return { store: TestBed.inject(QuotationStore), api };
+  return { store: TestBed.inject(QuotationStore), api, sales };
 }
 
 async function ready() {
@@ -357,5 +371,131 @@ describe('QuotationStore when its draft is deleted', () => {
     deleted.publish({ kind: 'quotation', name: 'QT-DRAFT', party: 'Lina Haddad' });
     TestBed.tick();
     expect([store.draft(), store.lines(), store.customer()]).toEqual([null, [], null]);
+  });
+});
+
+describe('QuotationStore.openPrefill', () => {
+  const LINA = {
+    id: 'Lina Haddad',
+    name: 'Lina Haddad',
+    phone: '0599 000 111',
+    city: 'Hebron',
+    outstanding: 0,
+    unpaidInvoices: 0,
+  };
+  const PROPOSAL = { customer: 'Lina Haddad', lines: [{ item_code: 'POT-30', qty: 3 }] };
+
+  function prepared(persona: Persona = 'salesperson') {
+    const ctx = setup({ id: 'lina@example.com' }, persona);
+    ctx.sales.customer.mockResolvedValue(LINA);
+    ctx.sales.itemsByCode.mockResolvedValue([PLANTER]);
+    return ctx;
+  }
+
+  it('fills a fresh quotation with the customer and each item at its looked-up price', async () => {
+    const { store, sales } = prepared();
+    expect(await store.openPrefill(PROPOSAL)).toBe('opened');
+    expect(sales.customer).toHaveBeenCalledWith('Lina Haddad', {
+      name: 'Rehan Nursery',
+      currency: 'ILS',
+    });
+    expect(sales.itemsByCode).toHaveBeenCalledWith(['POT-30'], 'Rehan Nursery', []);
+    expect(store.customer()).toEqual({
+      id: 'Lina Haddad',
+      name: 'Lina Haddad',
+      meta: '0599 000 111 · Hebron',
+    });
+    expect(store.lines().map((l) => [l.item.code, l.qty, l.rate])).toEqual([['POT-30', 3, 45]]);
+    expect(store.total()).toBe(135);
+    expect(store.prefill()).toBe('filled');
+    expect(store.reference()).toMatch(/^QUO-/);
+    expect(store.draft()).toBeNull();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(store.validTill()).toBe('2026-10-30');
+    expect(store.ready()).toBe(true);
+  });
+
+  it('ignores a proposed price for a role that may not change prices, keeps it for the owner', async () => {
+    const line = { item_code: 'POT-30', qty: 1, rate: 10 };
+    const sales = prepared('salesperson');
+    await sales.store.openPrefill({ ...PROPOSAL, lines: [line] });
+    expect(sales.store.lines()[0].rate).toBe(45);
+    const owner = prepared('owner');
+    await owner.store.openPrefill({ ...PROPOSAL, lines: [line] });
+    expect(owner.store.lines()[0].rate).toBe(10);
+  });
+
+  it('starts over from a quotation that was only being edited', async () => {
+    const { store } = prepared();
+    store.start();
+    await new Promise((resolve) => setTimeout(resolve));
+    store.setCustomer({ id: 'Someone', name: 'Someone', meta: null });
+    store.addItem(PLANTER);
+    store.setValidTill('2026-12-01');
+    await store.openPrefill(PROPOSAL);
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect(store.lines().map((l) => l.qty)).toEqual([3]);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(store.validTill()).toBe('2026-10-30');
+  });
+
+  it('refuses a disabled or missing customer, a missing item and a role that may not sell', async () => {
+    const ctx = prepared();
+    ctx.sales.customer.mockResolvedValue(null);
+    await expect(ctx.store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    ctx.sales.customer.mockResolvedValue(LINA);
+    ctx.sales.itemsByCode.mockResolvedValue([]);
+    await expect(ctx.store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(PrefillUnavailableError);
+    expect(ctx.store.customer()).toBeNull();
+    expect(ctx.store.prefill()).toBeNull();
+    await expect(prepared('warehouse').store.openPrefill(PROPOSAL)).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+  });
+
+  it('refuses bad quantities and an empty quotation', async () => {
+    const { store } = prepared();
+    for (const lines of [
+      [],
+      [{ item_code: 'POT-30', qty: 0 }],
+      [{ item_code: 'POT-30', qty: 10001 }],
+    ]) {
+      await expect(store.openPrefill({ ...PROPOSAL, lines })).rejects.toBeInstanceOf(
+        PrefillUnavailableError,
+      );
+    }
+  });
+
+  it('keeps a confirmation that is running or a result not yet seen', async () => {
+    const running = prepared();
+    running.store.state.set('confirming');
+    expect(await running.store.openPrefill(PROPOSAL)).toBe('busy');
+    expect(running.sales.customer).not.toHaveBeenCalled();
+    const unseen = prepared();
+    unseen.store.state.set('confirmed');
+    expect(await unseen.store.openPrefill(PROPOSAL)).toBe('busy');
+    unseen.store.resultShown.set(true);
+    expect(await unseen.store.openPrefill(PROPOSAL)).toBe('opened');
+  });
+
+  it('keeps a confirmation that starts while the proposal loads', async () => {
+    const { store, sales } = prepared();
+    let release: (items: CatalogItem[]) => void = () => undefined;
+    sales.itemsByCode.mockReturnValue(new Promise((resolve) => (release = resolve)));
+    const opening = store.openPrefill(PROPOSAL);
+    store.state.set('confirming');
+    release([PLANTER]);
+    expect(await opening).toBe('busy');
+    expect(store.lines()).toEqual([]);
+  });
+
+  it('leaves a fresh quotation with a notice when a proposal could not be opened', async () => {
+    const { store } = await ready();
+    store.prefillFailed('unavailable');
+    expect(store.lines()).toEqual([]);
+    expect(store.prefill()).toBe('unavailable');
+    store.state.set('confirming');
+    store.prefillFailed('expired');
+    expect(store.prefill()).toBe('unavailable');
   });
 });

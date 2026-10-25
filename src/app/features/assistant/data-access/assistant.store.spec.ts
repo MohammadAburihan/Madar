@@ -12,6 +12,7 @@ import {
   AssistantReply,
   ChatRequest,
   ContentBlock,
+  Proposal,
   RecordLink,
   ToolOutcome,
 } from './assistant.models';
@@ -620,6 +621,126 @@ describe('AssistantStore', () => {
       replies(calls(toolUse('t1', 'get_today_summary')), text('ok'));
       await store.send('Sales?');
       expect(session.checkExpired).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('proposals and choices', () => {
+    const PROPOSAL: Proposal = {
+      id: 'PRP-1',
+      kind: 'quick_sale',
+      party: 'Lina Haddad',
+      item: null,
+      lines: [{ name: 'Olive tree', qty: 2, amount: 170 }],
+      total: 170,
+      amount: null,
+      due: null,
+      from: null,
+      to: null,
+      record: null,
+      request: {
+        kind: 'quick_sale',
+        payload: { customer: 'Lina Haddad', lines: [{ item_code: 'OLV-20', qty: 2 }] },
+      },
+    };
+    const CHOICES = [
+      { id: 'C-1', label: 'Lina Haddad' },
+      { id: 'C-2', label: 'Lina Khoury' },
+    ];
+
+    it('keeps the card a proposal tool returned under the reply that follows it', async () => {
+      const { store, tools, replies } = setup();
+      tools.run.mockResolvedValue(outcome('{"proposal_id":"PRP-1"}', { proposals: [PROPOSAL] }));
+      replies(
+        calls(toolUse('t1', 'propose_quick_sale', { customer: 'Lina Haddad' })),
+        text('Please review it.'),
+      );
+      await store.send('Sell 2 olive trees to Lina');
+      expect(store.proposals()).toEqual({ 3: [PROPOSAL] });
+      expect(store.choices()).toEqual({});
+      expect(store.proposal('PRP-1')).toBe(PROPOSAL);
+      expect(store.proposal('PRP-9')).toBeNull();
+    });
+
+    it('keeps every card made while answering one question', async () => {
+      const { store, tools, replies } = setup();
+      const second = { ...PROPOSAL, id: 'PRP-2' };
+      tools.run
+        .mockResolvedValueOnce(outcome('{}', { proposals: [PROPOSAL] }))
+        .mockResolvedValueOnce(outcome('{}', { proposals: [second] }));
+      replies(
+        calls(toolUse('t1', 'propose_quick_sale')),
+        calls(toolUse('t2', 'propose_quick_sale')),
+        text('Review both.'),
+      );
+      await store.send('Two sales');
+      expect(store.proposals()[5]!.map((p) => p.id)).toEqual(['PRP-1', 'PRP-2']);
+    });
+
+    it('keeps the matches a name had under the reply that asks which one', async () => {
+      const { store, tools, replies } = setup();
+      tools.run.mockResolvedValue(outcome('{"needs_choice":true}', { choices: CHOICES }));
+      replies(calls(toolUse('t1', 'propose_quick_sale')), text('Which Lina?'));
+      await store.send('Sell 2 olive trees to Lina');
+      expect(store.choices()).toEqual({ 3: CHOICES });
+      expect(store.proposals()).toEqual({});
+    });
+
+    it('offers only the last question asked in the turn', async () => {
+      const { store, tools, replies } = setup();
+      tools.run
+        .mockResolvedValueOnce(outcome('{}', { choices: CHOICES }))
+        .mockResolvedValueOnce(outcome('{}', { choices: [{ id: 'I-1', label: 'Olive tree' }] }))
+        .mockResolvedValueOnce(outcome('{}'));
+      replies(
+        calls(toolUse('t1', 'propose_quick_sale')),
+        calls(toolUse('t2', 'propose_quick_sale')),
+        calls(toolUse('t3', 'search_items')),
+        text('Which item?'),
+      );
+      await store.send('Sell');
+      expect(store.choices()).toEqual({ 7: [{ id: 'I-1', label: 'Olive tree' }] });
+    });
+
+    it('keeps nothing for a reply that failed', async () => {
+      const { store, tools, replies } = setup();
+      tools.run.mockResolvedValue(outcome('{}', { proposals: [PROPOSAL], choices: CHOICES }));
+      replies(calls(toolUse('t1', 'propose_quick_sale')), new AssistantError('unavailable'));
+      await store.send('Sell');
+      expect(store.proposals()).toEqual({});
+      expect(store.choices()).toEqual({});
+    });
+
+    it('clears them with the conversation, and when the user or business changes', async () => {
+      const { store, tools, replies, user, business } = setup();
+      tools.run.mockResolvedValue(outcome('{}', { proposals: [PROPOSAL], choices: CHOICES }));
+      replies(calls(toolUse('t1', 'propose_quick_sale')), text('Review it.'));
+      await store.send('Sell');
+      store.clear();
+      expect(store.proposals()).toEqual({});
+      expect(store.choices()).toEqual({});
+      expect(store.proposal('PRP-1')).toBeNull();
+
+      replies(calls(toolUse('t2', 'propose_quick_sale')), text('Review it.'));
+      await store.send('Sell again');
+      TestBed.tick();
+      user.set({ id: 'sami@rehan.example' });
+      TestBed.tick();
+      expect(store.proposals()).toEqual({});
+      replies(calls(toolUse('t3', 'propose_quick_sale')), text('Review it.'));
+      await store.send('Sell once more');
+      business.set({ name: 'Other Business' });
+      TestBed.tick();
+      expect(store.proposals()).toEqual({});
+      expect(store.choices()).toEqual({});
+    });
+
+    it('sends the user’s pick back like any other message', async () => {
+      const { store, tools, replies, requests } = setup();
+      tools.run.mockResolvedValue(outcome('{}', { choices: CHOICES }));
+      replies(calls(toolUse('t1', 'propose_quick_sale')), text('Which Lina?'), text('Done.'));
+      await store.send('Sell 2 olive trees to Lina');
+      await store.send('Lina Khoury');
+      expect(requests[2].messages.at(-1)).toEqual({ role: 'user', content: 'Lina Khoury' });
     });
   });
 });

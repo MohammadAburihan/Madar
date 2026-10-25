@@ -12,6 +12,12 @@ import {
   CustomerDirectoryService,
   CustomerOption,
 } from '../../../core/customers/customer-directory.service';
+import {
+  PrefillNotice,
+  PrefillOpening,
+  PrefillUnavailableError,
+} from '../../../core/tasks/prefill-entry';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import { parseNumber, round2 } from '../../../core/format/number';
 import {
   PaymentAccount,
@@ -43,6 +49,7 @@ export class CollectionStore {
   readonly accounts = signal<PaymentAccount[]>([]);
   readonly account = signal<PaymentAccount | null>(null);
   readonly draft = signal<string | null>(null);
+  readonly prefill = signal<PrefillNotice | null>(null);
   readonly state = signal<CollectionState>('idle');
   readonly failure = signal<CollectionFailure | null>(null);
   readonly result = signal<CollectionResult | null>(null);
@@ -92,10 +99,63 @@ export class CollectionStore {
     this.selected.set(new Set());
     this.amountInput.set('');
     this.draft.set(null);
+    this.prefill.set(null);
     this.state.set('idle');
     this.failure.set(null);
     this.result.set(null);
     this.resultShown.set(false);
+  }
+
+  private openRun = 0;
+
+  /** Opens an assistant proposal as a fresh collection; a disabled or missing customer throws before the task is touched. */
+  async openPrefill(proposal: PrefillPayloads['collect_payment']): Promise<PrefillOpening> {
+    if (this.busy() || (this.state() === 'confirmed' && !this.resultShown())) {
+      return 'busy';
+    }
+    if (!this.session.capabilities().collect || !proposal.customer) {
+      throw new PrefillUnavailableError('payment');
+    }
+    const run = ++this.openRun;
+    const business = await this.business.ensure();
+    if (!business) {
+      throw new PrefillUnavailableError('business');
+    }
+    const customer = await this.customers.byId(proposal.customer, {
+      name: business.name,
+      currency: business.currency,
+    });
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    if (this.busy()) {
+      return 'busy';
+    }
+    if (!customer) {
+      throw new PrefillUnavailableError('customer');
+    }
+    this.start();
+    this.prefill.set('filled');
+    await this.selectCustomer(customer);
+    if (run !== this.openRun) {
+      return 'stale';
+    }
+    const amount = proposal.amount;
+    if (amount !== undefined && Number.isFinite(amount) && amount > 0 && this.selected().size) {
+      this.amountInput.set(round2(amount).toFixed(2));
+    }
+    return 'opened';
+  }
+
+  prefillFailed(notice: 'expired' | 'unavailable' | 'busy'): void {
+    if (notice === 'busy') {
+      this.prefill.set(notice);
+      return;
+    }
+    if (!this.busy() && !(this.state() === 'confirmed' && !this.resultShown())) {
+      this.start();
+      this.prefill.set(notice);
+    }
   }
 
   async loadAccounts(): Promise<void> {
