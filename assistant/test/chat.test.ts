@@ -34,6 +34,7 @@ describe('relay', () => {
     expect(p.output_config).toEqual({ effort: 'low' });
     expect(p).not.toHaveProperty('thinking');
     expect(p.tool_choice).toEqual({ type: 'auto' });
+    expect(p.cache_control).toEqual({ type: 'ephemeral' });
   });
 
   it('turns a refusal into an error event', async () => {
@@ -59,12 +60,46 @@ describe('relay', () => {
   });
 });
 
+describe('cache stability', () => {
+  it('rebuilds client messages to identical JSON on every request', async () => {
+    const messages = [
+      { role: 'user', content: [{ text: 'sales?', type: 'text' }] },
+      {
+        role: 'assistant',
+        content: [
+          { thinking: 'hm', signature: 'sig', type: 'thinking' },
+          { input: {}, name: 'get_today_summary', id: 't1', type: 'tool_use' },
+        ],
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            is_error: false,
+            content: [{ text: '{}', type: 'text' }],
+            tool_use_id: 't1',
+            type: 'tool_result',
+          },
+        ],
+      },
+    ];
+    h = await startHarness();
+    const payload = body({ messages, tools: ['get_today_summary'] });
+    await (await h.post(payload)).text();
+    await (await h.post(payload)).text();
+    expect(JSON.stringify(h.params[0]!.messages)).toBe(JSON.stringify(h.params[1]!.messages));
+    expect(JSON.stringify(h.params[0]!.system)).toBe(JSON.stringify(h.params[1]!.system));
+  });
+});
+
 describe('prompt and tools', () => {
   it('puts the stable prompt first and the context second', async () => {
     h = await startHarness();
     await (await h.post(body({ language: 'ar' }))).text();
     const system = h.params[0]!.system as Anthropic.TextBlockParam[];
     expect(system[0]).toMatchObject({ text: STABLE_PROMPT, cache_control: { type: 'ephemeral' } });
+    expect(system[1]).not.toHaveProperty('cache_control');
+    expect(STABLE_PROMPT).not.toMatch(/\d{4}-\d{2}-\d{2}|Rehan|ILS/);
     expect(STABLE_PROMPT).toMatch(/language of the user's last message/);
     expect(STABLE_PROMPT).toMatch(/Never claim that something was created, changed or deleted/);
     expect(system[1]!.text).toContain('Business: Rehan Nursery');
@@ -74,7 +109,7 @@ describe('prompt and tools', () => {
     expect(system[1]!.text).toContain('App language: Arabic');
   });
 
-  it('sends only known tools, with caching on the last', async () => {
+  it('sends only known tools, without cache markers', async () => {
     h = await startHarness();
     await (
       await h.post(body({ tools: ['get_today_summary', 'delete_everything', 'constructor'] }))
@@ -82,10 +117,8 @@ describe('prompt and tools', () => {
     const tools = h.params[0]!.tools as Anthropic.Tool[];
     expect(tools.map((t) => t.name)).toEqual(['get_today_summary']);
     expect(tools[0]).not.toHaveProperty('eager_input_streaming');
-    expect(tools[0]).toMatchObject({
-      strict: true,
-      cache_control: { type: 'ephemeral' },
-    });
+    expect(tools[0]).toMatchObject({ strict: true });
+    expect(JSON.stringify(tools)).not.toContain('cache_control');
   });
 
   it('omits tools when none are known', async () => {

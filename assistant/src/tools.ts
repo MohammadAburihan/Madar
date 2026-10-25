@@ -12,8 +12,5 @@ export const toolRegistry: Record<string, ToolDef> = {
 
 export function selectTools(names: readonly string[]): Anthropic.Tool[] {
   const unique = [...new Set(names)].filter((name) => Object.hasOwn(toolRegistry, name));
-  const tools = unique.map((name): Anthropic.Tool => ({ name, ...toolRegistry[name]! }));
-  const last = tools.at(-1);
-  if (last) last.cache_control = { type: 'ephemeral' };
-  return tools;
+  return unique.map((name): Anthropic.Tool => ({ name, ...toolRegistry[name]! }));
 }
