@@ -7,6 +7,7 @@ import {
   proposalCard,
   proposalTarget,
   recordRoute,
+  speechLanguage,
 } from './assistant-view';
 
 const EMPTY: AssistantViewInput = {
@@ -131,9 +132,17 @@ describe('buildAssistantView', () => {
     });
     expect(speech[3]).toMatchObject({ text: 'المخزون منخفض', lang: 'ar', label: 'Read aloud' });
     expect(build({ messages }, 'ar').items[1].speech).toMatchObject({
-      lang: 'ar',
+      lang: 'en',
       label: 'قراءة بصوت عالٍ',
     });
+  });
+
+  it('reads each reply in its dominant script, and the app language only on a tie', () => {
+    expect(speechLanguage('Lina owes ILS 250.00.', 'ar')).toBe('en');
+    expect(speechLanguage('رصيد العميل ليلى هو INV-0042 اليوم', 'en')).toBe('ar');
+    expect(speechLanguage('Lina Haddad (ليلى) owes ILS 250.', 'ar')).toBe('en');
+    expect(speechLanguage('123 - 45.6', 'ar')).toBe('ar');
+    expect(speechLanguage('', 'en')).toBe('en');
   });
 
   it('has no Read aloud for a reply still streaming', () => {
@@ -160,6 +169,10 @@ describe('buildAssistantView', () => {
     });
     expect(build({ voiceProblem: 'nospeech' }, 'ar').voiceProblem).toBe(
       'لم أتمكن من السماع. حاول مرة أخرى.',
+    );
+    expect(build({ voiceProblem: 'nomicrophone' }).voiceProblem).toBe('No microphone was found.');
+    expect(build({ voiceProblem: 'network' }, 'ar').voiceProblem).toBe(
+      'يحتاج التعرّف على الكلام إلى اتصال بالإنترنت.',
     );
     expect(build().voiceProblem).toBeNull();
   });

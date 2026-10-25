@@ -326,6 +326,7 @@ describe('AssistantContainer', () => {
       store.listening.set(true);
       await fixture.whenStable();
       expect(root.querySelector('.listening')).not.toBeNull();
+      expect(root.querySelector('textarea')!.readOnly).toBe(true);
       root.querySelector<HTMLButtonElement>('button.mic')!.click();
       expect(store.stopListening).toHaveBeenCalled();
       expect(store.listen).not.toHaveBeenCalled();
@@ -354,6 +355,14 @@ describe('AssistantContainer', () => {
       expect(output.stop).toHaveBeenCalled();
       await fixture.whenStable();
       expect(read().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('stops listening before reading aloud', async () => {
+      const { fixture, root, store } = setup();
+      answered(store);
+      await fixture.whenStable();
+      root.querySelector<HTMLButtonElement>('button.read')!.click();
+      expect(store.cancelListening).toHaveBeenCalled();
     });
 
     it('returns to idle when the reading ends, and has no button without a voice', async () => {

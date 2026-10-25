@@ -30,6 +30,7 @@ import { LucideDynamicIcon, LucideMic, LucideSend, LucideSquare } from '@lucide/
         [attr.aria-label]="label()"
         [placeholder]="placeholder()"
         [value]="value()"
+        [readOnly]="readonly()"
         (input)="value.set($any($event.target).value)"
         (keydown.enter)="enter($event)"
       ></textarea>
@@ -127,6 +128,7 @@ export class AssistantComposerComponent {
   /** The device can turn speech into text; without it there is no microphone button. */
   readonly micAvailable = input(false);
   readonly listening = input(false);
+  readonly readonly = input(false);
   readonly speakLabel = input('');
   readonly stopListeningLabel = input('');
   readonly listeningLine = input('');

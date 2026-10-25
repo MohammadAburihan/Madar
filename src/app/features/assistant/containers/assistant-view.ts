@@ -109,11 +109,22 @@ const textOf = (content: string | ContentBlock[]): string =>
         .map((block) => block.text)
         .join('\n\n');
 
-const ARABIC = /\p{Script=Arabic}/u;
+const VOICE_PROBLEM_KEY: Record<SpeechInputProblem, string> = {
+  denied: 'denied',
+  nomicrophone: 'noMicrophone',
+  network: 'offline',
+  nospeech: 'noSpeech',
+};
 
-/** A reply in Arabic script is read with an Arabic voice, any other with the voice of the app's language. */
-export const speechLanguage = (text: string, ui: Language): SpeechLanguage =>
-  ARABIC.test(text) ? 'ar' : ui;
+const ARABIC_LETTERS = /\p{Script=Arabic}/gu;
+const LATIN_LETTERS = /\p{Script=Latin}/gu;
+
+/** A reply is read with the voice of its dominant script; the app's language breaks a tie. */
+export const speechLanguage = (text: string, ui: Language): SpeechLanguage => {
+  const arabic = text.match(ARABIC_LETTERS)?.length ?? 0;
+  const latin = text.match(LATIN_LETTERS)?.length ?? 0;
+  return arabic > latin ? 'ar' : latin > arabic ? 'en' : ui;
+};
 
 function plainText(blocks: readonly ReplyBlock[]): string {
   const run = (segments: readonly { text: string }[]) => segments.map((s) => s.text).join('');
@@ -352,7 +363,7 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
     stopListening: t('assistant.voice.stopListening'),
     listeningLine: t('assistant.voice.listening'),
     voiceProblem: input.voiceProblem
-      ? t(`assistant.voice.${input.voiceProblem === 'denied' ? 'denied' : 'noSpeech'}`)
+      ? t(`assistant.voice.${VOICE_PROBLEM_KEY[input.voiceProblem]}`)
       : null,
     note: t('assistant.note'),
     newChat: t('assistant.newChat'),

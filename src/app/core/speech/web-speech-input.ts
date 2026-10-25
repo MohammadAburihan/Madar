@@ -63,7 +63,15 @@ export class WebSpeechInput implements SpeechInput {
         return;
       }
       failed = true;
-      onError(DENIED.has(event.error) ? 'denied' : 'nospeech');
+      onError(
+        DENIED.has(event.error)
+          ? 'denied'
+          : event.error === 'audio-capture'
+            ? 'nomicrophone'
+            : event.error === 'network'
+              ? 'network'
+              : 'nospeech',
+      );
     };
     recognition.onend = () => {
       if (this.current === recognition) {

@@ -18,7 +18,19 @@ function fakePlugin(permission: 'granted' | 'denied' = 'granted') {
     stop: vi.fn().mockResolvedValue(undefined),
   };
   const emit = (name: string, event: unknown = {}) => listeners.get(name)?.(event as never);
-  return { plugin, emit, removed };
+  const all: Map<string, Listener>[] = [];
+  plugin.addListener.mockImplementation(async (name: string, listener: Listener) => {
+    listeners.set(name, listener);
+    const last = all[all.length - 1];
+    if (!last || last.has(name)) {
+      all.push(new Map());
+    }
+    all[all.length - 1].set(name, listener);
+    return { remove: async () => void removed.push(name) };
+  });
+  const emitTo = (session: number, name: string, event: unknown = {}) =>
+    all[session].get(name)?.(event as never);
+  return { plugin, emit, emitTo, removed };
 }
 
 function run(fake = fakePlugin()) {
@@ -100,6 +112,65 @@ describe('NativeSpeechInput', () => {
     await silent.start();
     silent.emit('listeningState', { state: 'stopped' });
     expect(silent.events).toEqual(['error:nospeech', 'end']);
+  });
+
+  it('stopped while the permission is pending, it never starts and reports nothing', async () => {
+    const fake = fakePlugin();
+    let grant!: (value: { speechRecognition: string }) => void;
+    fake.plugin.requestPermissions.mockReturnValue(new Promise((resolve) => (grant = resolve)));
+    const { input, start, events, plugin } = run(fake);
+    const started = start();
+    await Promise.resolve();
+    await Promise.resolve();
+    input.stop();
+    grant({ speechRecognition: 'granted' });
+    await started;
+    expect(plugin.start).not.toHaveBeenCalled();
+    expect(plugin.addListener).not.toHaveBeenCalled();
+    expect(events).toEqual(['end']);
+  });
+
+  it('stopped while a listener is being added, removes the handles and never starts', async () => {
+    const fake = fakePlugin();
+    const { input, start, events, plugin, removed } = run(fake);
+    plugin.addListener.mockImplementationOnce(async (name: string) => {
+      input.stop();
+      return { remove: async () => void removed.push(name) };
+    });
+    await start();
+    expect(plugin.start).not.toHaveBeenCalled();
+    expect(removed).toEqual(['partialResults']);
+    expect(events).toEqual(['end']);
+  });
+
+  it("a previous session's late stopped event does not end the next one", async () => {
+    const fake = fakePlugin();
+    const { input, start, events, plugin, emitTo } = run(fake);
+    await start();
+    input.stop();
+    await start();
+    emitTo(0, 'listeningState', { state: 'stopped' });
+    expect(events).toEqual(['end']);
+    input.stop();
+    expect(plugin.stop).toHaveBeenCalledTimes(2);
+    emitTo(1, 'listeningState', { state: 'stopped' });
+    expect(events).toEqual(['end', 'end']);
+  });
+
+  it('maps plugin error codes to what the user can act on', async () => {
+    for (const [code, problem] of [
+      ['AUDIO', 'nomicrophone'],
+      ['NETWORK', 'network'],
+      ['SERVER_DISCONNECTED', 'network'],
+      ['INSUFFICIENT_PERMISSIONS', 'denied'],
+      ['NO_MATCH', 'nospeech'],
+    ]) {
+      const { start, emit, events } = run();
+      await start();
+      emit('error', { code, message: 'x' });
+      emit('listeningState', { state: 'stopped' });
+      expect(events).toEqual([`error:${problem}`, 'end']);
+    }
   });
 
   it('ends with a problem when starting fails', async () => {

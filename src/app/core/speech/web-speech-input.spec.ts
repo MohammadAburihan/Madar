@@ -95,6 +95,20 @@ describe('WebSpeechInput', () => {
     expect(events).toEqual(['error:denied', 'end']);
   });
 
+  it('tells a missing microphone and a lost connection apart', async () => {
+    for (const [error, problem] of [
+      ['audio-capture', 'nomicrophone'],
+      ['network', 'network'],
+      ['no-speech', 'nospeech'],
+    ]) {
+      const { start, events } = run();
+      await start();
+      FakeRecognition.last.onerror?.({ error });
+      FakeRecognition.last.onend?.();
+      expect(events).toEqual([`error:${problem}`, 'end']);
+    }
+  });
+
   it('ends with a problem when the recognizer cannot start', async () => {
     const { start, events } = run();
     FakeRecognition.failStart = true;

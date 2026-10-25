@@ -1,7 +1,7 @@
 import { Signal } from '@angular/core';
 
-/** What went wrong while listening: the user said no to the microphone, or nothing usable was heard. */
-export type SpeechInputProblem = 'denied' | 'nospeech';
+/** What went wrong while listening: microphone refused or missing, no connection, or nothing usable heard. */
+export type SpeechInputProblem = 'denied' | 'nomicrophone' | 'network' | 'nospeech';
 
 export interface SpeechInput {
   /** Whether this device can turn speech into text at all. */

@@ -106,6 +106,7 @@ import { buildAssistantView, proposalTarget, recordRoute } from './assistant-vie
       [busy]="v.busy"
       [micAvailable]="store.voiceSupported()"
       [listening]="store.listening()"
+      [readonly]="store.listening()"
       [speakLabel]="v.speak"
       [stopListeningLabel]="v.stopListening"
       [listeningLine]="v.listeningLine"
@@ -217,6 +218,7 @@ export class AssistantContainer implements OnDestroy {
     }
     const speech = this.view().items.find((item) => item.id === id)?.speech;
     if (speech) {
+      this.store.cancelListening();
       this.speakingId.set(id);
       this.speechOutput.speak(speech.text, speech.lang, () => {
         if (this.speakingId() === id) {
