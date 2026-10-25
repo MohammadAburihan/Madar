@@ -678,6 +678,15 @@ on the server. Four PRs:
 - **A: service** (this PR): the relay behind ERPNext sign-in, limits, SSE, one proof tool (`get_today_summary`), nginx
   `/assistant/`, image and CI.
 - **B: chat UI and read-only tools**: the chat screen; the client runs the lookups the service declares.
+  In B: the chat screen (More and the sidebar), a conversation kept in a root store, and seven read-only tools run
+  with the user's own ERPNext access (today summary, customers, items, invoices, one invoice, drafts, purchase
+  orders). Review pass 1 fixes: customer balances share `core/customers/party-balances.service.ts` with Contacts (own
+  invoices only for salespeople and store associates, company currency, a refused read says "not available for your
+  role", other failures fail the call); item prices share `core/pricing/selling-prices.service.ts` with the quick
+  sale (`apply_price_list`; "no price set" or "not available for your role" is stated); the conversation clears when
+  the user or business changes; a reply that is not asking for lookups is stored without tool_use blocks, and an
+  empty or tool-only reply shows the unavailable notice (refusals show the refusal notice); `get_invoice` orders
+  lines by `items.idx` and reports `line_count`.
 - **C: actions as pre-filled tasks with confirmation**: the assistant proposes, the user confirms in Madar.
 - **D: voice**.
 

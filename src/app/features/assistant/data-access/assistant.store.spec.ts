@@ -1,6 +1,8 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { AssistantApiService } from './assistant-api.service';
 import { AssistantToolsService } from './assistant-tools.service';
@@ -64,12 +66,15 @@ function setup() {
       .mockResolvedValue({ tools: ['get_today_summary', 'search_customers'], context: CONTEXT }),
     run: vi.fn().mockResolvedValue(outcome('{}')),
   };
-  const session = { checkExpired: vi.fn().mockResolvedValue(false) };
+  const user = signal<{ id: string } | null>({ id: 'lina@rehan.example' });
+  const business = signal<{ name: string } | null>({ name: 'Rehan Nursery' });
+  const session = { checkExpired: vi.fn().mockResolvedValue(false), user };
   TestBed.configureTestingModule({
     providers: [
       { provide: AssistantApiService, useValue: api },
       { provide: AssistantToolsService, useValue: tools },
       { provide: SessionService, useValue: session },
+      { provide: BusinessService, useValue: { active: business } },
       { provide: LanguageService, useValue: { language: () => 'ar' } },
     ],
   });
@@ -84,7 +89,16 @@ function setup() {
       });
     }
   };
-  return { store: TestBed.inject(AssistantStore), api, tools, session, requests, replies };
+  return {
+    store: TestBed.inject(AssistantStore),
+    api,
+    tools,
+    session,
+    user,
+    business,
+    requests,
+    replies,
+  };
 }
 
 describe('AssistantStore', () => {
@@ -325,6 +339,115 @@ describe('AssistantStore', () => {
       const { store } = setup();
       expect(() => store.stop()).not.toThrow();
       expect(store.state()).toBe('idle');
+    });
+  });
+
+  describe('who the conversation belongs to', () => {
+    it("starts empty for another user, and never sends the first user's messages", async () => {
+      const { store, user, requests, replies } = setup();
+      TestBed.tick();
+      replies(text('Lina owes 50.'), text('Hello'));
+      await store.send('What does Lina owe?');
+      user.set({ id: 'sam@rehan.example' });
+      TestBed.tick();
+      expect(store.messages()).toEqual([]);
+      await store.send('Hi');
+      expect(requests[1].messages).toEqual([{ role: 'user', content: 'Hi' }]);
+    });
+
+    it('clears on sign-out and stops a running answer', async () => {
+      const { store, user, api } = setup();
+      TestBed.tick();
+      const gate = deferred<AssistantReply>();
+      api.chat.mockReturnValueOnce(gate.promise);
+      const running = store.send('Hello');
+      await Promise.resolve();
+      user.set(null);
+      TestBed.tick();
+      gate.resolve(text('Late'));
+      await running;
+      expect(store.messages()).toEqual([]);
+      expect(store.state()).toBe('idle');
+    });
+
+    it('clears when the active business changes, but not when it first loads', async () => {
+      const { store, business, replies } = setup();
+      business.set(null);
+      TestBed.tick();
+      replies(text('Hi'));
+      await store.send('Hello');
+      business.set({ name: 'Rehan Nursery' });
+      TestBed.tick();
+      expect(store.messages()).toHaveLength(2);
+      business.set({ name: 'Other Shop' });
+      TestBed.tick();
+      expect(store.messages()).toEqual([]);
+    });
+  });
+
+  describe('replies that cannot be kept as they are', () => {
+    it('drops tool calls from a reply that is not asking for lookups, keeping its text', async () => {
+      const { store, requests, replies } = setup();
+      replies(
+        {
+          content: [
+            { type: 'thinking', thinking: 'hm', signature: 's' },
+            { type: 'text', text: 'Partly there' },
+            toolUse('t1', 'get_today_summary'),
+          ],
+          stopReason: 'max_tokens',
+        },
+        text('Fine'),
+      );
+      await store.send('One');
+      expect(store.messages().at(-1)).toEqual({
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'hm', signature: 's' },
+          { type: 'text', text: 'Partly there' },
+        ],
+      });
+      await store.send('Two');
+      expect(JSON.stringify(requests[1].messages)).not.toContain('tool_use');
+    });
+
+    it('shows unavailable and keeps nothing when no text is left', async () => {
+      const { store, requests, replies } = setup();
+      replies(
+        {
+          content: [
+            { type: 'thinking', thinking: 'hm', signature: 's' },
+            toolUse('t1', 'get_today_summary'),
+          ],
+          stopReason: 'max_tokens',
+        },
+        text('Fine'),
+      );
+      await store.send('One');
+      expect(store.problem()).toBe('unavailable');
+      expect(store.messages()).toEqual([{ role: 'user', content: 'One' }]);
+      await store.send('Two');
+      expect(JSON.stringify(requests[1].messages)).not.toContain('tool_use');
+      expect(JSON.stringify(requests[1].messages)).not.toContain('thinking');
+    });
+
+    it.each([[[]], [[{ type: 'text', text: '  ' }]]])(
+      'does not store an empty reply (%j)',
+      async (content) => {
+        const { store, replies } = setup();
+        replies({ content, stopReason: 'end_turn' });
+        await store.send('One');
+        expect(store.problem()).toBe('unavailable');
+        expect(store.messages().filter((m) => m.role === 'assistant')).toEqual([]);
+      },
+    );
+
+    it('shows the refusal notice for a refusal', async () => {
+      const { store, replies } = setup();
+      replies({ content: [], stopReason: 'refusal' });
+      await store.send('One');
+      expect(store.problem()).toBe('refusal');
+      expect(store.messages()).toEqual([{ role: 'user', content: 'One' }]);
     });
   });
 

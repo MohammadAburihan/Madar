@@ -15,9 +15,8 @@ import {
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { PaymentAccountsService } from '../../../core/money/payment-accounts.service';
+import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
-import { toIsoDate } from '../../../core/format/format';
-import { shareInFlight } from '../../../core/util/share-in-flight';
 import { stockedItems } from './stocked-items';
 import {
   CatalogItem,
@@ -73,8 +72,7 @@ export class SalesApiService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly customers = inject(CustomerDirectoryService);
   private readonly accounts = inject(PaymentAccountsService);
-  private readonly priceList = shareInFlight(() => this.loadSellingPriceList());
-  private sellingPriceList: string | null = null;
+  private readonly sellingPrices = inject(SellingPricesService);
 
   searchCustomers(
     term: string,
@@ -130,7 +128,7 @@ export class SalesApiService {
       return [];
     }
     const [prices, bins] = await Promise.all([
-      this.prices(rows, company),
+      this.sellingPrices.prices(rows, company),
       warehouses.length
         ? firstValueFrom(
             this.erpnext.list<{ item_code: string; warehouse: string; actual_qty: number }>('Bin', {
@@ -451,62 +449,6 @@ export class SalesApiService {
         ...(line.item.isStock ? { warehouse: sale.warehouse } : {}),
       })),
     };
-  }
-
-  private async prices(
-    rows: { name: string; stock_uom: string }[],
-    company: string,
-  ): Promise<Map<string, number>> {
-    const priceList = this.sellingPriceList ?? (await this.priceList());
-    if (!priceList) {
-      return new Map();
-    }
-    // Sales roles can't read Item Price directly; this is the pricing call ERPNext's own sales forms use.
-    const result = await firstValueFrom(
-      this.erpnext.post<{ children: { name: string; price_list_rate: number | null }[] }>(
-        'erpnext.stock.get_item_details.apply_price_list',
-        {
-          ctx: {
-            company,
-            doctype: 'Sales Invoice',
-            price_list: priceList,
-            transaction_date: toIsoDate(new Date()),
-            conversion_rate: 1,
-            plc_conversion_rate: 1,
-            items: rows.map((r) => ({
-              doctype: 'Sales Invoice Item',
-              // Without it ERPNext reads the child doctype's meta, finds no currency field, and skips the price lookup.
-              parenttype: 'Sales Invoice',
-              name: r.name,
-              child_docname: r.name,
-              item_code: r.name,
-              qty: 1,
-              uom: r.stock_uom,
-              stock_uom: r.stock_uom,
-              conversion_factor: 1,
-            })),
-          },
-        },
-      ),
-    );
-    return new Map(result.children.map((c) => [c.name, c.price_list_rate ?? 0]));
-  }
-
-  private async loadSellingPriceList(): Promise<string | null> {
-    // Selling Settings isn't readable by sales roles; enabled selling price lists are.
-    const lists = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Price List', {
-        fields: ['name'],
-        filters: [
-          ['selling', '=', 1],
-          ['enabled', '=', 1],
-        ],
-        limit: 0,
-      }),
-    );
-    this.sellingPriceList =
-      lists.find((l) => l.name === 'Standard Selling')?.name ?? lists[0]?.name ?? null;
-    return this.sellingPriceList;
   }
 }
 

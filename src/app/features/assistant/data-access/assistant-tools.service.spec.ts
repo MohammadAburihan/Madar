@@ -26,7 +26,7 @@ interface Options {
 function setup({ persona = 'owner', lists = {}, posts = {}, counts = {} }: Options = {}) {
   TestBed.resetTestingModule();
   const erpnext = fakeErpnext(lists, posts, {}, counts);
-  const directory = { search: vi.fn().mockResolvedValue([]) };
+  const directory = { find: vi.fn().mockResolvedValue([]) };
   const warehouses = {
     list: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
   };
@@ -175,35 +175,33 @@ describe('AssistantToolsService', () => {
   });
 
   describe('search_customers', () => {
-    it('searches the directory in the company currency and offers each customer to open', async () => {
-      const { run, directory } = setup();
-      directory.search.mockResolvedValue([
+    const lina = { id: 'Lina Haddad', name: 'Lina Haddad', phone: '0599', city: null };
+    const balances = (over: Record<string, Lister> = {}): Record<string, Lister> => ({
+      'Sales Invoice': () => [
         {
-          id: 'Lina Haddad',
-          name: 'Lina Haddad',
-          phone: '0599',
-          city: null,
-          outstanding: 250.126,
-          unpaidInvoices: 2,
+          customer: 'Lina Haddad',
+          party_account_currency: 'ILS',
+          conversion_rate: 1,
+          'SUM(`outstanding_amount`)': 100.1,
         },
-      ]);
+        {
+          customer: 'Lina Haddad',
+          party_account_currency: 'USD',
+          conversion_rate: 3.5,
+          'SUM(`outstanding_amount`)': 50,
+        },
+      ],
+      ...over,
+    });
+
+    it('finds customers and offers each to open, with the balance in company currency', async () => {
+      const { run, directory, listCalls } = setup({ lists: balances() });
+      directory.find.mockResolvedValue([lina]);
       const outcome = await run('search_customers', { query: 'lina', limit: 3 });
-      expect(directory.search).toHaveBeenCalledWith(
-        'lina',
-        { name: 'Rehan Nursery', currency: 'ILS' },
-        3,
-      );
+      expect(directory.find).toHaveBeenCalledWith('lina', 3);
       expect(outcome.json).toEqual({
         currency: 'ILS',
-        customers: [
-          {
-            id: 'Lina Haddad',
-            name: 'Lina Haddad',
-            phone: '0599',
-            outstanding: 250.13,
-            unpaid_invoices: 2,
-          },
-        ],
+        customers: [{ id: 'Lina Haddad', name: 'Lina Haddad', phone: '0599', outstanding: 275.1 }],
       });
       expect(outcome.records).toEqual([
         {
@@ -213,18 +211,52 @@ describe('AssistantToolsService', () => {
           mentions: ['Lina Haddad', 'Lina Haddad'],
         },
       ]);
+      const query = listCalls.find((c) => c.doctype === 'Sales Invoice')!.query;
+      expect(filtersOf(query)).toContain('["company","=","Rehan Nursery"]');
+      expect(filtersOf(query)).not.toContain('"owner"');
+    });
+
+    it.each<Persona>(['salesperson', 'storeAssociate'])(
+      "counts only a %s's own invoices",
+      async (persona) => {
+        const { run, directory, listCalls } = setup({ persona, lists: balances() });
+        directory.find.mockResolvedValue([lina]);
+        await run('search_customers', { query: 'lina' });
+        expect(listCalls.find((c) => c.doctype === 'Sales Invoice')!.query.filters).toContainEqual([
+          'owner',
+          '=',
+          'lina@rehan.example',
+        ]);
+      },
+    );
+
+    it('shows no balance, with a note, when the role cannot read invoices', async () => {
+      const { run, directory } = setup({ lists: balances({ 'Sales Invoice': refused }) });
+      directory.find.mockResolvedValue([lina]);
+      const { json } = await run('search_customers', { query: 'lina' });
+      expect(json.customers[0].outstanding).toBeNull();
+      expect(json.balance_note).toBe('not available for your role');
+    });
+
+    it('fails the lookup, never answers 0, when the balance read breaks', async () => {
+      const { run, directory } = setup({ lists: balances({ 'Sales Invoice': broken }) });
+      directory.find.mockResolvedValue([lina]);
+      expect(await run('search_customers', { query: 'lina' })).toMatchObject({
+        isError: true,
+        content: 'lookup failed',
+      });
     });
 
     it('defaults to five customers', async () => {
       const { run, directory } = setup();
       await run('search_customers', { query: '' });
-      expect(directory.search).toHaveBeenCalledWith('', expect.anything(), 5);
+      expect(directory.find).toHaveBeenCalledWith('', 5);
     });
 
     it('is not offered to a warehouse worker', async () => {
       const { run, directory } = setup({ persona: 'warehouse' });
       expect((await run('search_customers', { query: 'a' })).isError).toBe(true);
-      expect(directory.search).not.toHaveBeenCalled();
+      expect(directory.find).not.toHaveBeenCalled();
     });
   });
 
@@ -249,35 +281,20 @@ describe('AssistantToolsService', () => {
         { item_code: 'POT-30', warehouse: 'Other - RN', actual_qty: 5 },
         { item_code: 'POT-30', warehouse: 'Main - RN', actual_qty: 0 },
       ],
-      'Item Price': () => [
-        {
-          item_code: 'POT-30',
-          price_list_rate: 79.999,
-          uom: 'Nos',
-          valid_from: '2026-01-01',
-          valid_upto: null,
-        },
-        {
-          item_code: 'POT-30',
-          price_list_rate: 99,
-          uom: 'Nos',
-          valid_from: '2026-11-01',
-          valid_upto: null,
-        },
-        {
-          item_code: 'POT-30',
-          price_list_rate: 10,
-          uom: 'Box',
-          valid_from: null,
-          valid_upto: null,
-        },
-      ],
       ...over,
     });
-    const posts = { 'frappe.client.get_value': () => ({ selling_price_list: 'Standard Selling' }) };
+    const posts = {
+      'erpnext.stock.get_item_details.apply_price_list': () => ({
+        children: [
+          { name: 'POT-30', price_list_rate: 79.999 },
+          { name: 'DESIGN', price_list_rate: 0 },
+        ],
+      }),
+    };
+    const priceLists = { 'Price List': () => [{ name: 'Standard Selling' }] };
 
     it("returns stock per company warehouse, today's standard price, and the cost for roles that see costs", async () => {
-      const { run, listCalls } = setup({ lists: lists(), posts });
+      const { run, listCalls } = setup({ lists: lists(priceLists), posts });
       const { json, records } = await run('search_items', { query: 'pot', limit: 2 });
       expect(json.items).toEqual([
         {
@@ -288,7 +305,14 @@ describe('AssistantToolsService', () => {
           selling_price: 80,
           buying_cost: 40,
         },
-        { code: 'DESIGN', name: 'Garden design', unit: 'Nos', service: true, selling_price: null },
+        {
+          code: 'DESIGN',
+          name: 'Garden design',
+          unit: 'Nos',
+          service: true,
+          selling_price: null,
+          price_note: 'no price set',
+        },
       ]);
       expect(records.map((r) => r.id)).toEqual(['POT-30', 'DESIGN']);
       const items = listCalls.find((c) => c.doctype === 'Item')!.query;
@@ -299,7 +323,7 @@ describe('AssistantToolsService', () => {
     it('never asks for or shows buying cost to a role that does not see costs', async () => {
       const { run, listCalls } = setup({
         persona: 'storeAssociate',
-        lists: lists({ Item: () => [{ ...item }] }),
+        lists: lists({ ...priceLists, Item: () => [{ ...item }] }),
         posts,
       });
       const { json } = await run('search_items', { query: 'pot' });
@@ -309,33 +333,51 @@ describe('AssistantToolsService', () => {
       );
     });
 
-    it('shows no price, rather than none set, when the role cannot read prices', async () => {
+    it('reads prices through the quick sale pricing call with the item context', async () => {
+      const { run, postCalls } = setup({ lists: lists(priceLists), posts });
+      await run('search_items', { query: 'pot' });
+      const ctx = postCalls[0].body['ctx'] as Record<string, unknown>;
+      expect(ctx).toMatchObject({
+        company: 'Rehan Nursery',
+        price_list: 'Standard Selling',
+        transaction_date: '2026-10-25',
+      });
+      expect((ctx['items'] as unknown[])[0]).toMatchObject({
+        parenttype: 'Sales Invoice',
+        uom: 'Nos',
+        stock_uom: 'Nos',
+        conversion_factor: 1,
+      });
+    });
+
+    it('says the price is not available, rather than none set, when the role is refused', async () => {
       const { run } = setup({
         persona: 'salesperson',
-        lists: lists({ 'Item Price': refused }),
-        posts,
+        lists: lists(priceLists),
+        posts: { 'erpnext.stock.get_item_details.apply_price_list': refused },
       });
       const { json } = await run('search_items', { query: 'pot' });
       expect(json.items[0].selling_price).toBeNull();
+      expect(json.items[0].price_note).toBe('not available for your role');
       expect(json.items[0].stock).toEqual([{ warehouse: 'Main warehouse', qty: 12 }]);
     });
 
     it('shows no stock when the role cannot read it, but still answers', async () => {
-      const { run } = setup({ lists: lists({ Bin: refused }), posts });
+      const { run } = setup({ lists: lists({ ...priceLists, Bin: refused }), posts });
       const { json } = await run('search_items', { query: 'pot' });
       expect(json.items[0].stock).toBeNull();
       expect(json.items[0].selling_price).toBe(80);
     });
 
     it('does not hide a failed read as an empty answer', async () => {
-      const { run } = setup({ lists: lists({ Bin: broken }), posts });
+      const { run } = setup({ lists: lists({ ...priceLists, Bin: broken }), posts });
       expect(await run('search_items', { query: 'pot' })).toMatchObject({
         content: 'lookup failed',
       });
     });
 
     it('matches codes typed in Arabic digits and names as typed', async () => {
-      const { run, listCalls } = setup({ lists: lists(), posts });
+      const { run, listCalls } = setup({ lists: lists(priceLists), posts });
       await run('search_items', { query: 'نبتة ٣٠' });
       expect(listCalls[0].query.orFilters).toEqual([
         ['item_code', 'like', '%نبتة 30%'],
@@ -467,12 +509,11 @@ describe('AssistantToolsService', () => {
       qty: idx,
       rate: 40,
       amount: 40 * idx,
-      idx,
     });
 
     it('looks the invoice up by exact name in the company and returns its lines and payment status', async () => {
       const { run, listCalls } = setup({
-        lists: { 'Sales Invoice': () => [line(2, 'B'), line(1, 'A')] },
+        lists: { 'Sales Invoice': () => [line(1, 'A'), line(2, 'B')] },
       });
       const { json, records } = await run('get_invoice', { name: ' SI-1042 ' });
       expect(json).toMatchObject({
@@ -487,6 +528,7 @@ describe('AssistantToolsService', () => {
       expect(records).toEqual([
         { kind: 'invoice', id: 'SI-1042', label: 'SI-1042', mentions: ['SI-1042'] },
       ]);
+      expect(listCalls[0].query.orderBy).toBe('items.idx asc');
       expect(listCalls[0].query.filters).toEqual([
         ['name', '=', 'SI-1042'],
         ['company', '=', 'Rehan Nursery'],
@@ -528,7 +570,8 @@ describe('AssistantToolsService', () => {
       const rows = Array.from({ length: 30 }, (_, i) => line(i + 1, `C${i}`));
       const { run } = setup({ lists: { 'Sales Invoice': () => rows } });
       const { json } = await run('get_invoice', { name: 'SI-1042' });
-      expect(json.lines.length).toBeLessThanOrEqual(20);
+      expect(json.lines.length).toBe(20);
+      expect(json.line_count).toBe(30);
       expect(json.truncated).toBe(true);
     });
   });

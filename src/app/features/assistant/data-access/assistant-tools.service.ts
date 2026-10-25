@@ -5,8 +5,10 @@ import { OWN_SALES_ONLY, Persona } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { CustomerDirectoryService } from '../../../core/customers/customer-directory.service';
+import { PartyBalancesService } from '../../../core/customers/party-balances.service';
 import { ErpnextClient, Field, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
 import { toIsoDate } from '../../../core/format/format';
 import { round2, westernDigits } from '../../../core/format/number';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
@@ -38,8 +40,9 @@ interface Found {
 
 const NOT_ALLOWED = 'not allowed for your role';
 const FAILED = 'lookup failed';
-// A child-table query returns one row per line, so a bounded number of lines is read.
-const LINE_ROWS = 50;
+const NOT_AVAILABLE = 'not available for your role';
+// A child-table query returns one row per line: one page of lines is read.
+const LINE_ROWS = 500;
 const LINES_SHOWN = 20;
 const CLOSED_ORDER_STATUSES = ['Closed', 'On Hold', 'Completed'];
 
@@ -75,6 +78,8 @@ export class AssistantToolsService {
   private readonly business = inject(BusinessService);
   private readonly clock = inject(SiteClockService);
   private readonly customers = inject(CustomerDirectoryService);
+  private readonly balances = inject(PartyBalancesService);
+  private readonly sellingPrices = inject(SellingPricesService);
   private readonly warehouses = inject(WarehouseDirectoryService);
 
   /** The tools this user's role may be offered, and what the assistant is told about the business. */
@@ -210,20 +215,27 @@ export class AssistantToolsService {
 
   private async searchCustomers(input: ToolInput, scope: Scope): Promise<Found> {
     const limit = Number(input['limit'] ?? 5);
-    const rows = await this.customers.search(
-      String(input['query']),
-      { name: scope.company, currency: scope.currency },
-      limit,
-    );
+    const rows = await this.customers.find(String(input['query']), limit);
+    const balances = rows.length
+      ? await this.balances
+          .outstanding(
+            'Sales Invoice',
+            'customer',
+            rows.map((c) => c.id),
+            { name: scope.company, currency: scope.currency },
+            OWN_SALES_ONLY.includes(scope.persona) ? scope.userId : null,
+          )
+          .catch(forbiddenAsNull)
+      : new Map<string, number>();
     return {
       payload: {
         currency: scope.currency,
+        ...(balances ? {} : { balance_note: NOT_AVAILABLE }),
         customers: rows.map((c) => ({
           id: c.id,
           name: c.name,
           phone: c.phone,
-          outstanding: round2(c.outstanding),
-          unpaid_invoices: c.unpaidInvoices,
+          outstanding: balances ? round2(balances.get(c.id) ?? 0) : null,
         })),
       },
       listKey: 'customers',
@@ -275,7 +287,7 @@ export class AssistantToolsService {
         rows.filter((r) => r.is_stock_item).map((r) => r.name),
         scope,
       ),
-      this.pricesFor(rows, scope.today),
+      this.pricesFor(rows, scope),
     ]);
     return {
       payload: {
@@ -287,7 +299,7 @@ export class AssistantToolsService {
           ...(r.is_stock_item
             ? { stock: stock?.get(r.name) ?? (stock ? [] : null) }
             : { service: true }),
-          selling_price: prices?.get(r.name) ?? null,
+          ...this.priceOf(prices, r.name),
           ...(scope.caps.seeCosts && r.is_stock_item
             ? { buying_cost: round2(Number(r.valuation_rate ?? 0)) }
             : {}),
@@ -335,58 +347,24 @@ export class AssistantToolsService {
     return stock;
   }
 
-  /** Standard selling prices on `today`; null when the role can't read Item Price (sales roles can't). */
-  private async pricesFor(
+  /** Selling prices the way the quick sale reads them; null when the role can't get them. */
+  private pricesFor(
     items: { name: string; stock_uom: string }[],
-    today: string,
+    scope: Scope,
   ): Promise<Map<string, number> | null> {
-    if (!items.length) {
-      return new Map();
+    return items.length
+      ? this.sellingPrices.prices(items, scope.company, scope.today).catch(forbiddenAsNull)
+      : Promise.resolve(new Map());
+  }
+
+  private priceOf(prices: Map<string, number> | null, code: string) {
+    if (!prices) {
+      return { selling_price: null, price_note: NOT_AVAILABLE };
     }
-    const settings = await firstValueFrom(
-      this.erpnext.get<{ selling_price_list?: string }>('frappe.client.get_value', {
-        doctype: 'Selling Settings',
-        fieldname: 'selling_price_list',
-      }),
-    ).catch(forbiddenAsNull);
-    const list = settings?.selling_price_list;
-    if (!list) {
-      return null;
-    }
-    const rows = await this.list<{
-      item_code: string;
-      price_list_rate: number;
-      uom: string | null;
-      valid_from: string | null;
-      valid_upto: string | null;
-    }>(
-      'Item Price',
-      ['item_code', 'price_list_rate', 'uom', 'valid_from', 'valid_upto'],
-      [
-        ['price_list', '=', list],
-        ['item_code', 'in', items.map((i) => i.name)],
-        ['customer', 'is', 'not set'],
-        ['batch_no', 'is', 'not set'],
-      ],
-      { limit: 0 },
-    ).catch(forbiddenAsNull);
-    if (!rows) {
-      return null;
-    }
-    const prices = new Map<string, number>();
-    for (const item of items) {
-      const price = rows
-        .filter((r) => r.item_code === item.name && (!r.uom || r.uom === item.stock_uom))
-        .filter(
-          (r) =>
-            (!r.valid_from || r.valid_from <= today) && (!r.valid_upto || r.valid_upto >= today),
-        )
-        .sort((a, b) => (b.valid_from ?? '').localeCompare(a.valid_from ?? ''))[0];
-      if (price) {
-        prices.set(item.name, round2(price.price_list_rate));
-      }
-    }
-    return prices;
+    const price = prices.get(code);
+    return price
+      ? { selling_price: round2(price) }
+      : { selling_price: null, price_note: 'no price set' };
   }
 
   private async findInvoices(input: ToolInput, scope: Scope): Promise<Found> {
@@ -474,7 +452,6 @@ export class AssistantToolsService {
       qty: number;
       rate: number;
       amount: number;
-      idx: number;
     }>(
       'Sales Invoice',
       [
@@ -491,7 +468,6 @@ export class AssistantToolsService {
         'items.qty as qty',
         'items.rate as rate',
         'items.amount as amount',
-        'items.idx as idx',
       ],
       [
         ['name', '=', name],
@@ -499,13 +475,13 @@ export class AssistantToolsService {
         ['docstatus', '<', 2],
         ...this.own(scope),
       ],
-      { limit: LINE_ROWS },
+      { orderBy: 'items.idx asc', limit: LINE_ROWS },
     );
     const [head] = rows;
     if (!head) {
       return { payload: { found: false, name }, listKey: null, records: [] };
     }
-    const lines = rows.sort((a, b) => a.idx - b.idx);
+    const lines = rows;
     const draft = head.docstatus === 0;
     return {
       payload: {
@@ -522,6 +498,7 @@ export class AssistantToolsService {
               paid: round2(head.grand_total - head.outstanding_amount),
               amount_due: round2(head.outstanding_amount),
             }),
+        line_count: lines.length,
         ...(lines.length > LINES_SHOWN ? { truncated: true } : {}),
         lines: lines.slice(0, LINES_SHOWN).map((l) => ({
           code: l.item_code,

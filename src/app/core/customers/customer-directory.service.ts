@@ -14,6 +14,8 @@ export interface CustomerOption {
   unpaidInvoices: number;
 }
 
+export type CustomerMatch = Omit<CustomerOption, 'outstanding' | 'unpaidInvoices'>;
+
 export interface NewCustomer {
   name: string;
   phone: string;
@@ -47,6 +49,20 @@ export class CustomerDirectoryService {
     company?: { name: string; currency: string },
     limit = 5,
   ): Promise<CustomerOption[]> {
+    const rows = await this.find(term, limit);
+    const balances = await this.balancesFor(
+      rows.map((r) => r.id),
+      company,
+    ).catch(() => new Map<string, { outstanding: number; count: number }>());
+    return rows.map((r) => ({
+      ...r,
+      outstanding: balances.get(r.id)?.outstanding ?? 0,
+      unpaidInvoices: balances.get(r.id)?.count ?? 0,
+    }));
+  }
+
+  /** Customers matching the term, newest first, without balances. */
+  async find(term: string, limit = 5): Promise<CustomerMatch[]> {
     const like = `%${term.trim()}%`;
     const rows = await firstValueFrom(
       this.erpnext.list<{
@@ -72,17 +88,11 @@ export class CustomerDirectoryService {
         limit,
       }),
     );
-    const balances = await this.balancesFor(
-      rows.map((r) => r.name),
-      company,
-    ).catch(() => new Map<string, { outstanding: number; count: number }>());
     return rows.map((r) => ({
       id: r.name,
       name: r.customer_name,
       phone: r.mobile_no,
       city: firstAddressLine(r.primary_address),
-      outstanding: balances.get(r.name)?.outstanding ?? 0,
-      unpaidInvoices: balances.get(r.name)?.count ?? 0,
     }));
   }
 

@@ -1,5 +1,6 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { SessionService } from '../../../core/auth/session.service';
+import { BusinessService } from '../../../core/business/business.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { AssistantApiService } from './assistant-api.service';
 import { AssistantToolsService } from './assistant-tools.service';
@@ -8,6 +9,7 @@ import {
   ApiMessage,
   AssistantError,
   ContentBlock,
+  TextBlock,
   ProblemKind,
   RecordLink,
   ToolResultBlock,
@@ -23,6 +25,20 @@ class Cancelled extends Error {}
 
 const isToolUse = (block: ContentBlock): block is ToolUseBlock => block.type === 'tool_use';
 
+/** What of a reply that is not asking for a lookup may be kept: its text, and thinking only alongside it. */
+function answerOf(content: ContentBlock[]): ContentBlock[] {
+  const texts = content.filter(
+    (block) => block.type === 'text' && String((block as TextBlock).text ?? '').trim(),
+  );
+  if (!texts.length) {
+    return [];
+  }
+  return content.filter(
+    (block) =>
+      block.type === 'thinking' || block.type === 'redacted_thinking' || texts.includes(block),
+  );
+}
+
 const hasToolUse = (message: ApiMessage | undefined): boolean =>
   message?.role === 'assistant' &&
   Array.isArray(message.content) &&
@@ -35,6 +51,7 @@ export class AssistantStore {
   private readonly tools = inject(AssistantToolsService);
   private readonly session = inject(SessionService);
   private readonly languages = inject(LanguageService);
+  private readonly business = inject(BusinessService);
 
   /** Exactly what the service is sent next: assistant replies keep their thinking and tool_use blocks. */
   readonly messages = signal<ApiMessage[]>([]);
@@ -49,6 +66,23 @@ export class AssistantStore {
 
   private controller: AbortController | null = null;
   private turn = 0;
+
+  constructor() {
+    // A conversation holds one user's business data: it never carries over to another user or business.
+    let user: string | null | undefined;
+    let company: string | null = null;
+    effect(() => {
+      const nextUser = this.session.user()?.id ?? null;
+      const nextCompany = this.business.active()?.name ?? null;
+      const userChanged = user !== undefined && user !== nextUser;
+      const companyChanged = company !== null && nextCompany !== null && company !== nextCompany;
+      user = nextUser;
+      company = nextCompany ?? company;
+      if (userChanged || companyChanged) {
+        this.clear();
+      }
+    });
+  }
 
   async send(text: string): Promise<void> {
     const content = text.trim();
@@ -80,12 +114,17 @@ export class AssistantStore {
         );
         check();
         this.streaming.set('');
-        this.messages.update((messages) => [
-          ...messages,
-          { role: 'assistant', content: reply.content },
-        ]);
         const calls = reply.content.filter(isToolUse);
-        if (reply.stopReason !== 'tool_use' || !calls.length) {
+        const asksForTools = reply.stopReason === 'tool_use' && calls.length > 0;
+        if (!asksForTools) {
+          if (reply.stopReason === 'refusal') {
+            throw new AssistantError('refusal');
+          }
+          const answer = answerOf(reply.content);
+          if (!answer.length) {
+            throw new AssistantError('unavailable');
+          }
+          this.messages.update((messages) => [...messages, { role: 'assistant', content: answer }]);
           if (records.length) {
             const index = this.messages().length - 1;
             this.links.update((links) => ({ ...links, [index]: records }));
@@ -93,6 +132,10 @@ export class AssistantStore {
           this.state.set('idle');
           return;
         }
+        this.messages.update((messages) => [
+          ...messages,
+          { role: 'assistant', content: reply.content },
+        ]);
         if (round >= MAX_TOOL_ROUNDS) {
           throw new AssistantError('unavailable');
         }
