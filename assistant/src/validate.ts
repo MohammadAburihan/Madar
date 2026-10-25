@@ -119,9 +119,15 @@ function cleanContent(
         ...(errored !== undefined ? { is_error: errored } : {}),
       });
     } else if (role === 'assistant' && (type === 'thinking' || type === 'redacted_thinking')) {
-      if (typeof block['thinking'] === 'string') budget.chars += block['thinking'].length;
-      const { cache_control: _dropped, ...rest } = block;
-      out.push(rest);
+      if (type === 'thinking') {
+        const { thinking, signature } = block;
+        if (typeof thinking !== 'string' || typeof signature !== 'string') return null;
+        budget.chars += thinking.length;
+        out.push({ type, thinking, signature });
+      } else {
+        if (typeof block['data'] !== 'string') return null;
+        out.push({ type, data: block['data'] });
+      }
     } else if (role === 'assistant' && type === 'tool_use') {
       const { id, name, input } = block;
       if (typeof id !== 'string' || typeof name !== 'string' || !isObject(input)) return null;

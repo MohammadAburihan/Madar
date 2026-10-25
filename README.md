@@ -153,15 +153,17 @@ npm test && npm run build
 
 API: `POST /assistant/chat` with `{ language, context: { business, currency, today, persona }, tools, messages }`
 answers with Server-Sent Events: `text` deltas, then one `message` (`content`, `stop_reason`) or an `error`
-(`{ code }`: `refusal`, `rate_limited`, `unavailable`, `bad_request`, `unauthorized`). Requests refused before the
-stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 403, 400, 413 or 429.
+(`{ code }`: `refusal`, `rate_limited`, `busy`, `unavailable`, `bad_request`, `unauthorized`). Requests refused before the
+stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 403, 400, 413, 429 or 503
+(`unavailable`: ERPNext could not be reached to check the session). 429 always carries `Retry-After`: 2 s for `busy`,
+60 s for the per-minute rate, and the seconds to UTC midnight for a spent daily budget (both `rate_limited`).
 `GET /assistant/healthz` answers `ok`.
 
 Clients must send `Content-Type: application/json` and the header `X-Madar-Assistant: 1` on every chat request (the
 service answers 403 `forbidden` otherwise, which keeps cross-site form posts out). An `Origin` header, when present,
-must be the service's own origin or `capacitor://localhost`, `http://localhost` or `https://localhost`. Only
+must have the same host and port as the request's `Host` header (the scheme is ignored, because TLS ends at a proxy), or be `capacitor://localhost`, `http://localhost` or `https://localhost`. Only
 ERPNext desk users (a role with desk access) are accepted. One request per user can run at a time (a second gets 429
-`rate_limited`), and bodies are capped at 64 KB, 60 messages and 60,000 characters. Messages may hold only `text`,
+`busy`), and bodies are capped at 64 KB, 60 messages and 60,000 characters. Messages may hold only `text`,
 `tool_result`, `thinking`, `redacted_thinking` and `tool_use` blocks; every `tool_use` must name a tool that is both
 known to the service and listed in the request's `tools`. `strict: true` is set on tools, but the service does not
 check what the model returns: clients must still validate tool inputs before acting on them.
@@ -185,6 +187,10 @@ docker run -d --name madar-assistant-rehannursery --network erpnext_default \
   --env-file ~/madar-assistant.env madar-assistant:<version>
 # madar-web: add -e ASSISTANT_UPSTREAM=http://madar-assistant-rehannursery:8080
 ```
+
+madar-web's nginx limits `/assistant/` per client address. With `TRUST_FORWARDED_PROTO=1` it keys on the last
+`X-Forwarded-For` hop, so the proxy directly in front (host nginx) must be the one that appends the client address.
+With another proxy layer (for example an ALB) in front of it, set real client IPs there first.
 
 ## Continuous integration
 

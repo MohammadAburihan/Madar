@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createAuth } from '../src/auth.js';
+import { createAuth, UpstreamError } from '../src/auth.js';
 import { startHarness, body } from './helpers.js';
 
 describe('auth', () => {
@@ -69,11 +69,9 @@ describe('auth', () => {
     expect(await none.userFor('sid=1')).toBeNull();
   });
 
-  it('caches failures for 20 s and treats network errors as unauthorized', async () => {
+  it('caches a refusal for 20 s', async () => {
     let time = 0;
-    const fetchMock = vi.fn(async () => {
-      throw new Error('down');
-    });
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 403 }));
     const auth = createAuth({
       upstream: 'http://erp',
       siteHost: 'h',
@@ -86,6 +84,28 @@ describe('auth', () => {
     time = 21_000;
     expect(await auth.userFor('sid=1')).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws UpstreamError on network errors, timeouts and 5xx, and does not cache them', async () => {
+    for (const fail of [
+      async () => {
+        throw new Error('down');
+      },
+      async () => {
+        throw new DOMException('timed out', 'TimeoutError');
+      },
+      async () => new Response('oops', { status: 502 }),
+    ]) {
+      const fetchMock = vi.fn(fail);
+      const auth = createAuth({
+        upstream: 'http://erp',
+        siteHost: 'h',
+        fetch: fetchMock as unknown as typeof fetch,
+      });
+      await expect(auth.userFor('sid=1')).rejects.toBeInstanceOf(UpstreamError);
+      await expect(auth.userFor('sid=1')).rejects.toBeInstanceOf(UpstreamError);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    }
   });
 
   it('bounds the cache, evicting the oldest entry', async () => {

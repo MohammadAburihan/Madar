@@ -1,3 +1,4 @@
+import { request } from 'node:http';
 import Anthropic from '@anthropic-ai/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { STABLE_PROMPT } from '../src/prompt.js';
@@ -348,12 +349,60 @@ const heavy = fakeMessage({
   } as Anthropic.Usage,
 });
 
+describe('upstream failure', () => {
+  it('answers 503 unavailable when ERPNext cannot be reached', async () => {
+    h = await startHarness({
+      fetch: (async () => {
+        throw new Error('down');
+      }) as unknown as typeof fetch,
+    });
+    const res = await h.post(body());
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ code: 'unavailable' });
+    expect(h.params).toHaveLength(0);
+  });
+});
+
+describe('thinking blocks', () => {
+  it('rebuilds thinking and redacted_thinking with only their own fields', async () => {
+    h = await startHarness();
+    const messages = [
+      { role: 'user', content: 'hi' },
+      {
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'x', signature: 's', extra: 1, cache_control: {} },
+          { type: 'redacted_thinking', data: 'd', thinking: 'leak', signature: 'z' },
+          { type: 'text', text: 'ok' },
+        ],
+      },
+      { role: 'user', content: 'again' },
+    ];
+    await (await h.post(body({ messages }))).text();
+    expect(h.params[0]!.messages[1]).toEqual({
+      role: 'assistant',
+      content: [
+        { type: 'thinking', thinking: 'x', signature: 's' },
+        { type: 'redacted_thinking', data: 'd' },
+        { type: 'text', text: 'ok' },
+      ],
+    });
+    for (const bad of [{ type: 'thinking', thinking: 'x' }, { type: 'redacted_thinking' }]) {
+      const res = await h.post(
+        body({ messages: [messages[0], { role: 'assistant', content: [bad] }, messages[2]] }),
+      );
+      expect(res.status).toBe(400);
+    }
+  });
+});
+
 describe('limits', () => {
   it('limits requests per minute per user', async () => {
     h = await startHarness({ ratePerMin: 2 });
     for (let i = 0; i < 2; i++) await (await h.post(body())).text();
     const res = await h.post(body());
     expect(res.status).toBe(429);
+    expect(res.headers.get('Retry-After')).toBe('60');
     expect(await res.json()).toEqual({ code: 'rate_limited' });
   });
 
@@ -369,6 +418,9 @@ describe('limits', () => {
     h = await startHarness({ dailyTokens: 4000 });
     const res = await h.post(body());
     expect(res.status).toBe(429);
+    const wait = Number(res.headers.get('Retry-After'));
+    expect(wait).toBeGreaterThan(0);
+    expect(wait).toBeLessThanOrEqual(86_400);
     expect(await res.json()).toEqual({ code: 'rate_limited' });
     expect(h.params).toHaveLength(0);
   });
@@ -387,7 +439,8 @@ describe('limits', () => {
     await vi.waitFor(() => expect(h.params).toHaveLength(1));
     const second = await h.post(body());
     expect(second.status).toBe(429);
-    expect(await second.json()).toEqual({ code: 'rate_limited' });
+    expect(second.headers.get('Retry-After')).toBe('2');
+    expect(await second.json()).toEqual({ code: 'busy' });
     release();
     await (await first).text();
     const third = await h.post(body());
@@ -449,6 +502,38 @@ describe('cross-site protection', () => {
     const app = await h.post(body(), 'sid=1', undefined, { Origin: 'capacitor://localhost' });
     expect(app.status).toBe(200);
     await app.text();
+  });
+
+  it('compares the Origin host with the Host header, whatever the scheme', async () => {
+    h = await startHarness();
+    const send = (host: string, origin: string) =>
+      new Promise<number>((resolve, reject) => {
+        const req = request(
+          `${h.url}/assistant/chat`,
+          {
+            method: 'POST',
+            headers: {
+              Host: host,
+              Origin: origin,
+              'Content-Type': 'application/json',
+              'X-Madar-Assistant': '1',
+              Cookie: 'sid=1',
+            },
+          },
+          (res) => {
+            res.resume();
+            res.on('end', () => resolve(res.statusCode ?? 0));
+          },
+        );
+        req.on('error', reject);
+        req.end(JSON.stringify(body()));
+      });
+    expect(await send('app.example', 'https://app.example')).toBe(200);
+    expect(await send('app.example', 'https://evil.example')).toBe(403);
+    expect(await send('app.example', 'http://app.example:80')).toBe(200);
+    expect(await send('app.example:8443', 'https://app.example:8443')).toBe(200);
+    expect(await send('app.example', 'https://app.example:8443')).toBe(403);
+    expect(await send('app.example', 'null')).toBe(403);
   });
 
   it('takes the scheme from X-Forwarded-Proto', async () => {

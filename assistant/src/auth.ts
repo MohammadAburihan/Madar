@@ -10,6 +10,8 @@ export interface AuthOptions {
   maxEntries?: number;
 }
 
+export class UpstreamError extends Error {}
+
 export interface Auth {
   userFor(cookie: string | undefined): Promise<string | null>;
 }
@@ -24,52 +26,56 @@ export function createAuth(options: AuthOptions): Auth {
 
   async function call(path: string, params: Record<string, string>, cookie: string) {
     const query = new URLSearchParams(params).toString();
-    const response = await options.fetch(
-      `${options.upstream}/api/method/${path}${query && `?${query}`}`,
-      {
-        headers: { Cookie: cookie, Host: options.siteHost, Accept: 'application/json' },
-        signal: AbortSignal.timeout(5000),
-      },
-    );
+    let response: Response;
+    try {
+      response = await options.fetch(
+        `${options.upstream}/api/method/${path}${query && `?${query}`}`,
+        {
+          headers: { Cookie: cookie, Host: options.siteHost, Accept: 'application/json' },
+          signal: AbortSignal.timeout(5000),
+        },
+      );
+    } catch {
+      throw new UpstreamError('ERPNext unreachable');
+    }
+    if (response.status >= 500) throw new UpstreamError(`ERPNext answered ${response.status}`);
     if (response.status !== 200) return undefined;
-    return ((await response.json()) as { message?: unknown }).message;
+    try {
+      return ((await response.json()) as { message?: unknown }).message;
+    } catch {
+      throw new UpstreamError('ERPNext answered with invalid JSON');
+    }
   }
 
   // Frappe makes a user a System User exactly when one of their roles has desk access, and hides
   // user_type from non-admins, so we read the roles (allowed on own record) and check Role.desk_access.
   async function lookup(cookie: string): Promise<string | null> {
-    try {
-      const user = await call('frappe.auth.get_logged_user', {}, cookie);
-      if (typeof user !== 'string' || !user || user === 'Guest') return null;
-      const roles = await call(
-        'frappe.client.get_list',
-        {
-          doctype: 'Has Role',
-          parent: 'User',
-          fields: JSON.stringify(['role']),
-          filters: JSON.stringify({ parent: user, parenttype: 'User' }),
-          limit_page_length: '0',
-        },
-        cookie,
-      );
-      if (!Array.isArray(roles) || roles.length === 0) return null;
-      const names = roles
-        .map((r: { role?: unknown }) => r.role)
-        .filter((r) => typeof r === 'string');
-      const desk = await call(
-        'frappe.client.get_list',
-        {
-          doctype: 'Role',
-          fields: JSON.stringify(['name']),
-          filters: JSON.stringify({ name: ['in', names], desk_access: 1 }),
-          limit_page_length: '1',
-        },
-        cookie,
-      );
-      return Array.isArray(desk) && desk.length > 0 ? user : null;
-    } catch {
-      return null;
-    }
+    const user = await call('frappe.auth.get_logged_user', {}, cookie);
+    if (typeof user !== 'string' || !user || user === 'Guest') return null;
+    const roles = await call(
+      'frappe.client.get_list',
+      {
+        doctype: 'Has Role',
+        parent: 'User',
+        fields: JSON.stringify(['role']),
+        filters: JSON.stringify({ parent: user, parenttype: 'User' }),
+        limit_page_length: '0',
+      },
+      cookie,
+    );
+    if (!Array.isArray(roles) || roles.length === 0) return null;
+    const names = roles.map((r: { role?: unknown }) => r.role).filter((r) => typeof r === 'string');
+    const desk = await call(
+      'frappe.client.get_list',
+      {
+        doctype: 'Role',
+        fields: JSON.stringify(['name']),
+        filters: JSON.stringify({ name: ['in', names], desk_access: 1 }),
+        limit_page_length: '1',
+      },
+      cookie,
+    );
+    return Array.isArray(desk) && desk.length > 0 ? user : null;
   }
 
   function remember(key: string, user: string | null, time: number): void {

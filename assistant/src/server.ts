@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import Anthropic from '@anthropic-ai/sdk';
-import type { Auth } from './auth.js';
+import { UpstreamError, type Auth } from './auth.js';
 import type { Config } from './config.js';
 import { billedTokens, emptyUsage, type Limits, type Usage } from './limits.js';
 import { buildSystem } from './prompt.js';
@@ -8,7 +8,13 @@ import { selectTools } from './tools.js';
 import { MAX_BODY_BYTES, validateChat } from './validate.js';
 
 export type ErrorCode =
-  'refusal' | 'rate_limited' | 'unavailable' | 'bad_request' | 'unauthorized' | 'forbidden';
+  | 'refusal'
+  | 'rate_limited'
+  | 'busy'
+  | 'unavailable'
+  | 'bad_request'
+  | 'unauthorized'
+  | 'forbidden';
 
 export interface MessageStreamLike {
   on(event: 'text', listener: (delta: string) => void): unknown;
@@ -31,6 +37,7 @@ export interface Deps {
 }
 
 const MAX_TOKENS = 4096;
+const DAY_MS = 86_400_000;
 
 export function errorCodeFor(error: unknown): ErrorCode {
   if (error instanceof Anthropic.BadRequestError) return 'bad_request';
@@ -42,10 +49,14 @@ const ALLOWED_ORIGINS = new Set(['capacitor://localhost', 'https://localhost', '
 function crossSite(req: IncomingMessage): boolean {
   const origin = req.headers.origin;
   if (origin === undefined) return false;
-  const proto = String(req.headers['x-forwarded-proto'] ?? 'http')
-    .split(',')[0]!
-    .trim();
-  return origin !== `${proto}://${req.headers.host}` && !ALLOWED_ORIGINS.has(origin);
+  if (ALLOWED_ORIGINS.has(origin)) return false;
+  try {
+    const parsed = new URL(origin);
+    // Re-parsing the Host under the Origin's scheme drops that scheme's default port on both sides.
+    return parsed.host !== new URL(`${parsed.protocol}//${req.headers.host}`).host;
+  } catch {
+    return true;
+  }
 }
 
 function isJsonRequest(req: IncomingMessage): boolean {
@@ -100,8 +111,17 @@ async function readBody(req: IncomingMessage): Promise<{ value: unknown; bytes: 
   return { value: JSON.parse(Buffer.concat(chunks).toString('utf8')), bytes: size };
 }
 
-function sendJson(res: ServerResponse, status: number, body: unknown): void {
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+function sendJson(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+  extra: Record<string, string> = {},
+): void {
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
+    ...extra,
+  });
   res.end(JSON.stringify(body));
 }
 
@@ -124,7 +144,13 @@ export function createApp(deps: Deps): Server {
     });
 
     if (!isJsonRequest(req) || crossSite(req)) return sendError(res, 403, 'forbidden');
-    const user = await deps.auth.userFor(req.headers.cookie);
+    let user: string | null;
+    try {
+      user = await deps.auth.userFor(req.headers.cookie);
+    } catch (error) {
+      if (error instanceof UpstreamError) return sendError(res, 503, 'unavailable');
+      throw error;
+    }
     if (!user) return sendError(res, 401, 'unauthorized');
 
     let body: { value: unknown; bytes: number };
@@ -142,7 +168,12 @@ export function createApp(deps: Deps): Server {
     const request = parsed.value;
 
     const reserved = deps.limits.reserve(user, Math.ceil(body.bytes / 3) + MAX_TOKENS);
-    if (!reserved.ok) return sendError(res, 429, 'rate_limited');
+    if (!reserved.ok) {
+      if (reserved.reason === 'busy')
+        return sendJson(res, 429, { code: 'busy' }, { 'Retry-After': '2' });
+      const wait = reserved.reason === 'rate' ? 60 : Math.ceil((DAY_MS - (now() % DAY_MS)) / 1000);
+      return sendJson(res, 429, { code: 'rate_limited' }, { 'Retry-After': String(wait) });
+    }
     const { reservation } = reserved;
     const seen = emptyUsage();
     let usageLine = 'in=0 out=0 cache_read=0 cache_write=0';
