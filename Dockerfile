@@ -15,6 +15,7 @@ ENV ERPNEXT_UPSTREAM=http://frontend:8080 \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
     TRUST_FORWARDED_PROTO=0 \
     ERPNEXT_SITE_HOST='$host' \
+    ASSISTANT_UPSTREAM='' \
     MADAR_ERPNEXT_URL=''
 
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template

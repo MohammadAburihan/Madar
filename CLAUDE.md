@@ -257,6 +257,11 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   with the new tag. Before an ERPNext image change: `bench backup --with-files` per site, an EBS snapshot, then
   `bench --site <site> migrate` for every site. The sites volume keeps its own `sites/apps.txt`: add a new app there
   before `install-app`.
+- The assistant is the container `madar-assistant-rehannursery` (`madar-assistant:<version>` from `assistant/`, network
+  `erpnext_default`; madar-web reaches it through `ASSISTANT_UPSTREAM`). The Anthropic API key lives only in
+  `~/madar-assistant.env` (mode 600) on the server, never in git or an image. With `TRUST_FORWARDED_PROTO=1` the per-IP limit on `/assistant/` keys on the last
+  `X-Forwarded-For` hop: the proxy directly in front (host nginx) must append the client address; with another layer
+  (an ALB) in front of it, set real IPs there first.
 - Android release: `npm run cap:sync`, then `JAVA_HOME=$(/usr/libexec/java_home -v 21)
   ANDROID_HOME=~/Library/Android/sdk ./gradlew bundleRelease` in `android/`; signing reads the git-ignored
   `android/keystore.properties` (key and a copy of the properties in `../secrets/`, outside git).

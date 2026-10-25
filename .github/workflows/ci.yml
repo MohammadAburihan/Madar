@@ -32,7 +32,11 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            assistant/package-lock.json
       - run: npm ci
+      - run: npm ci --prefix assistant
       - name: Formatting
         run: npm run format:check
       # Run even when formatting fails, so one push reports every problem.
@@ -42,6 +46,12 @@ jobs:
       - name: Production build
         if: ${{ !cancelled() }}
         run: npm run build
+      - name: Assistant tests
+        if: ${{ !cancelled() }}
+        run: npm test --prefix assistant
+      - name: Assistant build
+        if: ${{ !cancelled() }}
+        run: npm run build --prefix assistant
 
   docker:
     name: Release image
@@ -77,6 +87,15 @@ jobs:
           curl -sf localhost:8080/config.json | python3 -c 'import json,sys; assert json.load(sys.stdin)["erpnextUrl"] == "https://erp.example.com"'
           curl -sfI localhost:8080/ | grep -qi '^x-content-type-options: nosniff'
           curl -sf localhost:8080/sales | grep -q '<app-root>'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8080/assistant/chat)" = 404
+      - name: Build assistant image
+        uses: docker/build-push-action@v6
+        with:
+          context: assistant
+          platforms: linux/amd64
+          tags: madar-assistant:ci
+          cache-from: type=gha,scope=assistant
+          cache-to: type=gha,mode=max,scope=assistant
       - name: Container logs
         if: failure() && steps.smoke.outcome == 'failure'
         run: docker logs madar
