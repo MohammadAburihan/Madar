@@ -15,6 +15,7 @@ import { RuntimeConfigService } from '../../../core/config/runtime-config';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
+import { ExternalLinkService } from '../../../core/platform/external-link.service';
 import { Language } from '../../../core/i18n/language.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -22,8 +23,9 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
+import { OpenDeskRowComponent } from '../components/open-desk-row.component';
 import { SettingsApiService } from '../data-access/settings-api.service';
-import { connectionFields } from './settings-view';
+import { connectionFields, deskRow } from './settings-view';
 
 /** Connection settings: which business and server Madar works with, the language, and signing out. */
 @Component({
@@ -31,6 +33,7 @@ import { connectionFields } from './settings-view';
   imports: [
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    OpenDeskRowComponent,
     PageHeadingComponent,
     SelectFieldComponent,
     TextFieldComponent,
@@ -60,6 +63,14 @@ import { connectionFields } from './settings-view';
     <button type="button" class="md-btn" (click)="router.navigate(['/businesses'])">
       {{ txt.addBusiness }}
     </button>
+    @if (desk(); as row) {
+      <app-open-desk-row
+        [label]="row.label"
+        [hint]="row.hint"
+        [ariaLabel]="row.ariaLabel"
+        (open)="openDesk()"
+      />
+    }
     @if (signOutFailed(); as reason) {
       <app-feedback-card
         tone="danger"
@@ -90,6 +101,7 @@ export class SettingsContainer {
   private readonly session = inject(SessionService);
   private readonly config = inject(RuntimeConfigService);
   private readonly document = inject(DOCUMENT);
+  private readonly links = inject(ExternalLinkService);
   protected readonly router = inject(Router);
   protected readonly openTasks = inject(OpenTasksService);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -140,6 +152,10 @@ export class SettingsContainer {
     );
   });
 
+  protected readonly desk = computed(() =>
+    deskRow({ deskUrl: this.config.deskUrl(), persona: this.session.persona() }, this.i18n.tr()),
+  );
+
   constructor() {
     effect(() => {
       const currency = this.business.active()?.currency;
@@ -164,6 +180,14 @@ export class SettingsContainer {
     if (language === 'en' || language === 'ar') {
       this.i18n.use(language as Language);
     }
+  }
+
+  protected openDesk(): void {
+    const url = this.config.deskUrl();
+    if (!url || this.session.persona() !== 'owner') {
+      return;
+    }
+    void this.links.open(url);
   }
 
   protected async signOut(): Promise<void> {

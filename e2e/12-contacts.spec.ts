@@ -43,6 +43,8 @@ test.describe('customers and suppliers @phone', () => {
     await signIn(page, 'owner');
     await page.goto('/contacts');
     await page.getByRole('radio', { name: 'Suppliers' }).click();
+    // Other runs keep adding suppliers, so find the seeded one rather than expect it on the first page.
+    await page.locator('app-search-field input').fill(SUPPLIER);
     await page.locator('app-person-card', { hasText: SUPPLIER }).first().click();
     await expect(page).toHaveURL(/\/contacts\/suppliers\/[^/]+$/);
     await expectHeading(page, SUPPLIER);

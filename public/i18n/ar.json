@@ -2736,6 +2736,11 @@
     }
   },
   "settings": {
+    "openDesk": {
+      "label": "فتح ERPNext",
+      "hint": "Desk، شاشات ERPNext الكاملة",
+      "aria": "فتح Desk في ERPNext"
+    },
     "title": "إعدادات الاتصال",
     "subtitle": "{{business}} · {{role}}",
     "businessName": "اسم المنشأة",

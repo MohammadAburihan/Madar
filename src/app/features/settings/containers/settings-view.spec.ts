@@ -1,5 +1,5 @@
 import { realTranslator } from '../../../../testing/real-translator';
-import { connectionFields } from './settings-view';
+import { connectionFields, deskRow } from './settings-view';
 
 describe('settings view', () => {
   it('lists the connection facts as on the connection settings mock', () => {
@@ -21,5 +21,25 @@ describe('settings view', () => {
     expect(connectionFields({ ...input, currencyName: 'ILS' }, realTranslator('en'))[2].value).toBe(
       'ILS',
     );
+  });
+
+  it('offers Open ERPNext to the owner when a Desk address is set', () => {
+    const input = { deskUrl: 'https://desk.example.com', persona: 'owner' as const };
+    expect(deskRow(input, realTranslator('en'))).toEqual({
+      label: 'Open ERPNext',
+      hint: "Desk, ERPNext's full screens",
+      ariaLabel: 'Open ERPNext Desk',
+    });
+    expect(deskRow(input, realTranslator('ar'))?.label).toBe('فتح ERPNext');
+    expect(deskRow(input, realTranslator('ar'))?.ariaLabel).toBe('فتح Desk في ERPNext');
+  });
+
+  it('hides Open ERPNext without an address or for anyone but the owner', () => {
+    expect(deskRow({ deskUrl: '', persona: 'owner' }, realTranslator('en'))).toBeNull();
+    for (const persona of ['salesperson', 'storeAssociate', 'purchasing'] as const) {
+      expect(
+        deskRow({ deskUrl: 'https://desk.example.com', persona }, realTranslator('en')),
+      ).toBeNull();
+    }
   });
 });

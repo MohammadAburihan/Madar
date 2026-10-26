@@ -2652,6 +2652,11 @@
     }
   },
   "settings": {
+    "openDesk": {
+      "label": "Open ERPNext",
+      "hint": "Desk, ERPNext's full screens",
+      "aria": "Open ERPNext Desk"
+    },
     "title": "Connection settings",
     "subtitle": "{{business}} · {{role}}",
     "businessName": "Business name",

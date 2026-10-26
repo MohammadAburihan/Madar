@@ -16,7 +16,8 @@ ENV ERPNEXT_UPSTREAM=http://frontend:8080 \
     TRUST_FORWARDED_PROTO=0 \
     ERPNEXT_SITE_HOST='$host' \
     ASSISTANT_UPSTREAM='' \
-    MADAR_ERPNEXT_URL=''
+    MADAR_ERPNEXT_URL='' \
+    MADAR_DESK_URL=''
 
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/security-headers.conf /etc/nginx/snippets/security-headers.conf
