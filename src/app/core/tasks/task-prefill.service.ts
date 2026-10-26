@@ -16,6 +16,9 @@ export interface PrefillPayloads {
   purchase_order: { supplier: string; lines: PrefillLine[] };
   collect_payment: { customer: string; amount?: number };
   stock_move: { item_code: string; qty: number; from_warehouse?: string; to_warehouse?: string };
+  new_customer: { name: string; phone?: string; email?: string; address?: string };
+  new_supplier: { name: string; phone?: string; email?: string };
+  new_item: { name: string; kind: 'product' | 'service'; price?: number };
 }
 
 export type PrefillKind = keyof PrefillPayloads;

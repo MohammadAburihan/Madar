@@ -14,6 +14,9 @@ export const TOOL_NAMES = [
   'propose_purchase_order',
   'propose_collect_payment',
   'propose_stock_move',
+  'propose_new_customer',
+  'propose_new_supplier',
+  'propose_new_item',
   'open_record',
 ] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
@@ -31,6 +34,8 @@ export const RECORD_KINDS = [
   'item',
   'draft',
 ] as const;
+export const ITEM_KINDS = ['product', 'service'] as const;
+
 export type RecordKindName = (typeof RECORD_KINDS)[number];
 
 interface PropertySchema {
@@ -52,6 +57,7 @@ interface ToolSchema {
 }
 
 const text: PropertySchema = { type: 'string', maxLength: 100 };
+const address: PropertySchema = { type: 'string', maxLength: 200 };
 const date: PropertySchema = { type: 'string', format: 'date' };
 const count = (maximum: number): PropertySchema => ({ type: 'integer', minimum: 1, maximum });
 const quantity: PropertySchema = { type: 'number', above: 0, maximum: 10_000 };
@@ -109,6 +115,22 @@ export const TOOL_SCHEMAS: Record<ToolName, ToolSchema> = {
     properties: { item: text, qty: quantity, from: text, to: text },
     required: ['item', 'qty'],
   },
+  propose_new_customer: {
+    properties: { name: text, phone: text, email: text, address },
+    required: ['name'],
+  },
+  propose_new_supplier: {
+    properties: { name: text, phone: text, email: text },
+    required: ['name'],
+  },
+  propose_new_item: {
+    properties: {
+      name: text,
+      kind: { type: 'string', enum: ITEM_KINDS },
+      selling_price: { type: 'number', above: 0, maximum: 10_000_000 },
+    },
+    required: ['name', 'kind'],
+  },
   open_record: {
     properties: { kind: { type: 'string', enum: RECORD_KINDS }, name: text },
     required: ['kind', 'name'],
@@ -158,6 +180,12 @@ export function toolsFor(caps: Capabilities): ToolName[] {
         return caps.collect;
       case 'propose_stock_move':
         return caps.transferStock;
+      case 'propose_new_customer':
+        return caps.editCustomers;
+      case 'propose_new_supplier':
+        return caps.addSuppliers;
+      case 'propose_new_item':
+        return caps.manageItems;
       case 'open_record':
         return openableKinds(caps).length > 0;
       default:

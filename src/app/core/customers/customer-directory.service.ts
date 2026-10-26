@@ -1,6 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../erpnext/erpnext-client';
+import {
+  CANDIDATE_CAP,
+  Candidates,
+  candidatePatterns,
+  candidatesOf,
+  findSameSpelled,
+} from '../util/fuzzy-match';
 import { shareInFlight } from '../util/share-in-flight';
 
 export interface CustomerOption {
@@ -21,6 +28,11 @@ export interface NewCustomer {
   phone: string;
   email: string;
   address: string;
+}
+
+interface Party {
+  id: string;
+  name: string;
 }
 
 export const WALK_IN_CUSTOMER = 'Walk-in Customer';
@@ -94,6 +106,48 @@ export class CustomerDirectoryService {
       phone: r.mobile_no,
       city: firstAddressLine(r.primary_address),
     }));
+  }
+
+  /** Enabled customers whose names share letters with a misspelt one, id and name only, for the caller to rank. */
+  async candidates(term: string): Promise<Candidates<Party>> {
+    const patterns = candidatePatterns(term);
+    if (!patterns.length) {
+      return { rows: [], capped: false };
+    }
+    const found = candidatesOf(
+      await this.named(patterns, [
+        ['disabled', '=', 0],
+        ['name', '!=', WALK_IN_CUSTOMER],
+        ['customer_name', '!=', WALK_IN_CUSTOMER],
+      ]),
+    );
+    return { rows: found.rows.map(({ id, name }) => ({ id, name })), capped: found.capped };
+  }
+
+  /** Customers, disabled ones marked, whose names any spelling of `term` could match, for a duplicate check. */
+  async spelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
+    return findSameSpelled(term, (patterns, limit) => this.named(patterns, [], limit));
+  }
+
+  private async named(
+    patterns: string[],
+    filters: Filter[],
+    limit = CANDIDATE_CAP + 1,
+  ): Promise<(Party & { disabled: boolean })[]> {
+    const rows = await this.erpnext.listAll<{
+      name: string;
+      customer_name: string;
+      disabled: number;
+    }>(
+      'Customer',
+      {
+        fields: ['name', 'customer_name', 'disabled'],
+        filters,
+        orFilters: patterns.map((pattern) => ['customer_name', 'like', pattern] as Filter),
+      },
+      limit,
+    );
+    return rows.map((r) => ({ id: r.name, name: r.customer_name, disabled: !!r.disabled }));
   }
 
   /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */

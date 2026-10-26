@@ -15,6 +15,12 @@ import { UnresolvedError, newReference } from '../../../core/erpnext/confirmatio
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import {
+  PrefillNotice,
+  PrefillUnavailableError,
+  injectPrefillEntry,
+  prefillNoticeText,
+} from '../../../core/tasks/prefill-entry';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
@@ -49,6 +55,9 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       [title]="id() ? txt.editTitle : txt.newTitle"
       [subtitle]="id() ? name() : txt.newSubtitle"
     />
+    @if (assistantNotice(); as notice) {
+      <app-feedback-card [tone]="notice.tone" [title]="notice.title" [message]="notice.message" />
+    }
     @if (!kinds().length) {
       <app-feedback-card
         tone="warning"
@@ -158,6 +167,12 @@ export class ContactFormContainer {
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
+  protected readonly assistantNotice = computed(() => {
+    const notice = this.prefillNotice();
+    return notice ? prefillNoticeText(this.i18n.tr(), notice, 'new_customer') : null;
+  });
+  private readonly prefillNotice = signal<PrefillNotice | null>(null);
+
   protected readonly name = signal('');
   protected readonly phone = signal('');
   protected readonly email = signal('');
@@ -245,6 +260,23 @@ export class ContactFormContainer {
   });
 
   constructor() {
+    injectPrefillEntry(
+      ['new_customer', 'new_supplier'],
+      async (payload, kind) => {
+        const wanted: ContactKind = kind === 'new_supplier' ? 'suppliers' : 'customers';
+        if (this.id() || !this.kinds().includes(wanted)) {
+          throw new PrefillUnavailableError('not allowed for your role');
+        }
+        this.chosenKind.set(wanted);
+        this.name.set(payload.name);
+        this.phone.set(payload.phone ?? '');
+        this.email.set(payload.email ?? '');
+        this.address.set('address' in payload ? (payload.address ?? '') : '');
+        this.prefillNotice.set('filled');
+        return 'opened';
+      },
+      (notice) => this.prefillNotice.set(notice),
+    );
     effect(() => {
       const id = this.id();
       if (id && this.kinds().length) {

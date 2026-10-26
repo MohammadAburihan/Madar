@@ -9,6 +9,28 @@ import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from './erpnext-client';
 
 describe('ErpnextClient', () => {
+  it('stops listAll at maxRows without reading further pages', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const client = TestBed.inject(ErpnextClient);
+    const http = TestBed.inject(HttpTestingController);
+    const all = client.listAll<{ n: number }>('Bin', { fields: ['n'] }, 600);
+    const read = async (start: number, size: number) => {
+      await vi.waitFor(() => {
+        const request = http.match(
+          (r) => r.params.get('limit_start') === (start ? String(start) : null),
+        )[0];
+        expect(request).toBeDefined();
+        request.flush({ message: Array.from({ length: size }, (_, i) => ({ n: start + i })) });
+      });
+    };
+    await read(0, 500);
+    await read(500, 500);
+    expect(await all).toHaveLength(600);
+    http.verify();
+  });
+
   it('pages through listAll until a short page arrives', async () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

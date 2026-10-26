@@ -100,6 +100,7 @@ export interface AssistantViewInput {
 }
 
 const MAX_LINKS = 5;
+export const NONE_OF_THESE = 'none-of-these';
 
 const textOf = (content: string | ContentBlock[]): string =>
   typeof content === 'string'
@@ -149,6 +150,9 @@ const BUTTON: Record<PrefillKind, string> = {
   purchase_order: 'purchase',
   collect_payment: 'payment',
   stock_move: 'move',
+  new_customer: 'newCustomer',
+  new_supplier: 'newSupplier',
+  new_item: 'newItem',
 };
 
 export const PROPOSAL_ROUTES: Record<PrefillKind, string[]> = {
@@ -157,6 +161,9 @@ export const PROPOSAL_ROUTES: Record<PrefillKind, string[]> = {
   purchase_order: ['/purchases/new'],
   collect_payment: ['/money/receive'],
   stock_move: ['/inventory/transfer'],
+  new_customer: ['/contacts/new'],
+  new_supplier: ['/contacts/new'],
+  new_item: ['/catalog/new'],
 };
 
 export function proposalCard(
@@ -236,6 +243,18 @@ export function proposalCard(
         action: t('assistant.proposal.button.move'),
       };
     }
+    case 'new_customer':
+    case 'new_supplier':
+    case 'new_item':
+      return {
+        id: proposal.id,
+        title: t(`assistant.proposal.${BUTTON[proposal.kind]}`, { name }),
+        lines: [],
+        note: proposal.similarNames
+          ? `${t('assistant.proposal.note')} ${t('assistant.proposal.similarNames')}`
+          : t('assistant.proposal.note'),
+        action: t(`assistant.proposal.button.${BUTTON[proposal.kind]}`),
+      };
     case 'open_record': {
       const record = proposal.record;
       return {
@@ -258,8 +277,17 @@ export function proposalTarget(
   prefill: string | null,
 ): { commands: string[]; queryParams?: Record<string, string> } | null {
   if (proposal.request) {
+    const { kind } = proposal.request;
     return prefill
-      ? { commands: PROPOSAL_ROUTES[proposal.request.kind], queryParams: { prefill } }
+      ? {
+          commands: PROPOSAL_ROUTES[kind],
+          queryParams: {
+            prefill,
+            ...(kind === 'new_customer' || kind === 'new_supplier'
+              ? { type: kind === 'new_customer' ? 'customers' : 'suppliers' }
+              : {}),
+          },
+        }
       : null;
   }
   const route = proposal.record && recordRoute(`${proposal.record.kind}:${proposal.record.id}`);
@@ -311,6 +339,14 @@ function linksFor(text: string, records: readonly RecordLink[], tr: Translator):
   return links.slice(0, MAX_LINKS);
 }
 
+/** The matches to pick from; close matches to a name nothing matched also get a way to say none of them is it. */
+function withNone(options: readonly ChoiceOption[], none: string): ChoiceView[] {
+  const views = options.map(({ id, label }) => ({ id, label }));
+  return options.some((option) => option.suggested)
+    ? [...views, { id: NONE_OF_THESE, label: none }]
+    : views;
+}
+
 export function buildAssistantView(input: AssistantViewInput, tr: Translator): AssistantView {
   const { t } = tr;
   const you = t('assistant.you');
@@ -336,7 +372,7 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       choices:
         user || index !== input.messages.length - 1
           ? []
-          : (input.choices[index] ?? []).map(({ id, label }) => ({ id, label })),
+          : withNone(input.choices[index] ?? [], t('assistant.choices.none')),
       choicesLabel: t('assistant.choices.label'),
       speech: spoken
         ? {

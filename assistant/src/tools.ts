@@ -209,6 +209,62 @@ export const toolRegistry: Record<string, ToolDef> = {
     },
     strict: true,
   },
+  propose_new_customer: {
+    description:
+      'Prepares adding a new customer for the user to review and save in the normal form. Use it only when a customer lookup said can_create and the user wants the customer added; never for a name that was only misspelt. Nothing is saved by this call: it returns a card with a button that opens the new-customer form filled in.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'The customer name as the user said it.' },
+        phone: { type: 'string', description: 'The phone number, only if the user gave one.' },
+        email: { type: 'string', description: 'The email address, only if the user gave one.' },
+        address: {
+          type: 'string',
+          description: 'The address, up to 200 characters, only if the user gave one.',
+        },
+      },
+      required: ['name'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_new_supplier: {
+    description:
+      'Prepares adding a new supplier for the user to review and save in the normal form. Use it only when a supplier lookup said can_create and the user wants the supplier added; never for a name that was only misspelt. Nothing is saved by this call: it returns a card with a button that opens the new-supplier form filled in.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'The supplier name as the user said it.' },
+        phone: { type: 'string', description: 'The phone number, only if the user gave one.' },
+        email: { type: 'string', description: 'The email address, only if the user gave one.' },
+      },
+      required: ['name'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  propose_new_item: {
+    description:
+      'Prepares adding a new item or service for the user to review and save in the normal form. Use it only when an item lookup said can_create and the user wants it added; never for a name that was only misspelt. Nothing is saved by this call: it returns a card with a button that opens the new-item form filled in.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'The item name as the user said it.' },
+        kind: {
+          type: 'string',
+          enum: ['product', 'service'],
+          description: 'A product that is stocked and sold, or a service.',
+        },
+        selling_price: {
+          type: 'number',
+          description: 'The selling price, more than 0, only if the user stated one.',
+        },
+      },
+      required: ['name', 'kind'],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
   open_record: {
     description:
       "Gives the user a button that opens a record's page in Madar. Use it when the user wants to edit or delete something: a draft's page has Continue and Delete; a confirmed record cannot be cancelled or amended in Madar yet, so say so. Nothing is changed by this call.",

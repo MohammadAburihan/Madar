@@ -85,7 +85,7 @@ async function askAboutLina(page: Page) {
       context: { currency: 'ILS', persona: 'owner' },
       messages: [{ role: 'user', content: `How much does ${CUSTOMER} owe?` }],
     });
-    expect(requests[0].tools).toHaveLength(13);
+    expect(requests[0].tools).toHaveLength(16);
     const [question, call, result] = requests[1].messages;
     expect(question.role).toBe('user');
     expect(call).toEqual({
@@ -317,6 +317,7 @@ test('sends a salesperson only the lookups their role allows, and only their own
     'propose_quick_sale',
     'propose_quotation',
     'propose_collect_payment',
+    'propose_new_customer',
     'open_record',
   ]);
   expect(requests[0].tools).not.toContain('find_purchase_orders');

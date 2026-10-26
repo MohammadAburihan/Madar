@@ -55,6 +55,102 @@ describe('CustomerDirectoryService', () => {
     );
   });
 
+  it('reads enabled customers whose names share letters with the typed one, id and name only, up to the cap', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [{ name: 'C-1', customer_name: 'Lina Haddad', disabled: 0 }],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
+    expect(found).toEqual({ rows: [{ id: 'C-1', name: 'Lina Haddad' }], capped: false });
+    const { query, maxRows } = listCalls[0];
+    expect(maxRows).toBe(1001);
+    expect(query.fields).toEqual(['name', 'customer_name', 'disabled']);
+    expect(query.filters).toEqual(
+      expect.arrayContaining([
+        ['disabled', '=', 0],
+        ['name', '!=', WALK_IN_CUSTOMER],
+      ]),
+    );
+    expect(query.orFilters).toEqual(
+      expect.arrayContaining([
+        ['customer_name', 'like', '%Leena%'],
+        ['customer_name', 'like', '%l%n%'],
+      ]),
+    );
+  });
+
+  it('flags a candidate read with more rows than the cap, however old the match is', async () => {
+    const many = (count: number) => () =>
+      Array.from({ length: count }, (_, i) => ({
+        name: `C-${i}`,
+        customer_name: `Customer ${i}`,
+        disabled: 0,
+      }));
+    const { listCalls } = fakeErpnext({ Customer: many(1001) });
+    const found = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
+    expect(found.capped).toBe(true);
+    expect(found.rows).toHaveLength(1000);
+    expect(listCalls[0].maxRows).toBe(1001);
+
+    TestBed.resetTestingModule();
+    fakeErpnext({ Customer: many(1000) });
+    const exact = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
+    expect(exact.capped).toBe(false);
+    expect(exact.rows).toHaveLength(1000);
+  });
+
+  it('finds a stored twin with the narrow read, disabled ones marked, and stops there', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [{ name: 'C-5', customer_name: 'AlNoor Trading', disabled: 1 }],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).spelledLike('Al Noor Trading');
+    expect(found).toEqual({
+      rows: [{ id: 'C-5', name: 'AlNoor Trading', disabled: true }],
+      capped: false,
+    });
+    expect(listCalls).toHaveLength(1);
+    expect(listCalls[0].query.filters).toEqual([]);
+    expect(listCalls[0].query.orFilters).toEqual([['customer_name', 'like', '%Al%No%or%Tr%ng%']]);
+    expect(listCalls[0].maxRows).toBe(1001);
+  });
+
+  it('falls back to the letters-in-order read when the narrow one finds no twin', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: (query) =>
+        JSON.stringify(query.orFilters).includes('%A%l%N%')
+          ? [{ name: 'C-6', customer_name: 'A. L. Noor Trading', disabled: 0 }]
+          : [{ name: 'C-7', customer_name: 'Al Nora Tradings', disabled: 0 }],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).spelledLike('Al Noor Trading');
+    expect(listCalls).toHaveLength(2);
+    expect(found.capped).toBe(false);
+    expect(found.rows).toEqual([{ id: 'C-6', name: 'A. L. Noor Trading', disabled: false }]);
+  });
+
+  it('reports a loose read with more rows than the cap as capped', async () => {
+    fakeErpnext({
+      Customer: (query) =>
+        JSON.stringify(query.orFilters).includes('%A%l%i%')
+          ? Array.from({ length: 1001 }, (_, i) => ({
+              name: `C-${i}`,
+              customer_name: `Alice ${i}`,
+              disabled: 0,
+            }))
+          : [],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).spelledLike('Ali');
+    expect(found.capped).toBe(true);
+    expect(found.rows).toHaveLength(1000);
+  });
+
+  it('reads no candidates for a query with nothing to search on', async () => {
+    const { listCalls } = fakeErpnext();
+    expect(await TestBed.inject(CustomerDirectoryService).candidates(' % ')).toEqual({
+      rows: [],
+      capped: false,
+    });
+    expect(listCalls).toEqual([]);
+  });
+
   it('lists recent customers without a search term', async () => {
     const { listCalls } = fakeErpnext();
     const directory = TestBed.inject(CustomerDirectoryService);

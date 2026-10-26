@@ -26,7 +26,12 @@ interface Options {
 function setup({ persona = 'owner', lists = {}, posts = {}, counts = {} }: Options = {}) {
   TestBed.resetTestingModule();
   const erpnext = fakeErpnext(lists, posts, {}, counts);
-  const directory = { find: vi.fn().mockResolvedValue([]), exact: vi.fn().mockResolvedValue([]) };
+  const directory = {
+    find: vi.fn().mockResolvedValue([]),
+    exact: vi.fn().mockResolvedValue([]),
+    candidates: vi.fn().mockResolvedValue({ rows: [], capped: false }),
+    spelledLike: vi.fn().mockResolvedValue({ rows: [], capped: false }),
+  };
   const warehouses = {
     list: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
   };
@@ -787,17 +792,53 @@ describe('AssistantToolsService', () => {
 
     it('says why in an error result when a name matches nothing or is disabled', async () => {
       const { run, directory } = setup({ lists: lists() });
-      expect(await run('propose_quick_sale', sale)).toMatchObject({
-        isError: true,
-        forbidden: false,
-        content: 'not found: customer "Lina Haddad"',
-        proposals: [],
+      const missing = await run('propose_quick_sale', sale);
+      expect(missing).toMatchObject({ isError: true, forbidden: false, proposals: [] });
+      expect(JSON.parse(missing.content)).toEqual({
+        error: 'not found: customer "Lina Haddad"',
+        not_found: true,
+        field: 'customer',
+        query: 'Lina Haddad',
+        can_create: true,
       });
       directory.exact.mockResolvedValue([{ ...lina, disabled: true }]);
       expect(await run('propose_quick_sale', sale)).toMatchObject({
         isError: true,
         content: 'customer is disabled: Lina Haddad',
       });
+    });
+
+    it('returns close customers as choices with the did_you_mean flag, and the buttons are suggested', async () => {
+      const { run, directory } = setup({ lists: lists() });
+      directory.candidates.mockResolvedValue({
+        rows: [{ id: 'C-1', name: 'Lina Haddad' }],
+        capped: false,
+      });
+      const outcome = await run('propose_quick_sale', { ...sale, customer: 'Leena Haddad' });
+      expect(outcome.isError).toBe(false);
+      expect(outcome.json).toEqual({
+        needs_choice: true,
+        did_you_mean: true,
+        field: 'customer',
+        query: 'Leena Haddad',
+        options: [{ id: 'C-1', label: 'Lina Haddad' }],
+        can_create: true,
+      });
+      expect(outcome.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
+    });
+
+    it('says can_create false for an item to a salesperson, who is not offered propose_new_item', async () => {
+      const { run } = setup({ persona: 'salesperson', lists: { ...lists(), Item: () => [] } });
+      const missing = await run('propose_quick_sale', {
+        customer: 'Walk-in',
+        items: [{ item: 'Zed Quartz', qty: 1 }],
+      });
+      expect(JSON.parse(missing.content)).toMatchObject({ field: 'item', can_create: false });
+      expect(await run('propose_new_item', { name: 'Fig tree', kind: 'product' })).toMatchObject({
+        isError: true,
+        content: 'not allowed for your role',
+      });
+      expect((await run('propose_new_customer', { name: 'Samer Odeh' })).isError).toBe(false);
     });
 
     it('refuses a proposal tool the role is not offered, without asking ERPNext', async () => {

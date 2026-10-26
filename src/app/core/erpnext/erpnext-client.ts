@@ -109,8 +109,12 @@ export class ErpnextClient {
     return this.get<T[]>('frappe.client.get_list', params);
   }
 
-  /** Every matching row, fetched page by page so no single response or URL grows unbounded. */
-  async listAll<T>(doctype: string, query: Omit<ListQuery, 'limit' | 'limitStart'>): Promise<T[]> {
+  /** Every matching row, fetched page by page so no single response or URL grows unbounded; `maxRows` stops early. */
+  async listAll<T>(
+    doctype: string,
+    query: Omit<ListQuery, 'limit' | 'limitStart'>,
+    maxRows = Infinity,
+  ): Promise<T[]> {
     // Offset paging needs a unique sort, or rows that tie on the default timestamp sort can repeat or vanish.
     const ordered = { orderBy: 'name asc', ...query };
     const rows: T[] = [];
@@ -119,8 +123,8 @@ export class ErpnextClient {
         this.list<T>(doctype, { ...ordered, limit: PAGE_SIZE, limitStart: start }),
       );
       rows.push(...page);
-      if (page.length < PAGE_SIZE) {
-        return rows;
+      if (page.length < PAGE_SIZE || rows.length >= maxRows) {
+        return rows.slice(0, maxRows);
       }
     }
   }

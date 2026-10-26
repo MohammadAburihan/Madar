@@ -3869,7 +3869,10 @@
       "propose_purchase_order": "Preparing a purchase order…",
       "propose_collect_payment": "Preparing a payment…",
       "propose_stock_move": "Preparing a stock move…",
-      "open_record": "Finding the record…"
+      "open_record": "Finding the record…",
+      "propose_new_customer": "Preparing a new customer…",
+      "propose_new_supplier": "Preparing a new supplier…",
+      "propose_new_item": "Preparing a new item…"
     },
     "problem": {
       "busy": "The assistant is busy. Try again in a moment.",
@@ -3878,7 +3881,8 @@
       "refusal": "The assistant can't help with that."
     },
     "choices": {
-      "label": "Choose one"
+      "label": "Choose one",
+      "none": "None of these"
     },
     "proposal": {
       "sale": "Sale to {{name}}",
@@ -3896,13 +3900,17 @@
       "moveLine": "{{qty}} × {{item}}",
       "route": "{{from}} → {{to}}",
       "note": "Nothing is saved until you confirm.",
+      "similarNames": "Similar names exist; check before saving.",
       "button": {
         "sale": "Review sale",
         "quotation": "Review quotation",
         "purchase": "Review purchase order",
         "payment": "Collect payment",
         "move": "Review stock move",
-        "record": "Open record"
+        "record": "Open record",
+        "newCustomer": "Review new customer",
+        "newSupplier": "Review new supplier",
+        "newItem": "Review new item"
       },
       "record": {
         "invoice": "Invoice {{name}}",
@@ -3914,7 +3922,10 @@
         "item": "Item {{name}}",
         "draft": "Draft {{name}}"
       },
-      "anywhere": "any location"
+      "anywhere": "any location",
+      "newCustomer": "New customer: {{name}}",
+      "newSupplier": "New supplier: {{name}}",
+      "newItem": "New item: {{name}}"
     },
     "voice": {
       "speak": "Speak",
@@ -3934,7 +3945,8 @@
       "sale": "Check the items, prices and customer, then confirm.",
       "purchase": "Check the items, prices and supplier, then confirm.",
       "payment": "Check the customer, invoices and amount, then confirm.",
-      "move": "Check the item, locations and quantity, then confirm."
+      "move": "Check the item, locations and quantity, then confirm.",
+      "contact": "Check the details, then save."
     },
     "expired": {
       "title": "This proposal has expired.",

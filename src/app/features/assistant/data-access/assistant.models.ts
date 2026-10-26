@@ -104,12 +104,16 @@ export interface Proposal {
   to: string | null;
   record: { kind: RecordKind; id: string; label: string; draft: boolean } | null;
   request: PrefillRequest | null;
+  /** A new record whose duplicate check was cut short by too many similar names. */
+  similarNames?: boolean;
 }
 
 /** One of the matches a name could mean; `label` is what the user sends back to pick it. */
 export interface ChoiceOption {
   id: string;
   label: string;
+  /** A close match to a name nothing matched: the chat adds "None of these" after them. */
+  suggested?: boolean;
 }
 
 export interface ToolOutcome {
@@ -124,6 +128,16 @@ export interface ToolOutcome {
 
 /** The tool refuses with a reason the assistant can pass on, as opposed to a lookup that broke. */
 export class ToolFailure extends Error {}
+
+/** Nothing matched a name: `payload` is what the assistant reads, including whether the user may add it as new. */
+export class NotFoundFailure extends ToolFailure {
+  constructor(
+    message: string,
+    readonly payload: Record<string, unknown>,
+  ) {
+    super(message);
+  }
+}
 
 export interface ToolScope {
   persona: Persona;
