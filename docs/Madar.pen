@@ -132913,6 +132913,42 @@
                               "content": "Open SI-1042"
                             }
                           }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oFwEy",
+                          "name": "Read aloud",
+                          "context": "Role: button. Accessible name: Read aloud. Text button 32 high. Reads this reply aloud; while reading, the label becomes Stop reading. Annotation only; native activation unavailable.",
+                          "height": 32,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "vQTVB",
+                              "name": "Read aloud icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "volume-2",
+                              "library": "lucide",
+                              "fill": "$md-primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "NnP2I",
+                              "name": "Read aloud label",
+                              "fill": "$md-primary",
+                              "content": "Read aloud",
+                              "lineHeight": 1.6,
+                              "fontFamily": "$md-font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -132949,6 +132985,32 @@
                   "gap": 8,
                   "alignItems": "center",
                   "children": [
+                    {
+                      "type": "frame",
+                      "id": "meGah",
+                      "name": "Speak",
+                      "context": "Role: button. Accessible name: Speak. Icon button 48x48. Starts voice input in Arabic or English; asks for microphone access the first time. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "AVdCc",
+                          "name": "Speak icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "mic",
+                          "library": "lucide",
+                          "fill": "$md-ink"
+                        }
+                      ]
+                    },
                     {
                       "type": "frame",
                       "id": "pi6l0",
@@ -133385,6 +133447,42 @@
                               "textAlign": "center"
                             }
                           }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DjXNb",
+                          "name": "Read aloud",
+                          "context": "Role: button. Accessible name: قراءة بصوت عالٍ. Text button 32 high. Reads this reply aloud; while reading, the label becomes إيقاف القراءة. Annotation only; native activation unavailable.",
+                          "height": 32,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "d8yln1",
+                              "name": "Read aloud label",
+                              "fill": "$md-primary",
+                              "content": "قراءة بصوت عالٍ",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "ooQUD",
+                              "name": "Read aloud icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "volume-2",
+                              "library": "lucide",
+                              "fill": "$md-primary"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -133473,6 +133571,32 @@
                           "fontFamily": "$md-arabic",
                           "fontSize": 15,
                           "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uIqi2",
+                      "name": "Speak",
+                      "context": "Role: button. Accessible name: تحدّث. Icon button 48x48. Starts voice input in Arabic or English; asks for microphone access the first time. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "S2PAy",
+                          "name": "Speak icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "mic",
+                          "library": "lucide",
+                          "fill": "$md-ink"
                         }
                       ]
                     }
@@ -134290,10 +134414,10 @@
       "x": 8470,
       "y": 28185,
       "name": "04 Mobile / Assistant Problems",
-      "context": " | Problem notices as states: busy, daily limit, unavailable, refused. Handoff: English LTR; counterpart azkHF. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "context": " | Problem notices as states: busy, daily limit, unavailable, refused, microphone off, not heard. Handoff: English LTR; counterpart azkHF. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
       "clip": true,
       "width": 390,
-      "height": 844,
+      "height": 1036,
       "fill": "$md-bg",
       "layout": "vertical",
       "padding": [
@@ -134529,6 +134653,38 @@
                   }
                 },
                 {
+                  "id": "T2yQI0",
+                  "type": "ref",
+                  "ref": "aFORo",
+                  "name": "Notice microphone off",
+                  "context": "Role: alert. Accessible name: Microphone access is off. Allow it in your settings to speak to the assistant. Shown when the browser or device refuses microphone access; Speak stays available and typing is unaffected.",
+                  "descendants": {
+                    "NxqlX": {
+                      "content": "Microphone access is off. Allow it in your settings to speak to the assistant.",
+                      "fill": "$md-warning"
+                    },
+                    "OhjBF": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "HPnyV",
+                  "type": "ref",
+                  "ref": "aFORo",
+                  "name": "Notice not heard",
+                  "context": "Role: alert. Accessible name: Couldn't hear that. Try again. Shown when no speech was recognized; the field keeps any text already typed.",
+                  "descendants": {
+                    "NxqlX": {
+                      "content": "Couldn't hear that. Try again.",
+                      "fill": "$md-primary"
+                    },
+                    "OhjBF": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
                   "type": "text",
                   "id": "HEvyU",
                   "name": "Interaction notes",
@@ -134691,7 +134847,7 @@
       "x": 8940,
       "y": 28185,
       "name": "Arabic / 04 Mobile / Assistant Problems",
-      "context": " | Arabic counterpart of I0uuK. Language switch preserves business, route, input and draft. Problem notices as states: busy, daily limit, unavailable, refused. Handoff: Arabic RTL; counterpart I0uuK. Annotated route specification; native interactions unavailable. Runtime: not run—requires runnable application.",
+      "context": " | Arabic counterpart of I0uuK. Language switch preserves business, route, input and draft. Problem notices as states: busy, daily limit, unavailable, refused, microphone off, not heard. Handoff: Arabic RTL; counterpart I0uuK. Annotated route specification; native interactions unavailable. Runtime: not run—requires runnable application.",
       "metadata": {
         "type": "madar-localization",
         "source": "yqgux",
@@ -134700,7 +134856,7 @@
       },
       "clip": true,
       "width": 390,
-      "height": 844,
+      "height": 1048,
       "fill": "$md-bg",
       "layout": "vertical",
       "padding": [
@@ -134933,6 +135089,38 @@
                   "descendants": {
                     "HJXqj": {
                       "content": "لا يستطيع المساعد المساعدة في هذا الطلب.",
+                      "fill": "$md-primary"
+                    },
+                    "Mem91": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "p0AXd",
+                  "type": "ref",
+                  "ref": "X803zR",
+                  "name": "Notice microphone off",
+                  "context": "Role: alert. Accessible name: الوصول إلى الميكروفون متوقف. اسمح به من الإعدادات للتحدث إلى المساعد. يظهر عند رفض المتصفح أو الجهاز الوصول إلى الميكروفون؛ يبقى زر تحدّث متاحاً والكتابة لا تتأثر.",
+                  "descendants": {
+                    "HJXqj": {
+                      "content": "الوصول إلى الميكروفون متوقف. اسمح به من الإعدادات للتحدث إلى المساعد.",
+                      "fill": "$md-warning"
+                    },
+                    "Mem91": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "Y7Kfo",
+                  "type": "ref",
+                  "ref": "X803zR",
+                  "name": "Notice not heard",
+                  "context": "Role: alert. Accessible name: لم أتمكن من السماع. حاول مرة أخرى. يظهر عند عدم التعرف على كلام؛ يحتفظ الحقل بأي نص مكتوب.",
+                  "descendants": {
+                    "HJXqj": {
+                      "content": "لم أتمكن من السماع. حاول مرة أخرى.",
                       "fill": "$md-primary"
                     },
                     "Mem91": {
@@ -135382,6 +135570,42 @@
                                       "content": "Open SI-1042"
                                     }
                                   }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aEaC4",
+                                  "name": "Read aloud",
+                                  "context": "Role: button. Accessible name: Read aloud. Text button 32 high. Reads this reply aloud; while reading, the label becomes Stop reading. Annotation only; native activation unavailable.",
+                                  "height": 32,
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    4
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "OEIvM",
+                                      "name": "Read aloud icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "volume-2",
+                                      "library": "lucide",
+                                      "fill": "$md-primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Wml2y",
+                                      "name": "Read aloud label",
+                                      "fill": "$md-primary",
+                                      "content": "Read aloud",
+                                      "lineHeight": 1.6,
+                                      "fontFamily": "$md-font",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -135418,6 +135642,32 @@
                           "gap": 8,
                           "alignItems": "center",
                           "children": [
+                            {
+                              "type": "frame",
+                              "id": "sfuwk",
+                              "name": "Speak",
+                              "context": "Role: button. Accessible name: Speak. Icon button 48x48. Starts voice input in Arabic or English; asks for microphone access the first time. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                              "width": 48,
+                              "height": 48,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 8,
+                              "stroke": "$md-control",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Vqj1j",
+                                  "name": "Speak icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "mic",
+                                  "library": "lucide",
+                                  "fill": "$md-ink"
+                                }
+                              ]
+                            },
                             {
                               "type": "frame",
                               "id": "lylP2",
@@ -135732,6 +135982,42 @@
                                       "textAlign": "center"
                                     }
                                   }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xzGd1",
+                                  "name": "Read aloud",
+                                  "context": "Role: button. Accessible name: قراءة بصوت عالٍ. Text button 32 high. Reads this reply aloud; while reading, the label becomes إيقاف القراءة. Annotation only; native activation unavailable.",
+                                  "height": 32,
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    4
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "W7AjVA",
+                                      "name": "Read aloud label",
+                                      "fill": "$md-primary",
+                                      "content": "قراءة بصوت عالٍ",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$md-arabic",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "o8MQXs",
+                                      "name": "Read aloud icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "volume-2",
+                                      "library": "lucide",
+                                      "fill": "$md-primary"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -135820,6 +136106,32 @@
                                   "fontFamily": "$md-arabic",
                                   "fontSize": 15,
                                   "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "M0PTB",
+                              "name": "Speak",
+                              "context": "Role: button. Accessible name: تحدّث. Icon button 48x48. Starts voice input in Arabic or English; asks for microphone access the first time. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                              "width": 48,
+                              "height": 48,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 8,
+                              "stroke": "$md-control",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "b6kmZ",
+                                  "name": "Speak icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "mic",
+                                  "library": "lucide",
+                                  "fill": "$md-ink"
                                 }
                               ]
                             }
@@ -139735,6 +140047,1127 @@
               "height": 48
             }
           }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "psmQi",
+      "x": 10350,
+      "y": 28185,
+      "name": "04 Mobile / Assistant Listening",
+      "context": " | Listening: mic button active (stop), live line above the composer, partial transcript in the field. Handoff: English LTR; counterpart p1YUP1. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "dqYRJ",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "M1gYFb",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "jJtsQ",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "VaJ16",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            16,
+            20,
+            8,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "riFXs",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "It6lX",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DkN09",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "l8J3h",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "niK0U",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "R9mRXG",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: SncVC. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "KxTud",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Assistant",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "oIO11",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Ask about customers, items, sales and stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "ueDh2",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: Conversation with the assistant. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XfKkc",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Xf7oi",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "P12Py",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "How much does Lina Haddad owe?",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I4s8o",
+                  "name": "Assistant activity",
+                  "context": "Role: status. Accessible name: Looking up customers…. Shown only while the assistant works; replaced by the reply. Reduced motion: no animation.",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "hIkuI",
+                      "name": "Activity icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "search",
+                      "library": "lucide",
+                      "fill": "$md-muted"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EnvZk",
+                      "name": "Activity text",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Looking up customers…",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qkuIk",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "I7X4wx",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UxEaS",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KYEye",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Lina Haddad owes ILS 320.00 on 2 invoices: SI-1042 (ILS 200.00, due today) and SI-1038 (ILS 120.00).",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$md-font",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "tqe6S",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Open SI-1042",
+                          "width": 200,
+                          "context": "Role: button. Accessible name: Open SI-1042. Route specification: q7SU4x (/sales/SI-1042). Annotation only; native activation unavailable. Back returns to the conversation with the scroll position kept.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Open SI-1042"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VZwh4",
+                          "name": "Read aloud",
+                          "context": "Role: button. Accessible name: Read aloud. Text button 32 high. Reads this reply aloud; while reading, the label becomes Stop reading. Annotation only; native activation unavailable.",
+                          "height": 32,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "WEf8v",
+                              "name": "Read aloud icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "volume-2",
+                              "library": "lucide",
+                              "fill": "$md-primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rb5Ox",
+                              "name": "Read aloud label",
+                              "fill": "$md-primary",
+                              "content": "Read aloud",
+                              "lineHeight": 1.6,
+                              "fontFamily": "$md-font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "F2ex2",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "aD4Wg",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "The assistant looks things up. It never changes anything without you.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "gWpQm",
+                  "name": "Listening line",
+                  "context": "Role: status (polite live region). Announces Listening… speak in Arabic or English. Annotation only; native activation unavailable.",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "RvwMu",
+                      "name": "Listening icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "audio-lines",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lY0AJ",
+                      "name": "Listening text",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Listening… speak in Arabic or English",
+                      "lineHeight": 1.6,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Jqj3D",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SbxEF",
+                      "name": "Stop listening",
+                      "context": "Role: button, pressed. Accessible name: Stop listening. Icon button 48x48. Stops voice input; the transcript stays in the field for editing and is never sent automatically. Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "stroke": "$md-primary",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "z9PPK",
+                          "name": "Stop icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "square",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ll9XF",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: Ask the assistant. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cVvJK",
+                          "name": "Placeholder",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "How much does Lina owe",
+                          "lineHeight": 1.6,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aJR0z",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: Send. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "h0Pq6",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "uf3iS",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "hW7KN",
+              "type": "ref",
+              "ref": "H3AT9w",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "kyQJu": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Home. Route specification: Lqpaw. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "i4H0c": {
+                  "fill": "$md-muted"
+                },
+                "W7M2mb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "ZHpcp": {
+                  "fill": "$md-muted"
+                },
+                "h1Rv3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Stock. Route specification: NTybC. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "jfsLn": {
+                  "fill": "$md-muted"
+                },
+                "W5nhJn": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "n3DGL": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "p1YUP1",
+      "x": 10820,
+      "y": 28185,
+      "name": "Arabic / 04 Mobile / Assistant Listening",
+      "context": " | الاستماع: زر الميكروفون نشط (إيقاف)، سطر مباشر فوق حقل الكتابة، ونص جزئي في الحقل. Handoff: Arabic RTL; counterpart psmQi. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "yqgux",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "Tx2qj",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "JISKA",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "HIO0Q",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "RF8rh",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            16,
+            20,
+            8,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "HYBUg",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "t0OvK",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "MBy1Y",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "bXsBV",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FZ9bi",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "tLdmu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: PEIvb. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "v7d69",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المساعد",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "a1HBY",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "اسأل عن العملاء والأصناف والمبيعات والمخزون",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "uiP1P",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: المحادثة مع المساعد. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "s6kyvD",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "nXtTp",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "o0gE4",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "كم على لينا الحداد؟",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A6ltx0",
+                  "name": "Assistant activity",
+                  "context": "Role: status. Accessible name: يبحث في العملاء…. Shown only while the assistant works; replaced by the reply. Reduced motion: no animation.",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VTaQM",
+                      "name": "Activity text",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "يبحث في العملاء…",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "P1lcDl",
+                      "name": "Activity icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "search",
+                      "library": "lucide",
+                      "fill": "$md-muted"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vYK7C",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "M6EFZ",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gqMVm",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BilSx",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "على لينا الحداد ‎ILS 320.00‎ في فاتورتين: SI-1042 (‎ILS 200.00‎، تستحق اليوم) وSI-1038 (‎ILS 120.00‎).",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "FaNzF",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Open SI-1042",
+                          "width": 200,
+                          "context": "Role: button. Accessible name: فتح SI-1042. Route specification: Mui1s (/sales/SI-1042). Annotation only; native activation unavailable. Back returns to the conversation with the scroll position kept.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "فتح SI-1042",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "center"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yNSsE",
+                          "name": "Read aloud",
+                          "context": "Role: button. Accessible name: قراءة بصوت عالٍ. Text button 32 high. Reads this reply aloud; while reading, the label becomes إيقاف القراءة. Annotation only; native activation unavailable.",
+                          "height": 32,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fTAx5",
+                              "name": "Read aloud label",
+                              "fill": "$md-primary",
+                              "content": "قراءة بصوت عالٍ",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "G6nR93",
+                              "name": "Read aloud icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "volume-2",
+                              "library": "lucide",
+                              "fill": "$md-primary"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oPbxE",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "t8RKlV",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "يبحث المساعد عن المعلومات، ولا يغيّر شيئاً دون موافقتك.",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "A3J8uu",
+                  "name": "Listening line",
+                  "context": "Role: status (polite live region). Announces أستمع… تحدّث بالعربية أو الإنجليزية. Annotation only; native activation unavailable.",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "FJJC2",
+                      "name": "Listening text",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "أستمع… تحدّث بالعربية أو الإنجليزية",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "En0e6",
+                      "name": "Listening icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "audio-lines",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eQASz",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Wn9yd",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: إرسال. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "axljT",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EVObR",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: اسأل المساعد. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FHKMM",
+                          "name": "Placeholder",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "كم على لينا",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OmFt3",
+                      "name": "Stop listening",
+                      "context": "Role: button, pressed. Accessible name: إيقاف الاستماع. Icon button 48x48. Stops voice input; the transcript stays in the field for editing and is never sent automatically. Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "stroke": "$md-primary",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Foypz",
+                          "name": "Stop icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "square",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nzChy",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "e7XEC",
+              "type": "ref",
+              "ref": "WaFGl",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "oHf5n": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: المزيد. Route specification: gGafI. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "UVGWb": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                },
+                "c3UIOS": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المخزون. Route specification: h0Bmm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "lYc9B": {
+                  "fill": "$md-muted"
+                },
+                "Z0WdPb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "z5QTU": {
+                  "fill": "$md-muted"
+                },
+                "p74FW3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "jsBhC": {
+                  "fill": "$md-muted"
+                }
+              }
+            }
+          ]
         }
       ]
     }
