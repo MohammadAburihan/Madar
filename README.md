@@ -159,6 +159,12 @@ stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with
 60 s for the per-minute rate, and the seconds to UTC midnight for a spent daily budget (both `rate_limited`).
 `GET /assistant/healthz` answers `ok`.
 
+Voice and privacy: the microphone button in the assistant fills the message field; nothing is sent until the user presses
+Send. Speech is turned into text on the user's device or by their browser, never by Madar: in a browser the recognition may
+send the audio to the browser vendor (Google for Chrome, Apple for Safari); the iOS and Android apps use the phone's own
+recognizer (Apple's, or Google's or the device's). Madar's server never receives audio, only the text the user sends.
+Replies are read aloud with the browser's or phone's voices; nothing is sent anywhere for that.
+
 Caching: an explicit breakpoint on the stable system block caches the tools and system prompt together (tools render
 first, so they carry no marker of their own), and top-level automatic caching moves a second breakpoint to the end of the
 growing conversation. The per-request context block sits after the breakpoint so it never breaks the prefix, and

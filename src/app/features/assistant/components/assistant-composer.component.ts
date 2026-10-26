@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
-import { LucideDynamicIcon, LucideSend, LucideSquare } from '@lucide/angular';
+import { LucideDynamicIcon, LucideMic, LucideSend, LucideSquare } from '@lucide/angular';
 
 /** The note about what the assistant does, the message field, Send, and Stop while an answer is coming. */
 @Component({
@@ -8,13 +8,29 @@ import { LucideDynamicIcon, LucideSend, LucideSquare } from '@lucide/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p class="note">{{ note() }}</p>
+    @if (listening()) {
+      <p class="listening" role="status">{{ listeningLine() }}</p>
+    }
     <div class="row">
+      @if (micAvailable()) {
+        <button
+          type="button"
+          class="md-btn mic"
+          [class.md-btn--primary]="listening()"
+          [attr.aria-label]="listening() ? stopListeningLabel() : speakLabel()"
+          [disabled]="busy()"
+          (click)="microphone.emit()"
+        >
+          <svg [lucideIcon]="listening() ? stopIcon : micIcon" [size]="20" aria-hidden="true"></svg>
+        </button>
+      }
       <textarea
         rows="1"
         dir="auto"
         [attr.aria-label]="label()"
         [placeholder]="placeholder()"
         [value]="value()"
+        [readOnly]="readonly()"
         (input)="value.set($any($event.target).value)"
         (keydown.enter)="enter($event)"
       ></textarea>
@@ -45,6 +61,11 @@ import { LucideDynamicIcon, LucideSend, LucideSquare } from '@lucide/angular';
     .note {
       color: var(--md-muted);
       font: 400 14px / var(--md-lh) var(--md-font);
+    }
+
+    .listening {
+      color: var(--md-primary);
+      font: 500 14px / var(--md-lh) var(--md-font);
     }
 
     .row {
@@ -79,7 +100,8 @@ import { LucideDynamicIcon, LucideSend, LucideSquare } from '@lucide/angular';
       gap: 8px;
     }
 
-    .send {
+    .send,
+    .mic {
       inline-size: 48px;
       padding: 0;
       justify-content: center;
@@ -93,6 +115,7 @@ import { LucideDynamicIcon, LucideSend, LucideSquare } from '@lucide/angular';
 export class AssistantComposerComponent {
   protected readonly sendIcon = LucideSend;
   protected readonly stopIcon = LucideSquare;
+  protected readonly micIcon = LucideMic;
 
   readonly value = model('');
   readonly label = input.required<string>();
@@ -102,8 +125,17 @@ export class AssistantComposerComponent {
   readonly stopLabel = input.required<string>();
   /** An answer is being written: Send waits and Stop is offered. */
   readonly busy = input(false);
+  /** The device can turn speech into text; without it there is no microphone button. */
+  readonly micAvailable = input(false);
+  readonly listening = input(false);
+  readonly readonly = input(false);
+  readonly speakLabel = input('');
+  readonly stopListeningLabel = input('');
+  readonly listeningLine = input('');
   readonly send = output<string>();
   readonly stop = output<void>();
+  /** Start listening, or stop when already listening. */
+  readonly microphone = output<void>();
 
   protected enter(event: Event): void {
     const key = event as KeyboardEvent;

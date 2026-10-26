@@ -27,6 +27,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Madar uses the microphone so you can speak your questions to the assistant.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Madar turns your spoken questions into text for the assistant.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

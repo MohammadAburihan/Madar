@@ -42,6 +42,12 @@ export const problem = (status: number, code: string, headers: Record<string, st
 
 /** Answers POST /assistant/chat from a script, recording every request; no real model is called. */
 export async function scriptAssistant(page: Page, replies: Reply[]): Promise<ChatBody[]> {
+  // A browser with voices would add "Read aloud" to every reply; only the voice tests, which set the flag, want it.
+  await page.addInitScript(() => {
+    if (!(window as { __keepVoices?: boolean }).__keepVoices) {
+      Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: undefined });
+    }
+  });
   const requests: ChatBody[] = [];
   await page.route('**/assistant/chat', async (route) => {
     const body = route.request().postDataJSON() as ChatBody;

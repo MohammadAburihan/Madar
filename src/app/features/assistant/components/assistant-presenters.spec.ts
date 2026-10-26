@@ -41,6 +41,11 @@ const REPLY: ConversationItemView = {
   proposals: [],
   choices: [],
   choicesLabel: 'Choose one',
+  speech: null,
+};
+const SPOKEN: ConversationItemView = {
+  ...REPLY,
+  speech: { text: 'Lina owes ILS 250.00 on SI-1042.', lang: 'en', label: 'Read aloud' },
 };
 const QUESTION: ConversationItemView = {
   id: 'm0',
@@ -51,6 +56,7 @@ const QUESTION: ConversationItemView = {
   proposals: [],
   choices: [],
   choicesLabel: 'Choose one',
+  speech: null,
 };
 
 async function render<T>(component: new () => T, inputs: Record<string, unknown>) {
@@ -138,6 +144,33 @@ describe('AssistantMessageComponent', () => {
   });
 });
 
+describe('AssistantMessageComponent read aloud', () => {
+  const button = (fixture: ComponentFixture<unknown>) =>
+    el(fixture).querySelector<HTMLButtonElement>('button.read');
+
+  it('offers Read aloud under a reply the device has a voice for, and says when it is pressed', async () => {
+    const fixture = await render(AssistantMessageComponent, { item: SPOKEN, voices: ['en'] });
+    expect(text(button(fixture))).toBe('Read aloud');
+    expect(button(fixture)!.getAttribute('aria-pressed')).toBe('false');
+    const pressed: unknown[] = [];
+    fixture.componentInstance.readAloud.subscribe(() => pressed.push(true));
+    button(fixture)!.click();
+    expect(pressed).toHaveLength(1);
+    fixture.componentRef.setInput('speaking', true);
+    await fixture.whenStable();
+    expect(button(fixture)!.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('hides it with no voice for the reply language, and for replies that cannot be read', async () => {
+    const noVoice = await render(AssistantMessageComponent, { item: SPOKEN, voices: ['ar'] });
+    expect(button(noVoice)).toBeNull();
+    const none = await render(AssistantMessageComponent, { item: SPOKEN });
+    expect(button(none)).toBeNull();
+    const user = await render(AssistantMessageComponent, { item: QUESTION, voices: ['en', 'ar'] });
+    expect(button(user)).toBeNull();
+  });
+});
+
 describe('AssistantConversationComponent', () => {
   const inputs = { label: 'Conversation', items: [QUESTION, REPLY] };
 
@@ -196,6 +229,14 @@ describe('AssistantComposerComponent', () => {
     stopLabel: 'Stop',
   };
 
+  const voice = {
+    micAvailable: true,
+    speakLabel: 'Speak',
+    stopListeningLabel: 'Stop listening',
+    listeningLine: 'Listening… speak in Arabic or English',
+  };
+  const mic = (fixture: ComponentFixture<unknown>) =>
+    el(fixture).querySelector<HTMLButtonElement>('button.mic');
   const field = (fixture: ComponentFixture<unknown>) =>
     el(fixture).querySelector('textarea') as HTMLTextAreaElement;
   const type = async (fixture: ComponentFixture<unknown>, value: string) => {
@@ -274,6 +315,51 @@ describe('AssistantComposerComponent', () => {
     fixture.componentInstance.stop.subscribe(() => stopped.push(true));
     stop.click();
     expect(stopped).toHaveLength(1);
+  });
+
+  it('never sends by itself: speaking only reports the microphone press', async () => {
+    const fixture = await render(AssistantComposerComponent, {
+      ...inputs,
+      value: 'How much did we sell',
+      micAvailable: true,
+      listening: true,
+    });
+    const sent = sends(fixture);
+    const pressed: unknown[] = [];
+    fixture.componentInstance.microphone.subscribe(() => pressed.push(true));
+    mic(fixture)!.click();
+    expect(pressed).toHaveLength(1);
+    expect(sent).toEqual([]);
+    expect(field(fixture).value).toBe('How much did we sell');
+  });
+
+  it('shows a secondary Speak button at the start of the row, with no live line', async () => {
+    const fixture = await render(AssistantComposerComponent, { ...inputs, ...voice });
+    const row = el(fixture).querySelector('.row')!;
+    expect(row.firstElementChild).toBe(mic(fixture));
+    expect(mic(fixture)!.getAttribute('aria-label')).toBe('Speak');
+    expect(mic(fixture)!.classList.contains('md-btn--primary')).toBe(false);
+    expect(el(fixture).querySelector('.listening')).toBeNull();
+  });
+
+  it('turns into a primary Stop listening button with a live line while listening', async () => {
+    const fixture = await render(AssistantComposerComponent, {
+      ...inputs,
+      ...voice,
+      listening: true,
+    });
+    expect(mic(fixture)!.getAttribute('aria-label')).toBe('Stop listening');
+    expect(mic(fixture)!.classList.contains('md-btn--primary')).toBe(true);
+    expect(text(el(fixture).querySelector('.listening'))).toBe(
+      'Listening… speak in Arabic or English',
+    );
+  });
+
+  it('has no microphone button where the device cannot recognise speech, and waits while answering', async () => {
+    const without = await render(AssistantComposerComponent, inputs);
+    expect(mic(without)).toBeNull();
+    const busy = await render(AssistantComposerComponent, { ...inputs, ...voice, busy: true });
+    expect(mic(busy)!.disabled).toBe(true);
   });
 
   it('offers no Stop when nothing is running', async () => {
