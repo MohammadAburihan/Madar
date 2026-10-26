@@ -6,9 +6,11 @@ import { NATIVE_ERPNEXT_URLS, NATIVE_PLATFORM } from '../platform/native-platfor
 export interface RuntimeConfig {
   /** Empty means same origin: the web build reaches ERPNext through the nginx/dev-server proxy. */
   erpnextUrl: string;
+  /** This business's ERPNext Desk address; empty hides "Open ERPNext". */
+  deskUrl: string;
 }
 
-const DEFAULT_CONFIG: RuntimeConfig = { erpnextUrl: '' };
+const DEFAULT_CONFIG: RuntimeConfig = { erpnextUrl: '', deskUrl: '' };
 
 @Injectable({ providedIn: 'root' })
 export class RuntimeConfigService {
@@ -16,6 +18,7 @@ export class RuntimeConfigService {
   private readonly platform = inject(NATIVE_PLATFORM);
   private readonly nativeUrls = inject(NATIVE_ERPNEXT_URLS);
   private readonly config = signal<RuntimeConfig>(DEFAULT_CONFIG);
+  private readonly nativeDeskUrl = signal('');
 
   // Native apps have no same-origin proxy: they use the business address the user connected to, or in dev
   // builds the per-platform default. A business's Madar address proxies /api to its ERPNext. Connecting
@@ -30,6 +33,10 @@ export class RuntimeConfigService {
             '',
     ),
   );
+  /** The Desk address, or empty. Native apps take it from the connected business's own config.json. */
+  readonly deskUrl = computed(() =>
+    this.platform === 'web' ? this.config().deskUrl : this.nativeDeskUrl(),
+  );
   /** Host of the configured ERPNext, or null when requests go to the same origin. */
   readonly erpnextHost = computed(() => {
     const url = this.erpnextUrl();
@@ -41,7 +48,7 @@ export class RuntimeConfigService {
       const loaded = await firstValueFrom(this.http.get<Partial<RuntimeConfig>>('config.json'));
       const erpnextUrl: unknown = loaded?.erpnextUrl ?? '';
       if (typeof erpnextUrl === 'string') {
-        this.config.set({ erpnextUrl });
+        this.config.set({ erpnextUrl, deskUrl: parseDeskUrl(loaded?.deskUrl) });
       } else {
         console.warn(
           'config.json erpnextUrl must be a string; using same-origin ERPNext',
@@ -53,7 +60,42 @@ export class RuntimeConfigService {
       console.warn('config.json is missing or invalid; using same-origin ERPNext', error);
       this.config.set(DEFAULT_CONFIG);
     }
+    void this.loadNativeDesk();
   }
+
+  /** The apps' bundled config has no Desk address: ask the connected business, once. Failures hide the row. */
+  async loadNativeDesk(): Promise<void> {
+    const address = this.erpnextUrl();
+    if (this.platform === 'web' || !address) {
+      return;
+    }
+    try {
+      const remote = await firstValueFrom(
+        this.http.get<Partial<RuntimeConfig>>(`${address}/config.json`),
+      );
+      this.nativeDeskUrl.set(parseDeskUrl(remote?.deskUrl));
+    } catch {
+      this.nativeDeskUrl.set('');
+    }
+  }
+}
+
+function parseDeskUrl(value: unknown): string {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+  if (typeof value === 'string') {
+    try {
+      const url = new URL(value.trim());
+      if (url.protocol === 'https:' || url.protocol === 'http:') {
+        return `${url.origin}${url.pathname}${url.search}`.replace(/\/+$/, '');
+      }
+    } catch {
+      // falls through to the warning
+    }
+  }
+  console.warn('config.json deskUrl must be an http(s) address; hiding Open ERPNext', value);
+  return '';
 }
 
 /** Accepts `erp.example.com` as well as full URLs; anything unparseable falls back to same origin. */

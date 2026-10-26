@@ -257,7 +257,7 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   Madar.
 - Madar for Rehan Nursery is the container `madar-rehannursery` (`madar-web:<version>`, network
   `erpnext_default`, 127.0.0.1:8090, `ERPNEXT_UPSTREAM=http://frontend:8080`,
-  `ERPNEXT_SITE_HOST=rehannursery.aburehan.net`, `TRUST_FORWARDED_PROTO=1`). Host nginx
+  `ERPNEXT_SITE_HOST=rehannursery.aburehan.net`, `TRUST_FORWARDED_PROTO=1`, `MADAR_DESK_URL=https://desk.rehannursery.aburehan.net`). Host nginx
   (`/etc/nginx/sites-available/madar-rehannursery`, Let's Encrypt via certbot) serves `rehannursery.aburehan.net` →
   Madar and `desk.rehannursery.aburehan.net` → Desk (Host pinned to the site).
 - A new image reaches the server with `docker save … | gzip` → rsync to `~` (not `/tmp`, a 1.9 GB tmpfs) →

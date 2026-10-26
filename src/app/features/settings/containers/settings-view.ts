@@ -1,3 +1,4 @@
+import { Persona } from '../../../core/auth/persona';
 import { Translator } from '../../../core/i18n/translator';
 
 /** The read-only facts of the connection, as on the connection settings mock. */
@@ -23,4 +24,16 @@ export function connectionFields(
           : input.currency,
     },
   ];
+}
+
+/** The "Open ERPNext" row: only the Owner, and only where this business has a Desk address. */
+export function deskRow(
+  input: { deskUrl: string; persona: Persona },
+  tr: Translator,
+): { label: string; hint: string; ariaLabel: string } | null {
+  if (!input.deskUrl || input.persona !== 'owner') {
+    return null;
+  }
+  const t = (key: string) => tr.t(`settings.openDesk.${key}`);
+  return { label: t('label'), hint: t('hint'), ariaLabel: t('aria') };
 }

@@ -80,11 +80,12 @@ jobs:
           docker run -d --name madar -p 8080:80 \
             -e ERPNEXT_UPSTREAM=http://erpnext.invalid \
             -e MADAR_ERPNEXT_URL=https://erp.example.com \
+            -e MADAR_DESK_URL=https://desk.example.com \
             madar-web:ci
           for i in $(seq 1 30); do curl -sf localhost:8080/healthz && break; sleep 1; done
           curl -sf localhost:8080/healthz | grep -q ok
           curl -sf localhost:8080/version.txt | grep -q "ci-${{ github.sha }}"
-          curl -sf localhost:8080/config.json | python3 -c 'import json,sys; assert json.load(sys.stdin)["erpnextUrl"] == "https://erp.example.com"'
+          curl -sf localhost:8080/config.json | python3 -c 'import json,sys; c = json.load(sys.stdin); assert c["erpnextUrl"] == "https://erp.example.com" and c["deskUrl"] == "https://desk.example.com"'
           curl -sfI localhost:8080/ | grep -qi '^x-content-type-options: nosniff'
           curl -sf localhost:8080/sales | grep -q '<app-root>'
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8080/assistant/chat)" = 404

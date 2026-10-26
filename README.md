@@ -118,6 +118,7 @@ docker run -d -p 8090:80 --network frappe_docker_frappe_network madar-web:<versi
 | `NGINX_RESOLVER` | the container's DNS servers | DNS server nginx uses to re-resolve `ERPNEXT_UPSTREAM` |
 | `ERPNEXT_SITE_HOST` | incoming host | Host header sent to ERPNext, to pin a specific site |
 | `MADAR_ERPNEXT_URL` | empty (same origin) | ERPNext URL written into `config.json` for the app |
+| `MADAR_DESK_URL` | empty | ERPNext Desk address for this business, shown to the Owner in Settings → Open ERPNext; empty hides it |
 | `ASSISTANT_UPSTREAM` | empty | madar-assistant address nginx proxies `/assistant/` to, limited to 30 requests per minute per client (burst 10); empty answers 404 |
 
 ### One business per deployment

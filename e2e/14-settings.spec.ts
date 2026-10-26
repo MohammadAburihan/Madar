@@ -33,3 +33,47 @@ test('signs out, and the next person signs in fresh @desktop', async ({ page }) 
   await page.goto('/settings');
   await expect(page.locator('app-page-heading')).toContainText(named('Salesperson'));
 });
+
+const DESK = 'https://desk.example.test';
+
+async function withDesk(page: Page): Promise<void> {
+  await page.route('**/config.json', (route) =>
+    route.fulfill({ json: { erpnextUrl: '', deskUrl: DESK } }),
+  );
+  await page.context().route(`${DESK}/**`, (route) => route.fulfill({ body: '' }));
+}
+
+test('no Open ERPNext row without a Desk address @desktop', async ({ page }) => {
+  await signIn(page, 'owner');
+  await page.goto('/settings');
+  await expectHeading(page, 'Connection settings');
+  await expect(page.getByRole('button', { name: /Open ERPNext/ })).toHaveCount(0);
+});
+
+test('the owner opens ERPNext Desk in a new tab @desktop', async ({ page, context }) => {
+  await withDesk(page);
+  await signIn(page, 'owner');
+  await page.goto('/settings');
+  const row = page.getByRole('button', { name: 'Open ERPNext, opens in a new tab' });
+  await expect(row).toContainText("Desk, ERPNext's full screens");
+  const [desk] = await Promise.all([context.waitForEvent('page'), row.click()]);
+  expect(desk.url()).toBe(`${DESK}/`);
+});
+
+test('the owner sees Open ERPNext in Arabic @phone', async ({ page }) => {
+  await withDesk(page);
+  await signIn(page, 'owner');
+  await page.goto('/settings');
+  await page.getByRole('combobox', { name: /^Language/ }).selectOption('ar');
+  await expect(page.getByRole('button', { name: /فتح ERPNext/ })).toContainText(
+    'Desk، شاشات ERPNext الكاملة',
+  );
+});
+
+test('a salesperson does not see Open ERPNext @desktop', async ({ page }) => {
+  await withDesk(page);
+  await signIn(page, 'salesperson');
+  await page.goto('/settings');
+  await expectHeading(page, 'Connection settings');
+  await expect(page.getByRole('button', { name: /Open ERPNext/ })).toHaveCount(0);
+});
