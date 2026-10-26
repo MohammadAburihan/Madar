@@ -266,6 +266,15 @@ describe('AssistantComposerComponent', () => {
     expect(send.disabled).toBe(true);
   });
 
+  it('keeps the icon-only Send and Speak buttons centred, with Send mirrored in right-to-left', async () => {
+    const fixture = await render(AssistantComposerComponent, { ...inputs, ...voice });
+    expect(mic(fixture)!.classList).toContain('md-btn--icon');
+    const send = el(fixture).querySelector<HTMLButtonElement>('button.send')!;
+    expect(send.classList).toContain('md-btn--icon');
+    expect(send.querySelector('svg')!.classList).toContain('md-icon--directional');
+    expect(mic(fixture)!.querySelector('svg')!.classList).not.toContain('md-icon--directional');
+  });
+
   it('sends the trimmed text from the button, once there is text', async () => {
     const fixture = await render(AssistantComposerComponent, inputs);
     const sent = sends(fixture);

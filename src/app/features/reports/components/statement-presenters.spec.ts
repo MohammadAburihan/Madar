@@ -30,6 +30,7 @@ describe('statement presenters', () => {
     expect(host.querySelectorAll('button.entry')).toHaveLength(1);
     expect(host.querySelectorAll('div.entry')).toHaveLength(1);
     expect(host.textContent).toContain('Balance 0.00');
+    expect(host.querySelector('button.entry svg')!.classList).toContain('md-icon--directional');
     (host.querySelector('button.entry') as HTMLElement).click();
     expect(opened).toEqual(['SI-1']);
   });
@@ -50,6 +51,7 @@ describe('statement presenters', () => {
     await fixture.whenStable();
     const buttons = fixture.nativeElement.querySelectorAll('button');
     expect(buttons[0].textContent).toContain('Choose a customer first');
+    expect(fixture.nativeElement.querySelector('svg.md-icon--directional')).not.toBeNull();
     buttons[1].click();
     expect(opened).toEqual(['supplier']);
   });

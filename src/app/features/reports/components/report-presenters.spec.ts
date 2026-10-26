@@ -31,6 +31,7 @@ describe('report presenters', () => {
     fixture.componentInstance.linkSelected.subscribe(() => opened++);
     fixture.componentRef.setInput('link', 'Profit by month · last 3 months');
     await fixture.whenStable();
+    expect(host.querySelector('button svg')!.classList).toContain('md-icon--directional');
     host.querySelector('button')!.click();
     expect(opened).toBe(1);
   });
@@ -54,6 +55,7 @@ describe('report presenters', () => {
     expect(host.textContent).toContain('Main cash');
     expect(host.querySelectorAll('.month')).toHaveLength(1);
     expect((host.querySelector('.bar .in') as HTMLElement).style.inlineSize).toBe('75%');
+    expect(host.querySelector('button svg')!.classList).toContain('md-icon--directional');
     host.querySelector('button')!.click();
     expect(opened).toBe(1);
   });

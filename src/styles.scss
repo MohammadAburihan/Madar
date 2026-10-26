@@ -40,8 +40,8 @@
   --md-lh: 1.5;
 }
 
-// The Arabic mocks start-align button labels; the language switch stays centred.
-:root[lang='ar'] .md-btn:not(.md-btn--language) {
+// The Arabic mocks start-align button labels; the language switch and icon-only buttons stay centred.
+:root[lang='ar'] .md-btn:not(.md-btn--language, .md-btn--icon) {
   justify-content: flex-start;
   text-align: start;
 }
@@ -108,6 +108,14 @@ p {
 
 .md-btn--language {
   inline-size: 120px;
+}
+
+.md-btn--icon {
+  padding: 0;
+}
+
+:root[dir='rtl'] .md-icon--directional {
+  transform: scaleX(-1);
 }
 
 :where(a, button, input, [tabindex]):focus-visible {

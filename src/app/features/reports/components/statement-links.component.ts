@@ -70,10 +70,6 @@ export interface StatementLink {
       color: var(--md-muted);
       font: 400 14px / var(--md-lh) var(--md-font);
     }
-
-    :host-context([dir='rtl']) .chevron {
-      transform: scaleX(-1);
-    }
   `,
   template: `
     @for (link of links(); track link.id) {
@@ -92,7 +88,7 @@ export interface StatementLink {
             <span class="action">{{ link.action }}</span>
           }
         </span>
-        <svg lucideChevronRight [size]="18" aria-hidden="true" class="chevron"></svg>
+        <svg lucideChevronRight [size]="18" aria-hidden="true" class="md-icon--directional"></svg>
       </button>
     }
   `,
