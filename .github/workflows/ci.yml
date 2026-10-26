@@ -88,6 +88,13 @@ jobs:
           curl -sfI localhost:8080/ | grep -qi '^x-content-type-options: nosniff'
           curl -sf localhost:8080/sales | grep -q '<app-root>'
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8080/assistant/chat)" = 404
+          curl -sf localhost:8080/assistant | grep -q '<app-root>'
+          # With an assistant upstream the chat page still loads from the app; only the API paths are proxied.
+          docker run -d --name madar-assist -p 8081:80 -e ASSISTANT_UPSTREAM=http://127.0.0.1:9 madar-web:ci
+          for i in $(seq 1 30); do curl -sf localhost:8081/healthz && break; sleep 1; done
+          curl -sf localhost:8081/assistant | grep -q '<app-root>'
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8081/assistant/)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8081/assistant/healthz)" = 502
       - name: Build assistant image
         uses: docker/build-push-action@v6
         with:
