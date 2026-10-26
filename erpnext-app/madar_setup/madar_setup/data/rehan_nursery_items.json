@@ -1,0 +1,422 @@
+[
+  {
+    "item_code": "RN-0001",
+    "item_name": "برش 3 لتر",
+    "item_group": "نباتات",
+    "price": 12.0
+  },
+  {
+    "item_code": "RN-0002",
+    "item_name": "برش 7 لتر",
+    "item_group": "نباتات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0003",
+    "item_name": "برش 15 لتر",
+    "item_group": "نباتات",
+    "price": 35.0
+  },
+  {
+    "item_code": "RN-0004",
+    "item_name": "برش 25 لتر",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0005",
+    "item_name": "برش 50 لتر",
+    "item_group": "نباتات",
+    "price": 80.0
+  },
+  {
+    "item_code": "RN-0006",
+    "item_name": "برش لولب",
+    "item_group": "نباتات",
+    "price": 150.0
+  },
+  {
+    "item_code": "RN-0007",
+    "item_name": "سيكس 25 لتر عادي",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0008",
+    "item_name": "سيكس 25 لتر كبير",
+    "item_group": "نباتات",
+    "price": 100.0
+  },
+  {
+    "item_code": "RN-0009",
+    "item_name": "سيكس 50 لتر",
+    "item_group": "نباتات",
+    "price": 250.0
+  },
+  {
+    "item_code": "RN-0010",
+    "item_name": "كوكس 25 لتر عادي",
+    "item_group": "نباتات",
+    "price": 100.0
+  },
+  {
+    "item_code": "RN-0011",
+    "item_name": "كوكس 25 لتر وسط",
+    "item_group": "نباتات",
+    "price": 200.0
+  },
+  {
+    "item_code": "RN-0012",
+    "item_name": "كوكس 25 لتر كبير",
+    "item_group": "نباتات",
+    "price": 300.0
+  },
+  {
+    "item_code": "RN-0013",
+    "item_name": "حمضيات 10 لتر",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0014",
+    "item_name": "حمضيات 25 لتر",
+    "item_group": "نباتات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0015",
+    "item_name": "حمضيات 50 لتر",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0016",
+    "item_name": "توتم 3 لتر",
+    "item_group": "نباتات",
+    "price": 12.0
+  },
+  {
+    "item_code": "RN-0017",
+    "item_name": "توتم 7 لتر",
+    "item_group": "نباتات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0018",
+    "item_name": "توتم 25 لتر",
+    "item_group": "نباتات",
+    "price": 27.0
+  },
+  {
+    "item_code": "RN-0019",
+    "item_name": "توتم 50 لتر",
+    "item_group": "نباتات",
+    "price": 70.0
+  },
+  {
+    "item_code": "RN-0020",
+    "item_name": "حوليات قوار 12",
+    "item_group": "نباتات",
+    "price": 3.5
+  },
+  {
+    "item_code": "RN-0021",
+    "item_name": "حوليات كاسة",
+    "item_group": "نباتات",
+    "price": 1.0
+  },
+  {
+    "item_code": "RN-0022",
+    "item_name": "حوليات علاقات",
+    "item_group": "نباتات",
+    "price": 10.0
+  },
+  {
+    "item_code": "RN-0023",
+    "item_name": "تين 10 لتر",
+    "item_group": "نباتات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0024",
+    "item_name": "تين 25 لتر",
+    "item_group": "نباتات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0025",
+    "item_name": "زيتون 5 لتر",
+    "item_group": "نباتات",
+    "price": 12.0
+  },
+  {
+    "item_code": "RN-0026",
+    "item_name": "زيتون 25 لتر",
+    "item_group": "نباتات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0027",
+    "item_name": "زيتون 50 لتر",
+    "item_group": "نباتات",
+    "price": 80.0
+  },
+  {
+    "item_code": "RN-0028",
+    "item_name": "زيتون طابات صغير",
+    "item_group": "نباتات",
+    "price": 600.0
+  },
+  {
+    "item_code": "RN-0029",
+    "item_name": "زيتون طابات وسط",
+    "item_group": "نباتات",
+    "price": 1200.0
+  },
+  {
+    "item_code": "RN-0030",
+    "item_name": "زيتون طابات كبير",
+    "item_group": "نباتات",
+    "price": 2500.0
+  },
+  {
+    "item_code": "RN-0031",
+    "item_name": "نخل برحي",
+    "item_group": "نباتات",
+    "price": 1500.0
+  },
+  {
+    "item_code": "RN-0032",
+    "item_name": "نخل مجهول",
+    "item_group": "نباتات",
+    "price": 1500.0
+  },
+  {
+    "item_code": "RN-0033",
+    "item_name": "هداس 7 لتر",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0034",
+    "item_name": "هداس 15 لتر",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0035",
+    "item_name": "سيزيكيوم هرم 15 لتر",
+    "item_group": "نباتات",
+    "price": 80.0
+  },
+  {
+    "item_code": "RN-0036",
+    "item_name": "سيزيكيوم هرم 50 لتر",
+    "item_group": "نباتات",
+    "price": 200.0
+  },
+  {
+    "item_code": "RN-0037",
+    "item_name": "سيزيكيوم طابة 15 لتر",
+    "item_group": "نباتات",
+    "price": 80.0
+  },
+  {
+    "item_code": "RN-0038",
+    "item_name": "سيزيكيوم طابة 50 لتر",
+    "item_group": "نباتات",
+    "price": 200.0
+  },
+  {
+    "item_code": "RN-0039",
+    "item_name": "سيزيكيوم طابتين 50 لتر",
+    "item_group": "نباتات",
+    "price": 250.0
+  },
+  {
+    "item_code": "RN-0040",
+    "item_name": "سيزيكيوم لولب 50 لتر",
+    "item_group": "نباتات",
+    "price": 300.0
+  },
+  {
+    "item_code": "RN-0041",
+    "item_name": "دلو 7 لتر",
+    "item_group": "نباتات",
+    "price": 15.0
+  },
+  {
+    "item_code": "RN-0042",
+    "item_name": "عنب 5 لتر",
+    "item_group": "نباتات",
+    "price": 12.0
+  },
+  {
+    "item_code": "RN-0043",
+    "item_name": "انجيل صناعي 1 سنتي",
+    "item_group": "مستلزمات",
+    "price": 10.0
+  },
+  {
+    "item_code": "RN-0044",
+    "item_name": "انجيل صناعي 2.5 سنتي",
+    "item_group": "مستلزمات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0045",
+    "item_name": "انجيل صناعي 3.8 سنتي",
+    "item_group": "مستلزمات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0046",
+    "item_name": "انجيل صناعي 4 سنتي",
+    "item_group": "مستلزمات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0047",
+    "item_name": "انجيل صناعي 4.5 سنتي",
+    "item_group": "مستلزمات",
+    "price": 27.0
+  },
+  {
+    "item_code": "RN-0048",
+    "item_name": "انجيل طبيعي",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0049",
+    "item_name": "تراب 30 لتر",
+    "item_group": "مستلزمات",
+    "price": 14.0
+  },
+  {
+    "item_code": "RN-0050",
+    "item_name": "تراب 50 لتر",
+    "item_group": "مستلزمات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0051",
+    "item_name": "تراب 80 لتر",
+    "item_group": "مستلزمات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0052",
+    "item_name": "جوافة توتينا 25 لتر",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0053",
+    "item_name": "فيجويا 25 لتر",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0054",
+    "item_name": "قنفذ 10 لتر",
+    "item_group": "نباتات",
+    "price": 85.0
+  },
+  {
+    "item_code": "RN-0055",
+    "item_name": "قنفذ 15 لتر",
+    "item_group": "نباتات",
+    "price": 120.0
+  },
+  {
+    "item_code": "RN-0056",
+    "item_name": "زيتون مقزم 12 سنتي",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0057",
+    "item_name": "زيتون مقزم 7 لتر",
+    "item_group": "نباتات",
+    "price": 35.0
+  },
+  {
+    "item_code": "RN-0058",
+    "item_name": "زيتون مقزم 10 لتر",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0059",
+    "item_name": "دحلة حاجز انجيل طبيعي تيتانيوم 18 متر",
+    "item_group": "مستلزمات",
+    "price": 150.0
+  },
+  {
+    "item_code": "RN-0060",
+    "item_name": "عصفور الجنة 25 لتر",
+    "item_group": "نباتات",
+    "price": 45.0
+  },
+  {
+    "item_code": "RN-0061",
+    "item_name": "عصفور الجنة مقزم 25 لتر",
+    "item_group": "نباتات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0062",
+    "item_name": "سنسفيريا 7 لتر",
+    "item_group": "نباتات",
+    "price": 20.0
+  },
+  {
+    "item_code": "RN-0063",
+    "item_name": "دورينتا هرم 15 لتر",
+    "item_group": "نباتات",
+    "price": 30.0
+  },
+  {
+    "item_code": "RN-0064",
+    "item_name": "اريكا 15 لتر",
+    "item_group": "نباتات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0065",
+    "item_name": "لوزيات مركب على GF",
+    "item_group": "نباتات",
+    "price": 35.0
+  },
+  {
+    "item_code": "RN-0066",
+    "item_name": "كوكس 50 لتر",
+    "item_group": "نباتات",
+    "price": 100.0
+  },
+  {
+    "item_code": "RN-0067",
+    "item_name": "فلتر ماء",
+    "item_group": "مستلزمات",
+    "price": 25.0
+  },
+  {
+    "item_code": "RN-0068",
+    "item_name": "دحلة نيتافيم 30 سم",
+    "item_group": "مستلزمات",
+    "price": 120.0
+  },
+  {
+    "item_code": "RN-0069",
+    "item_name": "دحلة برابيش اسود",
+    "item_group": "مستلزمات",
+    "price": 60.0
+  },
+  {
+    "item_code": "RN-0070",
+    "item_name": "السمادة",
+    "item_group": "مستلزمات",
+    "price": 700.0
+  }
+]
