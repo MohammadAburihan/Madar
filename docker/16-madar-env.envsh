@@ -31,7 +31,7 @@ else
   export FORWARDED_PROTO='$scheme'
 fi
 
-# The assistant is optional: without an upstream, /assistant/ answers 404 and nothing is resolved.
+# The assistant is optional: without an upstream, its API paths answer 404 and nothing is resolved.
 assistant="${ASSISTANT_UPSTREAM:-}"
 assistant="${assistant%/}"
 ASSISTANT_ZONE=''

@@ -9,6 +9,8 @@ ${ASSISTANT_ZONE}
 server {
     listen 80;
     server_name _;
+    # Behind a TLS-terminating proxy an absolute redirect would point at http://.
+    absolute_redirect off;
     root /usr/share/nginx/html;
 
     client_max_body_size 50m;
@@ -37,7 +39,8 @@ server {
         proxy_read_timeout 120s;
     }
 
-    location /assistant/ {
+    # Only the service's API paths: /assistant itself is the app's chat page and must reach index.html.
+    location ~ ^/assistant/(?:chat|healthz)$ {
         ${ASSISTANT_PROXY}
     }
 
