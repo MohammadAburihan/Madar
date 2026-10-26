@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Observable, finalize, map, of, throwError, timer } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ProjectsApiService, SiteWarehouseMissingError } from './projects-api.service';
@@ -129,6 +129,32 @@ describe('ProjectsApiService', () => {
       ['P-CUST-0', 'P-CUST-30', 'P-CUST-60'].sort(),
     );
     expect(capped).toBe(false);
+  });
+
+  it('searches only the first 4 distinct words, one read at a time', async () => {
+    let active = 0;
+    let overlapped = false;
+    const slow = (rows: unknown[]): Observable<unknown[]> =>
+      new Observable<unknown[]>((subscriber) => {
+        active++;
+        overlapped ||= active > 1;
+        return timer(1)
+          .pipe(
+            map(() => rows),
+            finalize(() => active--),
+          )
+          .subscribe(subscriber);
+      });
+    const { listCalls } = fakeErpnext({
+      Customer: (q) => (q.orFilters ? slow([{ name: 'CUST-LINA' }]) : of([])),
+      Project: () => slow([]),
+    });
+    await api().search('Rehan Nursery', 'a b c d e f g a');
+    const words = listCalls
+      .filter((c) => c.doctype === 'Customer' && c.query.orFilters)
+      .map((c) => c.query.orFilters![0][2]);
+    expect(words).toEqual(['%a%', '%b%', '%c%', '%d%']);
+    expect(overlapped).toBe(false);
   });
 
   it('flags a customer match cut at the hard cap', async () => {

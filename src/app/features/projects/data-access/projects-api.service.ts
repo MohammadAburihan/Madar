@@ -81,6 +81,8 @@ const kindOf = (type: string | null, customer: string | null): ProjectKind =>
 const statusOf = (status: string): ProjectStatus =>
   status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : 'open';
 
+const MAX_SEARCH_WORDS = 4;
+
 /** Projects: the list, one project's overview, creating and editing it, and its material requirements. */
 @Injectable({ providedIn: 'root' })
 export class ProjectsApiService {
@@ -92,32 +94,31 @@ export class ProjectsApiService {
 
   /** Projects whose title or id, or customer's name, matches every word typed, in any order. */
   async search(company: string, term = ''): Promise<ProjectSearch> {
-    const words = [...new Set(term.split(/\s+/).filter(Boolean))];
+    const words = [...new Set(term.split(/\s+/).filter(Boolean))].slice(0, MAX_SEARCH_WORDS);
     let capped = false;
     let rows: ProjectDoc[];
     if (!words.length) {
       rows = await this.projectsWhere(company, []);
     } else {
-      const perWord = await Promise.all(
-        words.map(async (word) => {
-          const patterns = [...new Set(spellings(word))].map((s) => `%${escapeLike(s)}%`);
-          const customers = await this.customersLike(patterns);
-          capped ||= customers.capped;
-          const reads = [
-            this.projectsWhere(
-              company,
-              patterns.flatMap((p) => [
-                ['project_name', 'like', p] as Filter,
-                ['name', 'like', p] as Filter,
-              ]),
-            ),
-            ...batches(customers.names).map((group) =>
-              this.projectsWhere(company, [], [['customer', 'in', group] as Filter]),
-            ),
-          ];
-          return new Map((await Promise.all(reads)).flat().map((r) => [r.name, r]));
-        }),
-      );
+      const perWord: Map<string, ProjectDoc>[] = [];
+      for (const word of words) {
+        const patterns = [...new Set(spellings(word))].map((s) => `%${escapeLike(s)}%`);
+        const customers = await this.customersLike(patterns);
+        capped ||= customers.capped;
+        const found = await this.projectsWhere(
+          company,
+          patterns.flatMap((p) => [
+            ['project_name', 'like', p] as Filter,
+            ['name', 'like', p] as Filter,
+          ]),
+        );
+        for (const group of batches(customers.names)) {
+          found.push(
+            ...(await this.projectsWhere(company, [], [['customer', 'in', group] as Filter])),
+          );
+        }
+        perWord.push(new Map(found.map((r) => [r.name, r])));
+      }
       const [first, ...rest] = perWord;
       rows = [...first.values()]
         .filter((r) => rest.every((m) => m.has(r.name)))
