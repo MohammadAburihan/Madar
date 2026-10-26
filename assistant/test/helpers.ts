@@ -2,6 +2,7 @@ import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
 import Anthropic from '@anthropic-ai/sdk';
 import { createAuth } from '../src/auth.js';
+import type { ErpRequester } from '../src/erpnext-http.js';
 import { createLimits } from '../src/limits.js';
 import { createApp, type AnthropicLike, type MessageStreamLike } from '../src/server.js';
 
@@ -58,7 +59,7 @@ export interface HarnessOptions {
   hold?: (aborted: () => boolean) => Promise<void>;
   onAbort?: () => void;
   afterReserve?: () => void;
-  fetch?: typeof fetch;
+  request?: ErpRequester;
 }
 
 export async function startHarness(options: HarnessOptions = {}): Promise<Harness> {
@@ -95,13 +96,15 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
     },
   };
   const user = options.user === undefined ? 'owner@example.com' : options.user;
-  const fakeFetch = (options.fetch ??
-    (async (input: unknown) =>
-      String(input).includes('get_logged_user')
-        ? new Response(JSON.stringify({ message: user ?? 'Guest' }), { status: user ? 200 : 403 })
-        : new Response(JSON.stringify({ message: [{ role: 'Sales User', name: 'Sales User' }] }), {
+  const fakeRequest: ErpRequester =
+    options.request ??
+    (async (url) =>
+      url.includes('get_logged_user')
+        ? { status: user ? 200 : 403, body: JSON.stringify({ message: user ?? 'Guest' }) }
+        : {
             status: 200,
-          }))) as typeof fetch;
+            body: JSON.stringify({ message: [{ role: 'Sales User', name: 'Sales User' }] }),
+          });
   const limits = createLimits({
     ratePerMin: options.ratePerMin ?? 20,
     dailyTokens: options.dailyTokens ?? 400000,
@@ -110,7 +113,7 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
   const server: Server = createApp({
     config: { model: 'claude-haiku-5-5' },
     client,
-    auth: createAuth({ upstream: 'http://erp', siteHost: 'site.test', fetch: fakeFetch }),
+    auth: createAuth({ upstream: 'http://erp', siteHost: 'site.test', request: fakeRequest }),
     limits: {
       reserve(u, estimate) {
         const result = limits.reserve(u, estimate);

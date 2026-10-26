@@ -385,9 +385,9 @@ const heavy = fakeMessage({
 describe('upstream failure', () => {
   it('answers 503 unavailable when ERPNext cannot be reached', async () => {
     h = await startHarness({
-      fetch: (async () => {
+      request: async () => {
         throw new Error('down');
-      }) as unknown as typeof fetch,
+      },
     });
     const res = await h.post(body());
     expect(res.status).toBe(503);
