@@ -227,6 +227,17 @@ cd ../frappe_docker && docker compose -f pwd.yml up -d
 - `pwd.yml` pins every request to the `frontend` site (`FRAPPE_SITE_NAME_HEADER`), whatever the Host header.
   Never write to `frontend` for testing: use `scripts/dev-test-site.sh`, which creates `madar-test.localhost`
   behind its own web container on port 18081 and seeds it (users in the README).
+- `madar_setup` (`erpnext-app/madar_setup/`) is a small Frappe app whose patches add data to a business's site on
+  `bench migrate` (first patch: Rehan Nursery's 70 items and selling prices, a no-op on any site without a Company
+  "Rehan Nursery"). Add a patch as `madar_setup/patches/vX_Y/<name>.py` with `execute()`, listed in `patches.txt` under
+  `[post_model_sync]`; keep it idempotent. It ships in the image `madar-erpnext:v16.50.0-hrms-setup-<app version>`
+  (`scripts/build-erpnext-setup-image.sh`, a thin layer on the base image; no GitHub access needed). Bump
+  `__version__` and `TAG` together. It is installed per site, not everywhere: locally on `madar-test.localhost` only,
+  never on `frontend`. To use it locally, run the stack with that image via a compose override file (all
+  `madar-erpnext` services) and recreate `madar-test-frontend` on it; append `madar_setup` to the sites volume's
+  `sites/apps.txt` once, then `bench --site madar-test.localhost install-app madar_setup`. `install-app` marks the
+  app's patches as already run, so run the first patch once with `bench --site <site> execute
+  madar_setup.patches.v0_1.rehan_nursery_items.execute`; patches added later run on `migrate`.
 
 ### Release rules
 
@@ -265,6 +276,12 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   with the new tag. Before an ERPNext image change: `bench backup --with-files` per site, an EBS snapshot, then
   `bench --site <site> migrate` for every site. The sites volume keeps its own `sites/apps.txt`: add a new app there
   before `install-app`.
+- Setup app: `madar_setup` (see Local ERPNext) is installed on `rehannursery` only, from the image
+  `madar-erpnext:v16.50.0-hrms-setup-<version>`. Deploy: `bench --site rehannursery.aburehan.net backup --with-files`
+  and an EBS snapshot; `docker load` the image; set `ERPNEXT_IMAGE`/`ERPNEXT_VERSION` in `~/erpnext/.env`;
+  `docker compose up -d`; append `madar_setup` to the sites volume's `sites/apps.txt` once (the image's own copy is not
+  used); once, `bench --site rehannursery.aburehan.net install-app madar_setup` and `bench ... execute
+  madar_setup.patches.v0_1.rehan_nursery_items.execute`; then `migrate` every site. Other sites never get the app.
 - The assistant is the container `madar-assistant-rehannursery` (`madar-assistant:<version>` from `assistant/`, network
   `erpnext_default`; madar-web reaches it through `ASSISTANT_UPSTREAM`). The Anthropic API key lives only in
   `~/madar-assistant.env` (mode 600) on the server, never in git or an image. With `TRUST_FORWARDED_PROTO=1` the per-IP limit on `/assistant/` keys on the last

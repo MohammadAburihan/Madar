@@ -1,0 +1,9 @@
+# Thin layer on the Madar ERPNext image that adds the madar_setup app. Build with scripts/build-erpnext-setup-image.sh.
+ARG BASE=madar-erpnext:v16.50.0-hrms
+FROM ${BASE}
+
+COPY --chown=frappe:root erpnext-app/madar_setup /home/frappe/frappe-bench/apps/madar_setup
+
+# Only the image's own sites/apps.txt changes here; a mounted sites volume keeps its own copy.
+RUN /home/frappe/frappe-bench/env/bin/pip install --no-cache-dir --no-deps -e /home/frappe/frappe-bench/apps/madar_setup \
+ && echo madar_setup >> /home/frappe/frappe-bench/sites/apps.txt

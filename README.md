@@ -70,6 +70,13 @@ the workers from the Workers mocks (Frappe HR): today's attendance, leave alloca
 
 "Today" data is created for the day the script runs; rerun it to refresh.
 
+### Setup app (madar_setup)
+
+`erpnext-app/madar_setup/` is a small Frappe app whose patches add data to one business's ERPNext site on
+`bench migrate`; the first adds Rehan Nursery's items and selling prices. Build the image that carries it with
+`scripts/build-erpnext-setup-image.sh` (`madar-erpnext:v16.50.0-hrms-setup-0.1.0`), then install it only on the site
+that needs it (`bench --site <site> install-app madar_setup`). See CLAUDE.md for the full steps.
+
 ### Frontend
 
 Requires Node.js 24 or newer.
