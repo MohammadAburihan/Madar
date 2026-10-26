@@ -15,7 +15,7 @@ import { LucideDynamicIcon, LucideMic, LucideSend, LucideSquare } from '@lucide/
       @if (micAvailable()) {
         <button
           type="button"
-          class="md-btn mic"
+          class="md-btn md-btn--icon mic"
           [class.md-btn--primary]="listening()"
           [attr.aria-label]="listening() ? stopListeningLabel() : speakLabel()"
           [disabled]="busy()"
@@ -42,12 +42,17 @@ import { LucideDynamicIcon, LucideMic, LucideSend, LucideSquare } from '@lucide/
       }
       <button
         type="button"
-        class="md-btn md-btn--primary send"
+        class="md-btn md-btn--primary md-btn--icon send"
         [attr.aria-label]="sendLabel()"
         [disabled]="busy() || !value().trim()"
         (click)="submit()"
       >
-        <svg [lucideIcon]="sendIcon" [size]="20" aria-hidden="true"></svg>
+        <svg
+          [lucideIcon]="sendIcon"
+          [size]="20"
+          class="md-icon--directional"
+          aria-hidden="true"
+        ></svg>
       </button>
     </div>
   `,
@@ -100,15 +105,8 @@ import { LucideDynamicIcon, LucideMic, LucideSend, LucideSquare } from '@lucide/
       gap: 8px;
     }
 
-    .send,
-    .mic {
+    .md-btn--icon {
       inline-size: 48px;
-      padding: 0;
-      justify-content: center;
-    }
-
-    :host-context([dir='rtl']) .send svg {
-      transform: scaleX(-1);
     }
   `,
 })

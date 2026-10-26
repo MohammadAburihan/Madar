@@ -7,7 +7,7 @@ import { LucideChevronLeft } from '@lucide/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" (click)="back.emit()">
-      <svg lucideChevronLeft [size]="20" aria-hidden="true" class="chevron"></svg>
+      <svg lucideChevronLeft [size]="20" aria-hidden="true" class="md-icon--directional"></svg>
       <span>{{ label() }}</span>
     </button>
   `,
@@ -23,10 +23,6 @@ import { LucideChevronLeft } from '@lucide/angular';
       color: var(--md-primary);
       font: 400 16px / var(--md-lh) var(--md-font);
       cursor: pointer;
-    }
-
-    :host-context([dir='rtl']) .chevron {
-      transform: scaleX(-1);
     }
   `,
 })

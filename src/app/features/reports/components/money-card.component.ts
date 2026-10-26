@@ -166,10 +166,6 @@ export interface MoneyCardText {
       outline: 2px solid var(--md-primary);
       outline-offset: 2px;
     }
-
-    :host-context([dir='rtl']) svg {
-      transform: scaleX(-1);
-    }
   `,
   template: `
     @let v = view();
@@ -230,7 +226,7 @@ export interface MoneyCardText {
     }
     <button type="button" (click)="linkSelected.emit()">
       {{ t.link }}
-      <svg lucideChevronRight [size]="18" aria-hidden="true"></svg>
+      <svg lucideChevronRight [size]="18" aria-hidden="true" class="md-icon--directional"></svg>
     </button>
   `,
 })

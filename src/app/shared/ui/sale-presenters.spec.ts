@@ -257,6 +257,7 @@ describe('Sale presenters', () => {
     back.nativeElement.querySelector('button').click();
     expect(went).toBe(1);
     expect(back.nativeElement.textContent.trim()).toBe('Back');
+    expect(back.nativeElement.querySelector('svg').classList).toContain('md-icon--directional');
 
     const heading = TestBed.createComponent(PageHeadingComponent);
     heading.componentRef.setInput('title', 'New sale');

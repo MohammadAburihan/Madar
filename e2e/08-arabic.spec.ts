@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { scriptAssistant } from './assistant-support';
 import { ITEM, MAIN, choose, expectHeading, named, signIn, toArabic, topUp } from './support';
 
 test('sells in Arabic, right to left, from start to receipt @phone', async ({ page }) => {
@@ -121,4 +122,33 @@ test('takes a return against a paid sale in Arabic, keeping the credit for the c
   await expect(page).toHaveURL(/\/return\/done$/, { timeout: 60_000 });
   await expectHeading(page, 'تم ترحيل مرتجع البيع');
   await expect(page.locator('app-feedback-card').first()).toContainText('لا يوجد رد نقدي');
+});
+
+test('centres the Assistant mic and Send icons, and points Send the Arabic way @phone', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    (window as any).webkitSpeechRecognition = class {
+      start() {}
+      stop() {}
+    };
+  });
+  await signIn(page, 'owner');
+  await scriptAssistant(page, [() => ({ body: '' })]);
+  await page.goto('/assistant');
+  await toArabic(page);
+  const composer = page.locator('app-assistant-composer');
+  await expect(composer.locator('button.mic')).toBeVisible();
+  for (const name of ['mic', 'send']) {
+    const button = composer.locator(`button.${name}`);
+    const [box, icon] = await Promise.all([
+      button.boundingBox(),
+      button.locator('svg').boundingBox(),
+    ]);
+    expect(Math.abs(box!.x + box!.width / 2 - (icon!.x + icon!.width / 2))).toBeLessThan(2);
+  }
+  const send = await composer
+    .locator('button.send svg')
+    .evaluate((svg) => getComputedStyle(svg).transform);
+  expect(send).toBe('matrix(-1, 0, 0, 1, 0, 0)');
 });

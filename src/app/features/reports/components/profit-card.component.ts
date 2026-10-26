@@ -68,10 +68,6 @@ import { TotalRow } from '../../../shared/ui/totals-card.component';
       outline: 2px solid var(--md-primary);
       outline-offset: 2px;
     }
-
-    :host-context([dir='rtl']) svg {
-      transform: scaleX(-1);
-    }
   `,
   template: `
     <span class="label">{{ label() }}</span>
@@ -89,7 +85,7 @@ import { TotalRow } from '../../../shared/ui/totals-card.component';
     @if (link(); as text) {
       <button type="button" (click)="linkSelected.emit()">
         {{ text }}
-        <svg lucideChevronRight [size]="18" aria-hidden="true"></svg>
+        <svg lucideChevronRight [size]="18" aria-hidden="true" class="md-icon--directional"></svg>
       </button>
     }
   `,

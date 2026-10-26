@@ -61,17 +61,13 @@ export interface StatementEntryCard {
       color: var(--md-muted);
       font: 400 12px / var(--md-lh) var(--md-font);
     }
-
-    :host-context([dir='rtl']) svg {
-      transform: scaleX(-1);
-    }
   `,
   template: `
     @for (entry of entries(); track entry.id) {
       @if (entry.openable) {
         <button type="button" class="entry" (click)="opened.emit(entry.id)">
           <ng-container *ngTemplateOutlet="body; context: { $implicit: entry }" />
-          <svg lucideChevronRight [size]="18" aria-hidden="true"></svg>
+          <svg lucideChevronRight [size]="18" aria-hidden="true" class="md-icon--directional"></svg>
         </button>
       } @else {
         <div class="entry">
