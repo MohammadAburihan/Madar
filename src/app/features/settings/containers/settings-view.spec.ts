@@ -28,10 +28,10 @@ describe('settings view', () => {
     expect(deskRow(input, realTranslator('en'))).toEqual({
       label: 'Open ERPNext',
       hint: "Desk, ERPNext's full screens",
-      ariaLabel: 'Open ERPNext, opens in a new tab',
+      ariaLabel: 'Open ERPNext Desk',
     });
     expect(deskRow(input, realTranslator('ar'))?.label).toBe('فتح ERPNext');
-    expect(deskRow(input, realTranslator('ar'))?.ariaLabel).toContain('يفتح في تبويب جديد');
+    expect(deskRow(input, realTranslator('ar'))?.ariaLabel).toBe('فتح Desk في ERPNext');
   });
 
   it('hides Open ERPNext without an address or for anyone but the owner', () => {

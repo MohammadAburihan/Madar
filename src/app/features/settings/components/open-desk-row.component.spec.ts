@@ -8,7 +8,7 @@ describe('OpenDeskRowComponent', () => {
     fixture = TestBed.createComponent(OpenDeskRowComponent);
     fixture.componentRef.setInput('label', 'Open ERPNext');
     fixture.componentRef.setInput('hint', "Desk, ERPNext's full screens");
-    fixture.componentRef.setInput('ariaLabel', 'Open ERPNext, opens in a new tab');
+    fixture.componentRef.setInput('ariaLabel', 'Open ERPNext Desk');
     await fixture.whenStable();
   });
 
@@ -16,7 +16,7 @@ describe('OpenDeskRowComponent', () => {
     const button: HTMLElement = fixture.nativeElement.querySelector('button');
     expect(button.textContent).toContain('Open ERPNext');
     expect(button.textContent).toContain("Desk, ERPNext's full screens");
-    expect(button.getAttribute('aria-label')).toBe('Open ERPNext, opens in a new tab');
+    expect(button.getAttribute('aria-label')).toBe('Open ERPNext Desk');
     expect(button.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 

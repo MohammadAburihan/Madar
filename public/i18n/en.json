@@ -2655,7 +2655,7 @@
     "openDesk": {
       "label": "Open ERPNext",
       "hint": "Desk, ERPNext's full screens",
-      "aria": "Open ERPNext, opens in a new tab"
+      "aria": "Open ERPNext Desk"
     },
     "title": "Connection settings",
     "subtitle": "{{business}} · {{role}}",

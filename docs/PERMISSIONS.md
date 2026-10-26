@@ -73,6 +73,7 @@ to the Owner.
 | Delete a draft (one they could make; salesperson and store associate their own sales drafts; only where ERPNext lets their roles delete it) | ✅ | own | own | own | own | own |
 | Cancel a confirmed record (ERPNext reverses its stock and money; it stays as Cancelled) | ✅ | — | — | — | — | — |
 | Cancel and edit (amend) a confirmed record: a corrected copy to confirm again | ✅ | — | — | — | — | — |
+| Open ERPNext Desk from Settings (only where the business has a Desk address; ERPNext still decides what the user may do there) | ✅ | — | — | — | — | — |
 | Use the assistant (looks things up with the user's own access; its proposals open the normal task filled in, and nothing is written until the user confirms there) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## Enforcement

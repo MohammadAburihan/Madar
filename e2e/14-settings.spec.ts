@@ -54,7 +54,7 @@ test('the owner opens ERPNext Desk in a new tab @desktop', async ({ page, contex
   await withDesk(page);
   await signIn(page, 'owner');
   await page.goto('/settings');
-  const row = page.getByRole('button', { name: 'Open ERPNext, opens in a new tab' });
+  const row = page.getByRole('button', { name: 'Open ERPNext Desk' });
   await expect(row).toContainText("Desk, ERPNext's full screens");
   const [desk] = await Promise.all([context.waitForEvent('page'), row.click()]);
   expect(desk.url()).toBe(`${DESK}/`);
