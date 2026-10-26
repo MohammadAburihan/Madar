@@ -142,7 +142,7 @@ const wordsOf = (query: string): string[] =>
     .map((word) => word.replace(/[%_\\]/g, ''))
     .filter(Boolean);
 
-function spellings(word: string): string[] {
+export function spellings(word: string): string[] {
   return [
     word,
     fold(word),

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Observable, finalize, map, of, throwError, timer } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ProjectsApiService, SiteWarehouseMissingError } from './projects-api.service';
@@ -51,6 +51,143 @@ describe('ProjectsApiService', () => {
         status: 'open',
       },
     ]);
+  });
+
+  it('searches names and ids, plus the projects of customers whose name matches', async () => {
+    const { listCalls } = fakeErpnext({
+      Project: () => [PROJECT],
+      Customer: (q) =>
+        q.orFilters
+          ? [{ name: 'CUST-LINA' }]
+          : [{ name: 'CUST-LINA', customer_name: 'Lina Haddad' }],
+    });
+    await api().list('Rehan Nursery', ' أحمد ');
+    const customers = listCalls.find((c) => c.doctype === 'Customer')!.query;
+    expect(customers.orFilters).toContainEqual(['customer_name', 'like', '%احمد%']);
+    expect(customers.orFilters).toContainEqual(['customer_name', 'like', '%أحمد%']);
+    const projects = listCalls.filter((c) => c.doctype === 'Project').map((c) => c.query);
+    expect(projects.every((q) => JSON.stringify(q.filters).includes('Rehan Nursery'))).toBe(true);
+    const byName = projects.find((q) => q.orFilters)!;
+    expect(byName.orFilters).toContainEqual(['project_name', 'like', '%احمد%']);
+    expect(byName.orFilters).toContainEqual(['name', 'like', '%أحمد%']);
+    expect(projects.some((q) => q.filters?.some((f) => f[0] === 'customer'))).toBe(true);
+  });
+
+  it('finds every word in any order, across the title and the customer', async () => {
+    const lina = { ...PROJECT, modified: '2026-10-01' };
+    fakeErpnext({
+      Project: (q) => {
+        const customerRead = q.filters?.some((f) => f[0] === 'customer');
+        const like = (q.orFilters ?? []).map((f) => String(f[2]));
+        if (customerRead) {
+          return [lina];
+        }
+        return like.includes('%Garden%') ? [lina] : [];
+      },
+      Customer: (q) => {
+        if (!q.orFilters) {
+          return [{ name: 'CUST-LINA', customer_name: 'Lina Haddad' }];
+        }
+        return q.orFilters.some((f) => f[2] === '%Haddad%' || f[2] === '%Lina%')
+          ? [{ name: 'CUST-LINA' }]
+          : [];
+      },
+    });
+    expect((await api().list('Rehan Nursery', 'Haddad  Lina')).map((p) => p.name)).toEqual([
+      'PROJ-0001',
+    ]);
+    expect((await api().list('Rehan Nursery', 'Garden Lina')).map((p) => p.name)).toEqual([
+      'PROJ-0001',
+    ]);
+    expect(await api().list('Rehan Nursery', 'Garden Zed')).toEqual([]);
+  });
+
+  it('escapes % and _ in the typed text instead of dropping them', async () => {
+    const { listCalls } = fakeErpnext({ Project: () => [], Customer: () => [] });
+    await api().list('Rehan Nursery', '50%_off');
+    const filters = listCalls.flatMap((c) => c.query.orFilters ?? []);
+    expect(filters).toContainEqual(['project_name', 'like', '%50\\%\\_off%']);
+  });
+
+  it('reads all matching customers, then their projects in batches of 30 merged by name', async () => {
+    const customers = Array.from({ length: 65 }, (_, i) => ({ name: `CUST-${i}` }));
+    const { listCalls } = fakeErpnext({
+      Customer: (q) => (q.orFilters ? customers : []),
+      Project: (q) => {
+        const group = q.filters?.find((f) => f[0] === 'customer')?.[2] as string[] | undefined;
+        return group
+          ? [{ ...PROJECT, name: `P-${group[0]}`, customer: group[0], modified: group[0] }]
+          : [];
+      },
+    });
+    const { projects, capped } = await api().search('Rehan Nursery', 'Lina');
+    const reads = listCalls.filter(
+      (c) => c.doctype === 'Project' && c.query.filters?.some((f) => f[0] === 'customer'),
+    );
+    expect(reads.map((c) => (c.query.filters![1][2] as string[]).length)).toEqual([30, 30, 5]);
+    expect(projects.map((p) => p.name).sort()).toEqual(
+      ['P-CUST-0', 'P-CUST-30', 'P-CUST-60'].sort(),
+    );
+    expect(capped).toBe(false);
+  });
+
+  it('searches only the first 4 distinct words, one read at a time', async () => {
+    let active = 0;
+    let overlapped = false;
+    const slow = (rows: unknown[]): Observable<unknown[]> =>
+      new Observable<unknown[]>((subscriber) => {
+        active++;
+        overlapped ||= active > 1;
+        return timer(1)
+          .pipe(
+            map(() => rows),
+            finalize(() => active--),
+          )
+          .subscribe(subscriber);
+      });
+    const { listCalls } = fakeErpnext({
+      Customer: (q) => (q.orFilters ? slow([{ name: 'CUST-LINA' }]) : of([])),
+      Project: () => slow([]),
+    });
+    await api().search('Rehan Nursery', 'a b c d e f g a');
+    const words = listCalls
+      .filter((c) => c.doctype === 'Customer' && c.query.orFilters)
+      .map((c) => c.query.orFilters![0][2]);
+    expect(words).toEqual(['%a%', '%b%', '%c%', '%d%']);
+    expect(overlapped).toBe(false);
+  });
+
+  it('flags a customer match cut at the hard cap', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: (q) =>
+        q.orFilters ? Array.from({ length: 1001 }, (_, i) => ({ name: `C-${i}` })) : [],
+    });
+    const { capped } = await api().search('Rehan Nursery', 'Lina');
+    expect(capped).toBe(true);
+    expect(listCalls.find((c) => c.doctype === 'Customer')!.maxRows).toBe(1001);
+  });
+
+  it('searches names alone when customers are forbidden, but fails the list on any other error', async () => {
+    fakeErpnext({
+      Project: () => [PROJECT],
+      Customer: (q) =>
+        q.orFilters ? throwError(() => new HttpErrorResponse({ status: 403 })) : [],
+    });
+    expect(await api().list('Rehan Nursery', 'Garden')).toHaveLength(1);
+    TestBed.resetTestingModule();
+    fakeErpnext({
+      Project: () => [PROJECT],
+      Customer: (q) =>
+        q.orFilters ? throwError(() => new HttpErrorResponse({ status: 500 })) : [],
+    });
+    await expect(api().list('Rehan Nursery', 'Garden')).rejects.toBeTruthy();
+  });
+
+  it('filters nothing for an empty search', async () => {
+    const { listCalls } = fakeErpnext({ Project: () => [PROJECT] });
+    await api().list('Rehan Nursery', '  ');
+    expect(listCalls.find((c) => c.doctype === 'Project')!.query.orFilters).toBeUndefined();
+    expect(listCalls.some((c) => c.doctype === 'Customer' && c.query.orFilters)).toBe(false);
   });
 
   it("reads a project's budget, ledger cost, tasks, requirements, attachments and linked records", async () => {

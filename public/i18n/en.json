@@ -1795,7 +1795,11 @@
         "title": "Site movements couldn't load",
         "message": "The ledger and site stock are missing. Check the connection and try again."
       }
-    }
+    },
+    "search": "Search projects",
+    "placeholder": "Search projects or customers",
+    "noResults": "No projects match “{{query}}”",
+    "manyCustomers": "Many customers match; type more of the name to see all their projects."
   },
   "reports": {
     "title": "Reports",

@@ -1,5 +1,72 @@
-import { expect, test } from '@playwright/test';
-import { ITEM, SUPPLIER, choose, expectHeading, named, runId, signIn } from './support';
+import { Page, expect, test } from '@playwright/test';
+import {
+  CUSTOMER,
+  ITEM,
+  SUPPLIER,
+  choose,
+  expectHeading,
+  named,
+  runId,
+  signIn,
+  toArabic,
+} from './support';
+
+async function createCustomerProject(page: Page, title: string): Promise<void> {
+  await signIn(page, 'owner');
+  await page.goto('/projects/new');
+  await expectHeading(page, 'New project');
+  await page.locator('app-text-field input').first().fill(title);
+  await page.locator('app-search-field input').fill(CUSTOMER);
+  await page.locator('app-item-card').filter({ hasText: CUSTOMER }).first().click();
+  await page.getByRole('button', { name: 'Save project' }).click();
+  await expect(page).toHaveURL(/\/projects\/[^/]+\/saved$/, { timeout: 60_000 });
+}
+
+async function searchesProjects(page: Page, title: string): Promise<void> {
+  await page.goto('/projects');
+  const search = page.locator('app-search-field input');
+  await expect(search).toHaveAttribute('placeholder', 'Search projects or customers');
+  await search.fill(title);
+  await expect(page.locator('button.card')).toHaveCount(1);
+  await expect(page.locator('button.card')).toContainText(title);
+  await search.fill(CUSTOMER);
+  await expect(page.locator('button.card').filter({ hasText: title })).toHaveCount(1);
+  await search.fill('Zzz no such project');
+  await expect(
+    page.getByText(named('No projects match', '“', 'Zzz no such project', '”')),
+  ).toBeVisible();
+  await expect(page.locator('button.card')).toHaveCount(0);
+}
+
+test.describe.serial('searching projects @phone', () => {
+  const title = `E2E search ${runId()}`;
+
+  test('finds a project by its name and its customer', async ({ page }) => {
+    await createCustomerProject(page, title);
+    await searchesProjects(page, title);
+  });
+
+  test('shows the search in Arabic', async ({ page }) => {
+    await signIn(page, 'owner');
+    await page.goto('/projects');
+    await toArabic(page);
+    await expect(page.locator('app-search-field input')).toHaveAttribute(
+      'placeholder',
+      'ابحث في المشاريع أو العملاء',
+    );
+    await page.locator('app-search-field input').fill('Zzz');
+    await expect(page.getByText(named('لا توجد مشاريع تطابق', '«', 'Zzz', '»'))).toBeVisible();
+  });
+});
+
+test.describe.serial('searching projects @desktop', () => {
+  const title = `E2E find ${runId()}`;
+
+  test('finds a project by its name and its customer', async ({ page }) => {
+    await createCustomerProject(page, title);
+    await searchesProjects(page, title);
+  });
+});
 
 // A project from creation to materials used and returned at its site.
 test.describe.serial('running a project @phone', () => {
