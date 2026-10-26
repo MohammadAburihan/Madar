@@ -15,14 +15,22 @@ import { ViewportService } from '../../../core/layout/viewport.service';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
+import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { ProjectSummary } from '../data-access/project.models';
 import { ProjectsApiService } from '../data-access/projects-api.service';
 import { projectCard } from './project-view';
 
+const SEARCH_DELAY_MS = 250;
+
 /** Projects: the business's customer and internal projects, and a new one. */
 @Component({
   selector: 'app-projects',
-  imports: [FeedbackCardComponent, LanguageSwitcherComponent, PageHeadingComponent],
+  imports: [
+    FeedbackCardComponent,
+    LanguageSwitcherComponent,
+    PageHeadingComponent,
+    SearchFieldComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'task', '[class.desktop]': 'desktop()' },
   styleUrl: '../../../shared/ui/task-page.scss',
@@ -49,23 +57,26 @@ import { projectCard } from './project-view';
         [title]="txt.noAccess.title"
         [message]="txt.noAccess.message"
       />
-    } @else if (state() === 'loading') {
-      <p class="muted" role="status">{{ txt.loading }}</p>
-    } @else if (state() === 'error') {
-      <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
-      <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
     } @else {
-      @for (card of cards(); track card.id) {
-        <button type="button" class="card" (click)="open(card.id)">
-          <app-feedback-card [title]="card.view.title" [message]="card.view.message" />
-        </button>
-      } @empty {
-        <p class="muted">{{ txt.empty }}</p>
-      }
-      @if (caps().manageProjects) {
-        <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
-          {{ txt.newProject }}
-        </button>
+      <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
+      @if (state() === 'loading') {
+        <p class="muted" role="status">{{ txt.loading }}</p>
+      } @else if (state() === 'error') {
+        <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
+        <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
+      } @else {
+        @for (card of cards(); track card.id) {
+          <button type="button" class="card" (click)="open(card.id)">
+            <app-feedback-card [title]="card.view.title" [message]="card.view.message" />
+          </button>
+        } @empty {
+          <p class="muted">{{ typed() ? txt.noResults : txt.empty }}</p>
+        }
+        @if (caps().manageProjects) {
+          <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
+            {{ txt.newProject }}
+          </button>
+        }
       }
     }
   `,
@@ -81,6 +92,9 @@ export class ProjectsContainer {
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly projects = signal<ProjectSummary[]>([]);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
+  protected readonly term = signal('');
+  protected readonly typed = computed(() => this.term().trim());
+  private run = 0;
 
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
@@ -89,6 +103,9 @@ export class ProjectsContainer {
       subtitle: t('project.subtitle'),
       newProject: t('project.newProject'),
       empty: t('project.empty'),
+      search: t('project.search'),
+      placeholder: t('project.placeholder'),
+      noResults: t('project.noResults', { query: this.typed() }),
       loading: t('project.loading'),
       retry: t('project.retry'),
       error: { title: t('project.error.title'), message: t('project.error.message') },
@@ -102,25 +119,39 @@ export class ProjectsContainer {
 
   constructor() {
     // The roles may arrive after the page opens (a session that recovers), so load once they allow it.
-    effect(() => {
+    effect((onCleanup) => {
+      const term = this.term();
       if (this.caps().manageProjects || this.caps().supplyProjects) {
-        untracked(() => void this.load());
+        const timer = setTimeout(
+          () => untracked(() => void this.load(term)),
+          term.trim() ? SEARCH_DELAY_MS : 0,
+        );
+        onCleanup(() => clearTimeout(timer));
       }
     });
   }
 
-  protected async load(): Promise<void> {
+  ionViewWillEnter(): void {
+    this.term.set('');
+  }
+
+  protected async load(term = this.term()): Promise<void> {
+    const run = ++this.run;
     this.state.set('loading');
     try {
       const business = await this.business.ensure();
       if (!business) {
-        this.state.set('error');
-        return;
+        throw new Error('No active business');
       }
-      this.projects.set(await this.api.list(business.name));
-      this.state.set('ready');
+      const projects = await this.api.list(business.name, term);
+      if (run === this.run) {
+        this.projects.set(projects);
+        this.state.set('ready');
+      }
     } catch {
-      this.state.set('error');
+      if (run === this.run) {
+        this.state.set('error');
+      }
     }
   }
 

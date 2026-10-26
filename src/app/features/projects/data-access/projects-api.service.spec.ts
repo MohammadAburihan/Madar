@@ -53,6 +53,41 @@ describe('ProjectsApiService', () => {
     ]);
   });
 
+  it('searches names and ids, plus the projects of customers whose name matches', async () => {
+    const { listCalls } = fakeErpnext({
+      Project: () => [PROJECT],
+      Customer: (q) =>
+        q.orFilters
+          ? [{ name: 'CUST-LINA' }]
+          : [{ name: 'CUST-LINA', customer_name: 'Lina Haddad' }],
+    });
+    await api().list('Rehan Nursery', ' أحمد ');
+    const customers = listCalls.find((c) => c.doctype === 'Customer')!.query;
+    expect(customers.orFilters).toContainEqual(['customer_name', 'like', '%احمد%']);
+    expect(customers.orFilters).toContainEqual(['customer_name', 'like', '%أحمد%']);
+    const project = listCalls.find((c) => c.doctype === 'Project')!.query;
+    expect(project.filters).toEqual([['company', '=', 'Rehan Nursery']]);
+    expect(project.orFilters).toContainEqual(['project_name', 'like', '%احمد%']);
+    expect(project.orFilters).toContainEqual(['name', 'like', '%أحمد%']);
+    expect(project.orFilters).toContainEqual(['customer', 'in', ['CUST-LINA']]);
+  });
+
+  it('still searches names when customers cannot be read, and filters nothing for an empty search', async () => {
+    const { listCalls } = fakeErpnext({
+      Project: () => [PROJECT],
+      Customer: (q) =>
+        q.orFilters ? throwError(() => new HttpErrorResponse({ status: 403 })) : [],
+    });
+    await api().list('Rehan Nursery', 'Garden');
+    const project = listCalls.find((c) => c.doctype === 'Project')!.query;
+    expect(project.orFilters).toContainEqual(['project_name', 'like', '%Garden%']);
+    expect(project.orFilters?.some((f) => f[0] === 'customer')).toBe(false);
+    listCalls.length = 0;
+    await api().list('Rehan Nursery', '  ');
+    expect(listCalls.find((c) => c.doctype === 'Project')!.query.orFilters).toBeUndefined();
+    expect(listCalls.some((c) => c.doctype === 'Customer' && c.query.orFilters)).toBe(false);
+  });
+
   it("reads a project's budget, ledger cost, tasks, requirements, attachments and linked records", async () => {
     const { listCalls } = fakeErpnext(
       {

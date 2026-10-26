@@ -8,6 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { spellings } from '../../../core/util/fuzzy-match';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import {
@@ -52,6 +53,7 @@ export class SiteWarehouseMissingError extends Error {
 // Account names are long; batches keep each GET URL well under the request-line limit.
 const BATCH = 30;
 const TASK_LIMIT = 5;
+const CUSTOMER_MATCH_LIMIT = 30;
 const LINK_LIMIT = 5;
 
 function batches<T>(values: readonly T[], size = BATCH): T[][] {
@@ -77,14 +79,41 @@ const statusOf = (status: string): ProjectStatus =>
 export class ProjectsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async list(company: string): Promise<ProjectSummary[]> {
+  async list(company: string, term = ''): Promise<ProjectSummary[]> {
+    const typed = term.trim().replace(/[%_\\]/g, '');
+    const patterns = typed ? [...new Set(spellings(typed))].map((s) => `%${s}%`) : [];
+    const matching = patterns.length ? await this.customersLike(patterns) : [];
     const rows = await this.erpnext.listAll<ProjectDoc & { customer_name?: string }>('Project', {
       fields: ['name', 'project_name', 'project_type', 'customer', 'status'],
       filters: [['company', '=', company]],
+      orFilters: patterns.length
+        ? [
+            ...patterns.flatMap((p) => [
+              ['project_name', 'like', p] as Filter,
+              ['name', 'like', p] as Filter,
+            ]),
+            ...(matching.length ? [['customer', 'in', matching] as Filter] : []),
+          ]
+        : undefined,
       orderBy: 'modified desc, name desc',
     });
     const names = await this.customerNames(rows.map((r) => r.customer).filter(Boolean) as string[]);
     return rows.map((r) => summary(r, names));
+  }
+
+  /** Customers whose name matches, capped to keep the project query's URL short; a role that can't read them finds none. */
+  private async customersLike(patterns: string[]): Promise<string[]> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{ name: string }>('Customer', {
+        fields: ['name'],
+        orFilters: patterns.flatMap((p) => [
+          ['customer_name', 'like', p] as Filter,
+          ['name', 'like', p] as Filter,
+        ]),
+        limit: CUSTOMER_MATCH_LIMIT,
+      }),
+    ).catch(() => []);
+    return rows.map((r) => r.name);
   }
 
   /** The project record alone, for pages that need its details but not its stock, tasks or records. */
