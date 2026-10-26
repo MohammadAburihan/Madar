@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ErpnextClient } from '../erpnext/erpnext-client';
+import { ErpnextClient, Filter } from '../erpnext/erpnext-client';
+import { CANDIDATE_CAP, Candidates, candidatesOf, samePatterns } from '../util/fuzzy-match';
 
 export interface SupplierOption {
   id: string;
@@ -29,6 +30,31 @@ export class SupplierDirectoryService {
       name: r.supplier_name,
       city: r.primary_address?.split(/<br\s*\/?>/i)[0]?.trim() || null,
     }));
+  }
+
+  /** Suppliers, disabled ones marked, whose names any spelling of `term` could match, for a duplicate check. */
+  async spelledLike(
+    term: string,
+  ): Promise<Candidates<{ id: string; name: string; disabled: boolean }>> {
+    const patterns = samePatterns(term);
+    if (!patterns.length) {
+      return { rows: [], capped: false };
+    }
+    const rows = await this.erpnext.listAll<{
+      name: string;
+      supplier_name: string;
+      disabled: number;
+    }>(
+      'Supplier',
+      {
+        fields: ['name', 'supplier_name', 'disabled'],
+        orFilters: patterns.map((pattern) => ['supplier_name', 'like', pattern] as Filter),
+      },
+      CANDIDATE_CAP,
+    );
+    return candidatesOf(
+      rows.map((r) => ({ id: r.name, name: r.supplier_name, disabled: !!r.disabled })),
+    );
   }
 
   /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */

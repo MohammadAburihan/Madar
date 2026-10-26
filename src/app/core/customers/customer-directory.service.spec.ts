@@ -55,16 +55,15 @@ describe('CustomerDirectoryService', () => {
     );
   });
 
-  it('reads a capped page of enabled customers whose names share letters with the typed one', async () => {
+  it('reads enabled customers whose names share letters with the typed one, id and name only, up to the cap', async () => {
     const { listCalls } = fakeErpnext({
-      Customer: () => [
-        { name: 'C-1', customer_name: 'Lina Haddad', mobile_no: null, primary_address: null },
-      ],
+      Customer: () => [{ name: 'C-1', customer_name: 'Lina Haddad', disabled: 0 }],
     });
     const found = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
-    expect(found).toEqual([{ id: 'C-1', name: 'Lina Haddad', phone: null, city: null }]);
-    const { query } = listCalls[0];
-    expect(query.limit).toBe(50);
+    expect(found).toEqual({ rows: [{ id: 'C-1', name: 'Lina Haddad' }], capped: false });
+    const { query, maxRows } = listCalls[0];
+    expect(maxRows).toBe(1000);
+    expect(query.fields).toEqual(['name', 'customer_name', 'disabled']);
     expect(query.filters).toEqual(
       expect.arrayContaining([
         ['disabled', '=', 0],
@@ -79,9 +78,44 @@ describe('CustomerDirectoryService', () => {
     );
   });
 
+  it('flags a candidate read that filled the cap, however old the match is', async () => {
+    fakeErpnext({
+      Customer: () =>
+        Array.from({ length: 1000 }, (_, i) => ({
+          name: `C-${i}`,
+          customer_name: `Customer ${i}`,
+          disabled: 0,
+        })),
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
+    expect(found.capped).toBe(true);
+    expect(found.rows).toHaveLength(1000);
+  });
+
+  it('reads every customer a spelling of a name could match, disabled ones marked', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [{ name: 'C-5', customer_name: 'AlNoor Trading', disabled: 1 }],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).spelledLike('Al Noor Trading');
+    expect(found).toEqual({
+      rows: [{ id: 'C-5', name: 'AlNoor Trading', disabled: true }],
+      capped: false,
+    });
+    expect(listCalls[0].query.filters).toEqual([]);
+    expect(listCalls[0].query.orFilters).toContainEqual([
+      'customer_name',
+      'like',
+      '%A%l%N%o%o%r%T%r%a%d%i%n%g%',
+    ]);
+    expect(listCalls[0].maxRows).toBe(1000);
+  });
+
   it('reads no candidates for a query with nothing to search on', async () => {
     const { listCalls } = fakeErpnext();
-    expect(await TestBed.inject(CustomerDirectoryService).candidates(' % ')).toEqual([]);
+    expect(await TestBed.inject(CustomerDirectoryService).candidates(' % ')).toEqual({
+      rows: [],
+      capped: false,
+    });
     expect(listCalls).toEqual([]);
   });
 

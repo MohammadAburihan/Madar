@@ -6,6 +6,7 @@ import {
   normalizeText,
   rankSimilar,
   sameName,
+  samePatterns,
 } from './fuzzy-match';
 
 describe('normalizeText', () => {
@@ -129,9 +130,32 @@ describe('candidatePatterns', () => {
     expect(candidatePatterns('أحمد')).toContain('%احمد%');
   });
 
+  it('leaves out short words and the consonant skeleton of words under four letters', () => {
+    expect(candidatePatterns('Al Ali Noor')).not.toContain('%Al%');
+    expect(candidatePatterns('Ali')).not.toContain('%l%');
+    expect(candidatePatterns('Noor')).toContain('%n%r%');
+  });
+
   it('drops wildcard characters and one-letter words, and caps the patterns', () => {
     expect(candidatePatterns('a %_ b')).toEqual([]);
     expect(candidatePatterns('100%')).toEqual(['%100%']);
     expect(candidatePatterns('alpha beta gamma delta epsilon zeta').length).toBeLessThanOrEqual(12);
+  });
+});
+
+describe('samePatterns', () => {
+  it('matches a name whatever its spacing, so a spaced and a joined spelling find each other', () => {
+    const matches = (pattern: string, name: string) =>
+      new RegExp(pattern.split('%').join('.*'), 'i').test(name);
+    const patterns = samePatterns('Al Noor Trading');
+    expect(patterns.some((p) => matches(p, 'AlNoor Trading'))).toBe(true);
+    expect(patterns.some((p) => matches(p, 'Al-Noor  Trading'))).toBe(true);
+    expect(samePatterns('AlNoor').some((p) => matches(p, 'Al Noor'))).toBe(true);
+  });
+
+  it('includes the Arabic spelling variants and no wildcards from the text', () => {
+    expect(samePatterns('مدرسة')).toEqual(expect.arrayContaining(['%م%د%ر%س%ة%', '%م%د%ر%س%ه%']));
+    expect(samePatterns('a_b%')).toEqual(['%a%b%']);
+    expect(samePatterns(' % ')).toEqual([]);
   });
 });

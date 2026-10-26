@@ -113,30 +113,68 @@ export const sameName = (a: string, b: string): boolean => {
   return !!left && left === normalizeText(b);
 };
 
-/**
- * `like` patterns that find names a typo may have missed: each word, its first three letters, its Arabic spelling
- * variants, and for Latin words their consonants in order (Leena finds Lina). The caller reads a capped page of
- * matches and ranks them.
- */
-export function candidatePatterns(query: string): string[] {
-  const words = query
+/** Most rows a candidate read returns; a read that fills it has not seen every match. */
+export const CANDIDATE_CAP = 1000;
+
+export interface Candidates<T> {
+  rows: T[];
+  capped: boolean;
+}
+
+export const candidatesOf = <T>(rows: T[]): Candidates<T> => ({
+  rows,
+  capped: rows.length >= CANDIDATE_CAP,
+});
+
+const wordsOf = (query: string): string[] =>
+  query
     .split(/[\s\p{P}]+/u)
     .map((word) => word.replace(/[%_\\]/g, ''))
-    .filter((word) => [...word].length >= 2);
+    .filter(Boolean);
+
+function spellings(word: string): string[] {
+  return [
+    word,
+    fold(word),
+    word.replace(/ة/g, 'ه').replace(/ى/g, 'ي'),
+    word.replace(/ه/g, 'ة').replace(/ي/g, 'ى'),
+  ];
+}
+
+/**
+ * `like` patterns that find names a typo may have missed: each word of three letters or more, its first three
+ * letters, its Arabic spelling variants, and for Latin words of four letters or more their consonants in order
+ * (Leena finds Lina). The caller reads a capped set of matches and ranks them.
+ */
+export function candidatePatterns(query: string): string[] {
   const terms = new Set<string>();
-  for (const word of words) {
-    terms.add(`%${word}%`);
+  for (const word of wordsOf(query).filter((w) => [...w].length >= 3)) {
+    for (const spelling of spellings(word)) {
+      terms.add(`%${spelling}%`);
+    }
     const letters = [...word];
     if (letters.length > 3) {
       terms.add(`%${letters.slice(0, 3).join('')}%`);
     }
-    terms.add(`%${fold(word)}%`);
-    terms.add(`%${word.replace(/ة/g, 'ه').replace(/ى/g, 'ي')}%`);
-    terms.add(`%${word.replace(/ه/g, 'ة').replace(/ي/g, 'ى')}%`);
     const consonants = [...word.toLowerCase()].filter((c) => /[b-df-hj-np-tv-z]/.test(c));
-    if (consonants.length >= 2 && /^[a-z]+$/i.test(word)) {
+    if (letters.length >= 4 && consonants.length >= 2 && /^[a-z]+$/i.test(word)) {
       terms.add(`%${consonants.join('%')}%`);
     }
   }
   return [...terms].slice(0, MAX_TERMS);
+}
+
+/**
+ * `like` patterns every stored spelling of a name matches, whatever its spacing or punctuation: its letters in order
+ * (AlNoor finds Al Noor), in each Arabic spelling variant. A superset to filter with `sameName`.
+ */
+export function samePatterns(query: string): string[] {
+  const terms = new Set<string>();
+  for (const spelling of spellings(query)) {
+    const letters = [...spelling.replace(/[%_\\]/g, '')].filter((c) => /[\p{L}\p{N}]/u.test(c));
+    if (letters.length) {
+      terms.add(`%${letters.join('%')}%`);
+    }
+  }
+  return [...terms];
 }

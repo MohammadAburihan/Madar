@@ -17,6 +17,24 @@ describe('SupplierDirectoryService', () => {
     expect(listCalls[0].query.limit).toBeUndefined();
   });
 
+  it('reads every supplier a spelling of a name could match, disabled ones marked, up to the cap', async () => {
+    const { listCalls } = fakeErpnext({
+      Supplier: () => [{ name: 'SUP-3', supplier_name: 'Old Kiln', disabled: 1 }],
+    });
+    const found = await TestBed.inject(SupplierDirectoryService).spelledLike('oldkiln');
+    expect(found).toEqual({
+      rows: [{ id: 'SUP-3', name: 'Old Kiln', disabled: true }],
+      capped: false,
+    });
+    expect(listCalls[0].query.filters).toBeUndefined();
+    expect(listCalls[0].query.orFilters).toContainEqual([
+      'supplier_name',
+      'like',
+      '%o%l%d%k%i%l%n%',
+    ]);
+    expect(listCalls[0].maxRows).toBe(1000);
+  });
+
   it('finds suppliers by exact id or name, disabled ones included and marked', async () => {
     const { listCalls } = fakeErpnext({
       Supplier: () => [

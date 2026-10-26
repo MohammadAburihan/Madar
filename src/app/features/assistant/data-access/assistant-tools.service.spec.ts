@@ -29,7 +29,8 @@ function setup({ persona = 'owner', lists = {}, posts = {}, counts = {} }: Optio
   const directory = {
     find: vi.fn().mockResolvedValue([]),
     exact: vi.fn().mockResolvedValue([]),
-    candidates: vi.fn().mockResolvedValue([]),
+    candidates: vi.fn().mockResolvedValue({ rows: [], capped: false }),
+    spelledLike: vi.fn().mockResolvedValue({ rows: [], capped: false }),
   };
   const warehouses = {
     list: vi.fn().mockResolvedValue([{ id: 'Main - RN', name: 'Main warehouse' }]),
@@ -809,7 +810,10 @@ describe('AssistantToolsService', () => {
 
     it('returns close customers as choices with the did_you_mean flag, and the buttons are suggested', async () => {
       const { run, directory } = setup({ lists: lists() });
-      directory.candidates.mockResolvedValue([{ ...lina, id: 'C-1', name: 'Lina Haddad' }]);
+      directory.candidates.mockResolvedValue({
+        rows: [{ id: 'C-1', name: 'Lina Haddad' }],
+        capped: false,
+      });
       const outcome = await run('propose_quick_sale', { ...sale, customer: 'Leena Haddad' });
       expect(outcome.isError).toBe(false);
       expect(outcome.json).toEqual({
@@ -818,6 +822,7 @@ describe('AssistantToolsService', () => {
         field: 'customer',
         query: 'Leena Haddad',
         options: [{ id: 'C-1', label: 'Lina Haddad' }],
+        can_create: true,
       });
       expect(outcome.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
     });

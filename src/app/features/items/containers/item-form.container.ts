@@ -365,6 +365,8 @@ export class ItemFormContainer {
         this.proposed = payload;
         if (this.options()) {
           this.applyProposal();
+        } else if (this.loadFailed()) {
+          this.proposed = null;
         }
         return 'opened';
       },
@@ -443,6 +445,7 @@ export class ItemFormContainer {
       }
     } finally {
       if (run === this.loadRun) {
+        this.proposed = null;
         this.loading.set(false);
       }
     }

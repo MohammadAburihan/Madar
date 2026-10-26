@@ -13,7 +13,7 @@ export function fakeErpnext(
   docs: Record<string, unknown | (() => Observable<unknown>)> = {},
   counts: Record<string, number | (() => Observable<number>)> = {},
 ) {
-  const listCalls: { doctype: string; query: ListQuery }[] = [];
+  const listCalls: { doctype: string; query: ListQuery; maxRows?: number }[] = [];
   const postCalls: { method: string; body: Record<string, unknown> }[] = [];
   const docCalls: string[] = [];
   const countCalls: { doctype: string; filters: unknown[] }[] = [];
@@ -35,7 +35,11 @@ export function fakeErpnext(
       return result instanceof Observable ? result : of(result);
     },
     postForBlob: (method: string, body: Record<string, unknown>) => client.post(method, body),
-    listAll: (doctype: string, query: ListQuery) => firstValueFrom(client.list(doctype, query)),
+    listAll: async (doctype: string, query: ListQuery, maxRows = Infinity) => {
+      const rows = await firstValueFrom(client.list(doctype, query));
+      listCalls[listCalls.length - 1].maxRows = maxRows;
+      return rows.slice(0, maxRows);
+    },
     count: (doctype: string, filters: unknown[] = []) => {
       countCalls.push({ doctype, filters });
       const value = counts[doctype];

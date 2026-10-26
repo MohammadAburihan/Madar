@@ -9,7 +9,15 @@ import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { round2, westernDigits } from '../../../core/format/number';
 import { BuyingPricesService } from '../../../core/pricing/buying-prices.service';
 import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
-import { candidatePatterns, rankSimilar, sameName } from '../../../core/util/fuzzy-match';
+import {
+  CANDIDATE_CAP,
+  Candidates,
+  candidatePatterns,
+  candidatesOf,
+  rankSimilar,
+  sameName,
+  samePatterns,
+} from '../../../core/util/fuzzy-match';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { lineRate, mergeLines } from '../../../core/tasks/prefill-lines';
@@ -27,7 +35,6 @@ import {
 import { RecordKindName, ToolInput, ToolName, openableKinds } from './assistant-tools';
 
 const MAX_OPTIONS = 5;
-const CANDIDATES_READ = 50;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const WALK_IN = /^walk[\s-]?in(\s+customer)?$/i;
 
@@ -37,6 +44,7 @@ class NeedsChoice extends Error {
     readonly query: string,
     readonly options: ChoiceOption[],
     readonly why: 'several' | 'close' | 'exists' = 'several',
+    readonly canCreate: boolean | null = null,
   ) {
     super(`Needs a choice: ${field}`);
   }
@@ -57,6 +65,8 @@ interface Party {
   id: string;
   name: string;
 }
+
+type Similar = { near: Party[]; capped: boolean };
 
 const ITEM_FIELDS = [
   'name',
@@ -83,6 +93,8 @@ function labelParts(text: string): { name: string; id: string } | null {
   return match ? { name: match[1], id: match[2].trim() } : null;
 }
 
+const tooMany = (field: string, query: string) =>
+  `too many ${field} names look like "${query}": ask the user for more of the name`;
 const like = (term: string) => `%${term.trim()}%`;
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const money = (currency: string, amount: number) => `${currency} ${amount.toFixed(2)}`;
@@ -152,6 +164,7 @@ export class AssistantProposalsService {
             field: error.field,
             query: error.query,
             options: error.options,
+            ...(error.canCreate !== null ? { can_create: error.canCreate } : {}),
           },
           listKey: null,
           records: [],
@@ -390,11 +403,7 @@ export class AssistantProposalsService {
     }
     const exact = await this.customers.exact(name);
     this.guardDuplicate('customer', name, exact);
-    await this.sameNameElsewhere('customer', name, async () =>
-      (await this.customers.candidates(name, CANDIDATES_READ)).filter((c) =>
-        sameName(c.name, name),
-      ),
-    );
+    await this.sameNameElsewhere('customer', name, () => this.customers.spelledLike(name));
     const payload = {
       name,
       ...this.contactFields(input),
@@ -410,9 +419,7 @@ export class AssistantProposalsService {
     const name = this.newName(input);
     const exact = await this.suppliers.exact(name);
     this.guardDuplicate('supplier', name, exact);
-    await this.sameNameElsewhere('supplier', name, async () =>
-      (await this.suppliers.list()).filter((s) => sameName(s.name, name)),
-    );
+    await this.sameNameElsewhere('supplier', name, () => this.suppliers.spelledLike(name));
     const payload = { name, ...this.contactFields(input) };
     return this.newProposal('new_supplier', name, { kind: 'new_supplier', payload }, 'supplier');
   }
@@ -440,11 +447,7 @@ export class AssistantProposalsService {
       name,
       exact.map((row) => ({ id: row.name, name: row.item_name, disabled: !!row.disabled })),
     );
-    await this.sameNameElsewhere('item', name, async () =>
-      (await this.itemCandidates(name, null))
-        .filter((row) => sameName(row.item_name, name))
-        .map((row) => ({ id: row.name, name: row.item_name })),
-    );
+    await this.sameNameElsewhere('item', name, () => this.itemsSpelledLike(name));
     const notes: string[] = [];
     const price = typeof input['selling_price'] === 'number' ? input['selling_price'] : null;
     const mayPrice = scope.caps.setItemPrices;
@@ -491,15 +494,27 @@ export class AssistantProposalsService {
     }
   }
 
-  /** The same name spelt with other case, spaces, punctuation or Arabic letter variants is still the same record. */
+  /**
+   * The same name spelt with other case, spaces, punctuation or Arabic letter variants is still the same record,
+   * disabled or not. Names are read by letters in order (stored spacing is unknown), so a read that fills the cap
+   * cannot rule a duplicate out.
+   */
   private async sameNameElsewhere(
     field: string,
     name: string,
-    find: () => Promise<Party[]>,
+    find: () => Promise<Candidates<Party & { disabled: boolean }>>,
   ): Promise<void> {
-    const same = await find();
+    const { rows, capped } = await find();
+    const same = rows.filter((row) => sameName(row.name, name));
+    const live = same.filter((row) => !row.disabled);
+    if (live.length) {
+      throw new NeedsChoice(field, name, optionsOf(live), 'exists');
+    }
     if (same.length) {
-      throw new NeedsChoice(field, name, optionsOf(same), 'exists');
+      throw new ToolFailure(`${field} is disabled: ${same[0].name}`);
+    }
+    if (capped) {
+      throw new ToolFailure(tooMany(field, name));
     }
   }
 
@@ -631,9 +646,10 @@ export class AssistantProposalsService {
       return usable[0];
     }
     const found = await this.customers.find(text, MAX_OPTIONS + 1);
-    return this.only('customer', text, found, scope, async () =>
-      rankSimilar(text, await this.customers.candidates(text, CANDIDATES_READ), (c) => c.name),
-    );
+    return this.only('customer', text, found, scope, async () => {
+      const { rows, capped } = await this.customers.candidates(text);
+      return { near: rankSimilar(text, rows, (c) => c.name), capped };
+    });
   }
 
   private async supplier(text: string, scope: ToolScope, allowDisabled = false): Promise<Party> {
@@ -659,9 +675,10 @@ export class AssistantProposalsService {
     const found = all.filter(
       (s) => s.name.toLowerCase().includes(term) || s.id.toLowerCase().includes(term),
     );
-    return this.only('supplier', text, found, scope, async () =>
-      rankSimilar(text, all, (s) => s.name),
-    );
+    return this.only('supplier', text, found, scope, async () => ({
+      near: rankSimilar(text, all, (s) => s.name),
+      capped: false,
+    }));
   }
 
   private async only(
@@ -669,7 +686,7 @@ export class AssistantProposalsService {
     query: string,
     found: Party[],
     scope: ToolScope,
-    similar: () => Promise<Party[]>,
+    similar: () => Promise<Similar>,
   ): Promise<Party> {
     if (found.length > 1) {
       throw new NeedsChoice(field, query, optionsOf(found));
@@ -680,26 +697,47 @@ export class AssistantProposalsService {
     return this.miss(field, query, scope, similar);
   }
 
-  /** Nothing matched: close names to pick from, else not found, saying whether the user may add it as new. */
+  /** Whether the user may add this kind of record as new; null for kinds that can't be added. */
+  private mayCreate(field: string, scope: ToolScope): boolean | null {
+    return field === 'customer'
+      ? scope.caps.editCustomers
+      : field === 'supplier'
+        ? scope.caps.addSuppliers
+        : field === 'item'
+          ? scope.caps.manageItems
+          : null;
+  }
+
+  /**
+   * Nothing matched: close names to pick from, else not found, saying whether the user may add it as new. A read
+   * that hit its cap proves nothing about a missing name, so it asks for more of the name instead.
+   */
   private async miss(
     field: string,
     query: string,
     scope: ToolScope,
-    similar: () => Promise<Party[]>,
+    similar: () => Promise<Similar>,
   ): Promise<never> {
-    const near = await similar();
+    const { near, capped } = await similar();
+    const creatable = this.mayCreate(field, scope);
     if (near.length) {
-      throw new NeedsChoice(field, query, optionsOf(near), 'close');
+      throw new NeedsChoice(
+        field,
+        query,
+        optionsOf(near),
+        'close',
+        creatable === null ? null : creatable && !capped,
+      );
+    }
+    if (capped) {
+      throw new NotFoundFailure(tooMany(field, query), {
+        not_found: true,
+        too_many: true,
+        field,
+        query,
+      });
     }
     const message = `not found: ${field} "${query}"`;
-    const creatable =
-      field === 'customer'
-        ? scope.caps.editCustomers
-        : field === 'supplier'
-          ? scope.caps.addSuppliers
-          : field === 'item'
-            ? scope.caps.manageItems
-            : null;
     if (creatable === null) {
       throw new ToolFailure(message);
     }
@@ -787,31 +825,60 @@ export class AssistantProposalsService {
     if (found.length === 1) {
       return found[0];
     }
-    return this.miss('item', term, scope, async () =>
-      rankSimilar(term, await this.itemCandidates(term, flag), (row) => row.item_name).map(
-        (row) => ({ id: row.name, name: row.item_name }),
-      ),
-    );
+    return this.miss('item', term, scope, async () => {
+      const { rows, capped } = await this.itemCandidates(term, flag);
+      return {
+        near: rankSimilar(term, rows, (row) => row.item_name).map((row) => ({
+          id: row.name,
+          name: row.item_name,
+        })),
+        capped,
+      };
+    });
   }
 
-  private itemCandidates(term: string, flag: string | null): Promise<ItemRow[]> {
+  private async itemCandidates(
+    term: string,
+    flag: string | null,
+  ): Promise<Candidates<{ name: string; item_name: string }>> {
     const patterns = candidatePatterns(term);
-    return patterns.length
-      ? this.list<ItemRow>(
-          'Item',
-          ITEM_FIELDS,
-          [
+    if (!patterns.length) {
+      return { rows: [], capped: false };
+    }
+    return candidatesOf(
+      await this.erpnext.listAll<{ name: string; item_name: string }>(
+        'Item',
+        {
+          fields: ['name', 'item_name'],
+          filters: [
             ['disabled', '=', 0],
             ['has_variants', '=', 0],
             ...(flag ? ([[flag, '=', 1]] as Filter[]) : []),
           ],
-          CANDIDATES_READ,
-          {
-            orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
-            orderBy: 'modified desc',
-          },
-        )
-      : Promise.resolve([]);
+          orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
+        },
+        CANDIDATE_CAP,
+      ),
+    );
+  }
+
+  private async itemsSpelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
+    const patterns = samePatterns(term);
+    if (!patterns.length) {
+      return { rows: [], capped: false };
+    }
+    const rows = await this.erpnext.listAll<{ name: string; item_name: string; disabled: number }>(
+      'Item',
+      {
+        fields: ['name', 'item_name', 'disabled'],
+        filters: [['has_variants', '=', 0]],
+        orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
+      },
+      CANDIDATE_CAP,
+    );
+    return candidatesOf(
+      rows.map((r) => ({ id: r.name, name: r.item_name, disabled: !!r.disabled })),
+    );
   }
 
   private itemOptions(rows: ItemRow[]): ChoiceOption[] {
@@ -871,7 +938,10 @@ export class AssistantProposalsService {
             w.name.toLowerCase().includes(term.toLowerCase()) ||
             w.id.toLowerCase().includes(term.toLowerCase()),
         );
-    return this.only(field, term, found, scope, async () => rankSimilar(term, all, (w) => w.name));
+    return this.only(field, term, found, scope, async () => ({
+      near: rankSimilar(term, all, (w) => w.name),
+      capped: false,
+    }));
   }
 
   private async selling(lines: { item: ItemRow; qty: number; rate?: number }[], scope: ToolScope) {

@@ -64,12 +64,20 @@ const itemList: Lister = (query: ListQuery) => {
         const actual = String(record[field === 'item_code' ? 'name' : field] ?? '');
         return op === '='
           ? actual === value
-          : actual.toLowerCase().includes(value.replaceAll('%', '').toLowerCase());
+          : new RegExp(
+              value
+                .split('%')
+                .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+                .join('.*'),
+              'i',
+            ).test(actual);
       })
     );
   });
   return ok.slice(0, query.limit ?? 20);
 };
+
+const ITEMS_NOOR = [item('NOOR-1', 'AlNoor Trading'), item('SUN-1', 'SunriseCo', { disabled: 1 })];
 
 const LINA = { id: 'Lina Haddad', name: 'Lina Haddad', phone: null, city: null };
 const SCOPE = (persona: Persona = 'owner'): ToolScope => ({
@@ -87,7 +95,8 @@ function setup(lists: Record<string, Lister> = {}) {
   const customers = {
     exact: vi.fn().mockResolvedValue([{ ...LINA, disabled: false }]),
     find: vi.fn().mockResolvedValue([]),
-    candidates: vi.fn().mockResolvedValue([]),
+    candidates: vi.fn().mockResolvedValue({ rows: [], capped: false }),
+    spelledLike: vi.fn().mockResolvedValue({ rows: [], capped: false }),
   };
   const suppliers = {
     exact: vi.fn().mockResolvedValue([]),
@@ -95,6 +104,14 @@ function setup(lists: Record<string, Lister> = {}) {
       { id: 'SUP-1', name: 'Green Clay', city: null },
       { id: 'SUP-2', name: 'Olive Co', city: null },
     ]),
+    spelledLike: vi.fn().mockResolvedValue({
+      rows: [
+        { id: 'SUP-1', name: 'Green Clay', disabled: false },
+        { id: 'SUP-2', name: 'Olive Co', disabled: false },
+        { id: 'SUP-3', name: 'Old Kiln', disabled: true },
+      ],
+      capped: false,
+    }),
   };
   const balances = { outstanding: vi.fn().mockResolvedValue(new Map([['Lina Haddad', 460]])) };
   const selling = {
@@ -884,26 +901,27 @@ describe('AssistantProposalsService', () => {
   });
 
   describe('did you mean and add as new', () => {
-    const SAMER = { id: 'C-9', name: 'Samer Odeh', phone: null, city: null };
+    const SAMER = { id: 'C-9', name: 'Samer Odeh' };
     const noExact = (customers: { exact: { mockResolvedValue: (v: unknown) => void } }) =>
       customers.exact.mockResolvedValue([]);
 
     it('suggests close customers when exact and the limited search find nothing', async () => {
       const { run, customers } = setup();
       noExact(customers);
-      customers.candidates.mockResolvedValue([
-        { id: 'C-1', name: 'Lina Haddad', phone: null, city: null },
-        SAMER,
-      ]);
+      customers.candidates.mockResolvedValue({
+        rows: [{ id: 'C-1', name: 'Lina Haddad' }, SAMER],
+        capped: false,
+      });
       const found = await run('propose_collect_payment', { customer: 'Leena' });
       expect(customers.find).toHaveBeenCalledWith('Leena', 6);
-      expect(customers.candidates).toHaveBeenCalledWith('Leena', 50);
+      expect(customers.candidates).toHaveBeenCalledWith('Leena');
       expect(found.payload).toEqual({
         needs_choice: true,
         did_you_mean: true,
         field: 'customer',
         query: 'Leena',
         options: [{ id: 'C-1', label: 'Lina Haddad' }],
+        can_create: true,
       });
       expect(found.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
       expect(found.proposals).toBeUndefined();
@@ -912,11 +930,14 @@ describe('AssistantProposalsService', () => {
     it('labels suggestions with the id only when their names collide', async () => {
       const { run, customers } = setup();
       noExact(customers);
-      customers.candidates.mockResolvedValue([
-        { id: 'C-1', name: 'Lina Haddad', phone: null, city: null },
-        { id: 'C-2', name: 'Lina Haddad', phone: null, city: null },
-        { id: 'C-3', name: 'Lena Haddad', phone: null, city: null },
-      ]);
+      customers.candidates.mockResolvedValue({
+        rows: [
+          { id: 'C-1', name: 'Lina Haddad' },
+          { id: 'C-2', name: 'Lina Haddad' },
+          { id: 'C-3', name: 'Lena Haddad' },
+        ],
+        capped: false,
+      });
       const found = await run('open_record', { kind: 'customer', name: 'Leena Haddad' });
       expect(found.payload['options']).toEqual([
         { id: 'C-3', label: 'Lena Haddad' },
@@ -928,14 +949,13 @@ describe('AssistantProposalsService', () => {
     it('offers an Arabic spelling variant and keeps at most five suggestions', async () => {
       const { run, customers } = setup();
       noExact(customers);
-      customers.candidates.mockResolvedValue(
-        Array.from({ length: 8 }, (_, i) => ({
+      customers.candidates.mockResolvedValue({
+        rows: Array.from({ length: 8 }, (_, i) => ({
           id: `C-${i}`,
           name: i === 0 ? 'مدرسة النور' : `مدرسة النور ${i}`,
-          phone: null,
-          city: null,
         })),
-      );
+        capped: false,
+      });
       const found = await run('propose_collect_payment', { customer: 'مدرسه النور' });
       expect(found.payload).toMatchObject({ did_you_mean: true });
       expect((found.payload['options'] as unknown[]).length).toBe(5);
@@ -973,7 +993,7 @@ describe('AssistantProposalsService', () => {
     it('suggests items with a capped, enabled-only candidate search ranked by name', async () => {
       const { run, listCalls } = setup({
         Item: (query) =>
-          query.limit === 50
+          query.fields?.length === 2
             ? [
                 item('FIG-1', 'Fig tree'),
                 item('RAW-9', 'Raw clay', { is_sales_item: 1 }),
@@ -984,13 +1004,71 @@ describe('AssistantProposalsService', () => {
       const found = await run('propose_quick_sale', sale({ items: [{ item: 'Fig tre', qty: 1 }] }));
       expect(found.payload).toMatchObject({ did_you_mean: true, field: 'item' });
       const search = listCalls.filter((c) => c.doctype === 'Item').at(-1)!.query;
-      expect(search.limit).toBe(50);
+      expect(search.fields).toEqual(['name', 'item_name']);
+      expect(listCalls.filter((c) => c.doctype === 'Item').at(-1)!.maxRows).toBe(1000);
       expect(search.filters).toEqual(
         expect.arrayContaining([
           ['disabled', '=', 0],
           ['is_sales_item', '=', 1],
         ]),
       );
+    });
+
+    it('still suggests an old item beyond the first 50 newest matches', async () => {
+      const decoys = Array.from({ length: 120 }, (_, i) => item(`BIG-${i}`, `Config panel ${i}`));
+      const { run } = setup({
+        Item: (query) =>
+          query.fields?.length === 2
+            ? [...decoys, item('FIG-OLD', 'Fig tree')].slice(0, query.limit ?? Infinity)
+            : [],
+      });
+      const found = await run('propose_quick_sale', sale({ items: [{ item: 'Fig tre', qty: 1 }] }));
+      expect(found.payload).toMatchObject({
+        did_you_mean: true,
+        options: [{ id: 'FIG-OLD', label: 'Fig tree' }],
+      });
+    });
+
+    it('asks for more of the name, not can_create, when the candidate read hit its cap', async () => {
+      const decoys = Array.from({ length: 1000 }, (_, i) => item(`BIG-${i}`, `Config panel ${i}`));
+      const { run } = setup({ Item: (query) => (query.fields?.length === 2 ? decoys : []) });
+      const failure = run('propose_quick_sale', sale({ items: [{ item: 'Fig tre', qty: 1 }] }));
+      await expect(failure).rejects.toMatchObject({
+        payload: { not_found: true, too_many: true, field: 'item', query: 'Fig tre' },
+        message: expect.stringContaining('ask the user for more of the name'),
+      });
+      await expect(failure).rejects.not.toHaveProperty('payload.can_create');
+    });
+
+    it('asks for more of the name for a customer whose candidate read hit its cap', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.candidates.mockResolvedValue({ rows: [], capped: true });
+      await expect(run('propose_collect_payment', { customer: 'Leena' })).rejects.toMatchObject({
+        payload: { not_found: true, too_many: true, field: 'customer' },
+      });
+    });
+
+    it('withholds can_create from suggestions when the read was capped or the role may not add', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.candidates.mockResolvedValue({
+        rows: [{ id: 'C-1', name: 'Lina Haddad' }],
+        capped: true,
+      });
+      const capped = await run('propose_collect_payment', { customer: 'Leena' });
+      expect(capped.payload).toMatchObject({ did_you_mean: true, can_create: false });
+      const asSales = setup({
+        Item: (query) => (query.fields?.length === 2 ? [item('FIG-1', 'Fig tree')] : []),
+      });
+      const items = await asSales.run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'Fig tre', qty: 1 }] }),
+        SCOPE('salesperson'),
+      );
+      expect(items.payload).toMatchObject({ did_you_mean: true, can_create: false });
+      const warehouse = await setup().run('propose_quick_sale', sale({ warehouse: 'Garden shp' }));
+      expect(warehouse.payload).not.toHaveProperty('can_create');
     });
 
     it('says can_create for a customer, a supplier and an item only where the role may add one', async () => {
@@ -1108,12 +1186,29 @@ describe('AssistantProposalsService', () => {
       it('treats Arabic letter variants and spacing as the same name', async () => {
         const { run, customers } = setup();
         noExact(customers);
-        customers.candidates.mockResolvedValue([
-          { id: 'C-5', name: 'مدرسة النور', phone: null, city: null },
-        ]);
+        customers.spelledLike.mockResolvedValue({
+          rows: [{ id: 'C-5', name: 'مدرسة النور', disabled: false }],
+          capped: false,
+        });
         const found = await run('propose_new_customer', { name: 'مدرسه  النور' });
         expect(found.payload).toMatchObject({ needs_choice: true, already_exists: true });
         expect(found.proposals).toBeUndefined();
+      });
+
+      it('refuses a disabled customer spelt differently, and when the duplicate read hit its cap', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        customers.spelledLike.mockResolvedValue({
+          rows: [{ id: 'C-5', name: 'AlNoor Trading', disabled: true }],
+          capped: false,
+        });
+        await expect(run('propose_new_customer', { name: 'Al Noor Trading' })).rejects.toThrow(
+          'customer is disabled: AlNoor Trading',
+        );
+        customers.spelledLike.mockResolvedValue({ rows: [], capped: true });
+        await expect(run('propose_new_customer', { name: 'Ali' })).rejects.toThrow(
+          'ask the user for more of the name',
+        );
       });
 
       it('says a disabled customer with that name is disabled, and refuses the walk-in name', async () => {
@@ -1163,7 +1258,42 @@ describe('AssistantProposalsService', () => {
       });
     });
 
+    describe('propose_new_supplier duplicates', () => {
+      it('refuses a disabled supplier spelt differently', async () => {
+        const { run, suppliers } = setup();
+        suppliers.spelledLike.mockResolvedValue({
+          rows: [{ id: 'SUP-3', name: 'Old Kiln', disabled: true }],
+          capped: false,
+        });
+        await expect(run('propose_new_supplier', { name: 'oldkiln' })).rejects.toThrow(
+          'supplier is disabled: Old Kiln',
+        );
+      });
+    });
+
     describe('propose_new_item', () => {
+      it('finds an item stored with other spacing, enabled or disabled', async () => {
+        const { run } = setup({
+          Item: (query) =>
+            query.fields?.includes('disabled') && query.fields.length === 3
+              ? ITEMS_NOOR.filter((row) =>
+                  (query.orFilters as [string, string, string][]).some(([, , pattern]) =>
+                    new RegExp(pattern.split('%').join('.*'), 'i').test(row.item_name),
+                  ),
+                )
+              : [],
+        });
+        const found = await run('propose_new_item', { name: 'Al Noor Trading', kind: 'product' });
+        expect(found.payload).toMatchObject({
+          needs_choice: true,
+          already_exists: true,
+          options: [{ id: 'NOOR-1', label: 'AlNoor Trading' }],
+        });
+        await expect(
+          run('propose_new_item', { name: 'Sunrise  Co', kind: 'product' }),
+        ).rejects.toThrow('item is disabled: SunriseCo');
+      });
+
       it('prepares the card; the owner’s selling price goes with it', async () => {
         const { run } = setup({ Item: () => [] });
         const found = await run('propose_new_item', {

@@ -148,6 +148,10 @@ describe('system prompt', () => {
     );
     expect(STABLE_PROMPT).toMatch(/never invent names/);
     expect(STABLE_PROMPT).toMatch(/can_create is true, offer to add it as new/);
+    expect(STABLE_PROMPT).toMatch(
+      /offer to add it as new only if that earlier result had can_create true/,
+    );
+    expect(STABLE_PROMPT).toMatch(/too_many, ask the user for more of the name/);
     expect(STABLE_PROMPT).toMatch(/propose_new_\* tool/);
     expect(STABLE_PROMPT).toMatch(/Never create anything silently/);
     expect(STABLE_PROMPT).toMatch(/come back and ask again/);

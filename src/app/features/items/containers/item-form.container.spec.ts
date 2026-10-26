@@ -27,14 +27,19 @@ interface Options {
   held?: PrefillRequest;
   missing?: string;
   otherUser?: boolean;
+  optionsFail?: boolean;
 }
 
-async function open({ persona = 'owner', roles, held, missing, otherUser }: Options) {
+async function open({ persona = 'owner', roles, held, missing, otherUser, optionsFail }: Options) {
   TestBed.resetTestingModule();
   const query = new BehaviorSubject(convertToParamMap({}));
   const user = signal<{ id: string } | null>({ id: 'rehan@rehan.example' });
   const api = {
-    options: vi.fn().mockResolvedValue({ groups: ['Plants'], uoms: ['Unit'] }),
+    options: vi.fn(() =>
+      optionsFail
+        ? Promise.reject(new Error('offline'))
+        : Promise.resolve({ groups: ['Plants'], uoms: ['Unit'] }),
+    ),
     detail: vi.fn(),
     create: vi.fn().mockResolvedValue('FIG-1'),
   };
@@ -136,6 +141,18 @@ describe('ItemFormContainer with an assistant proposal', () => {
     });
     expect(plain(root.querySelector('app-feedback-card'))).toContain('This proposal has expired.');
     expect(field(root, 'Name')?.value).toBe('');
+  });
+
+  it('does not apply the proposal on a retry after the options failed to load', async () => {
+    const { fixture, root, api } = await open({
+      held: { kind: 'new_item', payload: { name: 'Fig tree', kind: 'product' } },
+      optionsFail: true,
+    });
+    expect(field(root, 'Name')).toBeUndefined();
+    api.options.mockResolvedValue({ groups: ['Plants'], uoms: ['Unit'] });
+    await (fixture.componentInstance as unknown as { loadForm(): Promise<void> }).loadForm();
+    fixture.detectChanges();
+    expect(field(fixture.nativeElement, 'Name')?.value).toBe('');
   });
 
   it('saves nothing until the user saves', async () => {

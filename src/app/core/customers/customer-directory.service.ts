@@ -1,7 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../erpnext/erpnext-client';
-import { candidatePatterns } from '../util/fuzzy-match';
+import {
+  CANDIDATE_CAP,
+  Candidates,
+  candidatePatterns,
+  candidatesOf,
+  samePatterns,
+} from '../util/fuzzy-match';
 import { shareInFlight } from '../util/share-in-flight';
 
 export interface CustomerOption {
@@ -22,6 +28,11 @@ export interface NewCustomer {
   phone: string;
   email: string;
   address: string;
+}
+
+interface Party {
+  id: string;
+  name: string;
 }
 
 export const WALK_IN_CUSTOMER = 'Walk-in Customer';
@@ -97,36 +108,46 @@ export class CustomerDirectoryService {
     }));
   }
 
-  /** A capped page of enabled customers whose names share letters with a misspelt one, for the caller to rank. */
-  async candidates(term: string, limit = 50): Promise<CustomerMatch[]> {
+  /** Enabled customers whose names share letters with a misspelt one, id and name only, for the caller to rank. */
+  async candidates(term: string): Promise<Candidates<Party>> {
     const patterns = candidatePatterns(term);
     if (!patterns.length) {
-      return [];
+      return { rows: [], capped: false };
     }
-    const rows = await firstValueFrom(
-      this.erpnext.list<{
-        name: string;
-        customer_name: string;
-        mobile_no: string | null;
-        primary_address: string | null;
-      }>('Customer', {
-        fields: ['name', 'customer_name', 'mobile_no', 'primary_address'],
-        filters: [
-          ['disabled', '=', 0],
-          ['name', '!=', WALK_IN_CUSTOMER],
-          ['customer_name', '!=', WALK_IN_CUSTOMER],
-        ],
+    const { rows, capped } = await this.named(patterns, [
+      ['disabled', '=', 0],
+      ['name', '!=', WALK_IN_CUSTOMER],
+      ['customer_name', '!=', WALK_IN_CUSTOMER],
+    ]);
+    return { rows: rows.map(({ id, name }) => ({ id, name })), capped };
+  }
+
+  /** Customers, disabled ones marked, whose names any spelling of `term` could match, for a duplicate check. */
+  async spelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
+    const patterns = samePatterns(term);
+    return patterns.length ? this.named(patterns, []) : { rows: [], capped: false };
+  }
+
+  private async named(
+    patterns: string[],
+    filters: Filter[],
+  ): Promise<Candidates<Party & { disabled: boolean }>> {
+    const rows = await this.erpnext.listAll<{
+      name: string;
+      customer_name: string;
+      disabled: number;
+    }>(
+      'Customer',
+      {
+        fields: ['name', 'customer_name', 'disabled'],
+        filters,
         orFilters: patterns.map((pattern) => ['customer_name', 'like', pattern] as Filter),
-        orderBy: 'modified desc',
-        limit,
-      }),
+      },
+      CANDIDATE_CAP,
     );
-    return rows.map((r) => ({
-      id: r.name,
-      name: r.customer_name,
-      phone: r.mobile_no,
-      city: firstAddressLine(r.primary_address),
-    }));
+    return candidatesOf(
+      rows.map((r) => ({ id: r.name, name: r.customer_name, disabled: !!r.disabled })),
+    );
   }
 
   /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */
