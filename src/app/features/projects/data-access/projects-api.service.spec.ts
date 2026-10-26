@@ -325,6 +325,152 @@ describe('ProjectsApiService', () => {
     expect((await api().project('PROJ-0001')).requirements).toEqual([]);
   });
 
+  describe('sales to a project', () => {
+    const SCOPE = { company: 'Rehan Nursery', owner: null };
+    const lists = {
+      Customer: () => [{ name: 'CUST-LINA', customer_name: 'Lina Haddad', disabled: 0 }],
+      'Sales Invoice': (query: { fields: unknown[]; filters?: unknown[] }) =>
+        JSON.stringify(query.fields).includes('SUM')
+          ? JSON.stringify(query.filters).includes('"!="')
+            ? [{ 'SUM(`base_rounded_total`)': 100.5 }]
+            : [{ 'SUM(`base_grand_total`)': 179.5 }]
+          : [
+              {
+                name: 'SI-2',
+                status: 'Credit Note Issued',
+                is_return: 1,
+                base_grand_total: -40,
+                base_rounded_total: 0,
+                creation: '2026-10-20 10:00:00',
+              },
+              {
+                name: 'SI-1',
+                status: 'Paid',
+                is_return: 0,
+                base_grand_total: 320,
+                base_rounded_total: 0,
+                creation: '2026-10-18 10:00:00',
+              },
+            ],
+      'Sales Order': () => [
+        {
+          name: 'SO-1',
+          status: 'To Deliver and Bill',
+          base_grand_total: 500,
+          base_rounded_total: 0,
+          creation: '2026-10-19 10:00:00',
+        },
+      ],
+    };
+
+    it('lists the submitted invoices and orders newest first with the billed total', async () => {
+      const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
+      const project = await api().project('PROJ-0001', SCOPE);
+      expect(project.sales).toEqual({
+        rows: [
+          {
+            kind: 'invoice',
+            name: 'SI-2',
+            status: 'Credit Note Issued',
+            isReturn: true,
+            amount: -40,
+          },
+          {
+            kind: 'order',
+            name: 'SO-1',
+            status: 'To Deliver and Bill',
+            isReturn: false,
+            amount: 500,
+          },
+          { kind: 'invoice', name: 'SI-1', status: 'Paid', isReturn: false, amount: 320 },
+        ],
+        billed: 280,
+        moreInvoices: 0,
+        moreOrders: 0,
+      });
+      expect(project.customerActive).toBe(true);
+      const invoices = listCalls.filter(
+        (c) => c.doctype === 'Sales Invoice' && c.query.limit === 20,
+      );
+      expect(invoices[0].query.filters).toEqual([
+        ['project', '=', 'PROJ-0001'],
+        ['company', '=', 'Rehan Nursery'],
+        ['docstatus', '=', 1],
+      ]);
+    });
+
+    it('adds the rounded total owed where there is one, the grand total where not', async () => {
+      const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
+      expect((await api().project('PROJ-0001', SCOPE)).sales?.billed).toBe(280);
+      const sums = listCalls.filter((c) => JSON.stringify(c.query.fields).includes('SUM'));
+      expect(sums.map((c) => c.query.fields)).toEqual([
+        [{ SUM: 'base_rounded_total' }],
+        [{ SUM: 'base_grand_total' }],
+      ]);
+      expect(sums[0].query.filters).toContainEqual(['base_rounded_total', '!=', 0]);
+      expect(sums[1].query.filters).toContainEqual(['base_rounded_total', '=', 0]);
+    });
+
+    it('counts the invoices and orders beyond the rows listed', async () => {
+      fakeErpnext(
+        lists,
+        {},
+        { 'Project/PROJ-0001': PROJECT },
+        { 'Sales Invoice': 27, 'Sales Order': 2 },
+      );
+      const sales = (await api().project('PROJ-0001', SCOPE)).sales;
+      expect(sales?.moreInvoices).toBe(25);
+      expect(sales?.moreOrders).toBe(1);
+    });
+
+    it('lists only the user’s own sales, with no billed total, for a salesperson', async () => {
+      const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
+      const project = await api().project('PROJ-0001', { ...SCOPE, owner: 'lina@example.com' });
+      expect(project.sales?.billed).toBeNull();
+      for (const call of listCalls.filter(
+        (c) => c.doctype.startsWith('Sales') && c.query.limit === 20,
+      )) {
+        expect(call.query.filters).toContainEqual(['owner', '=', 'lina@example.com']);
+      }
+    });
+
+    it('reads no sales unless asked, or for a project of another business', async () => {
+      fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
+      expect((await api().project('PROJ-0001')).sales).toBeNull();
+      expect(
+        (await api().project('PROJ-0001', { company: 'Other Co', owner: null })).sales,
+      ).toBeNull();
+    });
+
+    it('drops the sales for a role that can’t read invoices but fails on a lost connection', async () => {
+      fakeErpnext(
+        {
+          ...lists,
+          'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
+        },
+        {},
+        { 'Project/PROJ-0001': PROJECT },
+      );
+      expect((await api().project('PROJ-0001', SCOPE)).sales).toBeNull();
+      TestBed.resetTestingModule();
+      fakeErpnext(
+        { ...lists, 'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 0 })) },
+        {},
+        { 'Project/PROJ-0001': PROJECT },
+      );
+      await expect(api().project('PROJ-0001', SCOPE)).rejects.toBeTruthy();
+    });
+
+    it('reports a disabled customer', async () => {
+      fakeErpnext(
+        { ...lists, Customer: () => [{ name: 'CUST-LINA', customer_name: 'Lina', disabled: 1 }] },
+        {},
+        { 'Project/PROJ-0001': PROJECT },
+      );
+      expect((await api().project('PROJ-0001')).customerActive).toBe(false);
+    });
+  });
+
   it('reads the project alone for the edit form, so a stock failure cannot block editing', async () => {
     const { listCalls } = fakeErpnext(
       {

@@ -67,7 +67,9 @@ describe('tool registry', () => {
         required?: string[];
         properties: Record<string, { items?: { required?: string[]; properties: object } }>;
       };
-    expect(schema('propose_quick_sale').required).toEqual(['customer', 'items']);
+    expect(schema('propose_quick_sale').required).toEqual(['items']);
+    expect(Object.keys(schema('propose_quick_sale').properties)).toContain('project');
+    expect(Object.keys(schema('propose_quotation').properties)).not.toContain('project');
     expect(schema('propose_quotation').required).toEqual(['customer', 'items']);
     expect(schema('propose_purchase_order').required).toEqual(['supplier', 'items']);
     expect(schema('propose_collect_payment').required).toEqual(['customer']);

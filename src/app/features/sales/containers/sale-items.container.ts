@@ -65,6 +65,9 @@ const SEARCH_DELAY_MS = 250;
         [language]="ctx.i18n.language()"
         (languageChange)="ctx.i18n.use($event)"
       />
+      @if (ctx.projectLine(); as project) {
+        <p class="muted">{{ project }}</p>
+      }
       @if (ctx.prefillNotice(); as proposal) {
         <app-feedback-card
           [tone]="proposal.tone"
@@ -97,13 +100,15 @@ const SEARCH_DELAY_MS = 250;
             (added)="addCode($event)"
           />
           <p class="muted">{{ txt.hint }}</p>
-          <button
-            type="button"
-            class="md-btn"
-            (click)="ctx.go('customer/new', { queryParams: { return: 'items' } })"
-          >
-            {{ txt.addCustomer }}
-          </button>
+          @if (!ctx.store.project()) {
+            <button
+              type="button"
+              class="md-btn"
+              (click)="ctx.go('customer/new', { queryParams: { return: 'items' } })"
+            >
+              {{ txt.addCustomer }}
+            </button>
+          }
         </div>
         <section class="panel" [attr.aria-label]="txt.panelHeading">
           <h2>{{ txt.panelHeading }}</h2>
@@ -148,8 +153,11 @@ const SEARCH_DELAY_MS = 250;
         [language]="ctx.i18n.language()"
         (languageChange)="ctx.i18n.use($event)"
       />
-      <app-back-link [label]="txt.back" (back)="ctx.go('')" />
+      <app-back-link [label]="txt.back" (back)="back()" />
       <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
+      @if (ctx.projectLine(); as project) {
+        <p class="muted">{{ project }}</p>
+      }
       <app-search-field
         [label]="txt.search"
         [placeholder]="txt.placeholder"
@@ -331,6 +339,14 @@ export class SaleItemsContainer implements OnInit {
     if (!this.ctx.store.warehouses().length) {
       void this.ctx.store.loadOptions().catch(() => undefined);
     }
+  }
+
+  protected back(): void {
+    const project = this.ctx.store.project();
+    if (project && !this.ctx.store.lines().length) {
+      this.ctx.store.start();
+    }
+    void (project ? this.ctx.router.navigate(['/projects', project.id]) : this.ctx.go(''));
   }
 
   protected itemCard(item: CatalogItem) {

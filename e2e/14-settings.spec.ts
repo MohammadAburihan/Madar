@@ -65,7 +65,7 @@ test('the owner sees Open ERPNext in Arabic @phone', async ({ page }) => {
   await signIn(page, 'owner');
   await page.goto('/settings');
   await page.getByRole('combobox', { name: /^Language/ }).selectOption('ar');
-  await expect(page.getByRole('button', { name: /فتح ERPNext/ })).toContainText(
+  await expect(page.getByRole('button', { name: 'فتح Desk في ERPNext' })).toContainText(
     'Desk، شاشات ERPNext الكاملة',
   );
 });

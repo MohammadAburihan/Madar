@@ -29,6 +29,11 @@ export interface SaleLine {
 }
 
 /** A saved quick-sale draft, read back so the sale can be continued under its own reference. */
+export interface SaleProject {
+  id: string;
+  title: string;
+}
+
 export interface DraftSale {
   name: string;
   reference: string;
@@ -36,6 +41,8 @@ export interface DraftSale {
   customerName: string;
   /** False when the customer has been disabled since the draft was saved. */
   customerActive: boolean;
+  /** The customer project the invoice is billed to. */
+  project: string | null;
   warehouse: string | null;
   lines: SaleLine[];
 }
@@ -52,6 +59,8 @@ export interface SaleRequest {
   reference: string;
   company: string;
   customer: string;
+  /** Booked on the invoice's `project`; the customer is then the project's. */
+  project: string | null;
   warehouse: string;
   lines: SaleLine[];
   amountPaid: number;

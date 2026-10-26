@@ -9,10 +9,12 @@ import {
   untracked,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { OWN_SALES_ONLY } from '../../../core/auth/persona';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -22,6 +24,7 @@ import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ProjectSectionComponent } from '../components/project-section.component';
+import { ProjectSellComponent } from '../components/project-sell.component';
 import { RecordLinksComponent } from '../components/record-links.component';
 import { LinkedRecord, ProjectDetail, SiteBalance } from '../data-access/project.models';
 import { ProjectsApiService } from '../data-access/projects-api.service';
@@ -35,6 +38,7 @@ import {
   siteRow,
   taskCard,
 } from './project-view';
+import { billedText, moreSalesText, saleLinks, sellSection } from './project-sell-view';
 import {
   ledgerRows,
   ledgerTitle,
@@ -58,6 +62,7 @@ const LEDGER_LIMIT = 5;
     LanguageSwitcherComponent,
     PageHeadingComponent,
     ProjectSectionComponent,
+    ProjectSellComponent,
     RecordLinksComponent,
     StatCardComponent,
     StatusChipComponent,
@@ -181,6 +186,19 @@ const LEDGER_LIMIT = 5;
           </div>
         </div>
         <div class="side">
+          @if (v.sell; as sell) {
+            <app-project-sell
+              [heading]="sell.heading"
+              [note]="sell.note"
+              [notice]="sell.notice"
+              [quick]="sell.quick"
+              [supply]="sell.supply"
+              [addCustomer]="sell.addCustomer"
+              (quickSale)="sellTo()"
+              (supplyProject)="supply(v.nextItem!)"
+              (addCustomerTo)="edit()"
+            />
+          }
           @if (balancesFailed()) {
             <app-feedback-card
               tone="warning"
@@ -214,6 +232,20 @@ const LEDGER_LIMIT = 5;
               />
             }
           }
+          @if (v.salesTitle; as salesTitle) {
+            <app-record-links
+              [heading]="salesTitle"
+              [links]="v.sales"
+              [empty]="txt.noSales"
+              (opened)="openRecord($event)"
+            />
+            @if (v.billed; as billed) {
+              <p class="muted">{{ billed }}</p>
+            }
+            @for (more of v.more; track more) {
+              <p class="muted">{{ more }}</p>
+            }
+          }
           <app-record-links
             [heading]="txt.records"
             [links]="v.records"
@@ -235,6 +267,19 @@ const LEDGER_LIMIT = 5;
       <app-status-chip [label]="v.heading.chip.label" [tone]="v.heading.chip.tone" />
       @if (caps().manageProjects) {
         <app-stat-card [stats]="v.stats" />
+      }
+      @if (v.sell; as sell) {
+        <app-project-sell
+          [heading]="sell.heading"
+          [note]="sell.note"
+          [notice]="sell.notice"
+          [quick]="sell.quick"
+          [supply]="sell.supply"
+          [addCustomer]="sell.addCustomer"
+          (quickSale)="sellTo()"
+          (supplyProject)="supply(v.nextItem!)"
+          (addCustomerTo)="edit()"
+        />
       }
       @if (v.tasks) {
         <app-project-section [heading]="txt.tasks" [items]="v.tasks" [empty]="txt.noTasks" />
@@ -267,6 +312,20 @@ const LEDGER_LIMIT = 5;
       >
         <app-totals-card density="compact" [rows]="v.linked" />
       </app-project-section>
+      @if (v.salesTitle; as salesTitle) {
+        <app-record-links
+          [heading]="salesTitle"
+          [links]="v.sales"
+          [empty]="txt.noSales"
+          (opened)="openRecord($event)"
+        />
+        @if (v.billed; as billed) {
+          <p class="muted">{{ billed }}</p>
+        }
+        @for (more of v.more; track more) {
+          <p class="muted">{{ more }}</p>
+        }
+      }
       @if (v.records.some((r) => r.openable)) {
         <app-record-links
           [heading]="txt.records"
@@ -311,7 +370,9 @@ export class ProjectContainer {
   protected readonly router = inject(Router);
   private readonly siteApi = inject(SiteApiService);
   protected readonly viewport = inject(ViewportService).viewport;
-  protected readonly caps = inject(SessionService).capabilities;
+  private readonly session = inject(SessionService);
+  private readonly prefills = inject(TaskPrefillService);
+  protected readonly caps = this.session.capabilities;
   protected readonly i18n = injectI18n();
 
   private readonly project = signal<ProjectDetail | null>(null);
@@ -338,6 +399,9 @@ export class ProjectContainer {
       noAttachments: t('project.overview.noAttachments'),
       linked: t('project.overview.linked'),
       noLinked: t('project.overview.noLinked'),
+      noSales: t('project.sell.noSales'),
+      ownSales: t('project.sell.ownOnly'),
+      salesHeading: t('project.sell.salesHeading'),
       addRequirement: t('project.overview.addRequirement'),
       supply: t('project.overview.supply'),
       edit: t('project.overview.edit'),
@@ -377,7 +441,26 @@ export class ProjectContainer {
     const tr = this.i18n.tr();
     const language = this.i18n.language();
     const currency = this.business.active()?.currency ?? '';
+    const caps = this.caps();
+    const nextItem =
+      project.requirements.find((r) => r.available < r.required)?.item ??
+      project.requirements[0]?.item ??
+      null;
+    const sales = caps.sell ? project.sales : null;
+    // The sales section lists invoices and orders in full, so the generic links leave them out.
+    const linked = sales
+      ? project.linked.filter((r) => r.kind !== 'sale' && r.kind !== 'order')
+      : project.linked;
     return {
+      sell: sellSection(
+        project,
+        { ...caps, supplyProjects: caps.supplyProjects && !!nextItem },
+        tr,
+      ),
+      salesTitle: sales ? tr.t('project.sell.salesHeading') : null,
+      sales: sales ? saleLinks(sales, currency, tr) : [],
+      more: sales ? moreSalesText(sales, tr) : [],
+      billed: sales ? (billedText(sales, currency, tr) ?? this.text().ownSales) : null,
       heading: overviewHeading(project, tr),
       stats: budgetStats(project, currency, tr),
       tasks: project.tasks?.map((task) => taskCard(task, language, tr)) ?? null,
@@ -392,11 +475,11 @@ export class ProjectContainer {
       siteItems: project.siteItems.map((s) => s.item),
       attachments: project.attachments.map((a) => attachmentCard(a, language)),
       // Order values and expense amounts only for roles that see costs (docs/PERMISSIONS.md).
-      linked: linkedRows(project.linked, this.caps().seeCosts ? currency : null, tr),
+      linked: linkedRows(linked, this.caps().seeCosts ? currency : null, tr),
       workspaceSubtitle: workspaceSubtitle(project, tr),
       taskRows: project.tasks ? taskRows(project.tasks, language, tr) : null,
       // Madar has pages for sales invoices and purchase orders; both show amounts, so cost roles only.
-      records: recordLinks(project.linked, (r) => this.canOpen(r), tr),
+      records: recordLinks(linked, (r) => this.canOpen(r), tr),
     };
   });
 
@@ -456,7 +539,15 @@ export class ProjectContainer {
     this.failed.set(false);
     try {
       await this.business.ensure();
-      const project = await this.api.project(name);
+      const company = this.business.active()?.name ?? '';
+      const ownOnly = OWN_SALES_ONLY.includes(this.session.persona());
+      const owner = this.session.user()?.id ?? null;
+      const project = await this.api.project(
+        name,
+        this.caps().sell && company && (!ownOnly || owner)
+          ? { company, owner: ownOnly ? owner : null }
+          : undefined,
+      );
       if (run === this.run) {
         this.project.set(project);
       }
@@ -511,9 +602,20 @@ export class ProjectContainer {
 
   protected openRecord(id: string): void {
     const [kind, name] = [id.slice(0, id.indexOf(':')), id.slice(id.indexOf(':') + 1)];
-    void this.router.navigate(
-      kind === 'sale' ? ['/sales/invoices', name] : ['/purchases/order', name],
-    );
+    const routes: Record<string, string[]> = {
+      sale: ['/sales/invoices', name],
+      invoice: ['/sales/invoices', name],
+      order: ['/sales/orders', name],
+    };
+    void this.router.navigate(routes[kind] ?? ['/purchases/order', name]);
+  }
+
+  protected sellTo(): void {
+    const id = this.prefills.put({
+      kind: 'quick_sale',
+      payload: { project: this.name(), lines: [] },
+    });
+    void this.router.navigate(['/sales/new', 'items'], id ? { queryParams: { prefill: id } } : {});
   }
 
   protected supply(item: string): void {

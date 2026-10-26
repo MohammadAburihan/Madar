@@ -129,15 +129,21 @@ export const toolRegistry: Record<string, ToolDef> = {
       properties: {
         customer: {
           type: 'string',
-          description: 'The customer name or id, or "walk-in" for a customer who is not on file.',
+          description:
+            'The customer name or id, or "walk-in" for a customer who is not on file. Optional when a project is given.',
         },
         items: lineItems('items to sell'),
         warehouse: {
           type: 'string',
           description: 'The warehouse to sell from, only if the user named one.',
         },
+        project: {
+          type: 'string',
+          description:
+            "A customer project name or id, only if the user is selling to a project. The sale is billed to that project and goes to the project's customer, so customer may be left out.",
+        },
       },
-      required: ['customer', 'items'],
+      required: ['items'],
       additionalProperties: false,
     },
     strict: true,

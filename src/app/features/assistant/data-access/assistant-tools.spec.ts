@@ -214,6 +214,12 @@ describe('validateInput for proposals', () => {
       warehouse: 'Main',
     };
     expect(validateInput('propose_quick_sale', input)).toEqual({ ok: true, input });
+    expect(
+      validateInput('propose_quick_sale', {
+        project: 'Garden installation',
+        items: [{ item: 'a', qty: 1 }],
+      }).ok,
+    ).toBe(true);
     expect(validateInput('propose_collect_payment', { customer: 'Lina' }).ok).toBe(true);
     expect(validateInput('propose_collect_payment', { customer: 'Lina', amount: 12.5 }).ok).toBe(
       true,
@@ -300,7 +306,12 @@ describe('validateInput for proposals', () => {
       { customer: 'L', items: [{ item: 'a', qty: 1, discount: 5 }] },
     ],
     ['a line that is not an object', 'propose_quick_sale', { customer: 'L', items: ['a'] }],
-    ['a missing customer', 'propose_quick_sale', { items: [{ item: 'a', qty: 1 }] }],
+    ['a missing customer', 'propose_quotation', { items: [{ item: 'a', qty: 1 }] }],
+    [
+      'a quotation for a project',
+      'propose_quotation',
+      { customer: 'L', project: 'P', items: [{ item: 'a', qty: 1 }] },
+    ],
     ['a payment of zero', 'propose_collect_payment', { customer: 'L', amount: 0 }],
     ['a stock move without a quantity', 'propose_stock_move', { item: 'a' }],
     ['an unknown kind of record', 'open_record', { kind: 'payment', name: 'PAY-1' }],

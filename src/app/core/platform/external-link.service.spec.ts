@@ -1,16 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-
-const openBrowser = vi.fn().mockResolvedValue(undefined);
-vi.mock('@capacitor/browser', () => ({
-  Browser: { open: (...args: unknown[]) => openBrowser(...args) },
-}));
-
-import { ExternalLinkService } from './external-link.service';
+import { ExternalLinkService, IN_APP_BROWSER } from './external-link.service';
 import { NATIVE_PLATFORM } from './native-platform';
 
+const openBrowser = vi.fn().mockResolvedValue(undefined);
+
 const service = (platform: 'web' | 'android' | 'ios') => {
-  TestBed.configureTestingModule({ providers: [{ provide: NATIVE_PLATFORM, useValue: platform }] });
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: NATIVE_PLATFORM, useValue: platform },
+      { provide: IN_APP_BROWSER, useValue: { open: openBrowser } },
+    ],
+  });
   return TestBed.inject(ExternalLinkService);
 };
 

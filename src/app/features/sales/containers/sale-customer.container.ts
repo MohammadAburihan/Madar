@@ -163,6 +163,10 @@ export class SaleCustomerContainer implements OnInit {
       void this.ctx.go('checking', { replaceUrl: true });
       return;
     }
+    if (this.ctx.store.project()) {
+      void this.ctx.go('items', { replaceUrl: true });
+      return;
+    }
     void this.ctx.store.loadOptions().catch(() => undefined);
     const id = this.customer();
     const before = this.ctx.store.customer()?.id;

@@ -25,6 +25,8 @@ const PROJECT: ProjectDetail = {
   ],
   attachments: [{ name: 'Site plan PDF · v3', size: 1_800_000, date: '2026-10-09' }],
   linked: [{ kind: 'expense', name: 'EX-019', detail: '', amount: 1320 }],
+  customerActive: true,
+  sales: null,
 };
 
 describe('project view', () => {

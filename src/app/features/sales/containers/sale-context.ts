@@ -27,6 +27,10 @@ export function injectSaleContext() {
       const notice = store.prefill();
       return notice ? prefillNoticeText(i18n.tr(), notice, 'quick_sale') : null;
     }),
+    projectLine: computed(() => {
+      const project = store.project();
+      return project ? i18n.tr().t('sale.project', { project: project.title }) : null;
+    }),
     currency: computed(() => business.active()?.currency ?? ''),
     businessName: computed(() => business.active()?.name ?? ''),
     customerLabel: computed(() =>

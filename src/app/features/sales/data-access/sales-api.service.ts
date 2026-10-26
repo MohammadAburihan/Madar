@@ -51,6 +51,7 @@ interface DraftInvoiceDoc extends InvoiceDoc {
   owner: string;
   customer: string;
   customer_name: string;
+  project: string | null;
   remarks: string | null;
   update_stock: number;
   is_return: number;
@@ -219,6 +220,37 @@ export class SalesApiService {
     return rows.map((r) => ({ id: r.name, name: r.warehouse_name }));
   }
 
+  /** One of this business's customer projects; its title is what the sale shows, its customer is who it bills. */
+  async project(
+    name: string,
+    company: string,
+  ): Promise<{ id: string; title: string; customer: string | null; cancelled: boolean } | null> {
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        project_name: string;
+        customer: string | null;
+        status: string;
+      }>('Project', {
+        fields: ['name', 'project_name', 'customer', 'status'],
+        filters: [
+          ['name', '=', name],
+          ['company', '=', company],
+        ],
+        limit: 1,
+      }),
+    );
+    const row = rows[0];
+    return row
+      ? {
+          id: row.name,
+          title: row.project_name,
+          customer: row.customer,
+          cancelled: row.status === 'Cancelled',
+        }
+      : null;
+  }
+
   paymentAccounts(company: string, allowed: 'all' | readonly string[]): Promise<PaymentAccount[]> {
     return this.accounts.list(company, allowed);
   }
@@ -284,6 +316,7 @@ export class SalesApiService {
       customer: doc.customer,
       customerName: doc.customer_name,
       customerActive: customer.length > 0,
+      project: doc.project || null,
       warehouse,
       lines: rows.map((r) => {
         const rate = Number(r.price_list_rate) || Number(r.rate);
@@ -473,6 +506,7 @@ export class SalesApiService {
       doctype: 'Sales Invoice',
       company: sale.company,
       customer: sale.customer,
+      project: sale.project,
       // No posting_date: ERPNext uses the site's own "today", not the device's.
       update_stock: 1,
       set_warehouse: sale.warehouse,
@@ -491,6 +525,7 @@ export class SalesApiService {
         discount_percentage: line.discount,
         rate: unitRate(line),
         ...(line.item.isStock ? { warehouse: sale.warehouse } : {}),
+        ...(sale.project ? { project: sale.project } : {}),
       })),
     };
   }
@@ -500,6 +535,7 @@ function sameSale(invoice: InvoiceDoc, sale: SaleRequest): boolean {
   const rows = (invoice['items'] as Record<string, unknown>[] | undefined) ?? [];
   return (
     invoice['customer'] === sale.customer &&
+    (invoice['project'] || null) === sale.project &&
     invoice['set_warehouse'] === sale.warehouse &&
     rows.length === sale.lines.length &&
     sale.lines.every((line, i) => {

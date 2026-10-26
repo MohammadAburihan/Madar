@@ -11,7 +11,14 @@ export interface PrefillLine {
 
 /** What each task is opened with: resolved ids, which the task checks again as it loads them. */
 export interface PrefillPayloads {
-  quick_sale: { customer?: string; walkIn?: boolean; lines: PrefillLine[]; warehouse?: string };
+  quick_sale: {
+    customer?: string;
+    walkIn?: boolean;
+    /** A customer project the sale is billed to; it fixes the customer and may start with no lines. */
+    project?: string;
+    lines: PrefillLine[];
+    warehouse?: string;
+  };
   quotation: { customer: string; lines: PrefillLine[] };
   purchase_order: { supplier: string; lines: PrefillLine[] };
   collect_payment: { customer: string; amount?: number };

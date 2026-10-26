@@ -152,7 +152,9 @@ test('shows a project as the desktop workspace, with its movements @desktop', as
   await expect(page.getByRole('button', { name: 'Add update' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Site stock' })).toBeVisible();
   await expect(page.locator('section.ledger').first()).toContainText('Transfer to site');
-  await expect(page.locator('app-record-links')).toContainText('Purchase');
+  await expect(page.locator('app-record-links', { hasText: 'Project records' })).toContainText(
+    'Purchase',
+  );
 });
 
 test('updates a project from the desktop workspace @desktop', async ({ page }) => {

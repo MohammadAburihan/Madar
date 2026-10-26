@@ -181,12 +181,24 @@ export class AssistantProposalsService {
   }
 
   private async quickSale(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
-    const text = String(input['customer']).trim();
+    const text = typeof input['customer'] === 'string' ? input['customer'].trim() : '';
+    const projectText = typeof input['project'] === 'string' ? input['project'].trim() : '';
+    if (!text && !projectText) {
+      throw new ToolFailure('a sale needs a customer or a project');
+    }
     const walkIn = WALK_IN.test(text);
     if (walkIn && !scope.caps.sellToWalkIn) {
       throw new ToolFailure('walk-in sales are not allowed for your role');
     }
-    const customer = walkIn ? null : await this.customer(text, scope);
+    if (walkIn && projectText) {
+      throw new ToolFailure("a project sale goes to the project's customer, not a walk-in");
+    }
+    const project = projectText ? await this.project(projectText, scope) : null;
+    const customer = project
+      ? await this.projectCustomer(project, text, scope)
+      : walkIn
+        ? null
+        : await this.customer(text, scope);
     const warehouse =
       typeof input['warehouse'] === 'string' && input['warehouse'].trim()
         ? await this.warehouse('warehouse', input['warehouse'], scope)
@@ -201,6 +213,7 @@ export class AssistantProposalsService {
         kind: 'quick_sale',
         payload: {
           ...(customer ? { customer: customer.id } : { walkIn: true }),
+          ...(project ? { project: project.id } : {}),
           lines: priced.prefill,
           ...(warehouse ? { warehouse: warehouse.id } : {}),
         },
@@ -209,7 +222,7 @@ export class AssistantProposalsService {
     const to = customer?.name ?? 'a walk-in customer';
     return this.proposed(
       proposal,
-      `Sale to ${to}: ${this.describe(priced.lines, scope.currency)}. Total ${money(scope.currency, priced.total ?? 0)}.`,
+      `Sale to ${to}${project ? ` for project ${project.name}` : ''}: ${this.describe(priced.lines, scope.currency)}. Total ${money(scope.currency, priced.total ?? 0)}.`,
       priced.notes,
     );
   }
@@ -680,6 +693,76 @@ export class AssistantProposalsService {
       const { rows, capped } = await this.customers.candidates(text);
       return { near: rankSimilar(text, rows, (c) => c.name), capped };
     });
+  }
+
+  /** A customer project of this business the user may read: an exact id or title first, then a limited search. */
+  private async project(text: string, scope: ToolScope): Promise<Party & { customer: string }> {
+    if (!scope.caps.manageProjects && !scope.caps.supplyProjects) {
+      throw new ToolFailure('projects are not available for your role');
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        project_name: string;
+        customer: string | null;
+        status: string;
+      }>('Project', {
+        fields: ['name', 'project_name', 'customer', 'status'],
+        filters: [
+          ['company', '=', scope.company],
+          ['customer', '!=', ''],
+          ['status', '!=', 'Cancelled'],
+        ],
+        limit: 0,
+      }),
+    ).catch((error) => {
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        throw new ToolFailure('projects are not available for your role');
+      }
+      throw error;
+    });
+    const all = rows
+      .filter((r) => r.customer)
+      .map((r) => ({ id: r.name, name: r.project_name, customer: r.customer! }));
+    const label = labelParts(text);
+    const tagged = label ? all.filter((p) => p.id === label.id && same(p.name, label.name)) : [];
+    const exact = tagged.length
+      ? tagged
+      : all.filter((p) => same(p.id, text) || same(p.name, text));
+    const term = text.toLowerCase();
+    const found = exact.length
+      ? exact
+      : all.filter((p) => p.name.toLowerCase().includes(term) || p.id.toLowerCase().includes(term));
+    const chosen = await this.only('project', text, found, scope, async () => ({
+      near: rankSimilar(text, all, (p) => p.name),
+      capped: false,
+    }));
+    return all.find((p) => p.id === chosen.id)!;
+  }
+
+  /** The project's customer, who must be enabled and, if the user named one too, the same. */
+  private async projectCustomer(
+    project: Party & { customer: string },
+    named: string,
+    scope: ToolScope,
+  ): Promise<Party> {
+    const rows = await this.customers.exact(project.customer);
+    const customer = rows.find((c) => c.id === project.customer);
+    if (!customer) {
+      throw new ToolFailure(`project ${project.name} has no customer on file`);
+    }
+    if (customer.disabled) {
+      throw new ToolFailure(`customer is disabled: ${customer.name}`);
+    }
+    if (named) {
+      const asked = await this.customer(named, scope);
+      if (asked.id !== customer.id) {
+        throw new ToolFailure(
+          `project ${project.name} belongs to ${customer.name}, not ${asked.name}`,
+        );
+      }
+    }
+    return customer;
   }
 
   private async supplier(text: string, scope: ToolScope, allowDisabled = false): Promise<Party> {

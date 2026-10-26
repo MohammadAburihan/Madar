@@ -26517,6 +26517,114 @@
             },
             {
               "type": "text",
+              "id": "KesDU",
+              "name": "Sell heading",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Sell to this project",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "N8GPvW",
+              "name": "Sell customer line",
+              "context": "Customer project only. The customer is the project's customer and cannot be changed in the sale; every sale started here is billed to this project.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Customer: Lina Haddad · billed to this project",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "NjQgw",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Quick sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Quick sale. Route specification: MNbv4 (project variant). Starts a quick sale for the project customer, billed to this project. Annotation only.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Quick sale"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "zfCq2",
+              "name": "Project sales heading",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Sales for this project",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "P7V0kt",
+              "name": "Project sales",
+              "context": "Sales and sales orders linked to this project. Each row opens its record. Total is the sum of invoiced and ordered amounts. Annotation only.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "peTf7",
+                  "name": "Sales invoice row",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "SI-1042 · ILS 320.00 · Paid",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "U0SoSA",
+                  "name": "Sales order row",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "SO-0187 · ILS 1,200.00 · To deliver",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "J4YC6W",
+                  "name": "Billed total",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Billed ILS 1,520.00",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
               "id": "S0mjG6",
               "name": "Linked records heading",
               "fill": "$md-ink",
@@ -30224,6 +30332,113 @@
                               "fontWeight": "600"
                             }
                           ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kYb63",
+                      "name": "Sell to this project",
+                      "context": "Customer project only. Quick sale routes to sEKfr; quotation and sales order open their task bodies (gLucp, u9Nym9) inside this panel; keep host ruKe7 and its sidebar. Everything is billed to this project. Annotation only.",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 10,
+                      "stroke": "$md-line",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YKWix",
+                          "name": "Sell heading",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sell to this project",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JjhUS",
+                          "name": "Sell customer line",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Customer: Lina Haddad · billed to this project",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "id": "b18Udc",
+                          "type": "ref",
+                          "ref": "wk3Ko",
+                          "name": "Quick sale",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: Quick sale. Route specification: sEKfr. Annotation only.",
+                          "descendants": {
+                            "rPCdT": {
+                              "content": "Quick sale"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "s91Is",
+                          "name": "Project sales heading",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sales for this project",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e90Ul",
+                          "name": "Sales invoice row",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SI-1042 · ILS 320.00 · Paid",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jgJdm",
+                          "name": "Sales order row",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SO-0187 · ILS 1,200.00 · To deliver",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "T2t1vv",
+                          "name": "Billed total",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Billed ILS 1,520.00",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
                         }
                       ]
                     },
@@ -35824,6 +36039,48 @@
                 },
                 "RKM9S": {
                   "content": "Order shelving · 13 Oct · Salim\nInstall shelving · 17 Oct · Yara"
+                }
+              }
+            },
+            {
+              "id": "Uomaj",
+              "type": "ref",
+              "ref": "aFORo",
+              "name": "No customer notice",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it. Internal project: the Sell section is not shown. Annotation only.",
+              "descendants": {
+                "NxqlX": {
+                  "enabled": false
+                },
+                "OhjBF": {
+                  "content": "This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it."
+                }
+              }
+            },
+            {
+              "id": "Rgjtv",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Supply this project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Supply this project. Route specification: Jrpjv. Annotation only.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Supply this project"
+                }
+              }
+            },
+            {
+              "id": "iBRUH",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add customer",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add customer. Route specification: VYpxr (project edit form). Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add customer"
                 }
               }
             },
@@ -47158,6 +47415,38 @@
               "fontWeight": "normal"
             },
             {
+              "id": "xWNFY",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search projects",
+              "width": "fill_container",
+              "height": "fit_content",
+              "padding": 0,
+              "context": "Role: searchbox. Accessible name: Search projects or customers. Matches project name or customer name; Arabic letter variants (alef, yeh, teh marbuta) match. Filters the list as the user types. Empty result: no-results state. Keep active business and input. Annotation only.",
+              "descendants": {
+                "v0erd": {
+                  "content": "Search"
+                },
+                "zjtuK": {
+                  "content": "Search projects or customers"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "J3kPVb",
+              "name": "Many customers hint",
+              "context": "Shown only when more than 1000 customers match the search; the list then shows projects of the first 1000.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Many customers match; type more of the name to see all their projects.",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-font",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
               "id": "I1QFe0",
               "type": "ref",
               "ref": "d3sxVd",
@@ -55498,6 +55787,121 @@
             },
             {
               "type": "text",
+              "id": "d00oQh",
+              "name": "Sell heading",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "البيع لهذا المشروع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Q6CTfy",
+              "name": "Sell customer line",
+              "context": "Customer project only. The customer is the project's customer and cannot be changed in the sale; every sale started here is billed to this project.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "العميل: لينا الحداد · تُسجَّل على هذا المشروع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "jZQkV",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Quick sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: بيع سريع. Route specification: xA2Bo (project variant). Starts a quick sale for the project customer, billed to this project. Annotation only.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "بيع سريع"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "Jbbjw",
+              "name": "Project sales heading",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مبيعات هذا المشروع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "mwzdv",
+              "name": "Project sales",
+              "context": "Sales and sales orders linked to this project. Each row opens its record. Total is the sum of invoiced and ordered amounts. Annotation only.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "J2vFA",
+                  "name": "Sales invoice row",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "SI-1042 · ‎ILS 320.00‎ · مدفوعة",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "uCkNs",
+                  "name": "Sales order row",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "SO-0187 · ‎ILS 1,200.00‎ · بانتظار التسليم",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "F8PB2v",
+                  "name": "Billed total",
+                  "fill": "$md-ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "المفوتر ‎ILS 1,520.00‎",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "text",
               "id": "swWh5",
               "name": "Linked records heading",
               "fill": "$md-ink",
@@ -58958,6 +59362,48 @@
               }
             },
             {
+              "id": "wbTy5",
+              "type": "ref",
+              "ref": "X803zR",
+              "name": "No customer notice",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له. Internal project: the Sell section is not shown. Annotation only.",
+              "descendants": {
+                "HJXqj": {
+                  "enabled": false
+                },
+                "Mem91": {
+                  "content": "هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له."
+                }
+              }
+            },
+            {
+              "id": "P3WOM",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Supply this project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تزويد المشروع. Route specification: XYGw8. Annotation only.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تزويد المشروع"
+                }
+              }
+            },
+            {
+              "id": "z9Gjw",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Add customer",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إضافة عميل. Route specification: Mi3vr (project edit form). Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إضافة عميل"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "RjkWF",
               "name": "Interaction notes",
@@ -62012,6 +62458,120 @@
                     },
                     {
                       "type": "frame",
+                      "id": "QGkPU",
+                      "name": "Sell to this project",
+                      "context": "Customer project only. Quick sale routes to E4QuO; quotation and sales order open their task bodies (j2MTn, eA6TR) inside this panel; keep host LkMsx and its sidebar. Everything is billed to this project. Annotation only.",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 10,
+                      "stroke": "$md-line",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "msIjs",
+                          "name": "Sell heading",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "البيع لهذا المشروع",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tMzKK",
+                          "name": "Sell customer line",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "العميل: لينا الحداد · تُسجَّل على هذا المشروع",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "id": "SKTYk",
+                          "type": "ref",
+                          "ref": "V1NTE",
+                          "name": "Quick sale",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: بيع سريع. Route specification: E4QuO. Annotation only.",
+                          "descendants": {
+                            "c6rXZg": {
+                              "content": "بيع سريع"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "j5j9d",
+                          "name": "Project sales heading",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "مبيعات هذا المشروع",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "m6PR3",
+                          "name": "Sales invoice row",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SI-1042 · ‎ILS 320.00‎ · مدفوعة",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xo2Gg",
+                          "name": "Sales order row",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SO-0187 · ‎ILS 1,200.00‎ · بانتظار التسليم",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "LtaiX",
+                          "name": "Billed total",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "المفوتر ‎ILS 1,520.00‎",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
                       "id": "vgGtV",
                       "name": "Linked records",
                       "width": "fill_container",
@@ -63294,6 +63854,38 @@
               "textAlign": "right",
               "fontFamily": "$md-arabic",
               "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "QCQEj",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search projects",
+              "width": "fill_container",
+              "height": "fit_content",
+              "padding": 0,
+              "context": "Role: searchbox. Accessible name: ابحث في المشاريع أو العملاء. English counterpart: FYdEk. Matches project name or customer name; Arabic letter variants (alef, yeh, teh marbuta) match. Annotation only.",
+              "descendants": {
+                "t7IK2": {
+                  "content": "بحث"
+                },
+                "AHy2k": {
+                  "content": "ابحث في المشاريع أو العملاء"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "mBN0e",
+              "name": "Many customers hint",
+              "context": "Shown only when more than 1000 customers match the search; the list then shows projects of the first 1000.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "عملاء كثيرون يطابقون البحث؛ اكتب جزءاً أكبر من الاسم لرؤية كل مشاريعهم.",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 13,
               "fontWeight": "normal"
             },
             {
@@ -145785,6 +146377,1323 @@
               "descendants": {
                 "c6rXZg": {
                   "content": "حفظ جهة الاتصال",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Dpxi2",
+      "x": 9240,
+      "y": 19155,
+      "name": "09 Mobile / Projects No results",
+      "context": " | Handoff: English LTR; counterpart NdDYr. No-results state of the Projects list: no project name or customer name matches the query. Search stays editable; clearing it restores the list. Annotation only.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "Z0EWVw",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "x1TNp7",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "zA24D",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "NwdWu",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "U6rq2",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: Switch business. Route specification: XBVPW. Editing opens Ravkg; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "S8JIx",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Rehan Nursery",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "d2CSF5",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "X8mHp",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "id": "ulKX5",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: g94dSN. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "id": "tyn9k",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: Back. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "Y1zF5",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Projects",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "z0mgU",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Business projects",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "JlPrv",
+              "type": "ref",
+              "ref": "SeemW",
+              "name": "Search projects",
+              "width": "fill_container",
+              "height": "fit_content",
+              "padding": 0,
+              "context": "Role: searchbox. Accessible name: Search projects or customers. Matches project name or customer name; Arabic letter variants (alef, yeh, teh marbuta) match. Filters the list as the user types. Empty result: no-results state. Keep active business and input. Annotation only.",
+              "descendants": {
+                "v0erd": {
+                  "content": "Search"
+                },
+                "zjtuK": {
+                  "content": "Pergola",
+                  "fill": "$md-ink"
+                }
+              }
+            },
+            {
+              "id": "U6PlnJ",
+              "type": "ref",
+              "ref": "E8hN51",
+              "name": "No projects match",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: No projects match the search. Shown when no project name or customer name matches the query. Annotation only.",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "No projects match “Pergola”"
+                },
+                "RKM9S": {
+                  "content": "Try another project or customer name."
+                }
+              }
+            },
+            {
+              "id": "xO315",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: New project. Route specification: VYpxr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "New project"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "NdDYr",
+      "x": 22700,
+      "y": 19600,
+      "name": "Arabic / 09 Mobile / Projects No results",
+      "context": " | Handoff: Arabic RTL; counterpart Dpxi2. No-results state of the Projects list: no project name or customer name matches the query. Annotation only.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "FYdEk",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "EWghD",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "z5Zsg",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "StSUa",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "UpFhm",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "m8RuvV",
+              "name": "Business context",
+              "context": "Role: button. Accessible name: تبديل المنشأة. Route specification: SOqwG. Editing opens XtOdQ; drafts remain in original business. Annotation only.",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Wt5BW",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "icon",
+                  "id": "ezI5l",
+                  "name": "Switch business chevron",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron-down",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "YHkm4",
+                  "name": "Active business",
+                  "fill": "$md-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "مشتل ريحان للنباتات والحدائق",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "id": "KHaz1",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: FYdEk. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "id": "bCy1D",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back navigation",
+              "width": 120,
+              "context": "Role: button. Accessible name: رجوع. Route specification: RETURN_ORIGIN. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "رجوع"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "IVxbZ",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المشاريع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "J2CK3t",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "مشاريع المنشأة",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "Y2fMLF",
+              "type": "ref",
+              "ref": "gMHOU",
+              "name": "Search projects",
+              "width": "fill_container",
+              "height": "fit_content",
+              "padding": 0,
+              "context": "Role: searchbox. Accessible name: ابحث في المشاريع أو العملاء. English counterpart: FYdEk. Matches project name or customer name; Arabic letter variants (alef, yeh, teh marbuta) match. Annotation only.",
+              "descendants": {
+                "t7IK2": {
+                  "content": "بحث"
+                },
+                "AHy2k": {
+                  "content": "برغولا",
+                  "fill": "$md-ink"
+                }
+              }
+            },
+            {
+              "id": "u8dEB",
+              "type": "ref",
+              "ref": "d50Y1U",
+              "name": "No projects match",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: لا توجد مشاريع تطابق البحث. Annotation only.",
+              "descendants": {
+                "PfJvT": {
+                  "content": "لا توجد مشاريع تطابق «برغولا»"
+                },
+                "E0Pjjn": {
+                  "content": "جرّب اسم مشروع أو عميل آخر."
+                }
+              }
+            },
+            {
+              "id": "fXuKS",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: مشروع جديد. Route specification: Mi3vr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "مشروع جديد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ptizg",
+      "x": 9630,
+      "y": 7063,
+      "name": "04 Mobile / Quick sale 03 Basket For project",
+      "context": " | Handoff: English LTR; counterpart Cssbf. Quick sale basket for a project: customer fixed to the project's customer, sale billed to the project. All route and accessibility behaviors are specifications. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "rfFDH",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AmLxM",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ZMsJo",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PXUPW",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "Tl9im",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TwAXk",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nOO5b",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "MJeoo",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "M6wc5m",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "Rk1oP",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: xA2Bo. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "ATNhi",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: Back. Route specification: j792NO. Preserve input. Leaving edited task opens t7ZRF with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "height": 48,
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Up6TY",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-left",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "FKd3B",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "Back",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "mxzbc",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Your sale",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "U86rM",
+              "name": "Screen subtitle",
+              "context": "Customer is fixed to the project's customer: no customer step and no change option. Annotation only.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Lina Haddad · project customer",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "jc1Rk",
+              "name": "Project chip row",
+              "context": "Role: status. Accessible name: Project: Garden installation. This sale is billed to the project; opened from the project overview (r3QqKG) via Quick sale. Annotation only.",
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OFp7P",
+                  "name": "Project chip",
+                  "fill": "$md-tint",
+                  "cornerRadius": 8,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ii1kE",
+                      "name": "Project chip label",
+                      "fill": "$md-primary",
+                      "content": "Project: Garden installation",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "Yq7AJ",
+              "type": "ref",
+              "ref": "jhYHZ",
+              "name": "Stock fulfillment",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: Stock fulfillment. Route specification: MNbv4. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "tmtQA": {
+                  "content": "Stock fulfillment"
+                },
+                "sedCr": {
+                  "content": "Main warehouse · Supply now"
+                }
+              }
+            },
+            {
+              "id": "hLLIP",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Olive tree · 20 L",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Olive tree · 20 L · OLV-20 · ILS 85.00 each · 2 × 85.00 = ILS 170.00 · 24 available. Route specification: o6Tct. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "sprout"
+                },
+                "klFrY": {
+                  "content": "Olive tree · 20 L"
+                },
+                "IxO24": {
+                  "content": "OLV-20 · ILS 85.00 each"
+                },
+                "u15BHu": {
+                  "content": "2 × 85.00 = ILS 170.00 · 24 available"
+                }
+              }
+            },
+            {
+              "id": "A9fm5",
+              "type": "ref",
+              "ref": "lKVrm",
+              "name": "Olive quantity controls",
+              "descendants": {
+                "fcsPz": {
+                  "context": "Role: button. Accessible name: Decrease quantity. Route specification: MNbv4. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                },
+                "ux4p6": {
+                  "context": "Role: spinbutton. Accessible name: Quantity. Route specification: MNbv4. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                },
+                "DFJ3H": {
+                  "context": "Role: button. Accessible name: Increase quantity. Route specification: MNbv4. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                }
+              }
+            },
+            {
+              "id": "VVSLr",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Olive tree",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Olive tree · 20 L. Route specification: MNbv4. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"Remove from sale\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
+              "id": "oXUj5",
+              "type": "ref",
+              "ref": "Nb1tB",
+              "name": "Garden consultation",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: Garden consultation · SRV-GARDEN · ILS 150.00 / visit · 1 × 150.00 = ILS 150.00. Route specification: uh6se. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "sMCOE": {
+                  "icon": "wrench"
+                },
+                "klFrY": {
+                  "content": "Garden consultation"
+                },
+                "IxO24": {
+                  "content": "SRV-GARDEN · ILS 150.00 / visit"
+                },
+                "u15BHu": {
+                  "content": "1 × 150.00 = ILS 150.00"
+                }
+              }
+            },
+            {
+              "id": "krtKQ",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Price & discount options",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Price & discount options. Route specification: OPXEM. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Price & discount options"
+                }
+              }
+            },
+            {
+              "id": "dBQlm",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Remove Garden consultation",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Remove Garden consultation. Route specification: MNbv4. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"Remove from sale\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Remove"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "ZbvwN",
+              "name": "Basket total",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Total  ILS 320.00",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 24,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Lj3C1",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "No tax or discount in this sample. Consultation stays separate from stock fulfillment.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "tLzVe",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Continue to payment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Continue to payment. Route specification: aC31k. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Continue to payment"
+                }
+              }
+            },
+            {
+              "id": "GPIz3",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Save draft",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Save draft. Route specification: hJseP. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Save draft"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Cssbf",
+      "x": 10080,
+      "y": 7063,
+      "name": "Arabic / 04 Mobile / Quick sale 03 Basket For project",
+      "context": " | Handoff: Arabic RTL; counterpart ptizg. Quick sale basket for a project: customer fixed to the project's customer, sale billed to the project. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "MNbv4",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "cRnLu",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "g0CVr",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ONUCJ",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kDDqR",
+          "name": "Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "yhw0X",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L7TC2P",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "mib4G",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "WxQ50",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XSzyp",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ChL6h",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: MNbv4. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "TKTFk",
+              "name": "Back navigation",
+              "context": "Role: button. Accessible name: رجوع. Route specification: pXJRK. Preserve input. Leaving edited task opens Lv8so with saved opener and intended destination. Finalized tasks close and return to the current detail/list state; never resubmit. Annotation only.",
+              "gap": 6,
+              "padding": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "HrzrG",
+                  "name": "Back label",
+                  "fill": "$md-primary",
+                  "content": "رجوع",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "F0toSy",
+                  "name": "Back chevron",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "chevron-right",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "UF6YO",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "عملية البيع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "XOauK",
+              "name": "Screen subtitle",
+              "context": "Customer is fixed to the project's customer: no customer step and no change option. Annotation only.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لينا الحداد · عميل المشروع",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "k1DDm",
+              "name": "Project chip row",
+              "context": "Role: status. Accessible name: المشروع: تركيب الحديقة. This sale is billed to the project; opened from the project overview (k1fawA) via Quick sale. Annotation only.",
+              "width": "fill_container",
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BWFy6",
+                  "name": "Project chip",
+                  "fill": "$md-tint",
+                  "cornerRadius": 8,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KUwh9",
+                      "name": "Project chip label",
+                      "fill": "$md-primary",
+                      "content": "المشروع: تركيب الحديقة",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "TbLu4",
+              "type": "ref",
+              "ref": "g9WDP",
+              "name": "Stock fulfillment",
+              "width": "fill_container",
+              "context": "Role: textbox. Accessible name: تسليم المخزون. Route specification: xA2Bo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "Ia4Iv": {
+                  "content": "تسليم المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "empG8": {
+                  "content": "المستودع الرئيسي · التسليم الآن",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "g36zl2",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Olive tree · 20 L",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: شجرة زيتون · 20 لتر · OLV-20 · ILS 85.00 للقطعة · 2 × 85.00 = ILS 170.00 · المتاح 24. Route specification: cfjBm. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "شجرة زيتون · 20 لتر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "OLV-20 · ILS 85.00 للقطعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "sprout"
+                },
+                "vY9fU": {
+                  "content": "2 × 85.00 = ILS 170.00 · المتاح 24",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "uPTvS",
+              "type": "ref",
+              "ref": "GB3K4",
+              "name": "Olive quantity controls",
+              "descendants": {
+                "eaVG2": {
+                  "context": "Role: button. Accessible name: زيادة الكمية. Route specification: xA2Bo. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                },
+                "NwqIJ": {
+                  "context": "Role: spinbutton. Accessible name: الكمية. Route specification: xA2Bo. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                },
+                "DAkSU": {
+                  "context": "Role: button. Accessible name: تقليل الكمية. Route specification: xA2Bo. Inline edit updates quantity and totals; minimum1; delete uses an explicit remove action; check available stock before confirm. 48×48 target."
+                }
+              }
+            },
+            {
+              "id": "MH7mO",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة شجرة زيتون",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة شجرة زيتون · 20 لتر. Route specification: xA2Bo. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"إزالة من عملية البيع\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
+              "id": "pkMKP",
+              "type": "ref",
+              "ref": "iMXdD",
+              "name": "Garden consultation",
+              "width": "fill_container",
+              "context": "Role: button or table-row link. Accessible name: استشارة لتنسيق الحدائق · SRV-GARDEN · ILS 150.00 / الزيارة · 1 × 150.00 = ILS 150.00. Route specification: I2nORI. Preserve business, record ID, current query and origin task. Back returns to that origin with input preserved. Selected records are loaded by ID; sample text represents the shown record. Annotation only.",
+              "descendants": {
+                "Lc3zp": {
+                  "content": "استشارة لتنسيق الحدائق",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "HdXKL": {
+                  "content": "SRV-GARDEN · ILS 150.00 / الزيارة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "MkQKT": {
+                  "icon": "wrench"
+                },
+                "vY9fU": {
+                  "content": "1 × 150.00 = ILS 150.00",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "left"
+                }
+              }
+            },
+            {
+              "id": "wKqiT",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Price & discount options",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: خيارات السعر والخصم. Route specification: ewgkO. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "خيارات السعر والخصم",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "eGP8L",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "إزالة استشارة لتنسيق الحدائق",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إزالة استشارة لتنسيق الحدائق. Route specification: xA2Bo. Removes this line from the basket and updates totals; no confirmation, the line editor keeps \"إزالة من عملية البيع\". Keyboard: Enter/Space. Focus moves to the next line or the basket total. 48px target. Arabic counterpart of the English Remove control.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إزالة"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "J42P2",
+              "name": "Basket total",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "الإجمالي  ILS 320.00",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 24,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "XJOJz",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "لا توجد ضريبة أو خصم في هذا المثال. تبقى الاستشارة منفصلة عن تسليم المخزون.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "CLVZF",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Continue to payment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: المتابعة إلى الدفع. Route specification: sYHhU. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "المتابعة إلى الدفع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "nzABU",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Save draft",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: حفظ المسودة. Route specification: f0you. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "حفظ المسودة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"

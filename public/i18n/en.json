@@ -334,6 +334,10 @@
           "title": "The sale wasn't confirmed",
           "message": "Nothing was saved. Try again in a moment."
         },
+        "projectChanged": {
+          "title": "The project changed",
+          "message": "This project changed: its customer or status is different now. Check the project and start the sale again."
+        },
         "changed": {
           "title": "An earlier version was already confirmed",
           "message": "Your sale was confirmed before your latest changes. Check Sales before confirming again; confirming now creates a new sale."
@@ -464,7 +468,8 @@
     "noAccess": {
       "title": "You can't make sales",
       "message": "Your role doesn't include sales. Ask your business owner for access."
-    }
+    },
+    "project": "Project: {{project}}"
   },
   "collect": {
     "title": "Receive customer payment",
@@ -1799,7 +1804,48 @@
     "search": "Search projects",
     "placeholder": "Search projects or customers",
     "noResults": "No projects match “{{query}}”",
-    "manyCustomers": "Many customers match; type more of the name to see all their projects."
+    "manyCustomers": "Many customers match; type more of the name to see all their projects.",
+    "sell": {
+      "title": "Sell to this project",
+      "note": "Customer: {{customer}} · billed to this project",
+      "quick": "Quick sale",
+      "disabled": {
+        "title": "This customer is inactive",
+        "message": "ERPNext won't record a sale to them. Reactivate them in Contacts to sell to this project."
+      },
+      "internal": {
+        "title": "No customer",
+        "message": "This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it.",
+        "supply": "Supply this project",
+        "addCustomer": "Add customer"
+      },
+      "salesHeading": "Sales for this project",
+      "noSales": "Nothing has been sold to this project yet.",
+      "billed": "Billed {{amount}}",
+      "moreInvoices": {
+        "one": "{{count}} more invoice in ERPNext",
+        "other": "{{count}} more invoices in ERPNext"
+      },
+      "moreOrders": {
+        "one": "{{count}} more order in ERPNext",
+        "other": "{{count}} more orders in ERPNext"
+      },
+      "ownOnly": "Only your own sales are listed.",
+      "row": "{{name}} · {{amount}} · {{status}}",
+      "status": {
+        "paid": "Paid",
+        "unpaid": "Unpaid",
+        "partlyPaid": "Partly paid",
+        "return": "Return",
+        "creditNote": "Credit note issued",
+        "toDeliver": "To deliver",
+        "toBill": "To bill",
+        "completed": "Completed",
+        "closed": "Closed",
+        "onHold": "On hold",
+        "toDeliverAndBill": "To deliver and bill"
+      }
+    }
   },
   "reports": {
     "title": "Reports",
