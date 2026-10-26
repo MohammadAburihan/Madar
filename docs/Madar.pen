@@ -30967,6 +30967,71 @@
               }
             },
             {
+              "type": "frame",
+              "id": "JAWvi",
+              "name": "Open ERPNext",
+              "context": "Role: link. Accessible name: Open ERPNext, opens in a new tab. Opens the business's ERPNext Desk (MADAR_DESK_URL) in a new tab; shown to the Owner only, hidden when no Desk address is configured.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": [
+                12,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "v3PZr3",
+                  "name": "Row text",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "u3lLpp",
+                      "name": "Label",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Open ERPNext",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$md-font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "I7gUBP",
+                      "name": "Secondary line",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Desk, ERPNext's full screens",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "hwtiR",
+                  "name": "External link icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "external-link",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                }
+              ]
+            },
+            {
               "id": "tDFpb",
               "type": "ref",
               "ref": "Ab7yc",
@@ -74308,6 +74373,73 @@
                   "textAlign": "right"
                 }
               }
+            },
+            {
+              "type": "frame",
+              "id": "VyFMK",
+              "name": "Open ERPNext",
+              "context": "Role: link. Accessible name: فتح ERPNext، يفتح في تبويب جديد. Opens the business's ERPNext Desk (MADAR_DESK_URL) in a new tab; shown to the Owner only, hidden when no Desk address is configured.",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": "$md-line",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": [
+                12,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "P1xnP",
+                  "name": "External link icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "external-link",
+                  "library": "lucide",
+                  "fill": "$md-primary"
+                },
+                {
+                  "type": "frame",
+                  "id": "rAnRd",
+                  "name": "Row text",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "E6oCFy",
+                      "name": "Label",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "فتح ERPNext",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Y9qm3C",
+                      "name": "Secondary line",
+                      "fill": "$md-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Desk، شاشات ERPNext الكاملة",
+                      "lineHeight": 1.4,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "id": "UV46H",
