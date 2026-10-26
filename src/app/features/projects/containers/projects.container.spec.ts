@@ -24,7 +24,7 @@ function setup(list: ReturnType<typeof vi.fn>) {
     imports: [translocoTesting()],
     providers: [
       { provide: Router, useValue: { navigate: vi.fn() } },
-      { provide: ProjectsApiService, useValue: { list } },
+      { provide: ProjectsApiService, useValue: { search: list } },
       { provide: BusinessService, useValue: { ensure: async () => business } },
       { provide: ViewportService, useValue: { viewport: signal('mobile') } },
       {
@@ -48,7 +48,7 @@ function setup(list: ReturnType<typeof vi.fn>) {
 
 describe('ProjectsContainer search', () => {
   it('loads everything first, then searches the typed text after a pause', async () => {
-    const list = vi.fn().mockResolvedValue([lina]);
+    const list = vi.fn().mockResolvedValue({ projects: [lina], capped: false });
     const { type } = setup(list);
     await vi.waitFor(() => expect(list).toHaveBeenCalledWith('Rehan Nursery', ''));
     type('Lina');
@@ -57,7 +57,7 @@ describe('ProjectsContainer search', () => {
   });
 
   it('says nothing matches the typed text, and the plain empty text when nothing is typed', async () => {
-    const list = vi.fn().mockResolvedValue([]);
+    const list = vi.fn().mockResolvedValue({ projects: [], capped: false });
     const { fixture, el, type } = setup(list);
     await vi.waitFor(() => {
       fixture.detectChanges();
@@ -71,11 +71,22 @@ describe('ProjectsContainer search', () => {
   });
 
   it('starts every visit with an empty search', async () => {
-    const list = vi.fn().mockResolvedValue([lina]);
+    const list = vi.fn().mockResolvedValue({ projects: [lina], capped: false });
     const { fixture, input, type, page } = setup(list);
     type('Lina');
     page.ionViewWillEnter();
     fixture.detectChanges();
     expect(input().value).toBe('');
+  });
+});
+
+describe('ProjectsContainer many matching customers', () => {
+  it('tells the user to type more only when the customer search was cut', async () => {
+    const list = vi.fn().mockResolvedValue({ projects: [lina], capped: true });
+    const { fixture, el } = setup(list);
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(el.textContent).toContain('Many customers match; type more of the name');
+    });
   });
 });

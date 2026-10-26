@@ -65,6 +65,9 @@ const SEARCH_DELAY_MS = 250;
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
         <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
       } @else {
+        @if (capped()) {
+          <p class="muted">{{ txt.manyCustomers }}</p>
+        }
         @for (card of cards(); track card.id) {
           <button type="button" class="card" (click)="open(card.id)">
             <app-feedback-card [title]="card.view.title" [message]="card.view.message" />
@@ -91,6 +94,7 @@ export class ProjectsContainer {
 
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   private readonly projects = signal<ProjectSummary[]>([]);
+  protected readonly capped = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly term = signal('');
   protected readonly typed = computed(() => this.term().trim());
@@ -106,6 +110,7 @@ export class ProjectsContainer {
       search: t('project.search'),
       placeholder: t('project.placeholder'),
       noResults: t('project.noResults', { query: this.typed() }),
+      manyCustomers: t('project.manyCustomers'),
       loading: t('project.loading'),
       retry: t('project.retry'),
       error: { title: t('project.error.title'), message: t('project.error.message') },
@@ -143,9 +148,10 @@ export class ProjectsContainer {
       if (!business) {
         throw new Error('No active business');
       }
-      const projects = await this.api.list(business.name, term);
+      const found = await this.api.search(business.name, term);
       if (run === this.run) {
-        this.projects.set(projects);
+        this.projects.set(found.projects);
+        this.capped.set(found.capped);
         this.state.set('ready');
       }
     } catch {

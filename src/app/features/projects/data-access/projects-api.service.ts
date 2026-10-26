@@ -43,6 +43,13 @@ interface ProjectDoc {
   [key: string]: unknown;
 }
 
+export interface ProjectSearch {
+  projects: ProjectSummary[];
+  capped: boolean;
+}
+
+const escapeLike = (text: string): string => text.replace(/[\\%_]/g, (c) => `\\${c}`);
+
 /** The project sites warehouse doesn't exist yet, and this role can't create it (Item Manager can). */
 export class SiteWarehouseMissingError extends Error {
   constructor() {
@@ -53,7 +60,7 @@ export class SiteWarehouseMissingError extends Error {
 // Account names are long; batches keep each GET URL well under the request-line limit.
 const BATCH = 30;
 const TASK_LIMIT = 5;
-const CUSTOMER_MATCH_LIMIT = 30;
+const CUSTOMER_MATCH_LIMIT = 1000;
 const LINK_LIMIT = 5;
 
 function batches<T>(values: readonly T[], size = BATCH): T[][] {
@@ -80,40 +87,82 @@ export class ProjectsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
   async list(company: string, term = ''): Promise<ProjectSummary[]> {
-    const typed = term.trim().replace(/[%_\\]/g, '');
-    const patterns = typed ? [...new Set(spellings(typed))].map((s) => `%${s}%`) : [];
-    const matching = patterns.length ? await this.customersLike(patterns) : [];
-    const rows = await this.erpnext.listAll<ProjectDoc & { customer_name?: string }>('Project', {
-      fields: ['name', 'project_name', 'project_type', 'customer', 'status'],
-      filters: [['company', '=', company]],
-      orFilters: patterns.length
-        ? [
-            ...patterns.flatMap((p) => [
-              ['project_name', 'like', p] as Filter,
-              ['name', 'like', p] as Filter,
-            ]),
-            ...(matching.length ? [['customer', 'in', matching] as Filter] : []),
-          ]
-        : undefined,
-      orderBy: 'modified desc, name desc',
-    });
-    const names = await this.customerNames(rows.map((r) => r.customer).filter(Boolean) as string[]);
-    return rows.map((r) => summary(r, names));
+    return (await this.search(company, term)).projects;
   }
 
-  /** Customers whose name matches, capped to keep the project query's URL short; a role that can't read them finds none. */
-  private async customersLike(patterns: string[]): Promise<string[]> {
-    const rows = await firstValueFrom(
-      this.erpnext.list<{ name: string }>('Customer', {
-        fields: ['name'],
-        orFilters: patterns.flatMap((p) => [
-          ['customer_name', 'like', p] as Filter,
-          ['name', 'like', p] as Filter,
-        ]),
-        limit: CUSTOMER_MATCH_LIMIT,
-      }),
-    ).catch(() => []);
-    return rows.map((r) => r.name);
+  /** Projects whose title or id, or customer's name, matches every word typed, in any order. */
+  async search(company: string, term = ''): Promise<ProjectSearch> {
+    const words = [...new Set(term.split(/\s+/).filter(Boolean))];
+    let capped = false;
+    let rows: ProjectDoc[];
+    if (!words.length) {
+      rows = await this.projectsWhere(company, []);
+    } else {
+      const perWord = await Promise.all(
+        words.map(async (word) => {
+          const patterns = [...new Set(spellings(word))].map((s) => `%${escapeLike(s)}%`);
+          const customers = await this.customersLike(patterns);
+          capped ||= customers.capped;
+          const reads = [
+            this.projectsWhere(
+              company,
+              patterns.flatMap((p) => [
+                ['project_name', 'like', p] as Filter,
+                ['name', 'like', p] as Filter,
+              ]),
+            ),
+            ...batches(customers.names).map((group) =>
+              this.projectsWhere(company, [], [['customer', 'in', group] as Filter]),
+            ),
+          ];
+          return new Map((await Promise.all(reads)).flat().map((r) => [r.name, r]));
+        }),
+      );
+      const [first, ...rest] = perWord;
+      rows = [...first.values()]
+        .filter((r) => rest.every((m) => m.has(r.name)))
+        .sort(
+          (a, b) =>
+            String(b['modified'] ?? '').localeCompare(String(a['modified'] ?? '')) ||
+            b.name.localeCompare(a.name),
+        );
+    }
+    const names = await this.customerNames(rows.map((r) => r.customer).filter(Boolean) as string[]);
+    return { projects: rows.map((r) => summary(r, names)), capped };
+  }
+
+  private projectsWhere(
+    company: string,
+    orFilters: Filter[],
+    filters: Filter[] = [],
+  ): Promise<ProjectDoc[]> {
+    return this.erpnext.listAll<ProjectDoc>('Project', {
+      fields: ['name', 'project_name', 'project_type', 'customer', 'status', 'modified'],
+      filters: [['company', '=', company], ...filters],
+      orFilters: orFilters.length ? orFilters : undefined,
+      orderBy: 'modified desc, name desc',
+    });
+  }
+
+  /** Customers whose name matches; a role that can't read them finds none, and a very long list is cut and flagged. */
+  private async customersLike(patterns: string[]): Promise<{ names: string[]; capped: boolean }> {
+    const rows = await this.erpnext
+      .listAll<{ name: string }>(
+        'Customer',
+        {
+          fields: ['name'],
+          orFilters: patterns.flatMap((p) => [
+            ['customer_name', 'like', p] as Filter,
+            ['name', 'like', p] as Filter,
+          ]),
+        },
+        CUSTOMER_MATCH_LIMIT + 1,
+      )
+      .catch(forbiddenAsEmpty);
+    return {
+      names: rows.slice(0, CUSTOMER_MATCH_LIMIT).map((r) => r.name),
+      capped: rows.length > CUSTOMER_MATCH_LIMIT,
+    };
   }
 
   /** The project record alone, for pages that need its details but not its stock, tasks or records. */

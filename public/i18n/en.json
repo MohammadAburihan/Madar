@@ -1798,7 +1798,8 @@
     },
     "search": "Search projects",
     "placeholder": "Search projects or customers",
-    "noResults": "No projects match “{{query}}”"
+    "noResults": "No projects match “{{query}}”",
+    "manyCustomers": "Many customers match; type more of the name to see all their projects."
   },
   "reports": {
     "title": "Reports",
