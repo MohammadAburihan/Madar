@@ -121,10 +121,20 @@ export interface Candidates<T> {
   capped: boolean;
 }
 
+/** Reads run with `CANDIDATE_CAP + 1` as their limit, so only a read with more rows than the cap is capped. */
 export const candidatesOf = <T>(rows: T[]): Candidates<T> => ({
-  rows,
-  capped: rows.length >= CANDIDATE_CAP,
+  rows: rows.slice(0, CANDIDATE_CAP),
+  capped: rows.length > CANDIDATE_CAP,
 });
+
+const MAX_LETTERS = 24;
+
+function addTerm(terms: Map<string, string>, term: string): void {
+  const key = term.toLowerCase();
+  if (!terms.has(key)) {
+    terms.set(key, term);
+  }
+}
 
 const wordsOf = (query: string): string[] =>
   query
@@ -147,34 +157,86 @@ function spellings(word: string): string[] {
  * (Leena finds Lina). The caller reads a capped set of matches and ranks them.
  */
 export function candidatePatterns(query: string): string[] {
-  const terms = new Set<string>();
+  const terms = new Map<string, string>();
   for (const word of wordsOf(query).filter((w) => [...w].length >= 3)) {
     for (const spelling of spellings(word)) {
-      terms.add(`%${spelling}%`);
+      addTerm(terms, `%${spelling}%`);
     }
     const letters = [...word];
     if (letters.length > 3) {
-      terms.add(`%${letters.slice(0, 3).join('')}%`);
+      addTerm(terms, `%${letters.slice(0, 3).join('')}%`);
     }
     const consonants = [...word.toLowerCase()].filter((c) => /[b-df-hj-np-tv-z]/.test(c));
     if (letters.length >= 4 && consonants.length >= 2 && /^[a-z]+$/i.test(word)) {
-      terms.add(`%${consonants.join('%')}%`);
+      addTerm(terms, `%${consonants.join('%')}%`);
     }
   }
-  return [...terms].slice(0, MAX_TERMS);
+  return [...terms.values()].slice(0, MAX_TERMS);
 }
 
 /**
- * `like` patterns every stored spelling of a name matches, whatever its spacing or punctuation: its letters in order
- * (AlNoor finds Al Noor), in each Arabic spelling variant. A superset to filter with `sameName`.
+ * Narrow `like` patterns for a name's stored twins: every word keeps its first two and last two letters (shorter
+ * words whole), in order, so a stored name split or joined differently (AlNoor and Al Noor, either way round) still
+ * matches while unrelated names rarely do. One per Arabic spelling variant, cut to 24 letters to keep the URL short.
  */
-export function samePatterns(query: string): string[] {
-  const terms = new Set<string>();
+export function tightPatterns(query: string): string[] {
+  const terms = new Map<string, string>();
   for (const spelling of spellings(query)) {
-    const letters = [...spelling.replace(/[%_\\]/g, '')].filter((c) => /[\p{L}\p{N}]/u.test(c));
-    if (letters.length) {
-      terms.add(`%${letters.join('%')}%`);
+    const pieces = wordsOf(spelling).flatMap((word) => {
+      const letters = [...word];
+      return letters.length >= 4
+        ? [letters.slice(0, 2).join(''), letters.slice(-2).join('')]
+        : [word];
+    });
+    let budget = MAX_LETTERS;
+    const kept: string[] = [];
+    for (const piece of pieces) {
+      if (budget <= 0) {
+        break;
+      }
+      const letters = [...piece].slice(0, budget);
+      kept.push(letters.join(''));
+      budget -= letters.length;
+    }
+    if (kept.length) {
+      addTerm(terms, `%${kept.join('%')}%`);
     }
   }
-  return [...terms];
+  return [...terms.values()];
+}
+
+/**
+ * Broad `like` patterns every stored spelling of a name matches, whatever its spacing or punctuation: its first 24
+ * letters in order, in each Arabic spelling variant. A superset to filter with `sameName`.
+ */
+export function samePatterns(query: string): string[] {
+  const terms = new Map<string, string>();
+  for (const spelling of spellings(query)) {
+    const letters = [...spelling.replace(/[%_\\]/g, '')]
+      .filter((c) => /[\p{L}\p{N}]/u.test(c))
+      .slice(0, MAX_LETTERS);
+    if (letters.length) {
+      addTerm(terms, `%${letters.join('%')}%`);
+    }
+  }
+  return [...terms.values()];
+}
+
+/**
+ * Rows whose names are the same as `term`, found in two reads: the narrow patterns first, the broad ones only when
+ * those find nothing. A broad read that fills the cap has not seen every match, so it comes back `capped`.
+ */
+export async function findSameSpelled<T extends { name: string }>(
+  term: string,
+  read: (patterns: string[], limit: number) => Promise<T[]>,
+): Promise<Candidates<T>> {
+  const tight = tightPatterns(term);
+  if (!tight.length) {
+    return { rows: [], capped: false };
+  }
+  const narrow = (await read(tight, CANDIDATE_CAP + 1)).filter((row) => sameName(row.name, term));
+  if (narrow.length) {
+    return { rows: narrow, capped: false };
+  }
+  return candidatesOf(await read(samePatterns(term), CANDIDATE_CAP + 1));
 }

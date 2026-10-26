@@ -27,12 +27,8 @@ describe('SupplierDirectoryService', () => {
       capped: false,
     });
     expect(listCalls[0].query.filters).toBeUndefined();
-    expect(listCalls[0].query.orFilters).toContainEqual([
-      'supplier_name',
-      'like',
-      '%o%l%d%k%i%l%n%',
-    ]);
-    expect(listCalls[0].maxRows).toBe(1000);
+    expect(listCalls[0].query.orFilters).toContainEqual(['supplier_name', 'like', '%ol%ln%']);
+    expect(listCalls[0].maxRows).toBe(1001);
   });
 
   it('finds suppliers by exact id or name, disabled ones included and marked', async () => {

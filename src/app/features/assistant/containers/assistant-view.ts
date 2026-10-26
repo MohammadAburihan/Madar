@@ -250,7 +250,9 @@ export function proposalCard(
         id: proposal.id,
         title: t(`assistant.proposal.${BUTTON[proposal.kind]}`, { name }),
         lines: [],
-        note: t('assistant.proposal.note'),
+        note: proposal.similarNames
+          ? `${t('assistant.proposal.note')} ${t('assistant.proposal.similarNames')}`
+          : t('assistant.proposal.note'),
         action: t(`assistant.proposal.button.${BUTTON[proposal.kind]}`),
       };
     case 'open_record': {

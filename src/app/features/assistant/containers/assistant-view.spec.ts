@@ -560,6 +560,17 @@ describe('proposalCard for a new record', () => {
       action: 'مراجعة الصنف الجديد',
     });
   });
+
+  it('adds the similar-names line, in both languages, when the duplicate check was cut short', () => {
+    const similar = { ...fresh('new_customer', 'Ali'), similarNames: true };
+    expect(card(similar).note).toBe(
+      'Nothing is saved until you confirm. Similar names exist; check before saving.',
+    );
+    expect(card(similar, 'ar').note).toBe(
+      'لا يُحفظ شيء حتى تؤكّد. توجد أسماء مشابهة؛ تحقّق قبل الحفظ.',
+    );
+    expect(card(fresh('new_customer', 'Ali')).note).toBe('Nothing is saved until you confirm.');
+  });
 });
 
 describe('proposalTarget', () => {

@@ -104,6 +104,8 @@ export interface Proposal {
   to: string | null;
   record: { kind: RecordKind; id: string; label: string; draft: boolean } | null;
   request: PrefillRequest | null;
+  /** A new record whose duplicate check was cut short by too many similar names. */
+  similarNames?: boolean;
 }
 
 /** One of the matches a name could mean; `label` is what the user sends back to pick it. */

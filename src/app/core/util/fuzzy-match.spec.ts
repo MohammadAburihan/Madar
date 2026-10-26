@@ -1,12 +1,16 @@
 import {
+  CANDIDATE_CAP,
   SIMILARITY_THRESHOLD,
   candidatePatterns,
+  candidatesOf,
   editDistance,
+  findSameSpelled,
   nameScore,
   normalizeText,
   rankSimilar,
   sameName,
   samePatterns,
+  tightPatterns,
 } from './fuzzy-match';
 
 describe('normalizeText', () => {
@@ -118,6 +122,10 @@ describe('sameName', () => {
 });
 
 describe('candidatePatterns', () => {
+  it('dedupes spelling variants that differ only in case', () => {
+    expect(candidatePatterns('NOOR noor')).toEqual(['%NOOR%', '%NOO%', '%n%r%']);
+  });
+
   it('searches each word, its first three letters and the consonants of a Latin word', () => {
     expect(candidatePatterns('Leena Hadad')).toEqual(
       expect.arrayContaining(['%Leena%', '%Lee%', '%l%n%', '%Hadad%', '%Had%', '%h%d%d%']),
@@ -143,10 +151,42 @@ describe('candidatePatterns', () => {
   });
 });
 
+const matches = (pattern: string, name: string) =>
+  new RegExp(pattern.split('%').join('.*'), 'i').test(name);
+
+const encodedLength = (patterns: string[]) =>
+  encodeURIComponent(JSON.stringify(patterns.map((p) => ['name', 'like', p]))).length;
+
+describe('tightPatterns', () => {
+  it('finds a twin stored with other spacing, whichever of the two was typed joined', () => {
+    expect(tightPatterns('Al Noor Trading').some((p) => matches(p, 'AlNoor Trading'))).toBe(true);
+    expect(tightPatterns('AlNoor Trading').some((p) => matches(p, 'Al Noor Trading'))).toBe(true);
+    expect(tightPatterns('Al Noor Trading').some((p) => matches(p, 'Al-Noor  Trading'))).toBe(true);
+  });
+
+  it('keeps the first two and last two letters of each longer word, in order', () => {
+    expect(tightPatterns('Al Noor Trading')).toEqual(['%Al%No%or%Tr%ng%']);
+    expect(tightPatterns('Ali')).toEqual(['%Ali%']);
+  });
+
+  it('does not match an unrelated name', () => {
+    expect(tightPatterns('Al Noor Trading').some((p) => matches(p, 'Green Clay'))).toBe(false);
+  });
+
+  it('adds the Arabic spelling variants once and no wildcards from the text', () => {
+    expect(tightPatterns('مدرسة')).toEqual(['%مد%سة%', '%مد%سه%']);
+    expect(tightPatterns('a_b%')).toEqual(['%a%b%']);
+    expect(tightPatterns(' % ')).toEqual([]);
+  });
+
+  it('dedupes spelling variants that differ only in case', () => {
+    expect(tightPatterns('Noor NOOR')).toHaveLength(1);
+    expect(tightPatterns('NOOR')).toEqual(['%NO%OR%']);
+  });
+});
+
 describe('samePatterns', () => {
   it('matches a name whatever its spacing, so a spaced and a joined spelling find each other', () => {
-    const matches = (pattern: string, name: string) =>
-      new RegExp(pattern.split('%').join('.*'), 'i').test(name);
     const patterns = samePatterns('Al Noor Trading');
     expect(patterns.some((p) => matches(p, 'AlNoor Trading'))).toBe(true);
     expect(patterns.some((p) => matches(p, 'Al-Noor  Trading'))).toBe(true);
@@ -157,5 +197,77 @@ describe('samePatterns', () => {
     expect(samePatterns('مدرسة')).toEqual(expect.arrayContaining(['%م%د%ر%س%ة%', '%م%د%ر%س%ه%']));
     expect(samePatterns('a_b%')).toEqual(['%a%b%']);
     expect(samePatterns(' % ')).toEqual([]);
+  });
+
+  it('dedupes spelling variants that differ only in case', () => {
+    expect(samePatterns('NOOR')).toEqual(['%N%O%O%R%']);
+  });
+});
+
+describe('pattern length', () => {
+  const long = Array.from({ length: 28 }, (_, i) => `مدرسة${'النور'.slice(0, (i % 4) + 1)}`)
+    .join(' ')
+    .slice(0, 140);
+
+  it('caps every pattern at 24 letters and keeps the whole filter under 2000 encoded characters', () => {
+    expect([...long]).toHaveLength(140);
+    for (const patterns of [tightPatterns(long), samePatterns(long), candidatePatterns(long)]) {
+      expect(patterns.length).toBeGreaterThan(0);
+    }
+    for (const patterns of [tightPatterns(long), samePatterns(long)]) {
+      for (const pattern of patterns) {
+        expect([...pattern.replace(/%/g, '')].length).toBeLessThanOrEqual(24);
+      }
+      expect(encodedLength(patterns)).toBeLessThan(2000);
+    }
+  });
+});
+
+describe('candidatesOf', () => {
+  const rows = (count: number) => Array.from({ length: count }, (_, i) => i);
+
+  it('is capped only with more rows than the cap, and returns at most the cap', () => {
+    expect(candidatesOf(rows(CANDIDATE_CAP))).toMatchObject({ capped: false });
+    expect(candidatesOf(rows(CANDIDATE_CAP)).rows).toHaveLength(CANDIDATE_CAP);
+    const over = candidatesOf(rows(CANDIDATE_CAP + 1));
+    expect(over.capped).toBe(true);
+    expect(over.rows).toHaveLength(CANDIDATE_CAP);
+  });
+});
+
+describe('findSameSpelled', () => {
+  it('stops after the narrow read when it finds a twin', async () => {
+    const read = vi.fn().mockResolvedValue([{ name: 'AlNoor Trading' }, { name: 'Other' }]);
+    const found = await findSameSpelled('Al Noor Trading', read);
+    expect(found).toEqual({ rows: [{ name: 'AlNoor Trading' }], capped: false });
+    expect(read).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the broad read, not capped at exactly the cap', async () => {
+    const read = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(
+        Array.from({ length: CANDIDATE_CAP }, (_, i) => ({ name: `Ali ${i}` })),
+      );
+    const found = await findSameSpelled('Ali', read);
+    expect(found.capped).toBe(false);
+    expect(read).toHaveBeenLastCalledWith(samePatterns('Ali'), CANDIDATE_CAP + 1);
+  });
+
+  it('is capped when the broad read returns more than the cap', async () => {
+    const read = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(
+        Array.from({ length: CANDIDATE_CAP + 1 }, (_, i) => ({ name: `Ali ${i}` })),
+      );
+    expect((await findSameSpelled('Ali', read)).capped).toBe(true);
+  });
+
+  it('reads nothing for a name with no letters', async () => {
+    const read = vi.fn();
+    expect(await findSameSpelled(' % ', read)).toEqual({ rows: [], capped: false });
+    expect(read).not.toHaveBeenCalled();
   });
 });

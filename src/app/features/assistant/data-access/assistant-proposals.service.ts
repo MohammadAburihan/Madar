@@ -16,7 +16,7 @@ import {
   candidatesOf,
   rankSimilar,
   sameName,
-  samePatterns,
+  findSameSpelled,
 } from '../../../core/util/fuzzy-match';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
@@ -92,6 +92,8 @@ function labelParts(text: string): { name: string; id: string } | null {
   const match = /^(.*\S)\s+\(([^()]+)\)$/.exec(text.trim());
   return match ? { name: match[1], id: match[2].trim() } : null;
 }
+
+const SIMILAR_NAMES_NOTE = 'Similar names exist; check the list before saving';
 
 const tooMany = (field: string, query: string) =>
   `too many ${field} names look like "${query}": ask the user for more of the name`;
@@ -403,13 +405,22 @@ export class AssistantProposalsService {
     }
     const exact = await this.customers.exact(name);
     this.guardDuplicate('customer', name, exact);
-    await this.sameNameElsewhere('customer', name, () => this.customers.spelledLike(name));
+    const similar = await this.sameNameElsewhere('customer', name, () =>
+      this.customers.spelledLike(name),
+    );
     const payload = {
       name,
       ...this.contactFields(input),
       ...this.optionalText(input, 'address'),
     };
-    return this.newProposal('new_customer', name, { kind: 'new_customer', payload }, 'customer');
+    return this.newProposal(
+      'new_customer',
+      name,
+      { kind: 'new_customer', payload },
+      'customer',
+      [],
+      similar,
+    );
   }
 
   private async newSupplier(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
@@ -419,9 +430,18 @@ export class AssistantProposalsService {
     const name = this.newName(input);
     const exact = await this.suppliers.exact(name);
     this.guardDuplicate('supplier', name, exact);
-    await this.sameNameElsewhere('supplier', name, () => this.suppliers.spelledLike(name));
+    const similar = await this.sameNameElsewhere('supplier', name, () =>
+      this.suppliers.spelledLike(name),
+    );
     const payload = { name, ...this.contactFields(input) };
-    return this.newProposal('new_supplier', name, { kind: 'new_supplier', payload }, 'supplier');
+    return this.newProposal(
+      'new_supplier',
+      name,
+      { kind: 'new_supplier', payload },
+      'supplier',
+      [],
+      similar,
+    );
   }
 
   private async newItem(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
@@ -447,7 +467,7 @@ export class AssistantProposalsService {
       name,
       exact.map((row) => ({ id: row.name, name: row.item_name, disabled: !!row.disabled })),
     );
-    await this.sameNameElsewhere('item', name, () => this.itemsSpelledLike(name));
+    const similar = await this.sameNameElsewhere('item', name, () => this.itemsSpelledLike(name));
     const notes: string[] = [];
     const price = typeof input['selling_price'] === 'number' ? input['selling_price'] : null;
     const mayPrice = scope.caps.setItemPrices;
@@ -455,7 +475,14 @@ export class AssistantProposalsService {
       notes.push("The selling price was ignored; your role can't set prices.");
     }
     const payload = { name, kind, ...(price !== null && mayPrice ? { price } : {}) } as const;
-    return this.newProposal('new_item', name, { kind: 'new_item', payload }, 'item', notes);
+    return this.newProposal(
+      'new_item',
+      name,
+      { kind: 'new_item', payload },
+      'item',
+      notes,
+      similar,
+    );
   }
 
   private newName(input: ToolInput): string {
@@ -496,14 +523,13 @@ export class AssistantProposalsService {
 
   /**
    * The same name spelt with other case, spaces, punctuation or Arabic letter variants is still the same record,
-   * disabled or not. Names are read by letters in order (stored spacing is unknown), so a read that fills the cap
-   * cannot rule a duplicate out.
+   * disabled or not. Answers whether so many similar names exist that the read could not rule a duplicate out.
    */
   private async sameNameElsewhere(
     field: string,
     name: string,
     find: () => Promise<Candidates<Party & { disabled: boolean }>>,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { rows, capped } = await find();
     const same = rows.filter((row) => sameName(row.name, name));
     const live = same.filter((row) => !row.disabled);
@@ -513,9 +539,7 @@ export class AssistantProposalsService {
     if (same.length) {
       throw new ToolFailure(`${field} is disabled: ${same[0].name}`);
     }
-    if (capped) {
-      throw new ToolFailure(tooMany(field, name));
-    }
+    return capped;
   }
 
   private newProposal(
@@ -524,12 +548,18 @@ export class AssistantProposalsService {
     request: PrefillRequest,
     what: string,
     notes: string[] = [],
+    similar = false,
   ): ToolFound {
-    const proposal = this.proposal(kind, { party: name, request });
+    const proposal = this.proposal(kind, {
+      party: name,
+      request,
+      ...(similar ? { similarNames: true } : {}),
+    });
     return this.proposed(
       proposal,
       `New ${what}: ${name}. Nothing is saved until the user reviews and saves it.`,
       notes,
+      similar ? SIMILAR_NAMES_NOTE : undefined,
     );
   }
 
@@ -857,28 +887,28 @@ export class AssistantProposalsService {
           ],
           orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
         },
-        CANDIDATE_CAP,
+        CANDIDATE_CAP + 1,
       ),
     );
   }
 
-  private async itemsSpelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
-    const patterns = samePatterns(term);
-    if (!patterns.length) {
-      return { rows: [], capped: false };
-    }
-    const rows = await this.erpnext.listAll<{ name: string; item_name: string; disabled: number }>(
-      'Item',
-      {
-        fields: ['name', 'item_name', 'disabled'],
-        filters: [['has_variants', '=', 0]],
-        orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
-      },
-      CANDIDATE_CAP,
-    );
-    return candidatesOf(
-      rows.map((r) => ({ id: r.name, name: r.item_name, disabled: !!r.disabled })),
-    );
+  private itemsSpelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
+    return findSameSpelled(term, async (patterns, limit) => {
+      const rows = await this.erpnext.listAll<{
+        name: string;
+        item_name: string;
+        disabled: number;
+      }>(
+        'Item',
+        {
+          fields: ['name', 'item_name', 'disabled'],
+          filters: [['has_variants', '=', 0]],
+          orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
+        },
+        limit,
+      );
+      return rows.map((r) => ({ id: r.name, name: r.item_name, disabled: !!r.disabled }));
+    });
   }
 
   private itemOptions(rows: ItemRow[]): ChoiceOption[] {
@@ -1020,12 +1050,13 @@ export class AssistantProposalsService {
     return { ...this.blank(kind), ...fields };
   }
 
-  private proposed(proposal: Proposal, summary: string, notes: string[]): ToolFound {
+  private proposed(proposal: Proposal, summary: string, notes: string[], note?: string): ToolFound {
     return {
       payload: {
         proposal_id: proposal.id,
         summary,
         ...(notes.length ? { notes } : {}),
+        ...(note ? { note } : {}),
       },
       listKey: null,
       records: [],

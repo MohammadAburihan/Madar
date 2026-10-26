@@ -1005,7 +1005,7 @@ describe('AssistantProposalsService', () => {
       expect(found.payload).toMatchObject({ did_you_mean: true, field: 'item' });
       const search = listCalls.filter((c) => c.doctype === 'Item').at(-1)!.query;
       expect(search.fields).toEqual(['name', 'item_name']);
-      expect(listCalls.filter((c) => c.doctype === 'Item').at(-1)!.maxRows).toBe(1000);
+      expect(listCalls.filter((c) => c.doctype === 'Item').at(-1)!.maxRows).toBe(1001);
       expect(search.filters).toEqual(
         expect.arrayContaining([
           ['disabled', '=', 0],
@@ -1030,7 +1030,7 @@ describe('AssistantProposalsService', () => {
     });
 
     it('asks for more of the name, not can_create, when the candidate read hit its cap', async () => {
-      const decoys = Array.from({ length: 1000 }, (_, i) => item(`BIG-${i}`, `Config panel ${i}`));
+      const decoys = Array.from({ length: 1001 }, (_, i) => item(`BIG-${i}`, `Config panel ${i}`));
       const { run } = setup({ Item: (query) => (query.fields?.length === 2 ? decoys : []) });
       const failure = run('propose_quick_sale', sale({ items: [{ item: 'Fig tre', qty: 1 }] }));
       await expect(failure).rejects.toMatchObject({
@@ -1195,7 +1195,7 @@ describe('AssistantProposalsService', () => {
         expect(found.proposals).toBeUndefined();
       });
 
-      it('refuses a disabled customer spelt differently, and when the duplicate read hit its cap', async () => {
+      it('refuses a disabled customer spelt differently', async () => {
         const { run, customers } = setup();
         noExact(customers);
         customers.spelledLike.mockResolvedValue({
@@ -1205,10 +1205,24 @@ describe('AssistantProposalsService', () => {
         await expect(run('propose_new_customer', { name: 'Al Noor Trading' })).rejects.toThrow(
           'customer is disabled: AlNoor Trading',
         );
+      });
+      it('proposes with a note, not a refusal, when so many similar names exist that the duplicate read hit its cap', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
         customers.spelledLike.mockResolvedValue({ rows: [], capped: true });
-        await expect(run('propose_new_customer', { name: 'Ali' })).rejects.toThrow(
-          'ask the user for more of the name',
-        );
+        const found = await run('propose_new_customer', { name: 'Ali' });
+        expect(found.payload).toMatchObject({
+          note: 'Similar names exist; check the list before saving',
+        });
+        expect(found.proposals?.[0]).toMatchObject({ kind: 'new_customer', similarNames: true });
+      });
+
+      it('adds no note when the duplicate read was not capped', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        const found = await run('propose_new_customer', { name: 'Ali' });
+        expect(found.payload).not.toHaveProperty('note');
+        expect(found.proposals?.[0]).not.toHaveProperty('similarNames');
       });
 
       it('says a disabled customer with that name is disabled, and refuses the walk-in name', async () => {
@@ -1259,6 +1273,15 @@ describe('AssistantProposalsService', () => {
     });
 
     describe('propose_new_supplier duplicates', () => {
+      it('proposes with a note when the duplicate read hit its cap', async () => {
+        const { run, suppliers } = setup();
+        suppliers.spelledLike.mockResolvedValue({ rows: [], capped: true });
+        const found = await run('propose_new_supplier', { name: 'Ali' });
+        expect(found.payload).toMatchObject({
+          note: 'Similar names exist; check the list before saving',
+        });
+      });
+
       it('refuses a disabled supplier spelt differently', async () => {
         const { run, suppliers } = setup();
         suppliers.spelledLike.mockResolvedValue({
@@ -1292,6 +1315,25 @@ describe('AssistantProposalsService', () => {
         await expect(
           run('propose_new_item', { name: 'Sunrise  Co', kind: 'product' }),
         ).rejects.toThrow('item is disabled: SunriseCo');
+      });
+
+      it('proposes with a note when more than 1000 similar items exist, and with none at exactly 1000', async () => {
+        const alices = (count: number) =>
+          Array.from({ length: count }, (_, i) => item(`ALI-${i}`, `Alice ${i}`));
+        const crowded = setup({
+          Item: (query) => (query.fields?.length === 3 ? alices(1001) : []),
+        });
+        const found = await crowded.run('propose_new_item', { name: 'Ali', kind: 'product' });
+        expect(found.payload).toMatchObject({
+          note: 'Similar names exist; check the list before saving',
+        });
+        expect(found.proposals![0]).toMatchObject({ kind: 'new_item', similarNames: true });
+
+        const exact = setup({
+          Item: (query) => (query.fields?.length === 3 ? alices(1000) : []),
+        });
+        const quiet = await exact.run('propose_new_item', { name: 'Ali', kind: 'product' });
+        expect(quiet.payload).not.toHaveProperty('note');
       });
 
       it('prepares the card; the owner’s selling price goes with it', async () => {

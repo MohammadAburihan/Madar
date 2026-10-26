@@ -6,7 +6,7 @@ import {
   Candidates,
   candidatePatterns,
   candidatesOf,
-  samePatterns,
+  findSameSpelled,
 } from '../util/fuzzy-match';
 import { shareInFlight } from '../util/share-in-flight';
 
@@ -114,24 +114,26 @@ export class CustomerDirectoryService {
     if (!patterns.length) {
       return { rows: [], capped: false };
     }
-    const { rows, capped } = await this.named(patterns, [
-      ['disabled', '=', 0],
-      ['name', '!=', WALK_IN_CUSTOMER],
-      ['customer_name', '!=', WALK_IN_CUSTOMER],
-    ]);
-    return { rows: rows.map(({ id, name }) => ({ id, name })), capped };
+    const found = candidatesOf(
+      await this.named(patterns, [
+        ['disabled', '=', 0],
+        ['name', '!=', WALK_IN_CUSTOMER],
+        ['customer_name', '!=', WALK_IN_CUSTOMER],
+      ]),
+    );
+    return { rows: found.rows.map(({ id, name }) => ({ id, name })), capped: found.capped };
   }
 
   /** Customers, disabled ones marked, whose names any spelling of `term` could match, for a duplicate check. */
   async spelledLike(term: string): Promise<Candidates<Party & { disabled: boolean }>> {
-    const patterns = samePatterns(term);
-    return patterns.length ? this.named(patterns, []) : { rows: [], capped: false };
+    return findSameSpelled(term, (patterns, limit) => this.named(patterns, [], limit));
   }
 
   private async named(
     patterns: string[],
     filters: Filter[],
-  ): Promise<Candidates<Party & { disabled: boolean }>> {
+    limit = CANDIDATE_CAP + 1,
+  ): Promise<(Party & { disabled: boolean })[]> {
     const rows = await this.erpnext.listAll<{
       name: string;
       customer_name: string;
@@ -143,11 +145,9 @@ export class CustomerDirectoryService {
         filters,
         orFilters: patterns.map((pattern) => ['customer_name', 'like', pattern] as Filter),
       },
-      CANDIDATE_CAP,
+      limit,
     );
-    return candidatesOf(
-      rows.map((r) => ({ id: r.name, name: r.customer_name, disabled: !!r.disabled })),
-    );
+    return rows.map((r) => ({ id: r.name, name: r.customer_name, disabled: !!r.disabled }));
   }
 
   /** Exact id or name matches, disabled ones marked, so a caller can say why it refuses. */

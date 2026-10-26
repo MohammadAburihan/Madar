@@ -3900,6 +3900,7 @@
       "moveLine": "{{qty}} × {{item}}",
       "route": "{{from}} → {{to}}",
       "note": "Nothing is saved until you confirm.",
+      "similarNames": "Similar names exist; check before saving.",
       "button": {
         "sale": "Review sale",
         "quotation": "Review quotation",
