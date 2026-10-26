@@ -908,6 +908,14 @@ describe('QuickSaleStore for a customer project', () => {
       expect(store.failure()).toBe('projectChanged');
     });
 
+    it('confirms when the role may not read the project, as when it opened the draft', async () => {
+      const { store, api } = await ready();
+      api.project.mockRejectedValue(new HttpErrorResponse({ status: 403 }));
+      await store.confirm();
+      expect(api.confirm).toHaveBeenCalled();
+      expect(store.state()).toBe('confirmed');
+    });
+
     it('reports a lost connection while checking the project as offline', async () => {
       const { store, api } = await ready();
       api.project.mockRejectedValue(new HttpErrorResponse({ status: 0 }));

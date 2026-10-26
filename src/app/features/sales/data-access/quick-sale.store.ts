@@ -463,7 +463,16 @@ export class QuickSaleStore {
       return true;
     }
     const business = await this.business.ensure();
-    const project = await this.api.project(chosen.id, business?.name ?? '');
+    let project;
+    try {
+      project = await this.api.project(chosen.id, business?.name ?? '');
+    } catch (error) {
+      // A role that may sell but not read projects confirms as it opened the draft; ERPNext still validates it.
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        return true;
+      }
+      throw error;
+    }
     return !!project && !project.cancelled && project.customer === this.customer()?.id;
   }
 
