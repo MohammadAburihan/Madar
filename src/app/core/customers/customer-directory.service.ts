@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../erpnext/erpnext-client';
+import { candidatePatterns } from '../util/fuzzy-match';
 import { shareInFlight } from '../util/share-in-flight';
 
 export interface CustomerOption {
@@ -84,6 +85,38 @@ export class CustomerDirectoryService {
               ['name', 'like', like],
             ]
           : undefined,
+        orderBy: 'modified desc',
+        limit,
+      }),
+    );
+    return rows.map((r) => ({
+      id: r.name,
+      name: r.customer_name,
+      phone: r.mobile_no,
+      city: firstAddressLine(r.primary_address),
+    }));
+  }
+
+  /** A capped page of enabled customers whose names share letters with a misspelt one, for the caller to rank. */
+  async candidates(term: string, limit = 50): Promise<CustomerMatch[]> {
+    const patterns = candidatePatterns(term);
+    if (!patterns.length) {
+      return [];
+    }
+    const rows = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        customer_name: string;
+        mobile_no: string | null;
+        primary_address: string | null;
+      }>('Customer', {
+        fields: ['name', 'customer_name', 'mobile_no', 'primary_address'],
+        filters: [
+          ['disabled', '=', 0],
+          ['name', '!=', WALK_IN_CUSTOMER],
+          ['customer_name', '!=', WALK_IN_CUSTOMER],
+        ],
+        orFilters: patterns.map((pattern) => ['customer_name', 'like', pattern] as Filter),
         orderBy: 'modified desc',
         limit,
       }),

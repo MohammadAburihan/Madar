@@ -18,7 +18,7 @@ import { TaskPrefillService } from './task-prefill.service';
 const PAYLOAD = { customer: 'Lina Haddad', lines: [{ item_code: 'OLV-20', qty: 2 }] };
 
 function setup(
-  open: (payload: unknown) => Promise<PrefillOpening>,
+  open: (payload: unknown, kind?: string) => Promise<PrefillOpening>,
   held: Record<string, unknown> = { 'PF-1': PAYLOAD },
   first: string | null = 'PF-1',
 ) {
@@ -29,7 +29,7 @@ function setup(
   const drop = vi.fn();
   @Component({ template: '' })
   class Host {
-    readonly entry = injectPrefillEntry('quotation', (p) => open(p), failed);
+    readonly entry = injectPrefillEntry('quotation', (p, k) => open(p, k), failed);
   }
   TestBed.configureTestingModule({
     providers: [
@@ -70,7 +70,7 @@ describe('injectPrefillEntry', () => {
     await fixture.whenStable();
     expect(drop).toHaveBeenCalledWith('quotation', 'PF-1');
     expect(peek).toHaveBeenCalledWith('quotation', 'PF-1');
-    expect(open).toHaveBeenCalledWith(PAYLOAD);
+    expect(open).toHaveBeenCalledWith(PAYLOAD, 'quotation');
     expect(entry.phase()).toBe('ready');
     expect(failed).not.toHaveBeenCalled();
   });
@@ -128,7 +128,7 @@ describe('injectPrefillEntry', () => {
     query.next(convertToParamMap({ prefill: 'PF-2' }));
     await fixture.whenStable();
     expect(open).toHaveBeenCalledTimes(2);
-    expect(open).toHaveBeenLastCalledWith({ ...PAYLOAD, lines: [] });
+    expect(open).toHaveBeenLastCalledWith({ ...PAYLOAD, lines: [] }, 'quotation');
   });
 });
 

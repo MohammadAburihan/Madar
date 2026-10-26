@@ -17,6 +17,13 @@ import { parseNumber } from '../../../core/format/number';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { toIsoDate } from '../../../core/format/format';
+import {
+  PrefillNotice,
+  PrefillUnavailableError,
+  injectPrefillEntry,
+  prefillNoticeText,
+} from '../../../core/tasks/prefill-entry';
+import { PrefillPayloads } from '../../../core/tasks/task-prefill.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
@@ -49,6 +56,9 @@ type Failure = 'permission' | 'offline' | 'duplicate' | 'changed' | 'error';
     <app-language-switcher [language]="i18n.language()" (languageChange)="i18n.use($event)" />
     <app-back-link [label]="txt.back" (back)="back()" />
     <app-page-heading [title]="txt.heading" [subtitle]="txt.subheading" />
+    @if (assistantNotice(); as notice) {
+      <app-feedback-card [tone]="notice.tone" [title]="notice.title" [message]="notice.message" />
+    }
     @if (!allowed()) {
       <app-feedback-card
         tone="warning"
@@ -207,6 +217,14 @@ export class ItemFormContainer {
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
+  protected readonly assistantNotice = computed(() => {
+    const notice = this.prefillNotice();
+    return notice ? prefillNoticeText(this.i18n.tr(), notice, 'new_item') : null;
+  });
+  private readonly prefillNotice = signal<PrefillNotice | null>(null);
+  /** The assistant's proposal, kept until the form has loaded its lists and can show it. */
+  private proposed: PrefillPayloads['new_item'] | null = null;
+
   protected readonly kind = signal<ItemKind>('product');
   protected readonly name = signal('');
   protected readonly itemCode = signal('');
@@ -338,12 +356,40 @@ export class ItemFormContainer {
   );
 
   constructor() {
+    injectPrefillEntry(
+      'new_item',
+      async (payload) => {
+        if (this.code() || !this.allowed()) {
+          throw new PrefillUnavailableError('not allowed for your role');
+        }
+        this.proposed = payload;
+        if (this.options()) {
+          this.applyProposal();
+        }
+        return 'opened';
+      },
+      (notice) => this.prefillNotice.set(notice),
+    );
     effect(() => {
       this.code();
       if (this.allowed()) {
         untracked(() => void this.loadForm());
       }
     });
+  }
+
+  private applyProposal(): void {
+    const proposed = this.proposed;
+    if (!proposed) {
+      return;
+    }
+    this.proposed = null;
+    this.kind.set(proposed.kind);
+    this.name.set(proposed.name);
+    if (proposed.price !== undefined && this.canSetPrice()) {
+      this.price.set(String(proposed.price));
+    }
+    this.prefillNotice.set('filled');
   }
 
   protected setKind(value: string | null): void {
@@ -389,6 +435,7 @@ export class ItemFormContainer {
         if (!this.name()) {
           this.name.set(this.name$()?.trim() ?? '');
         }
+        this.applyProposal();
       }
     } catch {
       if (run === this.loadRun) {

@@ -9,12 +9,14 @@ import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { round2, westernDigits } from '../../../core/format/number';
 import { BuyingPricesService } from '../../../core/pricing/buying-prices.service';
 import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
+import { candidatePatterns, rankSimilar, sameName } from '../../../core/util/fuzzy-match';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { lineRate, mergeLines } from '../../../core/tasks/prefill-lines';
-import { PrefillLine } from '../../../core/tasks/task-prefill.service';
+import { PrefillLine, PrefillRequest } from '../../../core/tasks/task-prefill.service';
 import {
   ChoiceOption,
+  NotFoundFailure,
   Proposal,
   ProposalLine,
   RecordKind,
@@ -25,6 +27,8 @@ import {
 import { RecordKindName, ToolInput, ToolName, openableKinds } from './assistant-tools';
 
 const MAX_OPTIONS = 5;
+const CANDIDATES_READ = 50;
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const WALK_IN = /^walk[\s-]?in(\s+customer)?$/i;
 
 class NeedsChoice extends Error {
@@ -32,6 +36,7 @@ class NeedsChoice extends Error {
     readonly field: string,
     readonly query: string,
     readonly options: ChoiceOption[],
+    readonly why: 'several' | 'close' | 'exists' = 'several',
   ) {
     super(`Needs a choice: ${field}`);
   }
@@ -126,6 +131,12 @@ export class AssistantProposalsService {
           return await this.collectPayment(input, scope);
         case 'propose_stock_move':
           return await this.stockMove(input, scope);
+        case 'propose_new_customer':
+          return await this.newCustomer(input, scope);
+        case 'propose_new_supplier':
+          return await this.newSupplier(input, scope);
+        case 'propose_new_item':
+          return await this.newItem(input, scope);
         case 'open_record':
           return await this.openRecord(input, scope);
         default:
@@ -136,13 +147,18 @@ export class AssistantProposalsService {
         return {
           payload: {
             needs_choice: true,
+            ...(error.why === 'close' ? { did_you_mean: true } : {}),
+            ...(error.why === 'exists' ? { already_exists: true } : {}),
             field: error.field,
             query: error.query,
             options: error.options,
           },
           listKey: null,
           records: [],
-          choices: error.options,
+          choices:
+            error.why === 'close'
+              ? error.options.map((option) => ({ ...option, suggested: true }))
+              : error.options,
         };
       }
       throw error;
@@ -155,12 +171,12 @@ export class AssistantProposalsService {
     if (walkIn && !scope.caps.sellToWalkIn) {
       throw new ToolFailure('walk-in sales are not allowed for your role');
     }
-    const customer = walkIn ? null : await this.customer(text);
+    const customer = walkIn ? null : await this.customer(text, scope);
     const warehouse =
       typeof input['warehouse'] === 'string' && input['warehouse'].trim()
         ? await this.warehouse('warehouse', input['warehouse'], scope)
         : null;
-    const lines = await this.itemLines(input, 'sell');
+    const lines = await this.itemLines(input, 'sell', scope);
     const priced = await this.selling(lines, scope);
     const proposal = this.proposal('quick_sale', {
       party: customer?.name ?? null,
@@ -188,8 +204,8 @@ export class AssistantProposalsService {
     if (WALK_IN.test(text)) {
       throw new ToolFailure('a quotation needs a named customer, not a walk-in');
     }
-    const customer = await this.customer(text);
-    const lines = await this.itemLines(input, 'sell');
+    const customer = await this.customer(text, scope);
+    const lines = await this.itemLines(input, 'sell', scope);
     const priced = await this.selling(lines, scope);
     const proposal = this.proposal('quotation', {
       party: customer.name,
@@ -208,8 +224,8 @@ export class AssistantProposalsService {
   }
 
   private async purchaseOrder(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
-    const supplier = await this.supplier(String(input['supplier']));
-    const lines = await this.itemLines(input, 'buy');
+    const supplier = await this.supplier(String(input['supplier']), scope);
+    const lines = await this.itemLines(input, 'buy', scope);
     const notes: string[] = [];
     const date = scope.today;
     const priceList = await this.buyingPrices.priceList().catch(() => null);
@@ -280,7 +296,7 @@ export class AssistantProposalsService {
     if (WALK_IN.test(text)) {
       throw new ToolFailure('walk-in sales have nothing to collect later');
     }
-    const customer = await this.customer(text);
+    const customer = await this.customer(text, scope);
     const balances = await this.balances
       .outstanding(
         'Sales Invoice',
@@ -322,7 +338,7 @@ export class AssistantProposalsService {
     if (!Number.isInteger(qty)) {
       throw new ToolFailure('qty must be a whole number: stock moves whole units');
     }
-    const item = await this.item(String(input['item']), 'stock');
+    const item = await this.item(String(input['item']), 'stock', scope);
     const from = await this.optionalWarehouse('from', input['from'], scope);
     const to = await this.optionalWarehouse('to', input['to'], scope);
     if (from && to && from.id === to.id) {
@@ -364,6 +380,144 @@ export class AssistantProposalsService {
     return this.proposed(proposal, `Stock move of ${qty} × ${item.item_name}${route}.`, notes);
   }
 
+  private async newCustomer(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
+    if (!scope.caps.editCustomers) {
+      throw new ToolFailure('not allowed for your role');
+    }
+    const name = this.newName(input);
+    if (WALK_IN.test(name)) {
+      throw new ToolFailure('the Walk-in Customer already exists and is used for anonymous sales');
+    }
+    const exact = await this.customers.exact(name);
+    this.guardDuplicate('customer', name, exact);
+    await this.sameNameElsewhere('customer', name, async () =>
+      (await this.customers.candidates(name, CANDIDATES_READ)).filter((c) =>
+        sameName(c.name, name),
+      ),
+    );
+    const payload = {
+      name,
+      ...this.contactFields(input),
+      ...this.optionalText(input, 'address'),
+    };
+    return this.newProposal('new_customer', name, { kind: 'new_customer', payload }, 'customer');
+  }
+
+  private async newSupplier(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
+    if (!scope.caps.addSuppliers) {
+      throw new ToolFailure('not allowed for your role');
+    }
+    const name = this.newName(input);
+    const exact = await this.suppliers.exact(name);
+    this.guardDuplicate('supplier', name, exact);
+    await this.sameNameElsewhere('supplier', name, async () =>
+      (await this.suppliers.list()).filter((s) => sameName(s.name, name)),
+    );
+    const payload = { name, ...this.contactFields(input) };
+    return this.newProposal('new_supplier', name, { kind: 'new_supplier', payload }, 'supplier');
+  }
+
+  private async newItem(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
+    if (!scope.caps.manageItems) {
+      throw new ToolFailure('not allowed for your role');
+    }
+    const name = this.newName(input);
+    const kind = input['kind'] === 'service' ? 'service' : 'product';
+    const exact = await this.list<ItemRow>(
+      'Item',
+      ITEM_FIELDS,
+      [['has_variants', '=', 0]],
+      MAX_OPTIONS,
+      {
+        orFilters: [
+          ['name', '=', westernDigits(name)],
+          ['item_name', '=', name],
+        ] as Filter[],
+      },
+    );
+    this.guardDuplicate(
+      'item',
+      name,
+      exact.map((row) => ({ id: row.name, name: row.item_name, disabled: !!row.disabled })),
+    );
+    await this.sameNameElsewhere('item', name, async () =>
+      (await this.itemCandidates(name, null))
+        .filter((row) => sameName(row.item_name, name))
+        .map((row) => ({ id: row.name, name: row.item_name })),
+    );
+    const notes: string[] = [];
+    const price = typeof input['selling_price'] === 'number' ? input['selling_price'] : null;
+    const mayPrice = scope.caps.setItemPrices;
+    if (price !== null && !mayPrice) {
+      notes.push("The selling price was ignored; your role can't set prices.");
+    }
+    const payload = { name, kind, ...(price !== null && mayPrice ? { price } : {}) } as const;
+    return this.newProposal('new_item', name, { kind: 'new_item', payload }, 'item', notes);
+  }
+
+  private newName(input: ToolInput): string {
+    const name = String(input['name']).trim();
+    if (!name) {
+      throw new ToolFailure('a name is needed');
+    }
+    return name;
+  }
+
+  private optionalText(input: ToolInput, key: string): Record<string, string> {
+    const value = typeof input[key] === 'string' ? input[key].trim() : '';
+    return value ? { [key]: value } : {};
+  }
+
+  private contactFields(input: ToolInput): Record<string, string> {
+    const email = this.optionalText(input, 'email');
+    if (email['email'] && !EMAIL.test(email['email'])) {
+      throw new ToolFailure(`the email address isn't valid: ${email['email']}`);
+    }
+    return { ...this.optionalText(input, 'phone'), ...email };
+  }
+
+  /** A record already has this exact name: the user picks it, or learns it is disabled; nothing new is proposed. */
+  private guardDuplicate(
+    field: string,
+    name: string,
+    exact: (Party & { disabled: boolean })[],
+  ): void {
+    const live = exact.filter((row) => !row.disabled);
+    if (live.length) {
+      throw new NeedsChoice(field, name, optionsOf(live), 'exists');
+    }
+    if (exact.length) {
+      throw new ToolFailure(`${field} is disabled: ${exact[0].name}`);
+    }
+  }
+
+  /** The same name spelt with other case, spaces, punctuation or Arabic letter variants is still the same record. */
+  private async sameNameElsewhere(
+    field: string,
+    name: string,
+    find: () => Promise<Party[]>,
+  ): Promise<void> {
+    const same = await find();
+    if (same.length) {
+      throw new NeedsChoice(field, name, optionsOf(same), 'exists');
+    }
+  }
+
+  private newProposal(
+    kind: 'new_customer' | 'new_supplier' | 'new_item',
+    name: string,
+    request: PrefillRequest,
+    what: string,
+    notes: string[] = [],
+  ): ToolFound {
+    const proposal = this.proposal(kind, { party: name, request });
+    return this.proposed(
+      proposal,
+      `New ${what}: ${name}. Nothing is saved until the user reviews and saves it.`,
+      notes,
+    );
+  }
+
   private async openRecord(input: ToolInput, scope: ToolScope): Promise<ToolFound> {
     const kind = String(input['kind']) as RecordKindName;
     const text = String(input['name']).trim();
@@ -396,15 +550,15 @@ export class AssistantProposalsService {
   ): Promise<NonNullable<Proposal['record']>> {
     switch (kind) {
       case 'customer': {
-        const customer = await this.customer(text, true);
+        const customer = await this.customer(text, scope, true);
         return { kind: 'customer', id: customer.id, label: customer.name, draft: false };
       }
       case 'supplier': {
-        const supplier = await this.supplier(text, true);
+        const supplier = await this.supplier(text, scope, true);
         return { kind: 'supplier', id: supplier.id, label: supplier.name, draft: false };
       }
       case 'item': {
-        const item = await this.item(text, 'any');
+        const item = await this.item(text, 'any', scope);
         return { kind: 'item', id: item.name, label: item.item_name, draft: false };
       }
       case 'draft':
@@ -458,7 +612,7 @@ export class AssistantProposalsService {
     return row ?? null;
   }
 
-  private async customer(text: string, allowDisabled = false): Promise<Party> {
+  private async customer(text: string, scope: ToolScope, allowDisabled = false): Promise<Party> {
     const label = labelParts(text);
     const tagged = label
       ? (await this.customers.exact(label.id)).filter(
@@ -477,10 +631,12 @@ export class AssistantProposalsService {
       return usable[0];
     }
     const found = await this.customers.find(text, MAX_OPTIONS + 1);
-    return this.only('customer', text, found);
+    return this.only('customer', text, found, scope, async () =>
+      rankSimilar(text, await this.customers.candidates(text, CANDIDATES_READ), (c) => c.name),
+    );
   }
 
-  private async supplier(text: string, allowDisabled = false): Promise<Party> {
+  private async supplier(text: string, scope: ToolScope, allowDisabled = false): Promise<Party> {
     const label = labelParts(text);
     const tagged = label
       ? (await this.suppliers.exact(label.id)).filter(
@@ -499,23 +655,58 @@ export class AssistantProposalsService {
       return usable[0];
     }
     const term = text.trim().toLowerCase();
-    const found = (await this.suppliers.list()).filter(
+    const all = await this.suppliers.list();
+    const found = all.filter(
       (s) => s.name.toLowerCase().includes(term) || s.id.toLowerCase().includes(term),
     );
-    return this.only('supplier', text, found);
+    return this.only('supplier', text, found, scope, async () =>
+      rankSimilar(text, all, (s) => s.name),
+    );
   }
 
-  private only(field: string, query: string, found: Party[]): Party {
-    if (!found.length) {
-      throw new ToolFailure(`not found: ${field} "${query}"`);
-    }
+  private async only(
+    field: string,
+    query: string,
+    found: Party[],
+    scope: ToolScope,
+    similar: () => Promise<Party[]>,
+  ): Promise<Party> {
     if (found.length > 1) {
       throw new NeedsChoice(field, query, optionsOf(found));
     }
-    return found[0];
+    if (found.length) {
+      return found[0];
+    }
+    return this.miss(field, query, scope, similar);
   }
 
-  private async item(text: string, use: ItemUse | 'any'): Promise<ItemRow> {
+  /** Nothing matched: close names to pick from, else not found, saying whether the user may add it as new. */
+  private async miss(
+    field: string,
+    query: string,
+    scope: ToolScope,
+    similar: () => Promise<Party[]>,
+  ): Promise<never> {
+    const near = await similar();
+    if (near.length) {
+      throw new NeedsChoice(field, query, optionsOf(near), 'close');
+    }
+    const message = `not found: ${field} "${query}"`;
+    const creatable =
+      field === 'customer'
+        ? scope.caps.editCustomers
+        : field === 'supplier'
+          ? scope.caps.addSuppliers
+          : field === 'item'
+            ? scope.caps.manageItems
+            : null;
+    if (creatable === null) {
+      throw new ToolFailure(message);
+    }
+    throw new NotFoundFailure(message, { not_found: true, field, query, can_create: creatable });
+  }
+
+  private async item(text: string, use: ItemUse | 'any', scope: ToolScope): Promise<ItemRow> {
     const term = text.trim();
     const eligible = (row: ItemRow) =>
       use === 'any' ||
@@ -590,13 +781,37 @@ export class AssistantProposalsService {
         orderBy: 'item_name asc, name asc',
       },
     );
-    if (!found.length) {
-      throw new ToolFailure(`not found: item "${term}"`);
-    }
     if (found.length > 1) {
       throw new NeedsChoice('item', term, this.itemOptions(found));
     }
-    return found[0];
+    if (found.length === 1) {
+      return found[0];
+    }
+    return this.miss('item', term, scope, async () =>
+      rankSimilar(term, await this.itemCandidates(term, flag), (row) => row.item_name).map(
+        (row) => ({ id: row.name, name: row.item_name }),
+      ),
+    );
+  }
+
+  private itemCandidates(term: string, flag: string | null): Promise<ItemRow[]> {
+    const patterns = candidatePatterns(term);
+    return patterns.length
+      ? this.list<ItemRow>(
+          'Item',
+          ITEM_FIELDS,
+          [
+            ['disabled', '=', 0],
+            ['has_variants', '=', 0],
+            ...(flag ? ([[flag, '=', 1]] as Filter[]) : []),
+          ],
+          CANDIDATES_READ,
+          {
+            orFilters: patterns.map((pattern) => ['item_name', 'like', pattern] as Filter),
+            orderBy: 'modified desc',
+          },
+        )
+      : Promise.resolve([]);
   }
 
   private itemOptions(rows: ItemRow[]): ChoiceOption[] {
@@ -606,11 +821,12 @@ export class AssistantProposalsService {
   private async itemLines(
     input: ToolInput,
     use: ItemUse,
+    scope: ToolScope,
   ): Promise<{ item: ItemRow; qty: number; rate?: number }[]> {
     const entries = input['items'] as ToolInput[];
     const lines: { item: ItemRow; qty: number; rate?: number }[] = [];
     for (const entry of entries) {
-      const item = await this.item(String(entry['item']), use);
+      const item = await this.item(String(entry['item']), use, scope);
       lines.push({
         item,
         qty: Number(entry['qty']),
@@ -655,7 +871,7 @@ export class AssistantProposalsService {
             w.name.toLowerCase().includes(term.toLowerCase()) ||
             w.id.toLowerCase().includes(term.toLowerCase()),
         );
-    return this.only(field, term, found);
+    return this.only(field, term, found, scope, async () => rankSimilar(term, all, (w) => w.name));
   }
 
   private async selling(lines: { item: ItemRow; qty: number; rate?: number }[], scope: ToolScope) {

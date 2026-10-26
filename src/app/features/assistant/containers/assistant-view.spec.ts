@@ -512,6 +512,56 @@ describe('proposalCard', () => {
   });
 });
 
+describe('proposalCard for a new record', () => {
+  const fresh = (kind: 'new_customer' | 'new_supplier' | 'new_item', party: string) =>
+    proposal({
+      kind,
+      party,
+      lines: [],
+      total: null,
+      request:
+        kind === 'new_item'
+          ? { kind, payload: { name: party, kind: 'product' } }
+          : { kind, payload: { name: party } },
+    });
+
+  it('words each card and its button in English', () => {
+    expect(card(fresh('new_customer', 'Samer Odeh'))).toEqual({
+      id: 'PRP-1',
+      title: 'New customer: Samer Odeh',
+      lines: [],
+      note: 'Nothing is saved until you confirm.',
+      action: 'Review new customer',
+    });
+    expect(card(fresh('new_supplier', 'Clay Works'))).toMatchObject({
+      title: 'New supplier: Clay Works',
+      action: 'Review new supplier',
+    });
+    expect(card(fresh('new_item', 'Fig tree'))).toMatchObject({
+      title: 'New item: Fig tree',
+      action: 'Review new item',
+    });
+  });
+
+  it('words each card and its button in Arabic', () => {
+    expect(card(fresh('new_customer', 'سامر عودة'), 'ar')).toEqual({
+      id: 'PRP-1',
+      title: 'عميل جديد: سامر عودة',
+      lines: [],
+      note: 'لا يُحفظ شيء حتى تؤكّد.',
+      action: 'مراجعة العميل الجديد',
+    });
+    expect(card(fresh('new_supplier', 'مصنع الفخار'), 'ar')).toMatchObject({
+      title: 'مورّد جديد: مصنع الفخار',
+      action: 'مراجعة المورّد الجديد',
+    });
+    expect(card(fresh('new_item', 'شجرة تين'), 'ar')).toMatchObject({
+      title: 'صنف جديد: شجرة تين',
+      action: 'مراجعة الصنف الجديد',
+    });
+  });
+});
+
 describe('proposalTarget', () => {
   it('opens each task at its first step with the proposal’s id', () => {
     const each: [Proposal['request'], string[]][] = [
@@ -527,6 +577,22 @@ describe('proposalTarget', () => {
         queryParams: { prefill: 'PF-1' },
       });
     }
+  });
+
+  it('opens the contact and item forms, a customer or a supplier as the type', () => {
+    const open = (request: Proposal['request']) => proposalTarget(proposal({ request }), 'PF-1');
+    expect(open({ kind: 'new_customer', payload: { name: 'Samer' } })).toEqual({
+      commands: ['/contacts/new'],
+      queryParams: { prefill: 'PF-1', type: 'customers' },
+    });
+    expect(open({ kind: 'new_supplier', payload: { name: 'Clay' } })).toEqual({
+      commands: ['/contacts/new'],
+      queryParams: { prefill: 'PF-1', type: 'suppliers' },
+    });
+    expect(open({ kind: 'new_item', payload: { name: 'Fig tree', kind: 'product' } })).toEqual({
+      commands: ['/catalog/new'],
+      queryParams: { prefill: 'PF-1' },
+    });
   });
 
   it('goes nowhere for a task whose proposal could not be handed over', () => {
@@ -586,6 +652,20 @@ describe('buildAssistantView proposals and choices', () => {
       choices,
     });
     expect(answered.items[1].choices).toEqual([]);
+  });
+
+  it('adds "None of these" after close matches only, in both languages', () => {
+    const suggested = { 1: [{ id: 'C-1', label: 'Lina Haddad', suggested: true }] };
+    expect(build({ messages, choices: suggested }).items[1].choices).toEqual([
+      { id: 'C-1', label: 'Lina Haddad' },
+      { id: 'none-of-these', label: 'None of these' },
+    ]);
+    expect(build({ messages, choices: suggested }, 'ar').items[1].choices.at(-1)).toEqual({
+      id: 'none-of-these',
+      label: 'لا أحد منهم',
+    });
+    const several = { 1: [{ id: 'C-1', label: 'Lina Haddad' }] };
+    expect(build({ messages, choices: several }).items[1].choices).toHaveLength(1);
   });
 
   it('gives the user’s own messages no cards and no choices', () => {

@@ -32,6 +32,7 @@ describe('tools offered by role', () => {
       'propose_quick_sale',
       'propose_quotation',
       'propose_collect_payment',
+      'propose_new_customer',
       'open_record',
     ]);
   });
@@ -106,6 +107,28 @@ describe('tools offered by role', () => {
     expect(openableKinds(capabilitiesFor('projectManager'))).toEqual(['customer', 'item']);
   });
 
+  it('offers each new-record tool to the roles PERMISSIONS lets add that record', () => {
+    const offered = (persona: Persona) =>
+      namesFor(persona).filter((name) => name.startsWith('propose_new_'));
+    expect(offered('owner')).toEqual([
+      'propose_new_customer',
+      'propose_new_supplier',
+      'propose_new_item',
+    ]);
+    expect(offered('salesperson')).toEqual(['propose_new_customer']);
+    expect(offered('storeAssociate')).toEqual(['propose_new_customer']);
+    expect(offered('projectManager')).toEqual(['propose_new_customer']);
+    expect(offered('purchasing')).toEqual(['propose_new_supplier', 'propose_new_item']);
+    expect(offered('warehouse')).toEqual([]);
+  });
+
+  it('narrows the new-record tools by the user’s ERPNext roles', () => {
+    const noMasters = capabilitiesFor('owner', ['System Manager', 'Accounts Manager']);
+    expect(toolsFor(noMasters)).not.toContain('propose_new_customer');
+    expect(toolsFor(noMasters)).not.toContain('propose_new_supplier');
+    expect(toolsFor(noMasters)).not.toContain('propose_new_item');
+  });
+
   it('gives store associates purchase orders too, since they receive goods', () => {
     expect(namesFor('storeAssociate')).toContain('find_purchase_orders');
     expect(namesFor('storeAssociate')).toContain('find_invoices');
@@ -126,12 +149,19 @@ describe('tools offered by role', () => {
       'list_drafts',
       'find_purchase_orders',
       'propose_purchase_order',
+      'propose_new_supplier',
+      'propose_new_item',
       'open_record',
     ]);
   });
 
   it('gives the project manager customers and items only', () => {
-    expect(namesFor('projectManager')).toEqual(['search_customers', 'search_items', 'open_record']);
+    expect(namesFor('projectManager')).toEqual([
+      'search_customers',
+      'search_items',
+      'propose_new_customer',
+      'open_record',
+    ]);
   });
 });
 
@@ -192,6 +222,43 @@ describe('validateInput for proposals', () => {
       validateInput('propose_stock_move', { item: 'OLV-20', qty: 3, from: 'a', to: 'b' }).ok,
     ).toBe(true);
     expect(validateInput('open_record', { kind: 'draft', name: 'SI-1' }).ok).toBe(true);
+  });
+
+  it('accepts the new-record tools with their optional fields, and a price in Arabic digits', () => {
+    expect(validateInput('propose_new_customer', { name: 'Samer' }).ok).toBe(true);
+    expect(
+      validateInput('propose_new_customer', {
+        name: 'Samer',
+        phone: '059',
+        email: 'a@b.co',
+        address: 'x'.repeat(200),
+      }).ok,
+    ).toBe(true);
+    expect(validateInput('propose_new_supplier', { name: 'Clay', phone: '1' }).ok).toBe(true);
+    expect(validateInput('propose_new_item', { name: 'Fig', kind: 'service' }).ok).toBe(true);
+    expect(
+      validateInput('propose_new_item', { name: 'Fig', kind: 'product', selling_price: '٤٥٫٥' }),
+    ).toEqual({ ok: true, input: { name: 'Fig', kind: 'product', selling_price: 45.5 } });
+  });
+
+  it.each([
+    ['a customer without a name', 'propose_new_customer', { phone: '1' }],
+    [
+      'an address over 200 characters',
+      'propose_new_customer',
+      { name: 'S', address: 'x'.repeat(201) },
+    ],
+    ['a supplier address', 'propose_new_supplier', { name: 'S', address: 'x' }],
+    ['an item without a kind', 'propose_new_item', { name: 'Fig' }],
+    ['an unknown item kind', 'propose_new_item', { name: 'Fig', kind: 'bundle' }],
+    [
+      'a selling price of zero',
+      'propose_new_item',
+      { name: 'Fig', kind: 'product', selling_price: 0 },
+    ],
+    ['a name over 100 characters', 'propose_new_item', { name: 'x'.repeat(101), kind: 'product' }],
+  ] as [string, ToolName, unknown][])('rejects %s', (_, name, input) => {
+    expect(validateInput(name, input)).toMatchObject({ ok: false, error: expect.any(String) });
   });
 
   it.each([

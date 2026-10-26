@@ -14,6 +14,7 @@ import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directo
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import {
   ChatContext,
+  NotFoundFailure,
   RecordLink,
   ToolFailure,
   ToolFound as Found,
@@ -117,6 +118,9 @@ export class AssistantToolsService {
         choices: found.choices ?? [],
       };
     } catch (error) {
+      if (error instanceof NotFoundFailure) {
+        return fail(JSON.stringify({ error: error.message, ...error.payload }));
+      }
       if (error instanceof ToolFailure) {
         return fail(error.message);
       }

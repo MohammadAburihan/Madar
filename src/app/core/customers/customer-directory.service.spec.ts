@@ -55,6 +55,36 @@ describe('CustomerDirectoryService', () => {
     );
   });
 
+  it('reads a capped page of enabled customers whose names share letters with the typed one', async () => {
+    const { listCalls } = fakeErpnext({
+      Customer: () => [
+        { name: 'C-1', customer_name: 'Lina Haddad', mobile_no: null, primary_address: null },
+      ],
+    });
+    const found = await TestBed.inject(CustomerDirectoryService).candidates('Leena');
+    expect(found).toEqual([{ id: 'C-1', name: 'Lina Haddad', phone: null, city: null }]);
+    const { query } = listCalls[0];
+    expect(query.limit).toBe(50);
+    expect(query.filters).toEqual(
+      expect.arrayContaining([
+        ['disabled', '=', 0],
+        ['name', '!=', WALK_IN_CUSTOMER],
+      ]),
+    );
+    expect(query.orFilters).toEqual(
+      expect.arrayContaining([
+        ['customer_name', 'like', '%Leena%'],
+        ['customer_name', 'like', '%l%n%'],
+      ]),
+    );
+  });
+
+  it('reads no candidates for a query with nothing to search on', async () => {
+    const { listCalls } = fakeErpnext();
+    expect(await TestBed.inject(CustomerDirectoryService).candidates(' % ')).toEqual([]);
+    expect(listCalls).toEqual([]);
+  });
+
   it('lists recent customers without a search term', async () => {
     const { listCalls } = fakeErpnext();
     const directory = TestBed.inject(CustomerDirectoryService);

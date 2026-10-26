@@ -23,10 +23,11 @@ export class PrefillUnavailableError extends Error {
  * with a notice. Each id is taken once, so stepping back to the same address keeps the user's edits.
  */
 export function injectPrefillEntry<K extends PrefillKind>(
-  kind: K,
-  open: (payload: PrefillPayloads[K]) => Promise<PrefillOpening>,
+  kind: K | readonly K[],
+  open: (payload: PrefillPayloads[K], kind: K) => Promise<PrefillOpening>,
   failed: (notice: 'expired' | 'unavailable' | 'busy') => void,
 ) {
+  const kinds: readonly K[] = typeof kind === 'string' ? [kind] : kind;
   const route = inject(ActivatedRoute);
   const prefills = inject(TaskPrefillService);
   const session = inject(SessionService);
@@ -44,18 +45,27 @@ export function injectPrefillEntry<K extends PrefillKind>(
     }
     handled = prefill;
     const mine = ++turn;
-    const payload = prefills.peek(kind, prefill);
-    if (!payload) {
-      prefills.drop(kind, prefill);
+    let held: K | undefined;
+    let payload: PrefillPayloads[K] | null = null;
+    for (const k of kinds) {
+      payload = prefills.peek(k, prefill);
+      if (payload) {
+        held = k;
+        break;
+      }
+    }
+    const dropAll = () => kinds.forEach((k) => prefills.drop(k, prefill));
+    if (!held || !payload) {
+      dropAll();
       failed('expired');
       phase.set('ready');
       return;
     }
     phase.set('loading');
     try {
-      const opening = await open(payload);
+      const opening = await open(payload, held);
       if (opening !== 'busy') {
-        prefills.drop(kind, prefill);
+        dropAll();
       }
       if (mine !== turn || opening === 'stale') {
         return;
@@ -64,7 +74,7 @@ export function injectPrefillEntry<K extends PrefillKind>(
         failed('busy');
       }
     } catch (error) {
-      prefills.drop(kind, prefill);
+      dropAll();
       if (mine !== turn) {
         return;
       }
@@ -90,6 +100,9 @@ const FILLED_MESSAGE: Record<PrefillKind, string> = {
   purchase_order: 'prefill.filled.purchase',
   collect_payment: 'prefill.filled.payment',
   stock_move: 'prefill.filled.move',
+  new_customer: 'prefill.filled.contact',
+  new_supplier: 'prefill.filled.contact',
+  new_item: 'prefill.filled.contact',
 };
 
 export function prefillNoticeText(tr: Translator, notice: PrefillNotice, kind: PrefillKind) {

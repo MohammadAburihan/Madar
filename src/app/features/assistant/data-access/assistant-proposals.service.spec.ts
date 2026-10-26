@@ -87,6 +87,7 @@ function setup(lists: Record<string, Lister> = {}) {
   const customers = {
     exact: vi.fn().mockResolvedValue([{ ...LINA, disabled: false }]),
     find: vi.fn().mockResolvedValue([]),
+    candidates: vi.fn().mockResolvedValue([]),
   };
   const suppliers = {
     exact: vi.fn().mockResolvedValue([]),
@@ -288,12 +289,12 @@ describe('AssistantProposalsService', () => {
 
     it('falls back to normal resolution when an item label names another item', async () => {
       const { run } = setup();
-      await expect(
-        run(
-          'propose_quick_sale',
-          sale({ items: [{ item: 'Olive tree · 20 L (POT-31)', qty: 1 }] }),
-        ),
-      ).rejects.toThrow('not found: item "Olive tree · 20 L (POT-31)"');
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'Olive tree · 20 L (POT-31)', qty: 1 }] }),
+      );
+      expect(found.proposals).toBeUndefined();
+      expect(found.payload).toMatchObject({ needs_choice: true, did_you_mean: true });
     });
 
     it('resolves a picked label to the warehouse it was made from', async () => {
@@ -879,6 +880,350 @@ describe('AssistantProposalsService', () => {
       await expect(run('open_record', { kind: 'sales_order', name: 'SO-9' })).rejects.toThrow(
         'not found: sales order "SO-9"',
       );
+    });
+  });
+
+  describe('did you mean and add as new', () => {
+    const SAMER = { id: 'C-9', name: 'Samer Odeh', phone: null, city: null };
+    const noExact = (customers: { exact: { mockResolvedValue: (v: unknown) => void } }) =>
+      customers.exact.mockResolvedValue([]);
+
+    it('suggests close customers when exact and the limited search find nothing', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.candidates.mockResolvedValue([
+        { id: 'C-1', name: 'Lina Haddad', phone: null, city: null },
+        SAMER,
+      ]);
+      const found = await run('propose_collect_payment', { customer: 'Leena' });
+      expect(customers.find).toHaveBeenCalledWith('Leena', 6);
+      expect(customers.candidates).toHaveBeenCalledWith('Leena', 50);
+      expect(found.payload).toEqual({
+        needs_choice: true,
+        did_you_mean: true,
+        field: 'customer',
+        query: 'Leena',
+        options: [{ id: 'C-1', label: 'Lina Haddad' }],
+      });
+      expect(found.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
+      expect(found.proposals).toBeUndefined();
+    });
+
+    it('labels suggestions with the id only when their names collide', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.candidates.mockResolvedValue([
+        { id: 'C-1', name: 'Lina Haddad', phone: null, city: null },
+        { id: 'C-2', name: 'Lina Haddad', phone: null, city: null },
+        { id: 'C-3', name: 'Lena Haddad', phone: null, city: null },
+      ]);
+      const found = await run('open_record', { kind: 'customer', name: 'Leena Haddad' });
+      expect(found.payload['options']).toEqual([
+        { id: 'C-3', label: 'Lena Haddad' },
+        { id: 'C-1', label: 'Lina Haddad (C-1)' },
+        { id: 'C-2', label: 'Lina Haddad (C-2)' },
+      ]);
+    });
+
+    it('offers an Arabic spelling variant and keeps at most five suggestions', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.candidates.mockResolvedValue(
+        Array.from({ length: 8 }, (_, i) => ({
+          id: `C-${i}`,
+          name: i === 0 ? 'مدرسة النور' : `مدرسة النور ${i}`,
+          phone: null,
+          city: null,
+        })),
+      );
+      const found = await run('propose_collect_payment', { customer: 'مدرسه النور' });
+      expect(found.payload).toMatchObject({ did_you_mean: true });
+      expect((found.payload['options'] as unknown[]).length).toBe(5);
+      expect((found.payload['options'] as { id: string }[])[0].id).toBe('C-0');
+    });
+
+    it('does not run the broader search when the limited one finds a record', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      customers.find.mockResolvedValue([LINA]);
+      await run('propose_collect_payment', { customer: 'lina' });
+      expect(customers.candidates).not.toHaveBeenCalled();
+    });
+
+    it('suggests suppliers and warehouses from the lists it already has', async () => {
+      const { run, warehouses } = setup();
+      const supplier = await run('propose_purchase_order', {
+        supplier: 'Grean Clay',
+        items: [{ item: 'POT-30', qty: 1 }],
+      });
+      expect(supplier.payload).toMatchObject({
+        did_you_mean: true,
+        field: 'supplier',
+        options: [{ id: 'SUP-1', label: 'Green Clay' }],
+      });
+      const warehouse = await run('propose_quick_sale', sale({ warehouse: 'Garden shp' }));
+      expect(warehouse.payload).toMatchObject({
+        did_you_mean: true,
+        field: 'warehouse',
+        options: [{ id: 'Garden - RN', label: 'Garden shop' }],
+      });
+      expect(warehouses.list).toHaveBeenCalled();
+    });
+
+    it('suggests items with a capped, enabled-only candidate search ranked by name', async () => {
+      const { run, listCalls } = setup({
+        Item: (query) =>
+          query.limit === 50
+            ? [
+                item('FIG-1', 'Fig tree'),
+                item('RAW-9', 'Raw clay', { is_sales_item: 1 }),
+                item('FIG-2', 'Fig trees'),
+              ]
+            : [],
+      });
+      const found = await run('propose_quick_sale', sale({ items: [{ item: 'Fig tre', qty: 1 }] }));
+      expect(found.payload).toMatchObject({ did_you_mean: true, field: 'item' });
+      const search = listCalls.filter((c) => c.doctype === 'Item').at(-1)!.query;
+      expect(search.limit).toBe(50);
+      expect(search.filters).toEqual(
+        expect.arrayContaining([
+          ['disabled', '=', 0],
+          ['is_sales_item', '=', 1],
+        ]),
+      );
+    });
+
+    it('says can_create for a customer, a supplier and an item only where the role may add one', async () => {
+      const lookups = async (persona: Persona) => {
+        const { run, customers, suppliers } = setup({ Item: () => [] });
+        noExact(customers);
+        suppliers.list.mockResolvedValue([]);
+        const scope = SCOPE(persona);
+        const flag = async (name: ToolName, input: ToolInput) => {
+          try {
+            await run(name, input, scope);
+          } catch (error) {
+            return (error as { payload?: Record<string, unknown> }).payload?.['can_create'];
+          }
+          return 'resolved';
+        };
+        return {
+          customer: await flag('open_record', { kind: 'customer', name: 'Zed Quartz' }),
+          supplier: await flag('open_record', { kind: 'supplier', name: 'Zed Quartz' }),
+          item: await flag('open_record', { kind: 'item', name: 'Zed Quartz' }),
+        };
+      };
+      expect(await lookups('owner')).toEqual({ customer: true, supplier: true, item: true });
+      expect(await lookups('salesperson')).toMatchObject({ customer: true, item: false });
+      expect(await lookups('storeAssociate')).toMatchObject({ customer: true, item: false });
+      expect(await lookups('projectManager')).toMatchObject({ customer: true, item: false });
+      expect(await lookups('purchasing')).toMatchObject({ supplier: true, item: true });
+    });
+
+    it('has no can_create for a warehouse, and never offers a disabled record as a suggestion', async () => {
+      const { run, customers, listCalls } = setup();
+      const failure = run('propose_quick_sale', sale({ warehouse: 'Mars' }));
+      await expect(failure).rejects.toThrow('not found: warehouse "Mars"');
+      await expect(failure).rejects.not.toHaveProperty('payload');
+      noExact(customers);
+      await run('propose_collect_payment', { customer: 'zzzz' }).catch(() => undefined);
+      expect(customers.candidates).toHaveBeenCalled();
+      customers.exact.mockResolvedValue([{ ...LINA, disabled: false }]);
+      await run('propose_quick_sale', sale({ items: [{ item: 'Retired pt', qty: 1 }] })).catch(
+        () => undefined,
+      );
+      const search = listCalls.filter((c) => c.doctype === 'Item').at(-1)!.query;
+      expect(search.filters).toContainEqual(['disabled', '=', 0]);
+    });
+
+    describe('propose_new_customer', () => {
+      it('prepares the card and a prefill request with what the user gave', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        const found = await run('propose_new_customer', {
+          name: ' Samer Odeh ',
+          phone: '0599 123 456',
+          email: 'samer@example.com',
+          address: 'Nablus',
+        });
+        expect(found.proposals![0]).toMatchObject({
+          kind: 'new_customer',
+          party: 'Samer Odeh',
+          request: {
+            kind: 'new_customer',
+            payload: {
+              name: 'Samer Odeh',
+              phone: '0599 123 456',
+              email: 'samer@example.com',
+              address: 'Nablus',
+            },
+          },
+        });
+        expect(found.payload['summary']).toContain('New customer: Samer Odeh');
+      });
+
+      it('leaves out what was not given', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        const found = await run('propose_new_customer', { name: 'Samer Odeh' });
+        expect(found.proposals![0].request).toEqual({
+          kind: 'new_customer',
+          payload: { name: 'Samer Odeh' },
+        });
+      });
+
+      it('refuses roles that may not add customers and bad emails', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        await expect(
+          run('propose_new_customer', { name: 'Samer' }, SCOPE('warehouse')),
+        ).rejects.toThrow('not allowed for your role');
+        await expect(
+          run('propose_new_customer', { name: 'Samer' }, SCOPE('purchasing')),
+        ).rejects.toThrow('not allowed for your role');
+        await expect(run('propose_new_customer', { name: 'Samer', email: 'nope' })).rejects.toThrow(
+          "the email address isn't valid",
+        );
+        for (const persona of ['salesperson', 'storeAssociate', 'projectManager'] as Persona[]) {
+          const found = await run('propose_new_customer', { name: 'Samer' }, SCOPE(persona));
+          expect(found.proposals, persona).toHaveLength(1);
+        }
+      });
+
+      it('asks instead when a customer with that exact name exists', async () => {
+        const { run, customers } = setup();
+        customers.exact.mockResolvedValue([{ ...SAMER, disabled: false }]);
+        const found = await run('propose_new_customer', { name: 'samer odeh' });
+        expect(found.proposals).toBeUndefined();
+        expect(found.payload).toEqual({
+          needs_choice: true,
+          already_exists: true,
+          field: 'customer',
+          query: 'samer odeh',
+          options: [{ id: 'C-9', label: 'Samer Odeh' }],
+        });
+        expect(found.choices).toEqual([{ id: 'C-9', label: 'Samer Odeh' }]);
+      });
+
+      it('treats Arabic letter variants and spacing as the same name', async () => {
+        const { run, customers } = setup();
+        noExact(customers);
+        customers.candidates.mockResolvedValue([
+          { id: 'C-5', name: 'مدرسة النور', phone: null, city: null },
+        ]);
+        const found = await run('propose_new_customer', { name: 'مدرسه  النور' });
+        expect(found.payload).toMatchObject({ needs_choice: true, already_exists: true });
+        expect(found.proposals).toBeUndefined();
+      });
+
+      it('says a disabled customer with that name is disabled, and refuses the walk-in name', async () => {
+        const { run, customers } = setup();
+        customers.exact.mockResolvedValue([{ ...SAMER, disabled: true }]);
+        await expect(run('propose_new_customer', { name: 'Samer Odeh' })).rejects.toThrow(
+          'customer is disabled: Samer Odeh',
+        );
+        await expect(run('propose_new_customer', { name: 'Walk-in Customer' })).rejects.toThrow(
+          'Walk-in Customer already exists',
+        );
+      });
+    });
+
+    describe('propose_new_supplier', () => {
+      it('prepares the card for a role that may add suppliers', async () => {
+        const { run } = setup();
+        const found = await run(
+          'propose_new_supplier',
+          { name: 'Clay Works', phone: '02 555 1234' },
+          SCOPE('purchasing'),
+        );
+        expect(found.proposals![0]).toMatchObject({
+          kind: 'new_supplier',
+          party: 'Clay Works',
+          request: { kind: 'new_supplier', payload: { name: 'Clay Works', phone: '02 555 1234' } },
+        });
+      });
+
+      it('refuses roles that may not add suppliers', async () => {
+        const { run } = setup();
+        for (const persona of ['salesperson', 'storeAssociate', 'projectManager'] as Persona[]) {
+          await expect(
+            run('propose_new_supplier', { name: 'Clay Works' }, SCOPE(persona)),
+          ).rejects.toThrow('not allowed for your role');
+        }
+      });
+
+      it('asks instead for an existing supplier, however it is spelt', async () => {
+        const { run } = setup();
+        const found = await run('propose_new_supplier', { name: 'green  CLAY' });
+        expect(found.payload).toMatchObject({
+          needs_choice: true,
+          already_exists: true,
+          options: [{ id: 'SUP-1', label: 'Green Clay' }],
+        });
+      });
+    });
+
+    describe('propose_new_item', () => {
+      it('prepares the card; the owner’s selling price goes with it', async () => {
+        const { run } = setup({ Item: () => [] });
+        const found = await run('propose_new_item', {
+          name: 'Fig tree',
+          kind: 'product',
+          selling_price: 45,
+        });
+        expect(found.proposals![0]).toMatchObject({
+          kind: 'new_item',
+          party: 'Fig tree',
+          request: {
+            kind: 'new_item',
+            payload: { name: 'Fig tree', kind: 'product', price: 45 },
+          },
+        });
+        expect(found.payload['notes']).toBeUndefined();
+      });
+
+      it('drops the selling price for a role that may not set prices, and says so', async () => {
+        const { run } = setup({ Item: () => [] });
+        const found = await run(
+          'propose_new_item',
+          { name: 'Fig tree', kind: 'service', selling_price: 45 },
+          SCOPE('purchasing'),
+        );
+        expect(found.proposals![0].request).toEqual({
+          kind: 'new_item',
+          payload: { name: 'Fig tree', kind: 'service' },
+        });
+        expect(found.payload['notes']).toEqual([
+          "The selling price was ignored; your role can't set prices.",
+        ]);
+      });
+
+      it('refuses roles that may not add items', async () => {
+        const { run } = setup({ Item: () => [] });
+        for (const persona of [
+          'salesperson',
+          'storeAssociate',
+          'warehouse',
+          'projectManager',
+        ] as Persona[]) {
+          await expect(
+            run('propose_new_item', { name: 'Fig tree', kind: 'product' }, SCOPE(persona)),
+          ).rejects.toThrow('not allowed for your role');
+        }
+      });
+
+      it('asks instead when an item has that name, and reports a disabled one', async () => {
+        const { run } = setup();
+        const found = await run('propose_new_item', { name: 'raw CLAY', kind: 'product' });
+        expect(found.payload).toMatchObject({
+          needs_choice: true,
+          already_exists: true,
+          options: [{ id: 'RAW-1', label: 'Raw clay' }],
+        });
+        await expect(
+          run('propose_new_item', { name: 'Retired pot', kind: 'product' }),
+        ).rejects.toThrow('item is disabled: Retired pot');
+      });
     });
   });
 

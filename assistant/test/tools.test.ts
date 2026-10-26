@@ -15,6 +15,9 @@ const NAMES = [
   'propose_purchase_order',
   'propose_collect_payment',
   'propose_stock_move',
+  'propose_new_customer',
+  'propose_new_supplier',
+  'propose_new_item',
   'open_record',
 ];
 
@@ -29,7 +32,7 @@ const objects = (schema: unknown): Record<string, unknown>[] => {
 };
 
 describe('tool registry', () => {
-  it('defines the seven lookups and the six proposals the app sends', () => {
+  it('defines the seven lookups, the six proposals and the three new-record proposals the app sends', () => {
     expect(Object.keys(toolRegistry)).toEqual(NAMES);
   });
 
@@ -70,6 +73,9 @@ describe('tool registry', () => {
     expect(schema('propose_collect_payment').required).toEqual(['customer']);
     expect(schema('propose_stock_move').required).toEqual(['item', 'qty']);
     expect(schema('open_record').required).toEqual(['kind', 'name']);
+    expect(schema('propose_new_customer').required).toEqual(['name']);
+    expect(schema('propose_new_supplier').required).toEqual(['name']);
+    expect(schema('propose_new_item').required).toEqual(['name', 'kind']);
     const line = schema('propose_quick_sale').properties['items']!.items!;
     expect(Object.keys(line.properties)).toEqual(['item', 'qty', 'rate']);
     expect(line.required).toEqual(['item', 'qty']);
@@ -106,7 +112,47 @@ describe('tool registry', () => {
   });
 });
 
+describe('new-record tools', () => {
+  const props = (name: string) =>
+    Object.keys((toolRegistry[name]!.input_schema as { properties: object }).properties);
+
+  it('take only what the form fills in', () => {
+    expect(props('propose_new_customer')).toEqual(['name', 'phone', 'email', 'address']);
+    expect(props('propose_new_supplier')).toEqual(['name', 'phone', 'email']);
+    expect(props('propose_new_item')).toEqual(['name', 'kind', 'selling_price']);
+  });
+
+  it('limit an item to a product or a service', () => {
+    const { kind } = (
+      toolRegistry['propose_new_item']!.input_schema as {
+        properties: Record<string, { enum: string[] }>;
+      }
+    ).properties as Record<string, { enum: string[] }>;
+    expect(kind!.enum).toEqual(['product', 'service']);
+  });
+
+  it('are for a name that was not found, never for one that was only misspelt', () => {
+    for (const name of ['propose_new_customer', 'propose_new_supplier', 'propose_new_item']) {
+      expect(toolRegistry[name]!.description, name).toMatch(/can_create/);
+      expect(toolRegistry[name]!.description, name).toMatch(
+        /never for a name that was only misspelt/,
+      );
+    }
+  });
+});
+
 describe('system prompt', () => {
+  it('shows suggestions for a name not found, offers to add only when can_create, and never creates silently', () => {
+    expect(STABLE_PROMPT).toMatch(
+      /was not found, show the suggestions it returns \(did_you_mean\)/,
+    );
+    expect(STABLE_PROMPT).toMatch(/never invent names/);
+    expect(STABLE_PROMPT).toMatch(/can_create is true, offer to add it as new/);
+    expect(STABLE_PROMPT).toMatch(/propose_new_\* tool/);
+    expect(STABLE_PROMPT).toMatch(/Never create anything silently/);
+    expect(STABLE_PROMPT).toMatch(/come back and ask again/);
+  });
+
   it('sends changes through the propose tools and never claims they were made', () => {
     expect(STABLE_PROMPT).toMatch(/propose_\* tool/);
     expect(STABLE_PROMPT).toMatch(/nothing is saved until the user reviews and confirms/);
