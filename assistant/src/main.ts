@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createAuth } from './auth.js';
+import { nodeRequester } from './erpnext-http.js';
 import { loadConfig } from './config.js';
 import { createLimits } from './limits.js';
 import { createApp } from './server.js';
@@ -15,7 +16,11 @@ try {
 const app = createApp({
   config,
   client: new Anthropic({ apiKey: config.apiKey }),
-  auth: createAuth({ upstream: config.erpnextUpstream, siteHost: config.erpnextSiteHost, fetch }),
+  auth: createAuth({
+    upstream: config.erpnextUpstream,
+    siteHost: config.erpnextSiteHost,
+    request: nodeRequester,
+  }),
   limits: createLimits(config),
 });
 

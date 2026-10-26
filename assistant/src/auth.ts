@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto';
 
+import type { ErpRequester } from './erpnext-http.js';
+
 export interface AuthOptions {
   upstream: string;
   siteHost: string;
-  fetch: typeof fetch;
+  request: ErpRequester;
   now?: () => number;
   ttlMs?: number;
   failTtlMs?: number;
@@ -26,13 +28,13 @@ export function createAuth(options: AuthOptions): Auth {
 
   async function call(path: string, params: Record<string, string>, cookie: string) {
     const query = new URLSearchParams(params).toString();
-    let response: Response;
+    let response;
     try {
-      response = await options.fetch(
+      response = await options.request(
         `${options.upstream}/api/method/${path}${query && `?${query}`}`,
         {
           headers: { Cookie: cookie, Host: options.siteHost, Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
+          timeoutMs: 5000,
         },
       );
     } catch {
@@ -41,7 +43,7 @@ export function createAuth(options: AuthOptions): Auth {
     if (response.status >= 500) throw new UpstreamError(`ERPNext answered ${response.status}`);
     if (response.status !== 200) return undefined;
     try {
-      return ((await response.json()) as { message?: unknown }).message;
+      return (JSON.parse(response.body) as { message?: unknown }).message;
     } catch {
       throw new UpstreamError('ERPNext answered with invalid JSON');
     }
