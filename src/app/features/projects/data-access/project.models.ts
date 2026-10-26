@@ -50,6 +50,23 @@ export interface LinkedRecord {
   amount: number | null;
 }
 
+/** A submitted sales invoice (credit notes included) or sales order booked to the project. */
+export interface ProjectSale {
+  kind: 'invoice' | 'order';
+  name: string;
+  /** ERPNext's status, e.g. `Paid`, `Unpaid`, `Credit Note Issued`, `To Deliver and Bill`. */
+  status: string;
+  isReturn: boolean;
+  /** Company currency; a credit note is negative. */
+  amount: number;
+}
+
+export interface ProjectSales {
+  rows: ProjectSale[];
+  /** Submitted invoices less credit notes in company currency; null when only the user's own sales are listed. */
+  billed: number | null;
+}
+
 export interface ProjectDetail extends ProjectSummary {
   budget: number;
   /** What the project's expense postings add up to; null for roles that can't read the ledger. */
@@ -61,6 +78,10 @@ export interface ProjectDetail extends ProjectSummary {
   siteItems: SiteItem[];
   attachments: Attachment[];
   linked: LinkedRecord[];
+  /** False when the project's customer is disabled; null when it couldn't be read or the project has none. */
+  customerActive: boolean | null;
+  /** Null unless the caller asked for the project's sales. */
+  sales: ProjectSales | null;
 }
 
 export interface ProjectRequest {

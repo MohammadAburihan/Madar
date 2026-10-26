@@ -58,6 +58,7 @@ const sale = (overrides: Partial<SaleRequest> = {}): SaleRequest => ({
   reference: 'SALE-ABC1234',
   company: 'Rehan Nursery',
   customer: 'Lina Haddad',
+  project: null,
   warehouse: 'Main warehouse - RN',
   lines: [
     { item: OLIVE, qty: 2, rate: 85, discount: 10 },
@@ -385,6 +386,61 @@ describe('SalesApiService', () => {
     ).rejects.toBeInstanceOf(PostedEarlierError);
   });
 
+  it('books a project sale to the project on the invoice and its rows', async () => {
+    const { api, postCalls } = setup(
+      {},
+      {
+        'frappe.client.insert': (body) => ({
+          ...(body['doc'] as object),
+          name: 'SI-1',
+          docstatus: 0,
+        }),
+        'frappe.client.submit': () => INVOICE,
+      },
+    );
+    await api.confirm(sale({ project: 'PRJ-018' }), null);
+    const doc = postCalls[0].body['doc'] as Record<string, unknown> & {
+      items: Record<string, unknown>[];
+    };
+    expect(doc['project']).toBe('PRJ-018');
+    expect(doc.items.map((row) => row['project'])).toEqual(['PRJ-018', 'PRJ-018']);
+  });
+
+  it('treats a draft posted to another project as an earlier, different version', async () => {
+    const { api } = setup({}, {}, { 'Sales Invoice/SI-1': { ...POSTED, project: 'PRJ-018' } });
+    await expect(api.confirm(sale({ project: null }), 'SI-1')).rejects.toBeInstanceOf(
+      PostedEarlierError,
+    );
+    await expect(api.confirm(sale({ project: 'PRJ-019' }), 'SI-1')).rejects.toBeInstanceOf(
+      PostedEarlierError,
+    );
+  });
+
+  it('reads one project of the business with its customer', async () => {
+    const { api, listCalls } = setup({
+      Project: () => [
+        {
+          name: 'PRJ-018',
+          project_name: 'Garden installation',
+          customer: 'Lina Haddad',
+          status: 'Open',
+        },
+      ],
+    });
+    expect(await api.project('PRJ-018', 'Rehan Nursery')).toEqual({
+      id: 'PRJ-018',
+      title: 'Garden installation',
+      customer: 'Lina Haddad',
+      cancelled: false,
+    });
+    expect(listCalls[0].query.filters).toEqual([
+      ['name', '=', 'PRJ-018'],
+      ['company', '=', 'Rehan Nursery'],
+    ]);
+    TestBed.resetTestingModule();
+    expect(await setup().api.project('PRJ-018', 'Rehan Nursery')).toBeNull();
+  });
+
   it('submits an existing draft instead of inserting a new invoice', async () => {
     const { api, postCalls } = setup(
       {},
@@ -655,6 +711,13 @@ describe('SalesApiService.draftSale', () => {
     ]);
     expect(draft.lines[0].item.stock).toEqual({ 'Main - RN': 24 });
     expect(draft.lines[1].item.stock).toEqual({});
+  });
+
+  it('reads the project a draft is billed to', async () => {
+    const draft = await open({ ...DRAFT, project: 'PRJ-018' }).draftSale('ACC-SINV-0001', SCOPE);
+    expect(draft.project).toBe('PRJ-018');
+    TestBed.resetTestingModule();
+    expect((await open(DRAFT).draftSale('ACC-SINV-0001', SCOPE)).project).toBeNull();
   });
 
   it('reports a customer who has been disabled since', async () => {

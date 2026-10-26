@@ -54,6 +54,7 @@ function setup(
     saveDraft: vi.fn().mockResolvedValue('SI-9'),
     walkInCustomer: vi.fn().mockResolvedValue(WALK_IN_CUSTOMER),
     draftSale: vi.fn(),
+    project: vi.fn(),
   };
   TestBed.configureTestingModule({
     providers: [
@@ -356,6 +357,7 @@ const DRAFT = {
   customer: 'Lina Haddad',
   customerName: 'Lina Haddad',
   customerActive: true,
+  project: null,
   warehouse: 'Main - RN',
   lines: [{ item: OLIVE, qty: 2, rate: 85, discount: 10 }],
 };
@@ -743,5 +745,117 @@ describe('QuickSaleStore.openPrefill', () => {
     await store.openPrefill(PROPOSAL);
     store.start();
     expect(store.prefill()).toBeNull();
+  });
+});
+
+describe('QuickSaleStore for a customer project', () => {
+  const LINA = {
+    id: 'Lina Haddad',
+    name: 'Lina Haddad',
+    phone: null,
+    city: null,
+    outstanding: 0,
+    unpaidInvoices: 0,
+  };
+  const GARDEN = {
+    id: 'PRJ-018',
+    title: 'Garden installation',
+    customer: 'Lina Haddad',
+    cancelled: false,
+  };
+
+  function prepared() {
+    const ctx = setup({ id: 'lina@example.com' }, 'owner');
+    ctx.api.customer.mockResolvedValue(LINA);
+    ctx.api.itemsByCode.mockResolvedValue([OLIVE]);
+    ctx.api.project.mockResolvedValue(GARDEN);
+    return ctx;
+  }
+
+  it('opens an empty sale for the project’s customer and books it to the project', async () => {
+    const { store, api } = prepared();
+    expect(await store.openPrefill({ project: 'PRJ-018', lines: [] })).toBe('opened');
+    expect(api.project).toHaveBeenCalledWith('PRJ-018', 'Rehan Nursery');
+    expect(api.customer).toHaveBeenCalledWith('Lina Haddad', {
+      name: 'Rehan Nursery',
+      currency: 'ILS',
+    });
+    expect(store.project()).toEqual({ id: 'PRJ-018', title: 'Garden installation' });
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    store.setWarehouse('Main - RN');
+    store.add(OLIVE);
+    api.saveDraft.mockResolvedValue('SI-9');
+    await store.saveDraft();
+    expect(api.saveDraft.mock.calls[0][0]).toMatchObject({
+      customer: 'Lina Haddad',
+      project: 'PRJ-018',
+    });
+  });
+
+  it('confirms with the project on the request', async () => {
+    const { store, api } = prepared();
+    api.confirm.mockResolvedValue(RESULT);
+    await store.openPrefill({ project: 'PRJ-018', lines: [] });
+    store.setWarehouse('Main - RN');
+    store.add(OLIVE);
+    await store.confirm();
+    expect(api.confirm.mock.calls[0][0]).toMatchObject({ project: 'PRJ-018' });
+  });
+
+  it('keeps the customer fixed while the sale is billed to the project', async () => {
+    const { store } = prepared();
+    await store.openPrefill({ project: 'PRJ-018', lines: [] });
+    store.selectCustomer({ ...LINA, id: 'Samer', name: 'Samer' });
+    store.useWalkIn();
+    expect(store.customer()?.id).toBe('Lina Haddad');
+    expect(store.walkIn()).toBe(false);
+  });
+
+  it('refuses a project that is gone, cancelled, in another business or someone else’s customer', async () => {
+    const { store, api } = prepared();
+    api.project.mockResolvedValue(null);
+    await expect(store.openPrefill({ project: 'PRJ-018', lines: [] })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+    api.project.mockResolvedValue({ ...GARDEN, cancelled: true });
+    await expect(store.openPrefill({ project: 'PRJ-018', lines: [] })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+    api.project.mockResolvedValue({ ...GARDEN, customer: null });
+    await expect(store.openPrefill({ project: 'PRJ-018', lines: [] })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+    api.project.mockResolvedValue(GARDEN);
+    await expect(
+      store.openPrefill({ project: 'PRJ-018', customer: 'Samer', lines: [] }),
+    ).rejects.toBeInstanceOf(PrefillUnavailableError);
+    await expect(
+      store.openPrefill({ project: 'PRJ-018', walkIn: true, lines: [] }),
+    ).rejects.toBeInstanceOf(PrefillUnavailableError);
+  });
+
+  it('refuses a project whose customer is disabled', async () => {
+    const { store, api } = prepared();
+    api.customer.mockResolvedValue(null);
+    await expect(store.openPrefill({ project: 'PRJ-018', lines: [] })).rejects.toBeInstanceOf(
+      PrefillUnavailableError,
+    );
+  });
+
+  it('keeps the project on a reopened draft and forgets it on a fresh sale', async () => {
+    const { store, api } = prepared();
+    api.draftSale.mockResolvedValue({ ...DRAFT, project: 'PRJ-018' });
+    await store.openDraft('ACC-SINV-0001');
+    expect(store.project()).toEqual({ id: 'PRJ-018', title: 'Garden installation' });
+    store.start();
+    expect(store.project()).toBeNull();
+  });
+
+  it('still opens a draft when the project’s title can’t be read', async () => {
+    const { store, api } = prepared();
+    api.project.mockRejectedValue(new Error('403'));
+    api.draftSale.mockResolvedValue({ ...DRAFT, project: 'PRJ-018' });
+    await store.openDraft('ACC-SINV-0001');
+    expect(store.project()).toEqual({ id: 'PRJ-018', title: 'PRJ-018' });
   });
 });

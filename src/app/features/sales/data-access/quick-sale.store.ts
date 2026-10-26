@@ -27,6 +27,7 @@ import {
   PaymentAccount,
   PaymentStatus,
   SaleLine,
+  SaleProject,
   SaleRequest,
   SaleResult,
   WarehouseOption,
@@ -49,6 +50,8 @@ export class QuickSaleStore {
   readonly reference = signal(newReference('SALE'));
   readonly customer = signal<CustomerOption | null>(null);
   readonly walkIn = signal(false);
+  /** The customer project this sale is billed to; the customer is then the project's and can't be changed. */
+  readonly project = signal<SaleProject | null>(null);
   readonly warehouses = signal<WarehouseOption[]>([]);
   readonly warehouse = signal<string | null>(null);
   readonly lines = signal<SaleLine[]>([]);
@@ -109,6 +112,7 @@ export class QuickSaleStore {
     this.reference.set(newReference('SALE'));
     this.customer.set(null);
     this.walkIn.set(false);
+    this.project.set(null);
     this.warehouse.set(null);
     this.lines.set([]);
     this.paymentStatus.set('paid');
@@ -141,6 +145,9 @@ export class QuickSaleStore {
         throw new DraftUnavailableError(name);
       }
       const sale = await this.api.draftSale(name, { company: business?.name ?? '', owner });
+      const project = sale.project
+        ? await this.api.project(sale.project, business?.name ?? '').catch(() => null)
+        : null;
       if (run !== this.openRun) {
         return 'stale';
       }
@@ -163,6 +170,9 @@ export class QuickSaleStore {
               outstanding: 0,
               unpaidInvoices: 0,
             },
+      );
+      this.project.set(
+        sale.project ? { id: sale.project, title: project?.title ?? sale.project } : null,
       );
       this.customerInactive.set(!walkIn && !sale.customerActive);
       this.lines.set(sale.lines);
@@ -187,9 +197,9 @@ export class QuickSaleStore {
     const lines = mergeLines(proposal.lines);
     if (
       !caps.sell ||
-      (proposal.walkIn && !caps.sellToWalkIn) ||
-      (!proposal.walkIn && !proposal.customer) ||
-      !lines.length ||
+      (proposal.walkIn && (!caps.sellToWalkIn || proposal.project)) ||
+      (!proposal.walkIn && !proposal.customer && !proposal.project) ||
+      (!lines.length && !proposal.project) ||
       lines.some((line) => !validQty(line.qty))
     ) {
       throw new PrefillUnavailableError('sale');
@@ -199,11 +209,24 @@ export class QuickSaleStore {
     if (!business) {
       throw new PrefillUnavailableError('business');
     }
+    const project = proposal.project
+      ? await this.api.project(proposal.project, business.name)
+      : null;
+    if (
+      proposal.project &&
+      (!project ||
+        project.cancelled ||
+        !project.customer ||
+        (proposal.customer && proposal.customer !== project.customer))
+    ) {
+      throw new PrefillUnavailableError('project');
+    }
+    const customerId = project?.customer ?? proposal.customer;
     const warehouses = await this.api.warehouses(business.name);
     const [customer, items] = await Promise.all([
       proposal.walkIn
         ? Promise.resolve(null)
-        : this.api.customer(proposal.customer!, {
+        : this.api.customer(customerId!, {
             name: business.name,
             currency: business.currency,
           }),
@@ -232,6 +255,9 @@ export class QuickSaleStore {
     this.warehouses.set(warehouses);
     if (customer) {
       this.selectCustomer(customer);
+      if (project) {
+        this.project.set({ id: project.id, title: project.title });
+      }
     } else {
       this.useWalkIn();
     }
@@ -315,12 +341,18 @@ export class QuickSaleStore {
   }
 
   selectCustomer(customer: CustomerOption): void {
+    if (this.project()) {
+      return;
+    }
     this.customerInactive.set(false);
     this.customer.set(customer);
     this.walkIn.set(false);
   }
 
   useWalkIn(): void {
+    if (this.project()) {
+      return;
+    }
     this.customerInactive.set(false);
     this.customer.set(null);
     this.walkIn.set(true);
@@ -453,6 +485,7 @@ export class QuickSaleStore {
       reference: this.reference(),
       company: business?.name ?? '',
       customer,
+      project: this.walkIn() ? null : (this.project()?.id ?? null),
       warehouse: this.warehouse() ?? '',
       lines: this.lines(),
       amountPaid: this.amountPaid() || 0,

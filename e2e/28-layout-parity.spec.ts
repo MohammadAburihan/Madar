@@ -12,7 +12,7 @@ test("opens a project's purchase order from its page on a phone @phone", async (
   await signIn(page, 'owner');
   await page.goto('/projects');
   await page.locator('button.card').filter({ hasText: 'Garden installation' }).first().click();
-  const records = page.locator('app-record-links');
+  const records = page.locator('app-record-links', { hasText: 'Project records' });
   await expect(records).toContainText('Project records');
   await records
     .getByRole('button', { name: /Purchase/ })

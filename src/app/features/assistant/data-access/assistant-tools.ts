@@ -96,8 +96,8 @@ export const TOOL_SCHEMAS: Record<ToolName, ToolSchema> = {
     required: [],
   },
   propose_quick_sale: {
-    properties: { customer: text, items: lines, warehouse: text },
-    required: ['customer', 'items'],
+    properties: { customer: text, items: lines, warehouse: text, project: text },
+    required: ['items'],
   },
   propose_quotation: {
     properties: { customer: text, items: lines },

@@ -16,6 +16,8 @@ import {
   LinkedRecord,
   ProjectDetail,
   ProjectKind,
+  ProjectSale,
+  ProjectSales,
   ProjectRequest,
   ProjectStatus,
   ProjectSummary,
@@ -62,6 +64,7 @@ const BATCH = 30;
 const TASK_LIMIT = 5;
 const CUSTOMER_MATCH_LIMIT = 1000;
 const LINK_LIMIT = 5;
+const SALES_LIMIT = 20;
 
 function batches<T>(values: readonly T[], size = BATCH): T[][] {
   const chunks: T[][] = [];
@@ -179,19 +182,34 @@ export class ProjectsApiService {
     };
   }
 
-  async project(name: string): Promise<ProjectDetail> {
+  /** `salesScope` asks for the project's sales; `owner` limits them to that user's own (salesperson, store associate). */
+  async project(
+    name: string,
+    salesScope?: { company: string; owner: string | null },
+  ): Promise<ProjectDetail> {
     const doc = await firstValueFrom(this.erpnext.doc<ProjectDoc>('Project', name));
-    const [names, tasks, requirements, attachments, linked, actual, siteItems] = await Promise.all([
-      this.customerNames(doc.customer ? [doc.customer] : []),
-      // Only Projects User reads tasks; for other roles the section is left out rather than shown empty.
-      this.tasks(name).catch(() => null),
-      // A role that can't read stock sees no figures; any other failure fails the load rather than look empty.
-      this.requirements(name, doc.company).catch(forbiddenAsEmpty),
-      this.attachments(name).catch(() => []),
-      this.linked(name).catch(() => []),
-      this.actualCost(name, doc.company).catch(() => null),
-      this.siteItems(name, doc.company).catch(forbiddenAsEmpty),
-    ]);
+    const [names, tasks, requirements, attachments, linked, actual, siteItems, active, sales] =
+      await Promise.all([
+        this.customerNames(doc.customer ? [doc.customer] : []),
+        // Only Projects User reads tasks; for other roles the section is left out rather than shown empty.
+        this.tasks(name).catch(() => null),
+        // A role that can't read stock sees no figures; any other failure fails the load rather than look empty.
+        this.requirements(name, doc.company).catch(forbiddenAsEmpty),
+        this.attachments(name).catch(() => []),
+        this.linked(name).catch(() => []),
+        this.actualCost(name, doc.company).catch(() => null),
+        this.siteItems(name, doc.company).catch(forbiddenAsEmpty),
+        doc.customer ? this.customerActive(doc.customer) : Promise.resolve(null),
+        salesScope && doc.company === salesScope.company
+          ? this.sales(name, salesScope.company, salesScope.owner).catch((error): null => {
+              // A role that can't read invoices gets no sales section; a lost connection fails the load.
+              if (ErpnextError.from(error).kind === 'forbidden') {
+                return null;
+              }
+              throw error;
+            })
+          : Promise.resolve(null),
+      ]);
     return {
       ...summary(doc, names),
       budget: doc.estimated_costing ?? 0,
@@ -202,6 +220,8 @@ export class ProjectsApiService {
       siteItems,
       attachments,
       linked,
+      customerActive: active,
+      sales,
     };
   }
 
@@ -635,6 +655,90 @@ export class ProjectsApiService {
       size: r.file_size,
       date: r.creation.slice(0, 10),
     }));
+  }
+
+  /** Null when the customer can't be read: ERPNext still refuses a sale to a disabled one. */
+  private async customerActive(customer: string): Promise<boolean | null> {
+    return firstValueFrom(
+      this.erpnext.list<{ disabled: number }>('Customer', {
+        fields: ['disabled'],
+        filters: [['name', '=', customer]],
+        limit: 1,
+      }),
+    )
+      .then((rows) => (rows.length ? !rows[0].disabled : null))
+      .catch(() => null);
+  }
+
+  /** Submitted invoices (credit notes as their own negative rows) and sales orders, newest first. */
+  private async sales(
+    project: string,
+    company: string,
+    owner: string | null,
+  ): Promise<ProjectSales> {
+    const filters: Filter[] = [
+      ['project', '=', project],
+      ['company', '=', company],
+      ['docstatus', '=', 1],
+      ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
+    ];
+    const read = (doctype: string, extra: string[]) =>
+      firstValueFrom(
+        this.erpnext.list<{
+          name: string;
+          status: string;
+          is_return?: number;
+          base_grand_total: number;
+          base_rounded_total: number;
+          creation: string;
+        }>(doctype, {
+          fields: [
+            'name',
+            'status',
+            'base_grand_total',
+            'base_rounded_total',
+            'creation',
+            ...extra,
+          ],
+          filters,
+          orderBy: 'creation desc',
+          limit: SALES_LIMIT,
+        }),
+      );
+    const [invoices, orders, total] = await Promise.all([
+      read('Sales Invoice', ['is_return']),
+      read('Sales Order', []),
+      owner
+        ? Promise.resolve(null)
+        : firstValueFrom(
+            this.erpnext.list<Record<string, unknown>>('Sales Invoice', {
+              fields: [{ SUM: 'base_grand_total' }],
+              filters,
+              limit: 1,
+            }),
+          ),
+    ]);
+    const rows = [
+      ...invoices.map((r) => ({ r, kind: 'invoice' as const })),
+      ...orders.map((r) => ({ r, kind: 'order' as const })),
+    ]
+      .sort((a, b) => b.r.creation.localeCompare(a.r.creation))
+      .map(({ r, kind }): ProjectSale => ({
+        kind,
+        name: r.name,
+        status: r.status,
+        isReturn: !!r.is_return,
+        amount: invoiceTotal({
+          grand_total: r.base_grand_total,
+          rounded_total: r.base_rounded_total,
+        }),
+      }));
+    return {
+      rows,
+      billed: total
+        ? Math.round(Number(total[0]?.['SUM(`base_grand_total`)'] ?? 0) * 100) / 100
+        : null,
+    };
   }
 
   /** The project's sales, sales orders, purchase orders and expenses, newest first, a few of each. */

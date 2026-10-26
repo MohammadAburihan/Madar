@@ -411,6 +411,78 @@ describe('AssistantProposalsService', () => {
       expect(part.proposals![0].request).toMatchObject({ payload: { warehouse: 'Main - RN' } });
     });
 
+    describe('for a project', () => {
+      const PROJECTS = [
+        {
+          name: 'PRJ-018',
+          project_name: 'Garden installation',
+          customer: 'Lina Haddad',
+          status: 'Open',
+        },
+        { name: 'PRJ-019', project_name: 'Garden lights', customer: 'Lina Haddad', status: 'Open' },
+        { name: 'PRJ-020', project_name: 'Roof terrace', customer: 'Samer', status: 'Open' },
+      ];
+      const projects: Lister = () => PROJECTS;
+
+      it('bills the sale to the project and sells to its customer when none is named', async () => {
+        const { run } = setup({ Project: projects });
+        const found = await run('propose_quick_sale', {
+          project: 'PRJ-018',
+          items: [{ item: 'OLV-20', qty: 2 }],
+        });
+        expect(found.proposals![0].request).toEqual({
+          kind: 'quick_sale',
+          payload: {
+            customer: 'Lina Haddad',
+            project: 'PRJ-018',
+            lines: [{ item_code: 'OLV-20', qty: 2 }],
+          },
+        });
+        expect(found.payload['summary']).toContain('for project Garden installation');
+      });
+
+      it('finds the project by title, then by part of it, and asks when several fit', async () => {
+        const { run } = setup({ Project: projects });
+        const exact = await run('propose_quick_sale', sale({ project: 'garden installation' }));
+        expect(exact.proposals![0].request).toMatchObject({ payload: { project: 'PRJ-018' } });
+        const fuzzy = await run('propose_quick_sale', sale({ project: 'terrace' })).catch(
+          (error) => error,
+        );
+        expect(fuzzy).toBeInstanceOf(ToolFailure);
+        const several = await run('propose_quick_sale', sale({ project: 'garden' }));
+        expect(several.payload).toMatchObject({ needs_choice: true, field: 'project' });
+      });
+
+      it('refuses a customer that is not the project’s, a walk-in, and a role that reads no projects', async () => {
+        const { run, customers } = setup({ Project: projects });
+        customers.exact.mockResolvedValue([{ ...LINA, id: 'Lina Haddad', disabled: false }]);
+        await expect(
+          run('propose_quick_sale', sale({ project: 'PRJ-020', customer: 'Lina Haddad' })),
+        ).rejects.toBeInstanceOf(ToolFailure);
+        await expect(
+          run('propose_quick_sale', sale({ project: 'PRJ-018', customer: 'walk-in' })),
+        ).rejects.toBeInstanceOf(ToolFailure);
+        await expect(
+          run('propose_quick_sale', sale({ project: 'PRJ-018' }), SCOPE('salesperson')),
+        ).rejects.toThrow('projects are not available');
+      });
+
+      it('refuses a project whose customer is disabled', async () => {
+        const { run, customers } = setup({ Project: projects });
+        customers.exact.mockResolvedValue([{ ...LINA, disabled: true }]);
+        await expect(
+          run('propose_quick_sale', { project: 'PRJ-018', items: [{ item: 'OLV-20', qty: 1 }] }),
+        ).rejects.toThrow('customer is disabled');
+      });
+
+      it('needs a customer or a project', async () => {
+        const { run } = setup();
+        await expect(
+          run('propose_quick_sale', { items: [{ item: 'OLV-20', qty: 1 }] }),
+        ).rejects.toBeInstanceOf(ToolFailure);
+      });
+    });
+
     it('proposes a walk-in sale only for a role that may', async () => {
       const { run, customers } = setup();
       const found = await run('propose_quick_sale', sale({ customer: 'Walk-in' }));

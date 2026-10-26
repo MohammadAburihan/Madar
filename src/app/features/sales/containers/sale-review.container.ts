@@ -146,6 +146,9 @@ import { injectSaleContext } from './sale-context';
     </ng-template>
 
     <ng-template #notices>
+      @if (ctx.projectLine(); as project) {
+        <p class="muted">{{ project }}</p>
+      }
       @if (ctx.store.customerInactive()) {
         <app-feedback-card
           tone="warning"

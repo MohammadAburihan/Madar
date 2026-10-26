@@ -24,6 +24,10 @@ supplies projects therefore also needs **Projects User**; a warehouse worker giv
 manager, who supplies projects too. Roles that only supply see the project without its budget and costs, and can't
 edit it. The plan reads the stock ledger, which v16 opens to Stock User and Accounts Manager but not Stock Manager.
 
+Selling to a customer project needs both selling and reading the project, so it sits on the project page: the Owner, and a
+store associate who holds Projects User. A salesperson has no project page in Madar, so no entry point, even though ERPNext lets Sales
+User read projects. Only the Owner sees the project's billed total; the others see their own sales to it.
+
 Workers & HR runs on Frappe HR (the `hrms` app) and is added to a role rather than being one: any user who holds
 **HR User** or **HR Manager** sees, adds and edits workers, whatever their Madar role. Without one, not even the Owner does:
 Frappe HR opens Employees to those roles only, so the Owner holds HR Manager. Advances stay with the Owner, like paying suppliers: Frappe HR lets only Expense Approver submit an Employee Advance, and paying it is a Payment Entry, so the Owner also holds Expense Approver. Attendance, leave, advances and pay show
@@ -62,6 +66,7 @@ to the Owner.
 | Transfer, count, adjust, or add stock without buying it (opening stock, grown or made here; cost per unit only for roles that see costs) | ✅ | — | ✅ | ✅ | — | — |
 | Create and edit projects and their material requirements | ✅ | — | — | — | — | ✅ |
 | Supply a project, record its site use and return unused stock | ✅ | — | ✅ | ✅ | — | ✅ |
+| Sell to a customer project (a quick sale billed to the project; quotations and sales orders can't carry a project in ERPNext) | ✅ | — | ✅ | — | — | — |
 | Add or edit items and services (Items & services; ERPNext needs Item Manager) | ✅ | — | — | — | ✅ | — |
 | Set an item's selling price when adding or editing it (needs Sales Master Manager, and System Manager or Sales Manager to read the selling price list) | ✅ | — | — | — | — | — |
 | See, add and edit workers (Workers & HR; needs HR User or HR Manager) | ✅ | with HR role | with HR role | with HR role | with HR role | with HR role |
