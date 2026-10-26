@@ -1,6 +1,6 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { ProjectDetail, ProjectSales } from '../data-access/project.models';
-import { billedText, saleLinks, sellSection } from './project-sell-view';
+import { billedText, moreSalesText, saleLinks, sellSection } from './project-sell-view';
 
 const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
 const en = realTranslator('en');
@@ -98,6 +98,8 @@ describe('project sell view', () => {
       { kind: 'invoice', name: 'SI-1040', status: 'Overdue', isReturn: false, amount: 90 },
     ],
     billed: 480,
+    moreInvoices: 0,
+    moreOrders: 0,
   };
 
   it('lists each sale with its amount and status, opening its record', () => {
@@ -115,5 +117,17 @@ describe('project sell view', () => {
     expect(visible(billedText(SALES, 'ILS', en))).toBe('Billed ILS 480.00');
     expect(visible(billedText(SALES, 'ILS', ar))).toContain('المفوتر');
     expect(billedText({ ...SALES, billed: null }, 'ILS', en)).toBeNull();
+  });
+
+  it('says how many invoices and orders the capped list leaves out', () => {
+    expect(moreSalesText(SALES, en)).toEqual([]);
+    const more = { ...SALES, moreInvoices: 7, moreOrders: 1 };
+    expect(visible(moreSalesText(more, en))).toEqual([
+      '7 more invoices in ERPNext',
+      '1 more order in ERPNext',
+    ]);
+    expect(visible(moreSalesText({ ...SALES, moreInvoices: 2 }, ar))).toEqual([
+      'فاتورتان أخريان في ERPNext',
+    ]);
   });
 });

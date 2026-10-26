@@ -23,7 +23,7 @@ function setup(
     imports: [translocoTesting()],
     providers: [
       provideRouter([]),
-      { provide: QuickSaleStore, useValue: store },
+      { provide: QuickSaleStore, useValue: { resume: vi.fn(), ...store } },
       { provide: SessionService, useValue: { checkExpired: vi.fn() } },
       {
         provide: TaskPrefillService,
@@ -54,6 +54,12 @@ describe('SaleFlowContainer', () => {
     const fixture = setup(null, { openDraft });
     expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
     expect(openDraft).not.toHaveBeenCalled();
+  });
+
+  it('starts over a sale left behind with an empty basket when the flow is entered', () => {
+    const resume = vi.fn();
+    setup(null, { resume });
+    expect(resume).toHaveBeenCalledTimes(1);
   });
 
   it('opens the draft named in the address instead of resuming', async () => {

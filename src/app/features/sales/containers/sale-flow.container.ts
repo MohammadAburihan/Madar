@@ -70,6 +70,10 @@ export class SaleFlowContainer {
   protected readonly asking = signal(false);
   private resolveLeave?: (leave: boolean) => void;
 
+  constructor() {
+    this.store.resume();
+  }
+
   protected readonly gate = computed(() => ({
     ...draftGateText(this.i18n.tr(), this.entry.phase()),
     prefillLoading: this.i18n.tr().t('prefill.loading'),

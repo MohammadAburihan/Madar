@@ -117,3 +117,11 @@ export function billedText(sales: ProjectSales, currency: string, tr: Translator
     ? null
     : tr.t('project.sell.billed', { amount: formatMoney(sales.billed, currency) });
 }
+
+/** What the capped sales list leaves out, so the rest isn't mistaken for nothing. */
+export function moreSalesText(sales: ProjectSales, tr: Translator): string[] {
+  return [
+    ...(sales.moreInvoices > 0 ? [tr.plural('project.sell.moreInvoices', sales.moreInvoices)] : []),
+    ...(sales.moreOrders > 0 ? [tr.plural('project.sell.moreOrders', sales.moreOrders)] : []),
+  ];
+}

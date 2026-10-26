@@ -705,18 +705,21 @@ export class ProjectsApiService {
           limit: SALES_LIMIT,
         }),
       );
-    const [invoices, orders, total] = await Promise.all([
+    const sum = (field: string, extra: Filter[]) =>
+      firstValueFrom(
+        this.erpnext.list<Record<string, unknown>>('Sales Invoice', {
+          fields: [{ SUM: field }],
+          filters: [...filters, ...extra],
+          limit: 1,
+        }),
+      ).then((rows) => Number(rows[0]?.[`SUM(\`${field}\`)`] ?? 0));
+    const [invoices, orders, invoiceCount, orderCount, rounded, plain] = await Promise.all([
       read('Sales Invoice', ['is_return']),
       read('Sales Order', []),
-      owner
-        ? Promise.resolve(null)
-        : firstValueFrom(
-            this.erpnext.list<Record<string, unknown>>('Sales Invoice', {
-              fields: [{ SUM: 'base_grand_total' }],
-              filters,
-              limit: 1,
-            }),
-          ),
+      firstValueFrom(this.erpnext.count('Sales Invoice', filters)),
+      firstValueFrom(this.erpnext.count('Sales Order', filters)),
+      owner ? Promise.resolve(null) : sum('base_rounded_total', [['base_rounded_total', '!=', 0]]),
+      owner ? Promise.resolve(null) : sum('base_grand_total', [['base_rounded_total', '=', 0]]),
     ]);
     const rows = [
       ...invoices.map((r) => ({ r, kind: 'invoice' as const })),
@@ -735,9 +738,9 @@ export class ProjectsApiService {
       }));
     return {
       rows,
-      billed: total
-        ? Math.round(Number(total[0]?.['SUM(`base_grand_total`)'] ?? 0) * 100) / 100
-        : null,
+      billed: rounded === null || plain === null ? null : Math.round((rounded + plain) * 100) / 100,
+      moreInvoices: Math.max(0, invoiceCount - invoices.length),
+      moreOrders: Math.max(0, orderCount - orders.length),
     };
   }
 

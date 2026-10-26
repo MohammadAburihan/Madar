@@ -334,6 +334,10 @@
           "title": "The sale wasn't confirmed",
           "message": "Nothing was saved. Try again in a moment."
         },
+        "projectChanged": {
+          "title": "The project changed",
+          "message": "This project changed: its customer or status is different now. Check the project and start the sale again."
+        },
         "changed": {
           "title": "An earlier version was already confirmed",
           "message": "Your sale was confirmed before your latest changes. Check Sales before confirming again; confirming now creates a new sale."
@@ -1818,6 +1822,14 @@
       "salesHeading": "Sales for this project",
       "noSales": "Nothing has been sold to this project yet.",
       "billed": "Billed {{amount}}",
+      "moreInvoices": {
+        "one": "{{count}} more invoice in ERPNext",
+        "other": "{{count}} more invoices in ERPNext"
+      },
+      "moreOrders": {
+        "one": "{{count}} more order in ERPNext",
+        "other": "{{count}} more orders in ERPNext"
+      },
       "ownOnly": "Only your own sales are listed.",
       "row": "{{name}} · {{amount}} · {{status}}",
       "status": {

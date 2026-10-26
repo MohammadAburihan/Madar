@@ -106,6 +106,24 @@ test.describe.serial('selling to a customer project on a phone @phone', () => {
     await expect(page).toHaveURL(new RegExp(`/projects/${project}$`));
   });
 
+  test('a project left with an empty basket does not take over the next ordinary sale', async ({
+    page,
+  }) => {
+    await signIn(page, 'owner');
+    await page.goto(`/projects/${project}`);
+    await page.locator('app-project-sell').getByRole('button', { name: 'Quick sale' }).click();
+    await expect(page).toHaveURL(/\/sales\/new\/items/);
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`/projects/${project}$`));
+    await page.evaluate(() => {
+      history.pushState({}, '', '/sales/new');
+      dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await expect(page).toHaveURL(/\/sales\/new$/);
+    await expect(page.locator('app-search-field input').first()).toBeVisible();
+    await expect(page.getByText(named('Project:', title))).toHaveCount(0);
+  });
+
   test('says an internal project has no customer to sell to', async ({ page }) => {
     await signIn(page, 'owner');
     const internal = await createProject(page, `E2E internal ${runId()}`, null);

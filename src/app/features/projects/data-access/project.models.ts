@@ -65,6 +65,9 @@ export interface ProjectSales {
   rows: ProjectSale[];
   /** Submitted invoices less credit notes in company currency; null when only the user's own sales are listed. */
   billed: number | null;
+  /** Submitted invoices and orders beyond the rows listed. */
+  moreInvoices: number;
+  moreOrders: number;
 }
 
 export interface ProjectDetail extends ProjectSummary {

@@ -38,7 +38,7 @@ import {
   siteRow,
   taskCard,
 } from './project-view';
-import { billedText, saleLinks, sellSection } from './project-sell-view';
+import { billedText, moreSalesText, saleLinks, sellSection } from './project-sell-view';
 import {
   ledgerRows,
   ledgerTitle,
@@ -242,6 +242,9 @@ const LEDGER_LIMIT = 5;
             @if (v.billed; as billed) {
               <p class="muted">{{ billed }}</p>
             }
+            @for (more of v.more; track more) {
+              <p class="muted">{{ more }}</p>
+            }
           }
           <app-record-links
             [heading]="txt.records"
@@ -318,6 +321,9 @@ const LEDGER_LIMIT = 5;
         />
         @if (v.billed; as billed) {
           <p class="muted">{{ billed }}</p>
+        }
+        @for (more of v.more; track more) {
+          <p class="muted">{{ more }}</p>
         }
       }
       @if (v.records.some((r) => r.openable)) {
@@ -453,6 +459,7 @@ export class ProjectContainer {
       ),
       salesTitle: sales ? tr.t('project.sell.salesHeading') : null,
       sales: sales ? saleLinks(sales, currency, tr) : [],
+      more: sales ? moreSalesText(sales, tr) : [],
       billed: sales ? (billedText(sales, currency, tr) ?? this.text().ownSales) : null,
       heading: overviewHeading(project, tr),
       stats: budgetStats(project, currency, tr),

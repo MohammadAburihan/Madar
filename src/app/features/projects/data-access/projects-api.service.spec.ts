@@ -329,9 +329,11 @@ describe('ProjectsApiService', () => {
     const SCOPE = { company: 'Rehan Nursery', owner: null };
     const lists = {
       Customer: () => [{ name: 'CUST-LINA', customer_name: 'Lina Haddad', disabled: 0 }],
-      'Sales Invoice': (query: { fields: unknown[] }) =>
+      'Sales Invoice': (query: { fields: unknown[]; filters?: unknown[] }) =>
         JSON.stringify(query.fields).includes('SUM')
-          ? [{ 'SUM(`base_grand_total`)': 280 }]
+          ? JSON.stringify(query.filters).includes('"!="')
+            ? [{ 'SUM(`base_rounded_total`)': 100.5 }]
+            : [{ 'SUM(`base_grand_total`)': 179.5 }]
           : [
               {
                 name: 'SI-2',
@@ -383,6 +385,8 @@ describe('ProjectsApiService', () => {
           { kind: 'invoice', name: 'SI-1', status: 'Paid', isReturn: false, amount: 320 },
         ],
         billed: 280,
+        moreInvoices: 0,
+        moreOrders: 0,
       });
       expect(project.customerActive).toBe(true);
       const invoices = listCalls.filter(
@@ -393,6 +397,30 @@ describe('ProjectsApiService', () => {
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
       ]);
+    });
+
+    it('adds the rounded total owed where there is one, the grand total where not', async () => {
+      const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
+      expect((await api().project('PROJ-0001', SCOPE)).sales?.billed).toBe(280);
+      const sums = listCalls.filter((c) => JSON.stringify(c.query.fields).includes('SUM'));
+      expect(sums.map((c) => c.query.fields)).toEqual([
+        [{ SUM: 'base_rounded_total' }],
+        [{ SUM: 'base_grand_total' }],
+      ]);
+      expect(sums[0].query.filters).toContainEqual(['base_rounded_total', '!=', 0]);
+      expect(sums[1].query.filters).toContainEqual(['base_rounded_total', '=', 0]);
+    });
+
+    it('counts the invoices and orders beyond the rows listed', async () => {
+      fakeErpnext(
+        lists,
+        {},
+        { 'Project/PROJ-0001': PROJECT },
+        { 'Sales Invoice': 27, 'Sales Order': 2 },
+      );
+      const sales = (await api().project('PROJ-0001', SCOPE)).sales;
+      expect(sales?.moreInvoices).toBe(25);
+      expect(sales?.moreOrders).toBe(1);
     });
 
     it('lists only the user’s own sales, with no billed total, for a salesperson', async () => {

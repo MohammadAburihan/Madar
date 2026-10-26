@@ -343,6 +343,9 @@ export class SaleItemsContainer implements OnInit {
 
   protected back(): void {
     const project = this.ctx.store.project();
+    if (project && !this.ctx.store.lines().length) {
+      this.ctx.store.start();
+    }
     void (project ? this.ctx.router.navigate(['/projects', project.id]) : this.ctx.go(''));
   }
 

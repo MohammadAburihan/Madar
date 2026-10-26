@@ -26556,32 +26556,6 @@
               }
             },
             {
-              "id": "c0hNez",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Quotation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Quotation. Route specification: gLucp. New quotation for the project customer, linked to this project. Annotation only.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Quotation"
-                }
-              }
-            },
-            {
-              "id": "J2s10k",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Sales order",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Sales order. Route specification: u9Nym9. New sales order for the project customer, linked to this project. Annotation only.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Sales order"
-                }
-              }
-            },
-            {
               "type": "text",
               "id": "zfCq2",
               "name": "Project sales heading",
@@ -30411,32 +30385,6 @@
                           "descendants": {
                             "rPCdT": {
                               "content": "Quick sale"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Cykfa",
-                          "type": "ref",
-                          "ref": "Ab7yc",
-                          "name": "Quotation",
-                          "width": "fill_container",
-                          "context": "Role: button. Accessible name: Quotation. Route specification: gLucp. Annotation only.",
-                          "descendants": {
-                            "JgY9L": {
-                              "content": "Quotation"
-                            }
-                          }
-                        },
-                        {
-                          "id": "VCXbw",
-                          "type": "ref",
-                          "ref": "Ab7yc",
-                          "name": "Sales order",
-                          "width": "fill_container",
-                          "context": "Role: button. Accessible name: Sales order. Route specification: u9Nym9. Annotation only.",
-                          "descendants": {
-                            "JgY9L": {
-                              "content": "Sales order"
                             }
                           }
                         },
@@ -47485,6 +47433,20 @@
               }
             },
             {
+              "type": "text",
+              "id": "J3kPVb",
+              "name": "Many customers hint",
+              "context": "Shown only when more than 1000 customers match the search; the list then shows projects of the first 1000.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Many customers match; type more of the name to see all their projects.",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-font",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
               "id": "I1QFe0",
               "type": "ref",
               "ref": "d3sxVd",
@@ -55866,32 +55828,6 @@
               }
             },
             {
-              "id": "LYdab",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Quotation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: عرض سعر. Route specification: j2MTn. New quotation for the project customer, linked to this project. Annotation only.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "عرض سعر"
-                }
-              }
-            },
-            {
-              "id": "SPasi",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Sales order",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: أمر بيع. Route specification: eA6TR. New sales order for the project customer, linked to this project. Annotation only.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "أمر بيع"
-                }
-              }
-            },
-            {
               "type": "text",
               "id": "Jbbjw",
               "name": "Project sales heading",
@@ -62577,32 +62513,6 @@
                           }
                         },
                         {
-                          "id": "UuBdL",
-                          "type": "ref",
-                          "ref": "S1PTe",
-                          "name": "Quotation",
-                          "width": "fill_container",
-                          "context": "Role: button. Accessible name: عرض سعر. Route specification: j2MTn. Annotation only.",
-                          "descendants": {
-                            "yHiIx": {
-                              "content": "عرض سعر"
-                            }
-                          }
-                        },
-                        {
-                          "id": "LCA8o",
-                          "type": "ref",
-                          "ref": "S1PTe",
-                          "name": "Sales order",
-                          "width": "fill_container",
-                          "context": "Role: button. Accessible name: أمر بيع. Route specification: eA6TR. Annotation only.",
-                          "descendants": {
-                            "yHiIx": {
-                              "content": "أمر بيع"
-                            }
-                          }
-                        },
-                        {
                           "type": "text",
                           "id": "j5j9d",
                           "name": "Project sales heading",
@@ -63963,6 +63873,20 @@
                   "content": "ابحث في المشاريع أو العملاء"
                 }
               }
+            },
+            {
+              "type": "text",
+              "id": "mBN0e",
+              "name": "Many customers hint",
+              "context": "Shown only when more than 1000 customers match the search; the list then shows projects of the first 1000.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "عملاء كثيرون يطابقون البحث؛ اكتب جزءاً أكبر من الاسم لرؤية كل مشاريعهم.",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 13,
+              "fontWeight": "normal"
             },
             {
               "id": "c5nxZ",

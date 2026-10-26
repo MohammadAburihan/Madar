@@ -851,11 +851,92 @@ describe('QuickSaleStore for a customer project', () => {
     expect(store.project()).toBeNull();
   });
 
-  it('still opens a draft when the project’s title can’t be read', async () => {
+  it('still opens a draft when the project’s title can’t be read for lack of permission', async () => {
     const { store, api } = prepared();
-    api.project.mockRejectedValue(new Error('403'));
+    api.project.mockRejectedValue(new HttpErrorResponse({ status: 403 }));
     api.draftSale.mockResolvedValue({ ...DRAFT, project: 'PRJ-018' });
     await store.openDraft('ACC-SINV-0001');
     expect(store.project()).toEqual({ id: 'PRJ-018', title: 'PRJ-018' });
+  });
+
+  it('fails to open a draft when the project can’t be read for any other reason', async () => {
+    const { store, api } = prepared();
+    api.project.mockRejectedValue(new HttpErrorResponse({ status: 0 }));
+    api.draftSale.mockResolvedValue({ ...DRAFT, project: 'PRJ-018' });
+    await expect(store.openDraft('ACC-SINV-0001')).rejects.toBeInstanceOf(HttpErrorResponse);
+    expect(store.draft()).toBeNull();
+  });
+
+  it('refuses a draft whose project is gone or cancelled', async () => {
+    const { store, api } = prepared();
+    api.draftSale.mockResolvedValue({ ...DRAFT, project: 'PRJ-018' });
+    api.project.mockResolvedValue(null);
+    await expect(store.openDraft('ACC-SINV-0001')).rejects.toBeInstanceOf(DraftUnavailableError);
+    api.project.mockResolvedValue({ ...GARDEN, cancelled: true });
+    await expect(store.openDraft('ACC-SINV-0001')).rejects.toBeInstanceOf(DraftUnavailableError);
+    expect(store.draft()).toBeNull();
+  });
+
+  describe('confirming', () => {
+    async function ready() {
+      const ctx = prepared();
+      ctx.api.confirm.mockResolvedValue(RESULT);
+      await ctx.store.openPrefill({ project: 'PRJ-018', lines: [] });
+      ctx.store.setWarehouse('Main - RN');
+      ctx.store.add(OLIVE);
+      ctx.api.project.mockClear();
+      return ctx;
+    }
+
+    it('reads the project again and goes ahead when it is unchanged', async () => {
+      const { store, api } = await ready();
+      await store.confirm();
+      expect(api.project).toHaveBeenCalledWith('PRJ-018', 'Rehan Nursery');
+      expect(store.state()).toBe('confirmed');
+    });
+
+    it.each([
+      ['gone', null],
+      ['cancelled', { ...GARDEN, cancelled: true }],
+      ['billed to someone else', { ...GARDEN, customer: 'Samer' }],
+    ])('stops, posting nothing, when the project is %s', async (_name, project) => {
+      const { store, api } = await ready();
+      api.project.mockResolvedValue(project);
+      await store.confirm();
+      expect(api.confirm).not.toHaveBeenCalled();
+      expect(store.state()).toBe('failed');
+      expect(store.failure()).toBe('projectChanged');
+    });
+
+    it('reports a lost connection while checking the project as offline', async () => {
+      const { store, api } = await ready();
+      api.project.mockRejectedValue(new HttpErrorResponse({ status: 0 }));
+      await store.confirm();
+      expect(api.confirm).not.toHaveBeenCalled();
+      expect(store.failure()).toBe('offline');
+    });
+  });
+
+  describe('resume', () => {
+    it('forgets a project left behind by a sale with nothing in the basket', async () => {
+      const { store } = prepared();
+      await store.openPrefill({ project: 'PRJ-018', lines: [] });
+      store.resume();
+      expect(store.project()).toBeNull();
+      expect(store.customer()).toBeNull();
+    });
+
+    it('keeps a sale with lines, and one that is being confirmed', async () => {
+      const { store } = prepared();
+      await store.openPrefill({ project: 'PRJ-018', lines: [] });
+      store.setWarehouse('Main - RN');
+      store.add(OLIVE);
+      store.resume();
+      expect(store.project()?.id).toBe('PRJ-018');
+      store.state.set('unresolved');
+      store.lines.set([]);
+      store.resume();
+      expect(store.project()?.id).toBe('PRJ-018');
+    });
   });
 });

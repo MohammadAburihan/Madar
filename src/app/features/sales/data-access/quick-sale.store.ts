@@ -38,7 +38,8 @@ import {
 
 export type ConfirmState =
   'idle' | 'confirming' | 'unresolved' | 'checking' | 'confirmed' | 'failed';
-export type ConfirmFailure = 'stock' | 'permission' | 'offline' | 'changed' | 'error';
+export type ConfirmFailure =
+  'stock' | 'permission' | 'offline' | 'changed' | 'projectChanged' | 'error';
 
 /** One sale in progress, kept across the quick-sale steps until it is confirmed or discarded. */
 @Injectable({ providedIn: 'root' })
@@ -126,6 +127,13 @@ export class QuickSaleStore {
     this.result.set(null);
   }
 
+  /** A fresh visit to the sale: whatever is left of an earlier one, with nothing in the basket, starts over. */
+  resume(): void {
+    if (this.state() === 'idle' && !this.lines().length) {
+      this.start();
+    }
+  }
+
   private openRun = 0;
 
   /**
@@ -145,9 +153,21 @@ export class QuickSaleStore {
         throw new DraftUnavailableError(name);
       }
       const sale = await this.api.draftSale(name, { company: business?.name ?? '', owner });
-      const project = sale.project
-        ? await this.api.project(sale.project, business?.name ?? '').catch(() => null)
-        : null;
+      let project: Awaited<ReturnType<SalesApiService['project']>> = null;
+      let readable = true;
+      if (sale.project) {
+        try {
+          project = await this.api.project(sale.project, business?.name ?? '');
+        } catch (error) {
+          if (ErpnextError.from(error).kind !== 'forbidden') {
+            throw error;
+          }
+          readable = false;
+        }
+        if (readable && (!project || project.cancelled)) {
+          throw new DraftUnavailableError(name);
+        }
+      }
       if (run !== this.openRun) {
         return 'stale';
       }
@@ -410,6 +430,11 @@ export class QuickSaleStore {
     this.state.set('confirming');
     this.failure.set(null);
     try {
+      if (!(await this.projectUnchanged())) {
+        this.failure.set('projectChanged');
+        this.state.set('failed');
+        return;
+      }
       const lines = this.lines();
       const result = await this.api.confirm(await this.request(), this.draft(), (name) =>
         this.draft.set(name),
@@ -430,6 +455,16 @@ export class QuickSaleStore {
       }
       this.fail(error);
     }
+  }
+
+  private async projectUnchanged(): Promise<boolean> {
+    const chosen = this.project();
+    if (!chosen || this.walkIn()) {
+      return true;
+    }
+    const business = await this.business.ensure();
+    const project = await this.api.project(chosen.id, business?.name ?? '');
+    return !!project && !project.cancelled && project.customer === this.customer()?.id;
   }
 
   /** After an unresolved confirmation: found opens the result, a draft or nothing returns to review. */
