@@ -144032,6 +144032,19 @@
                               "fontWeight": "normal"
                             },
                             {
+                              "type": "text",
+                              "id": "JALu8",
+                              "name": "Similar names note",
+                              "fill": "$md-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Similar names exist; check before saving.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$md-font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "id": "l9Ftfj",
                               "type": "ref",
                               "ref": "wk3Ko",
@@ -144649,6 +144662,20 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "لا يُحفظ شيء حتى تؤكّد.",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "V36ef",
+                              "name": "Similar names note",
+                              "fill": "$md-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "توجد أسماء مشابهة؛ تحقّق قبل الحفظ.",
                               "lineHeight": 1.5,
                               "textAlign": "right",
                               "fontFamily": "$md-arabic",
