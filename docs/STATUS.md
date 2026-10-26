@@ -1,6 +1,6 @@
 # Madar — project status
 
-_Last updated: 20 Oct 2026_
+_Last updated: 26 Oct 2026_
 
 ## Done (merged into `development`)
 
@@ -670,12 +670,19 @@ for a Desk invoice billing several orders, the order page's paid/outstanding lin
 Deferred from step 2 (low severity, display only): the movement history drops its oldest entry
 when exactly 30 ledger rows come back, and the Inventory page ignores an `item` query change while open.
 
-## Assistant (Haiku 5.5)
+## Assistant (Haiku 5.5) — released in 0.2.0 (26 Oct 2026)
+
+Live on https://rehannursery.aburehan.net (tag `v0.2.0`; images `madar-web:0.2.0` and `madar-assistant:0.2.0` in ECR;
+the `madar-assistant` container reads its workspace-scoped Anthropic key from `~/madar-assistant.env` on the server).
+Merged: A service #74 and caching #75, B chat + read-only tools #76, C actions #77, D voice #78, E did you mean / add as
+new #79. Next: watch real use (token logs: `docker logs madar-assistant`), then decide on cloud transcription if Arabic
+dictation misses dialect or names.
+
 
 In-app chat assistant on Claude Haiku 5.5, relayed by the `madar-assistant` service (`assistant/`) so the API key stays
 on the server. Four PRs:
 
-- **A: service** (this PR): the relay behind ERPNext sign-in, limits, SSE, one proof tool (`get_today_summary`), nginx
+- **A: service** (done: #74, caching #75): the relay behind ERPNext sign-in, limits, SSE, one proof tool (`get_today_summary`), nginx
   `/assistant/`, image and CI.
 - **B: chat UI and read-only tools**: the chat screen; the client runs the lookups the service declares.
   In B: the chat screen (More and the sidebar), a conversation kept in a root store, and seven read-only tools run
