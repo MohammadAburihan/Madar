@@ -165,7 +165,21 @@ answers with Server-Sent Events: `text` deltas, then one `message` (`content`, `
 stream starts (sign-in, validation, limits) get the same `{ code }` as JSON with status 401, 403, 400, 413, 429 or 503
 (`unavailable`: ERPNext could not be reached to check the session). 429 always carries `Retry-After`: 2 s for `busy`,
 60 s for the per-minute rate, and the seconds to UTC midnight for a spent daily budget (both `rate_limited`).
-`GET /assistant/healthz` answers `ok`.
+`GET /assistant/healthz` answers 200 `ok` once the start-up self-check has passed, 200 `starting` while it runs, and 503
+`{ "code": "self_check_failed", "message" }` after it failed (the container then reports unhealthy while the service keeps
+answering).
+
+Self-check: on start the service sends Claude one minimal request (`max_tokens: 1`, "ping", effort low) with the full
+tool registry and the real system prompt, logs `self-check ok` or `self-check failed: <status> <message>`, and retries
+every 10 minutes while it fails. It catches what only the API reports, such as a tool schema it refuses. Set
+`ASSISTANT_SELF_CHECK=0` to skip it (tests, CI, runs without a real key); `healthz` then answers `ok` straight away.
+API errors from Claude are logged with their status, type and message, never request content, cookies or headers.
+
+Adding a tool: Anthropic limits the optional (not required) properties across all strict tools in one request to 24
+("Schemas contains too many optional parameters"). So every property in `assistant/src/tools.ts` is sent as required, and
+an optional one is nullable (`"type": ["string", "null"]`, described as "Null when not given"); the registry does this
+for any property missing from its `required` list. The app reads null like a missing field. `assistant/test/tools.test.ts`
+counts optional properties and fails above 20.
 
 Voice and privacy: the microphone button in the assistant fills the message field; nothing is sent until the user presses
 Send. Speech is turned into text on the user's device or by their browser, never by Madar: in a browser the recognition may

@@ -74,7 +74,11 @@ const lines: PropertySchema = {
   },
 };
 
-/** The input each tool takes: the same names, types and required fields as `assistant/src/tools.ts`. */
+/**
+ * The input each tool takes: the same names and types as `assistant/src/tools.ts`. There every field is required
+ * for the strict-tool limit on optional parameters, and an optional one is nullable; here `required` lists the
+ * fields that may not be null or missing.
+ */
 export const TOOL_SCHEMAS: Record<ToolName, ToolSchema> = {
   get_today_summary: { properties: {}, required: [] },
   search_customers: { properties: { query: text, limit: count(10) }, required: ['query'] },
@@ -293,13 +297,13 @@ function checkObject(schema: ToolSchema, input: unknown, path = ''): Validation 
     }
   }
   for (const key of schema.required) {
-    if (input[key] === undefined) {
+    if (input[key] === undefined || input[key] === null) {
       return { ok: false, error: `Field "${at(key)}" is required.` };
     }
   }
   const clean: ToolInput = {};
   for (const [key, property] of Object.entries(schema.properties)) {
-    if (input[key] === undefined) {
+    if (input[key] === undefined || input[key] === null) {
       continue;
     }
     const checked = checkValue(at(key), property, input[key]);

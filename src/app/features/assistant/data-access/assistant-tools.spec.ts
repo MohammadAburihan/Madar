@@ -201,6 +201,61 @@ describe('validateInput', () => {
   });
 });
 
+describe('validateInput with null for a field that was not given', () => {
+  type Schema = (typeof TOOL_SCHEMAS)[ToolName];
+  type Property = Schema['properties'][string];
+  const sample = (property: Property): unknown => {
+    switch (property.type) {
+      case 'array':
+        return [sampleObject(property.items!, false)];
+      case 'string':
+        return property.format === 'date' ? '2026-01-02' : (property.enum?.[0] ?? 'a');
+      case 'boolean':
+        return true;
+      default:
+        return 1;
+    }
+  };
+  const sampleObject = (schema: Schema, withOptional: boolean): Record<string, unknown> =>
+    Object.fromEntries(
+      Object.entries(schema.properties)
+        .filter(([key]) => withOptional || schema.required.includes(key))
+        .map(([key, property]) => [key, sample(property)]),
+    );
+
+  it.each(TOOL_NAMES.map((name) => [name]))('%s reads null like a missing field', (name) => {
+    const schema = TOOL_SCHEMAS[name];
+    const minimal = sampleObject(schema, false);
+    const nulls = {
+      ...minimal,
+      ...Object.fromEntries(
+        Object.keys(schema.properties)
+          .filter((key) => !schema.required.includes(key))
+          .map((key) => [key, null]),
+      ),
+    };
+    expect(validateInput(name, minimal)).toEqual({ ok: true, input: minimal });
+    expect(validateInput(name, nulls)).toEqual(validateInput(name, minimal));
+    for (const key of schema.required) {
+      expect(validateInput(name, { ...minimal, [key]: null }).ok, `${name}.${key}`).toBe(false);
+    }
+  });
+
+  it('reads a null price on a line like a missing one', () => {
+    expect(
+      validateInput('propose_quick_sale', {
+        customer: null,
+        items: [{ item: 'Olive', qty: 2, rate: null }],
+        warehouse: null,
+        project: 'Garden',
+      }),
+    ).toEqual({
+      ok: true,
+      input: { items: [{ item: 'Olive', qty: 2 }], project: 'Garden' },
+    });
+  });
+});
+
 describe('validateInput for proposals', () => {
   const sale = { customer: 'Lina', items: [{ item: 'Olive', qty: 2 }] };
 
@@ -394,7 +449,10 @@ describe('the service registry', () => {
 
   it('describes the same fields, types and required fields as the app checks', () => {
     interface Node {
-      properties: Record<string, { type: string; format?: string; enum?: string[]; items?: Node }>;
+      properties: Record<
+        string,
+        { type: string | string[]; format?: string; enum?: string[]; items?: Node }
+      >;
       required?: string[];
     }
     interface Mine {
@@ -406,10 +464,17 @@ describe('the service registry', () => {
     }
     const compare = (mine: Mine, theirs: Node, where: string) => {
       expect(Object.keys(mine.properties), where).toEqual(Object.keys(theirs.properties));
-      expect(mine.required, where).toEqual(theirs.required ?? []);
+      const nullable = (type: string | string[]) => Array.isArray(type) && type.includes('null');
+      expect(theirs.required, where).toEqual(Object.keys(theirs.properties));
+      expect(mine.required, where).toEqual(
+        Object.keys(theirs.properties).filter((key) => !nullable(theirs.properties[key].type)),
+      );
       for (const [field, property] of Object.entries(mine.properties)) {
         const other = theirs.properties[field];
-        expect(property.type, `${where}.${field}`).toBe(other.type);
+        const type = Array.isArray(other.type)
+          ? other.type.filter((t) => t !== 'null')
+          : [other.type];
+        expect([property.type], `${where}.${field}`).toEqual(type);
         expect(property.format, `${where}.${field}`).toBe(other.format);
         expect(property.enum, `${where}.${field}`).toEqual(other.enum);
         expect(!!property.items, `${where}.${field} items`).toBe(!!other.items);

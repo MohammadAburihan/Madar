@@ -31,7 +31,59 @@ const objects = (schema: unknown): Record<string, unknown>[] => {
   return node['type'] === 'object' ? [node, ...nested] : nested;
 };
 
+type Node = {
+  type?: string | string[];
+  properties?: Record<string, Node>;
+  items?: Node;
+  required?: string[];
+};
+
+const nullable = (property: Node) => Array.isArray(property.type) && property.type.includes('null');
+
+const optionalCount = (schema: Node): number => {
+  const own = Object.keys(schema.properties ?? {}).filter(
+    (key) => !(schema.required ?? []).includes(key),
+  ).length;
+  return (
+    own +
+    Object.values(schema.properties ?? {}).reduce((sum, child) => sum + optionalCount(child), 0) +
+    (schema.items ? optionalCount(schema.items) : 0)
+  );
+};
+
+const mandatory = (schema: Node): string[] =>
+  Object.entries(schema.properties ?? {})
+    .filter(([, property]) => !nullable(property))
+    .map(([key]) => key);
+
 describe('tool registry', () => {
+  it('stays under the optional-parameter limit Anthropic applies to strict tools', () => {
+    const total = Object.values(toolRegistry).reduce(
+      (sum, def) => sum + optionalCount(def.input_schema as Node),
+      0,
+    );
+    expect(
+      total,
+      `Anthropic rejects a request whose strict tools hold more than 24 optional (not required) properties in total (limit 24, "Schemas contains too many optional parameters"). Make an optional field required and nullable instead; this suite keeps headroom at 20. Found ${total}.`,
+    ).toBeLessThanOrEqual(20);
+  });
+
+  it('sends every optional field as required but nullable, and says what null means', () => {
+    const check = (schema: Node, where: string) => {
+      expect(schema.required, where).toEqual(Object.keys(schema.properties ?? {}));
+      for (const [key, property] of Object.entries(schema.properties ?? {})) {
+        if (nullable(property)) {
+          expect((property as { description?: string }).description, `${where}.${key}`).toMatch(
+            /Null when not given\.$/,
+          );
+        }
+        if (property.items) check(property.items, `${where}.${key}[]`);
+        if (property.properties) check(property, `${where}.${key}`);
+      }
+    };
+    for (const [name, def] of Object.entries(toolRegistry)) check(def.input_schema as Node, name);
+  });
+
   it('defines the seven lookups, the six proposals and the three new-record proposals the app sends', () => {
     expect(Object.keys(toolRegistry)).toEqual(NAMES);
   });
@@ -47,8 +99,7 @@ describe('tool registry', () => {
   });
 
   it('requires the search text and the invoice name, and nothing else', () => {
-    const required = (name: string) =>
-      (toolRegistry[name]!.input_schema as { required?: string[] }).required ?? [];
+    const required = (name: string) => mandatory(toolRegistry[name]!.input_schema as Node);
     expect(required('search_customers')).toEqual(['query']);
     expect(required('search_items')).toEqual(['query']);
     expect(required('get_invoice')).toEqual(['name']);
@@ -62,11 +113,10 @@ describe('tool registry', () => {
   });
 
   it('requires what each proposal needs, and leaves prices, warehouses and amounts optional', () => {
-    const schema = (name: string) =>
-      toolRegistry[name]!.input_schema as {
-        required?: string[];
-        properties: Record<string, { items?: { required?: string[]; properties: object } }>;
-      };
+    const schema = (name: string) => {
+      const node = toolRegistry[name]!.input_schema as Node;
+      return { properties: node.properties!, required: mandatory(node) };
+    };
     expect(schema('propose_quick_sale').required).toEqual(['items']);
     expect(Object.keys(schema('propose_quick_sale').properties)).toContain('project');
     expect(Object.keys(schema('propose_quotation').properties)).not.toContain('project');
@@ -80,7 +130,7 @@ describe('tool registry', () => {
     expect(schema('propose_new_item').required).toEqual(['name', 'kind']);
     const line = schema('propose_quick_sale').properties['items']!.items!;
     expect(Object.keys(line.properties)).toEqual(['item', 'qty', 'rate']);
-    expect(line.required).toEqual(['item', 'qty']);
+    expect(mandatory(line)).toEqual(['item', 'qty']);
   });
 
   it('lets open_record name only the kinds of record Madar can open', () => {

@@ -7,6 +7,7 @@ export interface Config {
   ratePerMin: number;
   dailyTokens: number;
   globalDailyTokens: number;
+  selfCheck: boolean;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv): Config {
@@ -22,6 +23,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): Config {
       '',
     ),
     erpnextSiteHost,
+    selfCheck: env['ASSISTANT_SELF_CHECK']?.trim() !== '0',
     port: positive(env['PORT'], 8080, 'PORT'),
     ratePerMin: positive(env['ASSISTANT_RATE_PER_MIN'], 20, 'ASSISTANT_RATE_PER_MIN'),
     dailyTokens: positive(env['ASSISTANT_DAILY_TOKENS'], 400000, 'ASSISTANT_DAILY_TOKENS'),
