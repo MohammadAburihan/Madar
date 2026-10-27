@@ -1,12 +1,14 @@
 import {
   CANDIDATE_CAP,
   SIMILARITY_THRESHOLD,
+  SURE_THRESHOLD,
   candidatePatterns,
   candidatesOf,
   editDistance,
   findSameSpelled,
   nameScore,
   normalizeText,
+  rankScored,
   rankSimilar,
   sameName,
   samePatterns,
@@ -112,6 +114,60 @@ describe('nameScore and rankSimilar', () => {
   });
 });
 
+describe('number words and Arabic long vowels', () => {
+  it('uses 0.9 as the sure threshold', () => {
+    expect(SURE_THRESHOLD).toBe(0.9);
+  });
+
+  it.each([
+    ['برش سبعة لتر', 'برش 7 لتر'],
+    ['برش سبع لتر', 'برش 7 لتر'],
+    ['شتلة ثلاثة', 'شتلة 3'],
+    ['شتلة وثلاثه', 'شتلة 3'],
+    ['صندوق عشرين', 'صندوق 20'],
+    ['صندوق مية', 'صندوق 100'],
+    ['صندوق احد عشر', 'صندوق احدعشر'],
+    ['Pot seven liter', 'Pot 7 liter'],
+    ['Pot Twenty', 'Pot 20'],
+    ['Pot hundred', 'Pot 100'],
+  ])('reads the number word in %s as digits', (typed, stored) => {
+    expect(nameScore(typed, stored)).toBeGreaterThanOrEqual(0.9);
+  });
+
+  it('finds برش 7 لتر from the spoken بروش سبعة لتر as a sure match', () => {
+    expect(nameScore('بروش سبعة لتر', 'برش 7 لتر')).toBeGreaterThanOrEqual(SURE_THRESHOLD);
+  });
+
+  it('ranks the exact spelling above the same name without long vowels', () => {
+    expect(nameScore('برش 7 لتر', 'برش 7 لتر')).toBe(1);
+    expect(nameScore('بروش 7 لتر', 'برش 7 لتر')).toBeLessThan(1);
+    const ranked = rankScored('بروش 7 لتر', ['برش 7 لتر', 'بروش 7 لتر'], (n) => n);
+    expect(ranked.map((r) => r.row)).toEqual(['بروش 7 لتر', 'برش 7 لتر']);
+  });
+
+  it('scores a prefix as a match and a different size as a near match, not a sure one', () => {
+    const prefix = nameScore('برش', 'برش 7 لتر');
+    expect(prefix).toBeGreaterThanOrEqual(SIMILARITY_THRESHOLD);
+    const typo = nameScore('بروش سبعة لترر', 'برش 8 لتر');
+    expect(typo).toBeGreaterThanOrEqual(SIMILARITY_THRESHOLD);
+    expect(typo).toBeLessThan(SURE_THRESHOLD);
+  });
+
+  it('keeps unrelated Arabic names below the threshold', () => {
+    expect(nameScore('بروش سبعة لتر', 'سماد عضوي 25 كيلو')).toBeLessThan(SIMILARITY_THRESHOLD);
+    expect(nameScore('شتول زيتون', 'مضخة ماء')).toBeLessThan(SIMILARITY_THRESHOLD);
+  });
+
+  it('does not treat short names that differ by a long vowel as sure', () => {
+    expect(nameScore('سعيد', 'سعد')).toBeLessThan(SURE_THRESHOLD);
+  });
+
+  it('returns scores with the ranked rows', () => {
+    const [best] = rankScored('بروش سبعة لتر', ['برش 7 لتر'], (n) => n);
+    expect(best.score).toBeGreaterThanOrEqual(SURE_THRESHOLD);
+  });
+});
+
 describe('sameName', () => {
   it('ignores case, spaces, punctuation and Arabic letter variants', () => {
     expect(sameName('Fig  Tree', 'fig-tree')).toBe(true);
@@ -136,6 +192,25 @@ describe('candidatePatterns', () => {
     const patterns = candidatePatterns('مدرسه');
     expect(patterns).toEqual(expect.arrayContaining(['%مدرسه%', '%مدر%', '%مدرسة%']));
     expect(candidatePatterns('أحمد')).toContain('%احمد%');
+  });
+
+  it('adds the Arabic skeleton without long vowels as a gapped pattern', () => {
+    expect(candidatePatterns('بروش')).toContain('%ب%ر%ش%');
+    expect(candidatePatterns('شتول')).toContain('%ش%ت%ل%');
+    expect(candidatePatterns('أحمد')).toContain('%ح%م%د%');
+    expect(candidatePatterns('مدرسة')).toContain('%م%د%ر%س%_%');
+  });
+
+  it('puts whole words before gapped skeletons before first letters', () => {
+    const patterns = candidatePatterns('بروش');
+    expect(patterns.indexOf('%بروش%')).toBeLessThan(patterns.indexOf('%ب%ر%ش%'));
+    expect(patterns.indexOf('%ب%ر%ش%')).toBeLessThan(patterns.indexOf('%برو%'));
+  });
+
+  it('gives no pattern for number words', () => {
+    expect(candidatePatterns('سبعة')).toEqual([]);
+    expect(candidatePatterns('seven twenty')).toEqual([]);
+    expect(candidatePatterns('بروش سبعة لتر')).not.toContain('%سبعة%');
   });
 
   it('leaves out short words and the consonant skeleton of words under four letters', () => {

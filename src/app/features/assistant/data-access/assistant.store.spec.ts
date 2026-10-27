@@ -724,6 +724,21 @@ describe('AssistantStore', () => {
       expect(store.choices()).toEqual({ 7: [{ id: 'I-1', label: 'Olive tree' }] });
     });
 
+    it('drops the open question once a later call in the turn proposes something', async () => {
+      const { store, tools, replies } = setup();
+      tools.run
+        .mockResolvedValueOnce(outcome('{}', { choices: CHOICES }))
+        .mockResolvedValueOnce(outcome('{}', { proposals: [PROPOSAL] }));
+      replies(
+        calls(toolUse('t1', 'propose_collect_payment')),
+        calls(toolUse('t2', 'propose_new_customer')),
+        text('Review it.'),
+      );
+      await store.send('Collect from Zed');
+      expect(store.choices()).toEqual({});
+      expect(store.proposals()).toEqual({ 5: [PROPOSAL] });
+    });
+
     it('keeps nothing for a reply that failed', async () => {
       const { store, tools, replies } = setup();
       tools.run.mockResolvedValue(outcome('{}', { proposals: [PROPOSAL], choices: CHOICES }));

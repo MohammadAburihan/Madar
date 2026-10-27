@@ -8,6 +8,7 @@ import { PartyBalancesService } from '../../../core/customers/party-balances.ser
 import { ErpnextClient, Field, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
+import { rankSimilar } from '../../../core/util/fuzzy-match';
 import { toIsoDate } from '../../../core/format/format';
 import { round2, westernDigits } from '../../../core/format/number';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
@@ -119,7 +120,10 @@ export class AssistantToolsService {
       };
     } catch (error) {
       if (error instanceof NotFoundFailure) {
-        return fail(JSON.stringify({ error: error.message, ...error.payload }));
+        return {
+          ...fail(JSON.stringify({ error: error.message, ...error.payload })),
+          choices: error.choices,
+        };
       }
       if (error instanceof ToolFailure) {
         return fail(error.message);
@@ -221,7 +225,10 @@ export class AssistantToolsService {
 
   private async searchCustomers(input: ToolInput, scope: Scope): Promise<Found> {
     const limit = Number(input['limit'] ?? 5);
-    const rows = await this.customers.find(String(input['query']), limit);
+    const query = String(input['query']);
+    const found = await this.customers.find(query, limit);
+    const similar = !found.length && !!query.trim();
+    const rows = similar ? await this.similarCustomers(query, limit) : found;
     const balances = rows.length
       ? await this.balances
           .outstanding(
@@ -236,6 +243,7 @@ export class AssistantToolsService {
     return {
       payload: {
         currency: scope.currency,
+        ...(similar && rows.length ? { similar: true } : {}),
         scope: OWN_SALES_ONLY.includes(scope.persona) ? 'your own sales' : 'all sales',
         ...(balances ? {} : { balance_note: NOT_AVAILABLE }),
         customers: rows.map((c) => ({
@@ -255,40 +263,59 @@ export class AssistantToolsService {
     };
   }
 
+  /** Enabled customers with names near `query`, closest first; used when nothing contains the typed text. */
+  private async similarCustomers(query: string, limit: number) {
+    const { rows } = await this.customers.candidates(query);
+    const near = rankSimilar(query, rows, (c) => c.name, limit);
+    const full = await Promise.all(near.map((c) => this.customers.byId(c.id)));
+    return full.flatMap((c) =>
+      c ? [{ id: c.id, name: c.name, phone: c.phone, city: c.city }] : [],
+    );
+  }
+
   private async searchItems(input: ToolInput, scope: Scope): Promise<Found> {
     const limit = Number(input['limit'] ?? 5);
     const term = String(input['query']).trim();
-    const rows = await this.list<{
+    type Row = {
       name: string;
       item_name: string;
       stock_uom: string;
       is_stock_item: number;
       valuation_rate?: number;
-    }>(
-      'Item',
-      [
-        'name',
-        'item_name',
-        'stock_uom',
-        'is_stock_item',
-        ...(scope.caps.seeCosts ? ['valuation_rate'] : []),
-      ],
-      [
-        ['disabled', '=', 0],
-        ['has_variants', '=', 0],
-      ],
-      {
-        // Codes are stored in Western digits; names keep the digits typed.
-        orFilters: term
-          ? ([
-              ['item_code', 'like', like(westernDigits(term))],
-              ['item_name', 'like', like(term)],
-            ] as Filter[])
-          : undefined,
-        orderBy: 'item_name asc, name asc',
-        limit,
-      },
-    );
+    };
+    const fields = [
+      'name',
+      'item_name',
+      'stock_uom',
+      'is_stock_item',
+      ...(scope.caps.seeCosts ? ['valuation_rate'] : []),
+    ];
+    const enabled: Filter[] = [
+      ['disabled', '=', 0],
+      ['has_variants', '=', 0],
+    ];
+    let rows = await this.list<Row>('Item', fields, enabled, {
+      // Codes are stored in Western digits; names keep the digits typed.
+      orFilters: term
+        ? ([
+            ['item_code', 'like', like(westernDigits(term))],
+            ['item_name', 'like', like(term)],
+          ] as Filter[])
+        : undefined,
+      orderBy: 'item_name asc, name asc',
+      limit,
+    });
+    let similar = false;
+    if (!rows.length && term) {
+      const ids = await this.proposals.similarItems(term, limit);
+      if (ids.length) {
+        const near = await this.list<Row>('Item', fields, [...enabled, ['name', 'in', ids]], {
+          limit: ids.length,
+        });
+        rows = ids.flatMap((id) => near.filter((r) => r.name === id));
+        similar = rows.length > 0;
+      }
+    }
     const [stock, prices] = await Promise.all([
       this.stockFor(
         rows.filter((r) => r.is_stock_item).map((r) => r.name),
@@ -299,6 +326,7 @@ export class AssistantToolsService {
     return {
       payload: {
         currency: scope.currency,
+        ...(similar ? { similar: true } : {}),
         items: rows.map((r) => ({
           code: r.name,
           name: r.item_name,

@@ -29,6 +29,7 @@ function setup({ persona = 'owner', lists = {}, posts = {}, counts = {} }: Optio
   const directory = {
     find: vi.fn().mockResolvedValue([]),
     exact: vi.fn().mockResolvedValue([]),
+    byId: vi.fn().mockResolvedValue(null),
     candidates: vi.fn().mockResolvedValue({ rows: [], capped: false }),
     spelledLike: vi.fn().mockResolvedValue({ rows: [], capped: false }),
   };
@@ -267,6 +268,39 @@ describe('AssistantToolsService', () => {
     });
   });
 
+  describe('search_customers near names', () => {
+    it('falls back to near names, marked similar, when nothing contains the typed text', async () => {
+      const { run, directory } = setup();
+      directory.candidates.mockResolvedValue({
+        rows: [
+          { id: 'C-1', name: 'ليلى حداد' },
+          { id: 'C-2', name: 'سامر عودة' },
+        ],
+        capped: false,
+      });
+      directory.byId.mockResolvedValue({
+        id: 'C-1',
+        name: 'ليلى حداد',
+        phone: '0599',
+        city: null,
+        outstanding: 0,
+        unpaidInvoices: 0,
+      });
+      const { json } = await run('search_customers', { query: 'ليلا حداد' });
+      expect(directory.candidates).toHaveBeenCalledWith('ليلا حداد');
+      expect(json.similar).toBe(true);
+      expect(json.customers.map((c: { id: string }) => c.id)).toEqual(['C-1']);
+    });
+
+    it('does not mark the result similar when the search found customers', async () => {
+      const { run, directory } = setup();
+      directory.find.mockResolvedValue([{ id: 'C-1', name: 'Lina', phone: null, city: null }]);
+      const { json } = await run('search_customers', { query: 'lina' });
+      expect(json).not.toHaveProperty('similar');
+      expect(directory.candidates).not.toHaveBeenCalled();
+    });
+  });
+
   describe('search_items', () => {
     const item = {
       name: 'POT-30',
@@ -325,6 +359,49 @@ describe('AssistantToolsService', () => {
       const items = listCalls.find((c) => c.doctype === 'Item')!.query;
       expect(items.limit).toBe(2);
       expect(items.fields).toContain('valuation_rate');
+    });
+
+    it('falls back to near names, marked similar, when nothing contains the typed text', async () => {
+      const brush = {
+        name: 'BRS-7',
+        item_name: 'برش 7 لتر',
+        stock_uom: 'Nos',
+        is_stock_item: 0,
+      };
+      const { run, listCalls } = setup({
+        lists: lists({
+          ...priceLists,
+          Item: (query) => {
+            if (query.fields?.length === 2) {
+              return [brush, service];
+            }
+            const byName = (query.filters as [string, string, unknown][]).some(
+              ([field, op]) => field === 'name' && op === 'in',
+            );
+            return byName ? [brush] : [];
+          },
+        }),
+        posts,
+      });
+      const { json, records } = await run('search_items', { query: 'بروش سبعة لتر', limit: 3 });
+      expect(json.similar).toBe(true);
+      expect(json.items.map((i: { code: string }) => i.code)).toEqual(['BRS-7']);
+      expect(records.map((r) => r.id)).toEqual(['BRS-7']);
+      const reads = listCalls.filter((c) => c.doctype === 'Item');
+      expect(reads).toHaveLength(3);
+      expect(reads[2].query.filters).toContainEqual(['name', 'in', ['BRS-7']]);
+    });
+
+    it('does not mark a search similar when it found the typed text, or finds nothing near', async () => {
+      const found = await setup({ lists: lists(priceLists), posts }).run('search_items', {
+        query: 'pot',
+      });
+      expect(found.json).not.toHaveProperty('similar');
+      const none = await setup({ lists: lists({ Item: () => [] }) }).run('search_items', {
+        query: 'zzzz',
+      });
+      expect(none.json).toMatchObject({ items: [] });
+      expect(none.json).not.toHaveProperty('similar');
     });
 
     it('never asks for or shows buying cost to a role that does not see costs', async () => {
@@ -824,7 +901,10 @@ describe('AssistantToolsService', () => {
         options: [{ id: 'C-1', label: 'Lina Haddad' }],
         can_create: true,
       });
-      expect(outcome.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
+      expect(outcome.choices).toEqual([
+        { id: 'C-1', label: 'Lina Haddad', suggested: true },
+        { id: 'add-new', label: 'Leena Haddad' },
+      ]);
     });
 
     it('says can_create false for an item to a salesperson, who is not offered propose_new_item', async () => {

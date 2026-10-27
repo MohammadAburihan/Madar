@@ -14,7 +14,8 @@ import {
   Candidates,
   candidatePatterns,
   candidatesOf,
-  rankSimilar,
+  SURE_THRESHOLD,
+  rankScored,
   sameName,
   findSameSpelled,
 } from '../../../core/util/fuzzy-match';
@@ -23,6 +24,7 @@ import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directo
 import { lineRate, mergeLines } from '../../../core/tasks/prefill-lines';
 import { PrefillLine, PrefillRequest } from '../../../core/tasks/task-prefill.service';
 import {
+  ADD_NEW,
   ChoiceOption,
   NotFoundFailure,
   Proposal,
@@ -66,7 +68,7 @@ interface Party {
   name: string;
 }
 
-type Similar = { near: Party[]; capped: boolean };
+type Similar = { near: Party[]; capped: boolean; best: number };
 
 const ITEM_FIELDS = [
   'name',
@@ -92,6 +94,20 @@ function labelParts(text: string): { name: string; id: string } | null {
   const match = /^(.*\S)\s+\(([^()]+)\)$/.exec(text.trim());
   return match ? { name: match[1], id: match[2].trim() } : null;
 }
+
+/** The closest names with the best score, for `miss` to decide whether adding the name as new is still offered. */
+function closest<T>(
+  query: string,
+  rows: readonly T[],
+  nameOf: (row: T) => string,
+  party: (row: T) => Party,
+  capped = false,
+): Similar {
+  const ranked = rankScored(query, rows, nameOf);
+  return { near: ranked.map((entry) => party(entry.row)), capped, best: ranked[0]?.score ?? 0 };
+}
+
+const identity = <T>(row: T): T => row;
 
 const SIMILAR_NAMES_NOTE = 'Similar names exist; check the list before saving';
 
@@ -172,7 +188,10 @@ export class AssistantProposalsService {
           records: [],
           choices:
             error.why === 'close'
-              ? error.options.map((option) => ({ ...option, suggested: true }))
+              ? [
+                  ...error.options.map((option) => ({ ...option, suggested: true })),
+                  ...(error.canCreate ? [{ id: ADD_NEW, label: error.query }] : []),
+                ]
               : error.options,
         };
       }
@@ -691,7 +710,7 @@ export class AssistantProposalsService {
     const found = await this.customers.find(text, MAX_OPTIONS + 1);
     return this.only('customer', text, found, scope, async () => {
       const { rows, capped } = await this.customers.candidates(text);
-      return { near: rankSimilar(text, rows, (c) => c.name), capped };
+      return closest(text, rows, (c) => c.name, identity, capped);
     });
   }
 
@@ -733,10 +752,9 @@ export class AssistantProposalsService {
     const found = exact.length
       ? exact
       : all.filter((p) => p.name.toLowerCase().includes(term) || p.id.toLowerCase().includes(term));
-    const chosen = await this.only('project', text, found, scope, async () => ({
-      near: rankSimilar(text, all, (p) => p.name),
-      capped: false,
-    }));
+    const chosen = await this.only('project', text, found, scope, async () =>
+      closest(text, all, (p) => p.name, identity),
+    );
     return all.find((p) => p.id === chosen.id)!;
   }
 
@@ -788,10 +806,9 @@ export class AssistantProposalsService {
     const found = all.filter(
       (s) => s.name.toLowerCase().includes(term) || s.id.toLowerCase().includes(term),
     );
-    return this.only('supplier', text, found, scope, async () => ({
-      near: rankSimilar(text, all, (s) => s.name),
-      capped: false,
-    }));
+    return this.only('supplier', text, found, scope, async () =>
+      closest(text, all, (s) => s.name, identity),
+    );
   }
 
   private async only(
@@ -831,7 +848,7 @@ export class AssistantProposalsService {
     scope: ToolScope,
     similar: () => Promise<Similar>,
   ): Promise<never> {
-    const { near, capped } = await similar();
+    const { near, capped, best } = await similar();
     const creatable = this.mayCreate(field, scope);
     if (near.length) {
       throw new NeedsChoice(
@@ -839,7 +856,7 @@ export class AssistantProposalsService {
         query,
         optionsOf(near),
         'close',
-        creatable === null ? null : creatable && !capped,
+        creatable === null ? null : creatable && !capped && best < SURE_THRESHOLD,
       );
     }
     if (capped) {
@@ -854,7 +871,11 @@ export class AssistantProposalsService {
     if (creatable === null) {
       throw new ToolFailure(message);
     }
-    throw new NotFoundFailure(message, { not_found: true, field, query, can_create: creatable });
+    throw new NotFoundFailure(
+      message,
+      { not_found: true, field, query, can_create: creatable },
+      creatable ? [{ id: ADD_NEW, label: query }] : [],
+    );
   }
 
   private async item(text: string, use: ItemUse | 'any', scope: ToolScope): Promise<ItemRow> {
@@ -940,14 +961,20 @@ export class AssistantProposalsService {
     }
     return this.miss('item', term, scope, async () => {
       const { rows, capped } = await this.itemCandidates(term, flag);
-      return {
-        near: rankSimilar(term, rows, (row) => row.item_name).map((row) => ({
-          id: row.name,
-          name: row.item_name,
-        })),
+      return closest(
+        term,
+        rows,
+        (row) => row.item_name,
+        (row) => ({ id: row.name, name: row.item_name }),
         capped,
-      };
+      );
     });
+  }
+
+  /** Ids of enabled items whose names look like `term`, closest first, for a search that found nothing. */
+  async similarItems(term: string, limit: number): Promise<string[]> {
+    const { rows } = await this.itemCandidates(term, null);
+    return rankScored(term, rows, (row) => row.item_name, limit).map((entry) => entry.row.name);
   }
 
   private async itemCandidates(
@@ -1051,10 +1078,9 @@ export class AssistantProposalsService {
             w.name.toLowerCase().includes(term.toLowerCase()) ||
             w.id.toLowerCase().includes(term.toLowerCase()),
         );
-    return this.only(field, term, found, scope, async () => ({
-      near: rankSimilar(term, all, (w) => w.name),
-      capped: false,
-    }));
+    return this.only(field, term, found, scope, async () =>
+      closest(term, all, (w) => w.name, identity),
+    );
   }
 
   private async selling(lines: { item: ItemRow; qty: number; rate?: number }[], scope: ToolScope) {
