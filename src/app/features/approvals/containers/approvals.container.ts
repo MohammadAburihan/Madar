@@ -48,6 +48,18 @@ import { approvalCard } from './approvals-view';
         [message]="txt.noAccess.message"
       />
     } @else {
+      @if (manageWorkers()) {
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          (click)="router.navigate(['/workers/leave'])"
+        >
+          {{ txt.leaveRequests }}
+        </button>
+      }
+      <button type="button" class="md-btn" (click)="router.navigate(['/'])">
+        {{ txt.backHome }}
+      </button>
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
@@ -73,18 +85,6 @@ import { approvalCard } from './approvals-view';
           (more)="list.loadMore()"
         />
       }
-      @if (manageWorkers()) {
-        <button
-          type="button"
-          class="md-btn md-btn--primary"
-          (click)="router.navigate(['/workers/leave'])"
-        >
-          {{ txt.leaveRequests }}
-        </button>
-      }
-      <button type="button" class="md-btn" (click)="router.navigate(['/'])">
-        {{ txt.backHome }}
-      </button>
     }
   `,
 })

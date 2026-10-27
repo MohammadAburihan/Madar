@@ -86,6 +86,18 @@ const SEARCH_DELAY_MS = 250;
         [message]="txt.noAccess.message"
       />
     } @else {
+      @if (!desktop()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="add()">
+          {{ txt.add }}
+        </button>
+        <button type="button" class="md-btn" (click)="markAttendance()">
+          {{ txt.markAttendance }}
+        </button>
+        <button type="button" class="md-btn" (click)="leaveRequests()">
+          {{ txt.leaveRequests }}
+        </button>
+        <button type="button" class="md-btn" (click)="pay()">{{ txt.pay }}</button>
+      }
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       <app-filter-chips [label]="txt.title" [options]="txt.tabOptions" [(value)]="tab" />
       @if (desktop()) {
@@ -180,18 +192,6 @@ const SEARCH_DELAY_MS = 250;
           [failed]="list.moreFailed()"
           (more)="list.loadMore()"
         />
-      }
-      @if (!desktop()) {
-        <button type="button" class="md-btn md-btn--primary" (click)="add()">
-          {{ txt.add }}
-        </button>
-        <button type="button" class="md-btn" (click)="markAttendance()">
-          {{ txt.markAttendance }}
-        </button>
-        <button type="button" class="md-btn" (click)="leaveRequests()">
-          {{ txt.leaveRequests }}
-        </button>
-        <button type="button" class="md-btn" (click)="pay()">{{ txt.pay }}</button>
       }
     }
   `,

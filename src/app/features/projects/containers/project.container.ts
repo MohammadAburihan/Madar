@@ -284,6 +284,22 @@ const LEDGER_LIMIT = 5;
       @if (caps().manageProjects) {
         <app-stat-card [stats]="v.stats" />
       }
+      @if (caps().supplyProjects && v.nextItem) {
+        <button type="button" class="md-btn md-btn--primary" (click)="supply(v.nextItem)">
+          {{ txt.supply }}
+        </button>
+      }
+      @if (caps().manageProjects) {
+        <button
+          type="button"
+          class="md-btn"
+          [class.md-btn--primary]="!(caps().supplyProjects && v.nextItem)"
+          (click)="addRequirement()"
+        >
+          {{ txt.addRequirement }}
+        </button>
+        <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
+      }
       @if (v.sell; as sell) {
         <app-project-sell
           [heading]="sell.heading"
@@ -356,22 +372,6 @@ const LEDGER_LIMIT = 5;
           [links]="v.records"
           (opened)="openRecord($event)"
         />
-      }
-      @if (caps().supplyProjects && v.nextItem) {
-        <button type="button" class="md-btn md-btn--primary" (click)="supply(v.nextItem)">
-          {{ txt.supply }}
-        </button>
-      }
-      @if (caps().manageProjects) {
-        <button
-          type="button"
-          class="md-btn"
-          [class.md-btn--primary]="!(caps().supplyProjects && v.nextItem)"
-          (click)="addRequirement()"
-        >
-          {{ txt.addRequirement }}
-        </button>
-        <button type="button" class="md-btn" (click)="edit()">{{ txt.edit }}</button>
       }
     } @else if (failed()) {
       <app-page-heading [title]="txt.title" [subtitle]="name()" />

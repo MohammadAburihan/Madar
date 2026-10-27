@@ -51,6 +51,16 @@ describe('ApprovalsContainer search over loaded rows', () => {
     return { fixture, el, type, loadMore };
   }
 
+  it('puts the Leave requests button above the search field', async () => {
+    const { fixture, el } = setup(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const primary = el.querySelector('button.md-btn--primary') as HTMLElement;
+    const search = el.querySelector('app-search-field') as HTMLElement;
+    expect(primary).not.toBeNull();
+    expect(primary.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('tells the search covers only what is loaded, and stops loading by scroll while a term is typed', async () => {
     const { fixture, el, type, loadMore } = setup(true);
     await vi.waitFor(() => {

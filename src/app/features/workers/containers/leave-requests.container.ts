@@ -55,6 +55,16 @@ const SEARCH_DELAY_MS = 250;
         [message]="txt.noAccess.message"
       />
     } @else {
+      <button
+        type="button"
+        class="md-btn md-btn--primary"
+        (click)="router.navigate(['/workers/leave/new'])"
+      >
+        {{ txt.request }}
+      </button>
+      <button type="button" class="md-btn" (click)="router.navigate(['/workers'])">
+        {{ txt.backToWorkers }}
+      </button>
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       <app-filter-chips [label]="txt.title" [options]="txt.tabOptions" [(value)]="tab" />
       @if (state() === 'loading') {
@@ -80,16 +90,6 @@ const SEARCH_DELAY_MS = 250;
           (more)="list.loadMore()"
         />
       }
-      <button
-        type="button"
-        class="md-btn md-btn--primary"
-        (click)="router.navigate(['/workers/leave/new'])"
-      >
-        {{ txt.request }}
-      </button>
-      <button type="button" class="md-btn" (click)="router.navigate(['/workers'])">
-        {{ txt.backToWorkers }}
-      </button>
     }
   `,
 })

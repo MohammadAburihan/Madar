@@ -80,6 +80,18 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
           }
         </div>
       }
+      @if (!desktop()) {
+        @for (action of actions(); track action.id; let first = $first) {
+          <button
+            type="button"
+            class="md-btn"
+            [class.md-btn--primary]="first"
+            (click)="open(action.id)"
+          >
+            {{ action.label }}
+          </button>
+        }
+      }
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
@@ -121,18 +133,6 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
           [autoLoad]="!term().trim()"
           (more)="list.loadMore()"
         />
-      }
-      @if (!desktop()) {
-        @for (action of actions(); track action.id; let first = $first) {
-          <button
-            type="button"
-            class="md-btn"
-            [class.md-btn--primary]="first"
-            (click)="open(action.id)"
-          >
-            {{ action.label }}
-          </button>
-        }
       }
     }
   `,

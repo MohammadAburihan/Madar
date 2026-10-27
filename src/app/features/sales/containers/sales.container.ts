@@ -92,6 +92,14 @@ type Raw =
         [message]="txt.noAccess.message"
       />
     } @else {
+      @if (!desktop()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="quickSale()">
+          {{ txt.quickSale }}
+        </button>
+        <button type="button" class="md-btn" (click)="newQuotation()">
+          {{ txt.newQuotation }}
+        </button>
+      }
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       <app-filter-chips [label]="txt.heading" [options]="txt.kinds" [(value)]="kind" />
       @if (state() === 'loading') {
@@ -131,14 +139,6 @@ type Raw =
           [failed]="list.moreFailed()"
           (more)="list.loadMore()"
         />
-      }
-      @if (!desktop()) {
-        <button type="button" class="md-btn md-btn--primary" (click)="quickSale()">
-          {{ txt.quickSale }}
-        </button>
-        <button type="button" class="md-btn" (click)="newQuotation()">
-          {{ txt.newQuotation }}
-        </button>
       }
     }
   `,

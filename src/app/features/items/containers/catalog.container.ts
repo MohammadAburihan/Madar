@@ -76,6 +76,11 @@ const SEARCH_DELAY_MS = 250;
     @if (!desktop()) {
       <app-page-heading [title]="txt.title" [subtitle]="txt.subtitle" />
     }
+    @if (!desktop() && canAdd()) {
+      <button type="button" class="md-btn md-btn--primary" (click)="add()">
+        {{ txt.add }}
+      </button>
+    }
     <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
     <app-filter-chips [label]="txt.title" [options]="txt.kinds" [(value)]="kind" />
     @if (state() === 'loading') {
@@ -147,11 +152,6 @@ const SEARCH_DELAY_MS = 250;
         [failed]="list.moreFailed()"
         (more)="list.loadMore()"
       />
-      @if (canAdd()) {
-        <button type="button" class="md-btn md-btn--primary" (click)="add()">
-          {{ txt.add }}
-        </button>
-      }
     }
   `,
 })
