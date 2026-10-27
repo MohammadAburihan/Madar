@@ -79,12 +79,13 @@ const ACTIONS: Record<Persona, string[]> = {
     'recordExpense',
     'transferStock',
     'supplyProject',
+    'assistant',
   ],
-  salesperson: ['sell', 'receivePayment', 'customers', 'catalog'],
-  storeAssociate: ['sell', 'receivePayment', 'receiveGoods', 'transferStock'],
-  warehouse: ['receiveGoods', 'transferStock', 'countStock', 'supplyProjectShort'],
-  purchasing: ['buy', 'receiveGoods'],
-  projectManager: ['supplyProject'],
+  salesperson: ['sell', 'receivePayment', 'customers', 'catalog', 'assistant'],
+  storeAssociate: ['sell', 'receivePayment', 'receiveGoods', 'transferStock', 'assistant'],
+  warehouse: ['receiveGoods', 'transferStock', 'countStock', 'supplyProjectShort', 'assistant'],
+  purchasing: ['buy', 'receiveGoods', 'assistant'],
+  projectManager: ['supplyProject', 'assistant'],
 };
 
 const KINDS: Record<Draft['doctype'], DraftKind> = {

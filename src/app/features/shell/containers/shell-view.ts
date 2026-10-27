@@ -159,10 +159,9 @@ export interface MoreView {
   items: NavItem[];
 }
 
-/** The phone's More page: every destination the role has that the tab bar doesn't hold, then Switch business. */
+/** The phone's More page: every destination the role has except Home, then Switch business. */
 export function buildMoreView(input: ShellViewInput, tr: Translator): MoreView {
   const shell = buildShellView(input, tr);
-  const inTabs = new Set(shell.mobileNav.map((item) => item.route));
   return {
     title: tr.t('nav.more'),
     subtitle: tr.t('more.subtitle', {
@@ -170,7 +169,7 @@ export function buildMoreView(input: ShellViewInput, tr: Translator): MoreView {
       role: tr.t(`home.role.${input.persona}`),
     }),
     items: [
-      ...shell.desktopNav.filter((item) => !inTabs.has(item.route)),
+      ...shell.desktopNav.filter((item) => item.route !== '/'),
       {
         id: 'businesses',
         icon: LucideHouse,

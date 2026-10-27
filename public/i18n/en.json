@@ -72,7 +72,8 @@
       "catalog": "Catalog",
       "receiveGoods": "Receive goods",
       "countStock": "Count stock",
-      "supplyProjectShort": "Supply project"
+      "supplyProjectShort": "Supply project",
+      "assistant": "Assistant"
     },
     "attentionHeading": "Needs your attention",
     "table": {

@@ -111,6 +111,12 @@ describe('buildShellView', () => {
     expect(build('owner').mobileNav.find((i) => i.id === 'more')?.also).toContain('/reports');
   });
 
+  it('leaves Sales and Inventory to their own tabs, not More', () => {
+    const also = build('owner').mobileNav.find((i) => i.id === 'more')?.also;
+    expect(also).not.toContain('/sales');
+    expect(also).not.toContain('/inventory');
+  });
+
   it('hides Sales and Money from warehouse workers, as in the warehouse mock', () => {
     const view = build('warehouse', 'ar');
     expect(view.mobileNav.map((i) => i.id)).toEqual(['home', 'stock', 'more']);
@@ -155,11 +161,13 @@ describe('buildMoreView', () => {
       realTranslator(language),
     );
 
-  it("lists the owner's destinations the tab bar doesn't hold, as on the More mock", () => {
+  it("lists all of the owner's destinations except Home, tab bar ones included", () => {
     const view = plain(more('owner'));
     expect(view.subtitle).toBe('Rehan Nursery · Owner');
     expect(view.items.map((i: { label: string }) => i.label)).toEqual([
+      'Sales',
       'Purchases',
+      'Inventory',
       'Contacts',
       'Workers',
       'Approvals',
@@ -173,9 +181,17 @@ describe('buildMoreView', () => {
     expect(plain(more('owner', undefined, 'ar')).items.at(-1).label).toBe('تبديل المنشأة');
   });
 
-  it('follows the role: a warehouse worker has no Sales tab, so nothing is duplicated or missing', () => {
+  it('follows the role: a warehouse worker has no Sales', () => {
     const ids = more('warehouse', ['Stock User']).items.map((i) => i.id);
-    expect(ids).toEqual(['purchases', 'contacts', 'assistant', 'settings', 'businesses']);
+    expect(ids).toEqual([
+      'purchases',
+      'inventory',
+      'contacts',
+      'assistant',
+      'settings',
+      'businesses',
+    ]);
+    expect(more('owner').items.map((i) => i.id)).not.toContain('home');
   });
 });
 
