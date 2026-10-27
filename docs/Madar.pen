@@ -4004,17 +4004,39 @@
               ]
             },
             {
-              "id": "uOIZw",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Supply a project",
+              "type": "frame",
+              "id": "puQjb",
+              "name": "Quick actions 6",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Supply a project"
+              "gap": 12,
+              "children": [
+                {
+                  "id": "uOIZw",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Supply a project",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Supply a project"
+                    }
+                  }
+                },
+                {
+                  "id": "T0A96S",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Assistant"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -4391,6 +4413,19 @@
               ]
             },
             {
+              "id": "xBWBw",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Assistant"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "XuBIt",
               "name": "Pending heading",
@@ -4763,6 +4798,19 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "I8Kc0h",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Assistant"
+                }
+              }
             },
             {
               "type": "text",
@@ -8748,17 +8796,39 @@
                       ]
                     },
                     {
-                      "id": "XroHV",
-                      "type": "ref",
-                      "ref": "Ab7yc",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "DcA0n",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host Pd5Js and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "JgY9L": {
-                          "content": "Supply a project"
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "XroHV",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Supply a project",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host Pd5Js and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Supply a project"
+                            }
+                          }
+                        },
+                        {
+                          "id": "NiZjt",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Assistant",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Assistant"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -25197,17 +25267,39 @@
                       ]
                     },
                     {
-                      "id": "fSFnY",
-                      "type": "ref",
-                      "ref": "Ab7yc",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "yPc21",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host QfZBs and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "JgY9L": {
-                          "content": "Supply a project"
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "fSFnY",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Supply a project",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host QfZBs and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Supply a project"
+                            }
+                          }
+                        },
+                        {
+                          "id": "BYXOa",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Assistant",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Assistant"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -35286,6 +35378,19 @@
               "fontWeight": "normal"
             },
             {
+              "id": "sJ68T",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Sales",
+              "context": "Role: button. Accessible name: Sales. Route specification: Sales screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Sales"
+                }
+              }
+            },
+            {
               "id": "v4ymRa",
               "type": "ref",
               "ref": "Ab7yc",
@@ -35295,6 +35400,19 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Purchases"
+                }
+              }
+            },
+            {
+              "id": "a9R5Xf",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Inventory",
+              "context": "Role: button. Accessible name: Inventory. Route specification: Inventory screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Inventory"
                 }
               }
             },
@@ -75419,20 +75537,61 @@
               ]
             },
             {
-              "id": "zflgh",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Supply a project",
+              "type": "frame",
+              "id": "VVvtb",
+              "name": "Quick actions 6",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تجهيز مشروع",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
+              "gap": 12,
+              "children": [
+                {
+                  "id": "QWLDU",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "المساعد",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "zflgh",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Supply a project",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "تجهيز مشروع",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "S13xUU",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "المساعد",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -75848,6 +76007,22 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "Z5T5gw",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المساعد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
             },
             {
               "type": "text",
@@ -77448,6 +77623,22 @@
               "fontWeight": "normal"
             },
             {
+              "id": "M8DtSS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Sales",
+              "context": "Role: button. Accessible name: المبيعات. Route specification: Sales screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المبيعات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "ZMvoR",
               "type": "ref",
               "ref": "S1PTe",
@@ -77457,6 +77648,22 @@
               "descendants": {
                 "yHiIx": {
                   "content": "المشتريات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "A1drL",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Inventory",
+              "context": "Role: button. Accessible name: المخزون. Route specification: Inventory screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المخزون",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -88029,20 +88236,46 @@
                       ]
                     },
                     {
-                      "id": "qKZ9q",
-                      "type": "ref",
-                      "ref": "S1PTe",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "w9TvDn",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host C9G6N and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "yHiIx": {
-                          "content": "تجهيز مشروع",
-                          "fontFamily": "$md-arabic",
-                          "lineHeight": 1.5,
-                          "textAlign": "right"
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "C8EJq",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Assistant",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "المساعد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "qKZ9q",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Supply a project",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host C9G6N and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "تجهيز مشروع",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -91408,20 +91641,46 @@
                       ]
                     },
                     {
-                      "id": "L592l6",
-                      "type": "ref",
-                      "ref": "S1PTe",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "fvYXd",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host L80c2 and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "yHiIx": {
-                          "content": "تجهيز مشروع",
-                          "fontFamily": "$md-arabic",
-                          "lineHeight": 1.5,
-                          "textAlign": "right"
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "QZITp",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Assistant",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "المساعد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "L592l6",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Supply a project",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host L80c2 and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "تجهيز مشروع",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
