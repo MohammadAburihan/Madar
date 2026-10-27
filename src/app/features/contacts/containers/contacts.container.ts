@@ -13,14 +13,16 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { ContactsApiService, LIST_LIMIT } from '../data-access/contacts-api.service';
+import { ContactsApiService } from '../data-access/contacts-api.service';
 import {
   ContactKind,
   ContactRow,
@@ -50,6 +52,7 @@ const SEARCH_DELAY_MS = 250;
     FeedbackCardComponent,
     FilterChipsComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     PersonCardComponent,
     SearchFieldComponent,
@@ -199,8 +202,13 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ emptyText() }}</p>
         }
       }
-      @if (state() === 'ready' && capped()) {
-        <p class="muted">{{ txt.capped }}</p>
+      @if (state() === 'ready') {
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          (more)="list.loadMore()"
+        />
       }
       @if (!desktop() && canAdd()) {
         <button type="button" class="md-btn md-btn--primary" (click)="add()">
@@ -229,8 +237,11 @@ export class ContactsContainer {
   protected readonly kinds = computed(() => contactKinds(this.caps()));
   protected readonly kind = signal<string>('customers');
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  private readonly rows = signal<ContactRow[]>([]);
+  protected readonly list = new PagedList<ContactRow>({ key: (r) => r.id });
+  protected readonly state = computed(() =>
+    this.list.status() === 'ready' ? 'ready' : this.list.status() === 'error' ? 'error' : 'loading',
+  );
+  private readonly rows = this.list.items;
   /** The kind the loaded rows are; the filter changes before the new list arrives. */
   private readonly rowsKind = signal<ContactKind | null>(null);
   protected readonly selected = signal<string | null>(null);
@@ -288,7 +299,6 @@ export class ContactsContainer {
       editCustomer: t('contacts.editContact'),
       editSupplier: t('contacts.editSupplier'),
       panelFailed: t('contacts.panelFailed'),
-      capped: t('contacts.capped', { count: LIST_LIMIT }),
       add: t('contacts.add'),
       addDesktop: t('contacts.addDesktop'),
       error: { title: t('contacts.error.title'), message: t('contacts.error.message') },
@@ -320,9 +330,6 @@ export class ContactsContainer {
   protected readonly tableRows = computed(() =>
     this.rows().map((r) => ({ id: r.id, cells: contactRow(r, this.currency()) })),
   );
-
-  /** A full page of rows: there may be more, found by searching. */
-  protected readonly capped = computed(() => this.rows().length >= LIST_LIMIT);
 
   protected readonly emptyText = computed(() =>
     this.i18n
@@ -398,6 +405,9 @@ export class ContactsContainer {
       const kind = this.current();
       const term = this.term();
       this.status();
+      // Signing in as someone else or switching business starts the list over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       // A notice about the last deactivate doesn't stay over a different list.
       untracked(() => this.switchOutcome.set(null));
       if (!this.kinds().length) {
@@ -418,35 +428,26 @@ export class ContactsContainer {
 
   protected async load(kind = this.current(), term = this.term()): Promise<void> {
     const run = ++this.run;
-    this.state.set('loading');
     // A previous list's rows must not stay selectable under the new one.
-    this.rows.set([]);
     this.rowsKind.set(null);
     this.selected.set(null);
-    try {
+    await this.list.loadFirst(this.fetcher(kind, term));
+    if (run === this.run && this.list.status() === 'ready') {
+      this.rowsKind.set(kind);
+    }
+  }
+
+  private fetcher(kind: ContactKind, term: string): PageFetch<ContactRow> {
+    const active = this.status() === 'active';
+    return async (start, size) => {
       const business = await this.business.ensure();
       if (!business) {
         throw new Error('No active business');
       }
-      const rows =
-        kind === 'customers'
-          ? await this.api.customerList(term, business, this.owner(), this.status() === 'active')
-          : await this.api.supplierList(
-              term,
-              business,
-              this.caps().seeCosts,
-              this.status() === 'active',
-            );
-      if (run === this.run) {
-        this.rows.set(rows);
-        this.rowsKind.set(kind);
-        this.state.set('ready');
-      }
-    } catch {
-      if (run === this.run) {
-        this.state.set('error');
-      }
-    }
+      return kind === 'customers'
+        ? this.api.customerList(term, business, this.owner(), active, start, size)
+        : this.api.supplierList(term, business, this.caps().seeCosts, active, start, size);
+    };
   }
 
   private async loadDetail(kind: ContactKind, id: string | null): Promise<void> {

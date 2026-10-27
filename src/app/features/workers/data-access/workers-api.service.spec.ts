@@ -55,7 +55,7 @@ describe('WorkersApiService', () => {
       ],
       'Leave Application': () => [{ employee: 'HR-EMP-00002', to_date: '2026-10-20' }],
     });
-    const rows = await api().list('', 'active', BUSINESS, TODAY);
+    const { items: rows } = await api().list('', 'active', BUSINESS, TODAY, 0, 50);
     expect(rows.map((r) => [r.name, r.department, r.today])).toEqual([
       ['Khaled Omar', 'Field team', { marked: true, status: 'Present' }],
       ['Rana Saleh', 'Garden shop', { marked: true, status: 'On Leave', until: '2026-10-20' }],
@@ -79,7 +79,9 @@ describe('WorkersApiService', () => {
       Employee: () => [{ ...EMPLOYEES[0], status: 'Left' }],
       Department: () => DEPARTMENTS,
     });
-    const [row] = await api().list(' Kha ', 'left', BUSINESS, TODAY);
+    const {
+      items: [row],
+    } = await api().list(' Kha ', 'left', BUSINESS, TODAY, 0, 50);
     expect(row.today).toBeNull();
     const employee = listCalls.find((c) => c.doctype === 'Employee')!.query;
     expect(employee.filters).toContainEqual(['status', '=', 'Left']);
@@ -92,16 +94,35 @@ describe('WorkersApiService', () => {
     expect(listCalls.some((c) => c.doctype === 'Attendance')).toBe(false);
   });
 
+  it('pages workers from the offset, one row past the page, in a stable order', async () => {
+    const { listCalls } = fakeErpnext({
+      Employee: () => Array.from({ length: 51 }, (_, i) => ({ ...EMPLOYEES[0], name: `E-${i}` })),
+      Department: () => DEPARTMENTS,
+      Attendance: () => [],
+      'Leave Application': () => [],
+    });
+    const page = await api().list('', 'active', BUSINESS, TODAY, 100, 50);
+
+    const query = listCalls.find((c) => c.doctype === 'Employee')!.query;
+    expect(query).toMatchObject({
+      limit: 51,
+      limitStart: 100,
+      orderBy: 'employee_name asc, name asc',
+    });
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(true);
+  });
+
   it('leaves today unknown when attendance is forbidden, but fails on other errors', async () => {
     fakeErpnext({ Employee: () => EMPLOYEES, Attendance: forbidden });
-    const rows = await api().list('', 'active', BUSINESS, TODAY);
+    const { items: rows } = await api().list('', 'active', BUSINESS, TODAY, 0, 50);
     expect(rows.every((r) => r.today === null)).toBe(true);
     TestBed.resetTestingModule();
     fakeErpnext({
       Employee: () => EMPLOYEES,
       Attendance: () => throwError(() => new HttpErrorResponse({ status: 500 })),
     });
-    await expect(api().list('', 'active', BUSINESS, TODAY)).rejects.toBeTruthy();
+    await expect(api().list('', 'active', BUSINESS, TODAY, 0, 50)).rejects.toBeTruthy();
   });
 
   it('sums the month, leave left, advances to repay and the latest pay', async () => {
@@ -364,7 +385,7 @@ describe('WorkersApiService review fixes', () => {
         { employee: 'HR-EMP-00002', status: 'Absent' },
       ],
     });
-    const rows = await api().list('', 'active', BUSINESS, TODAY);
+    const { items: rows } = await api().list('', 'active', BUSINESS, TODAY, 0, 50);
     expect(rows.map((r) => r.today)).toEqual([
       { marked: true, status: 'Present' },
       { marked: true, status: 'Absent' },
@@ -415,7 +436,9 @@ describe('WorkersApiService review fixes', () => {
         { employee: 'HR-EMP-00001', status: 'Half Day' },
       ],
     });
-    const [row] = await api().list('', 'active', BUSINESS, TODAY);
+    const {
+      items: [row],
+    } = await api().list('', 'active', BUSINESS, TODAY, 0, 50);
     expect(row.today).toEqual({ marked: true, status: 'Present' });
   });
 
@@ -447,7 +470,9 @@ describe('WorkersApiService review fixes', () => {
       {},
       { 'Employee/HR-EMP-00001': { ...EMPLOYEES[0], date_of_joining: '2025-03-03' } },
     );
-    const [row] = await api().list('', 'active', BUSINESS, TODAY);
+    const {
+      items: [row],
+    } = await api().list('', 'active', BUSINESS, TODAY, 0, 50);
     expect(row.today).toEqual({ marked: true, status: 'Present' });
     const worker = await api().worker('HR-EMP-00001', BUSINESS, TODAY);
     expect(worker.recent).toEqual([

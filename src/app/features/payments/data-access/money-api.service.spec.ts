@@ -60,8 +60,9 @@ describe('MoneyApiService', () => {
     const api = TestBed.inject(MoneyApiService);
 
     const overview = await api.overview('Rehan Nursery', null);
+    const { items: history } = await api.history('Rehan Nursery', null)(0, 50);
 
-    expect(overview.payments).toEqual([
+    expect([...history].reverse()).toEqual([
       {
         name: 'PAY-0154',
         direction: 'received',
@@ -109,8 +110,10 @@ describe('MoneyApiService', () => {
     const api = TestBed.inject(MoneyApiService);
 
     const overview = await api.overview('Rehan Nursery', 'lina@rehan.example');
+    const { items } = await api.history('Rehan Nursery', 'lina@rehan.example')(0, 50);
 
-    expect(overview).toEqual({ payments: [], receivable: null, payable: null });
+    expect(overview).toEqual({ receivable: null, payable: null });
+    expect(items).toEqual([]);
     expect(listCalls.find((c) => c.doctype === 'Payment Entry')!.query.filters).toContainEqual([
       'owner',
       '=',
@@ -131,10 +134,11 @@ describe('MoneyApiService', () => {
     const api = TestBed.inject(MoneyApiService);
 
     const overview = await api.overview('Rehan Nursery', null);
+    const { items: payments } = await api.history('Rehan Nursery', null)(0, 50);
 
-    expect(overview.payments.map((p) => [p.account, p.invoices])).toEqual([
-      ['Cash - RN', []],
+    expect(payments.map((p) => [p.account, p.invoices])).toEqual([
       ['Main bank - RN', []],
+      ['Cash - RN', []],
     ]);
     expect(overview.receivable).toBeNull();
     expect(overview.payable).toBeNull();
@@ -167,9 +171,11 @@ describe('MoneyApiService', () => {
         { name: 'Cash - RN', account_name: 'Main cash' },
       ],
     });
-    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
-      'Travel Expenses - RN',
-    ]);
+    const { items: payments } = await TestBed.inject(MoneyApiService).history(
+      'Rehan Nursery',
+      null,
+      ['Travel Expenses - RN'],
+    )(0, 50);
     expect(payments[0]).toEqual({
       name: 'ACC-JV-0091',
       direction: 'expense',
@@ -225,22 +231,24 @@ describe('MoneyApiService', () => {
         { parent: 'JV-1', account: 'Cash - RN', debit: 0, credit: 18.25 },
       ],
     });
-    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
-      'Travel Expenses - RN',
-    ]);
+    const { items: payments } = await TestBed.inject(MoneyApiService).history(
+      'Rehan Nursery',
+      null,
+      ['Travel Expenses - RN'],
+    )(0, 50);
     expect(payments.map((p) => p.name)).toEqual(['JV-1', 'PAY-2', 'PAY-1']);
   });
 
   it('leaves expenses out for roles that pass no categories', async () => {
     const { listCalls } = fakeErpnext({ 'Payment Entry': PAYMENTS });
-    await TestBed.inject(MoneyApiService).overview('Rehan Nursery', 'lina@rehan.example');
+    await TestBed.inject(MoneyApiService).history('Rehan Nursery', 'lina@rehan.example')(0, 50);
     expect(listCalls.some((c) => c.doctype === 'Journal Entry')).toBe(false);
   });
 
   it('asks for expenses in batches of categories, so no URL grows past the limit', async () => {
     const { listCalls } = fakeErpnext({ 'Payment Entry': PAYMENTS, 'Journal Entry': () => [] });
     const accounts = Array.from({ length: 70 }, (_, i) => `Expense ${i} - RN`);
-    await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, accounts);
+    await TestBed.inject(MoneyApiService).history('Rehan Nursery', null, accounts)(0, 50);
     const sizes = listCalls
       .filter((c) => c.doctype === 'Journal Entry')
       .map(
@@ -259,9 +267,88 @@ describe('MoneyApiService', () => {
         { parent: 'ACC-JV-0099', account: 'Cash - RN', debit: 36.5, credit: 0 },
       ],
     });
-    const { payments } = await TestBed.inject(MoneyApiService).overview('Rehan Nursery', null, [
+    const { items: payments } = await TestBed.inject(MoneyApiService).history(
+      'Rehan Nursery',
+      null,
+      ['Travel Expenses - RN'],
+    )(0, 50);
+    expect(payments).toEqual([]);
+  });
+
+  it('pages payments and expenses from their own cursors, merged in one newest-first order', async () => {
+    const day = (i: number) => `2026-09-${String(30 - Math.floor(i / 2)).padStart(2, '0')}`;
+    const payments = Array.from({ length: 70 }, (_, i) => ({
+      name: `PAY-${String(i).padStart(3, '0')}`,
+      payment_type: 'Receive',
+      party_name: 'A',
+      paid_to: 'Cash - RN',
+      paid_from: 'Debtors - RN',
+      paid_amount: 5,
+      docstatus: 1,
+      posting_date: day(i),
+      creation: `${day(i)} 09:00:00`,
+    }));
+    const entries = Array.from({ length: 40 }, (_, i) => ({
+      name: `JV-${String(i).padStart(3, '0')}`,
+      posting_date: day(i),
+      creation: `${day(i)} 10:00:00`,
+      docstatus: 1,
+    }));
+    const slice = (rows: unknown[]) => (q: { limit?: number; limitStart?: number }) =>
+      rows.slice(q.limitStart ?? 0, (q.limitStart ?? 0) + (q.limit ?? 20));
+    const { listCalls } = fakeErpnext({
+      'Payment Entry': slice(payments),
+      'Journal Entry': slice(entries),
+      'Journal Entry Account': (q) =>
+        (q.filters![0][2] as string[]).flatMap((parent) => [
+          { parent, account: 'Travel Expenses - RN', debit: 4, credit: 0 },
+          { parent, account: 'Cash - RN', debit: 0, credit: 4 },
+        ]),
+    });
+    const fetch = TestBed.inject(MoneyApiService).history('Rehan Nursery', null, [
       'Travel Expenses - RN',
     ]);
-    expect(payments).toEqual([]);
+    const first = await fetch(0, 50);
+    const second = await fetch(50, 50);
+    const third = await fetch(100, 50);
+
+    const all = [...first.items, ...second.items, ...third.items];
+    expect(first.more).toBe(true);
+    expect(second.more).toBe(true);
+    expect(third.more).toBe(false);
+    expect(all).toHaveLength(110);
+    expect(new Set(all.map((r) => r.name)).size).toBe(110);
+    const keys = all.map((r) => `${r.postingDate} ${r.created} ${r.name}`);
+    expect(keys).toEqual([...keys].sort().reverse());
+    expect(listCalls.find((c) => c.doctype === 'Payment Entry')!.query.orderBy).toBe(
+      'posting_date desc, creation desc, name desc',
+    );
+  });
+
+  it('keeps reading expenses past a page of entries that only credit an expense account', async () => {
+    const entries = Array.from({ length: 120 }, (_, i) => ({
+      name: `JV-${String(i).padStart(3, '0')}`,
+      posting_date: '2026-10-13',
+      creation: `2026-10-13 ${String(23 - Math.floor(i / 10)).padStart(2, '0')}:00:00`,
+      docstatus: 1,
+    }));
+    const reversal = (name: string) => name < 'JV-060';
+    fakeErpnext({
+      'Payment Entry': () => [],
+      'Journal Entry': (q) =>
+        entries.slice(q.limitStart ?? 0, (q.limitStart ?? 0) + (q.limit ?? 20)),
+      'Journal Entry Account': (q) =>
+        (q.filters![0][2] as string[]).map((parent) =>
+          reversal(parent)
+            ? { parent, account: 'Travel Expenses - RN', debit: 0, credit: 4 }
+            : { parent, account: 'Travel Expenses - RN', debit: 4, credit: 0 },
+        ),
+    });
+    const page = await TestBed.inject(MoneyApiService).history('Rehan Nursery', null, [
+      'Travel Expenses - RN',
+    ])(0, 50);
+
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(true);
   });
 });

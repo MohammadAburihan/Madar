@@ -25,26 +25,36 @@ describe('SalesRecordsApiService', () => {
       ],
     });
     expect(
-      await api().invoices({
-        company: 'Rehan Nursery',
-        currency: 'ILS',
-        term: 'lina',
-        owner: null,
-      }),
-    ).toEqual([
-      {
-        name: 'SI-1042',
-        customer: 'Lina Haddad',
-        docstatus: 1,
-        status: 'Partly Paid',
-        isReturn: false,
-        delivered: true,
-        total: 320,
-        outstanding: 200,
-        date: '2026-10-11',
-      },
-    ]);
+      await api().invoices(
+        {
+          company: 'Rehan Nursery',
+          currency: 'ILS',
+          term: 'lina',
+          owner: null,
+        },
+        0,
+        50,
+      ),
+    ).toMatchObject({
+      more: false,
+      items: [
+        {
+          name: 'SI-1042',
+          customer: 'Lina Haddad',
+          docstatus: 1,
+          status: 'Partly Paid',
+          isReturn: false,
+          delivered: true,
+          total: 320,
+          outstanding: 200,
+          date: '2026-10-11',
+        },
+      ],
+    });
     const query = listCalls[0].query;
+    expect(query.limit).toBe(51);
+    expect(query.limitStart).toBe(0);
+    expect(query.orderBy).toBe('posting_date desc, creation desc, name desc');
     expect(query.filters).toEqual([
       ['company', '=', 'Rehan Nursery'],
       ['docstatus', '<', 2],
@@ -83,12 +93,12 @@ describe('SalesRecordsApiService', () => {
       ],
     });
     const all = { company: 'Rehan Nursery', currency: 'ILS', term: '', owner: null };
-    expect((await api().orders(all))[0]).toMatchObject({
+    expect((await api().orders(all, 0, 50)).items[0]).toMatchObject({
       name: 'SO-0187',
       qty: 2,
       deliveryStatus: 'Not Delivered',
     });
-    expect((await api().quotes(all))[0]).toMatchObject({
+    expect((await api().quotes(all, 0, 50)).items[0]).toMatchObject({
       name: 'QT-0084',
       validTill: '2026-10-25',
       docstatus: 0,
@@ -128,12 +138,11 @@ describe('SalesRecordsApiService', () => {
         },
       ],
     });
-    const rows = await api().invoices({
-      company: 'Rehan Nursery',
-      currency: 'ILS',
-      term: '',
-      owner: 'lina@rehan.example',
-    });
+    const { items: rows } = await api().invoices(
+      { company: 'Rehan Nursery', currency: 'ILS', term: '', owner: 'lina@rehan.example' },
+      0,
+      50,
+    );
     expect(rows.map((r) => [r.name, r.outstanding, r.delivered])).toEqual([
       ['SI-USD', 100, true],
       ['SI-DRAFT', 0, false],
@@ -169,12 +178,34 @@ describe('SalesRecordsApiService', () => {
       },
       'Sales Order Item': () => [{ name: 'row-1' }],
     });
-    const [row] = await api().invoices({
-      company: 'Rehan Nursery',
-      currency: 'ILS',
-      term: '',
-      owner: null,
-    });
+    const {
+      items: [row],
+    } = await api().invoices(
+      { company: 'Rehan Nursery', currency: 'ILS', term: '', owner: null },
+      0,
+      50,
+    );
     expect(row.delivered).toBe(true);
+  });
+
+  it('pages each tab from the offset, one row past the page, with a stable order', async () => {
+    const order = (i: number) => ({ name: `SO-${i}`, customer_name: 'A', transaction_date: 'd' });
+    const { listCalls } = fakeErpnext({
+      'Sales Order': () => Array.from({ length: 51 }, (_, i) => order(i)),
+      Quotation: () => [order(1)],
+    });
+    const all = { company: 'Rehan Nursery', currency: 'ILS', term: '', owner: null };
+    const orders = await api().orders(all, 50, 50);
+    const quotes = await api().quotes(all, 50, 50);
+
+    expect(listCalls[0].query).toMatchObject({
+      limit: 51,
+      limitStart: 50,
+      orderBy: 'transaction_date desc, creation desc, name desc',
+    });
+    expect(orders.items).toHaveLength(50);
+    expect(orders.more).toBe(true);
+    expect(listCalls[1].query).toMatchObject({ limit: 51, limitStart: 50 });
+    expect(quotes.more).toBe(false);
   });
 });

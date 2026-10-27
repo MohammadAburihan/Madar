@@ -8,6 +8,8 @@ export interface ApprovalItem {
   amount: number | null;
   state: string;
   date: string;
+  /** Listed from Frappe HR's leave requests, not from a workflow: decided on the leave page. */
+  leaveOnly?: boolean;
 }
 
 export interface ApprovalDetail extends ApprovalItem {

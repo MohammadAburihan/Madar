@@ -67,11 +67,7 @@ describe('purchase view', () => {
     ];
     expect(
       visible(
-        view.workspaceStats(
-          { orders, openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 },
-          'ILS',
-          en,
-        ),
+        view.workspaceStats({ openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 }, 'ILS', en),
       ),
     ).toEqual([
       { label: 'Open orders', value: '3' },
@@ -79,11 +75,7 @@ describe('purchase view', () => {
       { label: 'Supplier balance', value: 'ILS 170.00' },
     ]);
     expect(
-      view.workspaceStats(
-        { orders, openOrders: 3, awaitingReceipt: 2, supplierBalance: null },
-        'ILS',
-        en,
-      ),
+      view.workspaceStats({ openOrders: 3, awaitingReceipt: 2, supplierBalance: null }, 'ILS', en),
     ).toHaveLength(2);
   });
 
@@ -105,11 +97,7 @@ describe('purchase view', () => {
       { label: 'Received', value: '6 of 10 units · 4 open' },
     ]);
     expect(
-      view.workspaceStats(
-        { orders: [], openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 },
-        null,
-        en,
-      ),
+      view.workspaceStats({ openOrders: 3, awaitingReceipt: 2, supplierBalance: 170 }, null, en),
     ).toHaveLength(2);
   });
 

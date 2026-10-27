@@ -2,13 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { round2, westernDigits } from '../../../core/format/number';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { CatalogItem, ItemDetail, ItemFormValue, ItemKind, ItemOptions } from './items.models';
-
-/** The catalog shows this many; the screen says so when there may be more. */
-export const CATALOG_LIMIT = 50;
 
 interface ItemRow {
   name: string;
@@ -62,17 +60,19 @@ export class ItemsApiService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly warehouses = inject(WarehouseDirectoryService);
 
-  /** Matching items, products and services, by name, code or barcode, with price and stock where readable. */
+  /** One page of matching items, products and services, by name, code or barcode, with price and stock where readable. */
   async catalog(
     term: string,
     kind: ItemKind | 'all',
     company: string,
     today: string,
-  ): Promise<{ items: CatalogItem[]; capped: boolean }> {
+    start: number,
+    size: number,
+  ): Promise<Page<CatalogItem>> {
     const like = `%${term.trim()}%`;
     // Codes and barcodes are stored in Western digits (Madar saves them so); names keep the digits typed.
     const codeLike = `%${westernDigits(term.trim())}%`;
-    const rows = await firstValueFrom(
+    const read = await firstValueFrom(
       this.erpnext.list<ItemRow>('Item', {
         fields: ['name', 'item_name', 'item_group', 'stock_uom', 'is_stock_item'],
         filters: [
@@ -88,9 +88,11 @@ export class ItemsApiService {
             ]
           : undefined,
         orderBy: 'item_name asc, name asc',
-        limit: CATALOG_LIMIT,
+        limit: size + 1,
+        limitStart: start,
       }),
     );
+    const { rows, more } = pageOf(read, size);
     // Searching barcodes joins them in: an item with two matching barcodes comes back twice.
     const unique = rows.filter((r, i) => rows.findIndex((o) => o.name === r.name) === i);
     const [prices, onHand] = await Promise.all([
@@ -106,8 +108,9 @@ export class ItemsApiService {
         price: prices?.get(r.name)?.price_list_rate ?? null,
         onHand: r.is_stock_item && onHand ? (onHand.get(r.name) ?? 0) : null,
       })),
-      // ERPNext's rows were capped, before duplicates came out.
-      capped: rows.length >= CATALOG_LIMIT,
+      more,
+      // The cursor counts ERPNext's rows, before duplicates came out.
+      fetched: rows.length,
     };
   }
 

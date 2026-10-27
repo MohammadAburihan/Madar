@@ -59,7 +59,9 @@ describe('ItemsApiService', () => {
       },
       SELLING,
     );
-    expect((await api().catalog('olive', 'all', 'Rehan Nursery', '2026-10-19')).items).toEqual([
+    expect(
+      (await api().catalog('olive', 'all', 'Rehan Nursery', '2026-10-19', 0, 50)).items,
+    ).toEqual([
       {
         code: 'OLV-20',
         name: 'Olive tree',
@@ -97,9 +99,9 @@ describe('ItemsApiService', () => {
       { Item: () => [ROWS[0]], Warehouse: WAREHOUSES, Bin: forbidden },
       { 'frappe.client.get_value': forbidden },
     );
-    expect((await api().catalog('', 'product', 'Rehan Nursery', '2026-10-19')).items).toEqual([
-      expect.objectContaining({ code: 'OLV-20', price: null, onHand: null }),
-    ]);
+    expect(
+      (await api().catalog('', 'product', 'Rehan Nursery', '2026-10-19', 0, 50)).items,
+    ).toEqual([expect.objectContaining({ code: 'OLV-20', price: null, onHand: null })]);
     expect(listCalls[0].query.filters).toContainEqual(['is_stock_item', '=', 1]);
   });
 
@@ -252,7 +254,7 @@ describe('ItemsApiService', () => {
     );
     const {
       items: [olive],
-    } = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19');
+    } = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19', 0, 50);
     expect(olive.price).toBe(85);
     expect(listCalls.find((c) => c.doctype === 'Item Price')?.query.filters).toEqual(
       expect.arrayContaining([
@@ -359,9 +361,9 @@ describe('ItemsApiService', () => {
 
   it('lists an item once even when two of its barcodes match', async () => {
     fakeErpnext({ Item: () => [ROWS[0], ROWS[0]], Warehouse: WAREHOUSES, Bin: () => [] }, SELLING);
-    expect((await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).items).toHaveLength(
-      1,
-    );
+    expect(
+      (await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19', 0, 50)).items,
+    ).toHaveLength(1);
     TestBed.resetTestingModule();
     fakeErpnext(
       {
@@ -371,9 +373,34 @@ describe('ItemsApiService', () => {
       },
       SELLING,
     );
-    // Fifty rows from ERPNext, one item: there may be more, though only one is shown.
-    expect(await api().catalog('729', 'all', 'Rehan Nursery', '2026-10-19')).toMatchObject({
-      capped: true,
+  });
+
+  it('asks for one row past the page to know there is more, and counts the rows it used', async () => {
+    const { listCalls } = fakeErpnext(
+      {
+        Item: () => Array.from({ length: 51 }, (_, i) => ({ ...ROWS[0], name: `OLV-${i}` })),
+        Warehouse: WAREHOUSES,
+        Bin: () => [],
+      },
+      SELLING,
+    );
+    const page = await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19', 100, 50);
+
+    const query = listCalls.find((c) => c.doctype === 'Item')?.query;
+    expect(query).toMatchObject({
+      limit: 51,
+      limitStart: 100,
+      orderBy: 'item_name asc, name asc',
+    });
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(true);
+    expect(page.fetched).toBe(50);
+  });
+
+  it('has no more on a short last page', async () => {
+    fakeErpnext({ Item: () => ROWS, Warehouse: WAREHOUSES, Bin: () => [] }, SELLING);
+    expect(await api().catalog('', 'all', 'Rehan Nursery', '2026-10-19', 50, 50)).toMatchObject({
+      more: false,
     });
   });
 

@@ -10,11 +10,11 @@ test.describe('customers and suppliers @phone', () => {
     await page.locator('app-person-card').filter({ hasText: 'Samir' }).first().click();
     await page.goto('/contacts');
     await expectHeading(page, 'Customers & suppliers');
-    // More customers than one page: the list says so (a freshly seeded site has fewer).
+    // More customers than one page: the list ends with Show more (a freshly seeded site has fewer).
     const customers = await erp(page).list('Customer', ['name'], [['disabled', '=', 0]]);
-    await expect(
-      page.getByText(named('Showing the first', '30', '. Search to find others.')),
-    ).toHaveCount(customers.length > 30 ? 1 : 0);
+    await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(
+      customers.length > 50 ? 1 : 0,
+    );
     await page.locator('app-search-field input').fill(CUSTOMER);
     const card = page.locator('app-person-card', { hasText: CUSTOMER }).first();
     await expect(card).toContainText('059-000-0142');

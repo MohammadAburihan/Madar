@@ -14,14 +14,16 @@ import { BusinessService } from '../../../core/business/business.service';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { RecordKind } from '../data-access/sales-records.models';
-import { RECORDS_LIMIT, SalesRecordsApiService } from '../data-access/sales-records-api.service';
+import { SalesRecordsApiService } from '../data-access/sales-records-api.service';
 import { RecordCard, invoiceCard, orderCard, quoteCard } from './sales-records-view';
 
 const KINDS: readonly RecordKind[] = ['invoices', 'orders', 'quotes'];
@@ -35,6 +37,7 @@ const SEARCH_DELAY_MS = 250;
     FeedbackCardComponent,
     FilterChipsComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
   ],
@@ -111,8 +114,13 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ emptyText() }}</p>
         }
       }
-      @if (state() === 'ready' && cards().length >= limit) {
-        <p class="muted">{{ txt.newest }}</p>
+      @if (state() === 'ready') {
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          (more)="list.loadMore()"
+        />
       }
       @if (!desktop()) {
         <button type="button" class="md-btn md-btn--primary" (click)="quickSale()">
@@ -134,14 +142,20 @@ export class SalesContainer {
   protected readonly caps = this.session.capabilities;
   protected readonly i18n = injectI18n();
 
-  protected readonly limit = RECORDS_LIMIT;
   /** Sales roles see only the documents they made. */
   private readonly own = computed(() => OWN_SALES_ONLY.includes(this.session.persona()));
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly kind = signal<string>('invoices');
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'forbidden' | 'error'>('loading');
-  protected readonly cards = signal<RecordCard[]>([]);
+  protected readonly list = new PagedList<RecordCard>({ key: (c) => c.id });
+  protected readonly state = computed(() => {
+    const status = this.list.status();
+    if (status === 'error') {
+      return ErpnextError.from(this.list.error()).kind === 'forbidden' ? 'forbidden' : 'error';
+    }
+    return status === 'ready' ? 'ready' : 'loading';
+  });
+  protected readonly cards = this.list.items;
   private run = 0;
 
   protected readonly text = computed(() => {
@@ -162,7 +176,6 @@ export class SalesContainer {
       forbidden: t('sales.records.forbidden'),
       loading: t('sales.records.loading'),
       retry: t('sales.records.retry'),
-      newest: t('sales.records.newest', { count: RECORDS_LIMIT }),
       error: {
         title: t('sales.records.error.title'),
         message: t('sales.records.error.message'),
@@ -189,6 +202,9 @@ export class SalesContainer {
       const term = this.term();
       // Language changes reword the cards, so they are rebuilt from fresh records.
       this.i18n.language();
+      // Signing in as someone else or switching business starts the list over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       if (!this.caps().sell) {
         return;
       }
@@ -200,44 +216,44 @@ export class SalesContainer {
     });
   }
 
-  protected async load(kind = this.kind() as RecordKind, term = this.term()): Promise<void> {
-    const run = ++this.run;
-    this.state.set('loading');
-    try {
-      const business = await this.business.ensure();
-      if (!business) {
-        throw new Error('No business');
-      }
-      const tr = this.i18n.tr();
-      const language = this.i18n.language();
-      const currency = business.currency;
-      const query = {
-        company: business.name,
-        currency,
-        term,
-        owner: this.own() ? (this.session.user()?.id ?? null) : null,
-      };
-      const cards =
-        kind === 'invoices'
-          ? (await this.api.invoices(query)).map((r) => invoiceCard(r, currency, tr))
-          : kind === 'orders'
-            ? (await this.api.orders(query)).map((r) => orderCard(r, currency, tr))
-            : (await this.api.quotes(query)).map((r) => quoteCard(r, currency, language, tr));
-      if (run === this.run) {
-        this.cards.set(cards);
-        this.state.set('ready');
-      }
-    } catch (error) {
-      if (run === this.run) {
-        this.cards.set([]);
-        const forbidden = ErpnextError.from(error).kind === 'forbidden';
+  protected load(kind = this.kind() as RecordKind, term = this.term()): Promise<void> {
+    return this.list.loadFirst(this.fetcher(kind, term));
+  }
+
+  private fetcher(kind: RecordKind, term: string): PageFetch<RecordCard> {
+    return async (start, size) => {
+      try {
+        const business = await this.business.ensure();
+        if (!business) {
+          throw new Error('No business');
+        }
+        const tr = this.i18n.tr();
+        const language = this.i18n.language();
+        const currency = business.currency;
+        const query = {
+          company: business.name,
+          currency,
+          term,
+          owner: this.own() ? (this.session.user()?.id ?? null) : null,
+        };
+        if (kind === 'invoices') {
+          const page = await this.api.invoices(query, start, size);
+          return { ...page, items: page.items.map((r) => invoiceCard(r, currency, tr)) };
+        }
+        if (kind === 'orders') {
+          const page = await this.api.orders(query, start, size);
+          return { ...page, items: page.items.map((r) => orderCard(r, currency, tr)) };
+        }
+        const page = await this.api.quotes(query, start, size);
+        return { ...page, items: page.items.map((r) => quoteCard(r, currency, language, tr)) };
+      } catch (error) {
         // 403 is also how an expired session answers; that one goes back to sign-in.
-        if (forbidden) {
+        if (ErpnextError.from(error).kind === 'forbidden') {
           void this.session.checkExpired();
         }
-        this.state.set(forbidden ? 'forbidden' : 'error');
+        throw error;
       }
-    }
+    };
   }
 
   /** Only a row that is itself openable: the list on screen may still be the previous tab's. */

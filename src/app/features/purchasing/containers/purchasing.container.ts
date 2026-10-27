@@ -13,17 +13,19 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { PurchaseApiService } from '../data-access/purchase-api.service';
-import { OrderInvoice, PurchasingOverview } from '../data-access/purchase.models';
+import { OrderInvoice, OrderSummary, PurchasingOverview } from '../data-access/purchase.models';
 import { SupplierInvoiceApiService } from '../data-access/supplier-invoice-api.service';
 import { panelInvoiceRows } from './invoice-view';
 import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from './purchase-view';
@@ -36,6 +38,7 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
     FeedbackCardComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
     StatCardComponent,
@@ -106,6 +109,12 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
               [ltrColumns]="[3]"
               (opened)="selected.set($event)"
             />
+            <app-load-more
+              [hasMore]="list.hasMore()"
+              [loading]="list.loadingMore()"
+              [failed]="list.moreFailed()"
+              (more)="list.loadMore()"
+            />
           </div>
           <section class="panel" [attr.aria-label]="txt.ordersHeading">
             @if (selectedOrder(); as order) {
@@ -148,6 +157,12 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
         } @empty {
           <p class="muted">{{ emptyText() }}</p>
         }
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          (more)="list.loadMore()"
+        />
       }
     }
   `,
@@ -162,7 +177,17 @@ export class PurchasingContainer implements OnInit {
   protected readonly i18n = injectI18n();
 
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly list = new PagedList<OrderSummary>({ key: (o) => o.name });
+  private readonly overviewState = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly state = computed(() => {
+    const status = this.list.status();
+    const overview = this.overviewState();
+    return status === 'error' || overview === 'error'
+      ? 'error'
+      : status === 'ready' && overview === 'ready'
+        ? 'ready'
+        : 'loading';
+  });
   protected readonly selected = signal<string | null>(null);
   private readonly overview = signal<PurchasingOverview | null>(null);
 
@@ -195,12 +220,14 @@ export class PurchasingContainer implements OnInit {
 
   private readonly matching = computed(() => {
     const query = this.term().trim().toLowerCase();
-    return (this.overview()?.orders ?? []).filter(
-      (o) =>
-        !query ||
-        o.name.toLowerCase().includes(query) ||
-        o.supplierName.toLowerCase().includes(query),
-    );
+    return this.list
+      .items()
+      .filter(
+        (o) =>
+          !query ||
+          o.name.toLowerCase().includes(query) ||
+          o.supplierName.toLowerCase().includes(query),
+      );
   });
 
   protected readonly stats = computed(() => {
@@ -223,7 +250,7 @@ export class PurchasingContainer implements OnInit {
   );
 
   protected readonly selectedOrder = computed(() => {
-    const orders = this.overview()?.orders ?? [];
+    const orders = this.list.items();
     return orders.find((o) => o.name === this.selected()) ?? orders[0] ?? null;
   });
 
@@ -279,18 +306,25 @@ export class PurchasingContainer implements OnInit {
   }
 
   protected async load(): Promise<void> {
-    this.state.set('loading');
-    try {
-      const business = await this.business.ensure();
-      if (!business) {
-        this.state.set('error');
-        return;
-      }
-      this.overview.set(await this.api.overview(business.name, business.currency));
-      this.state.set('ready');
-    } catch {
-      this.state.set('error');
+    this.overviewState.set('loading');
+    this.overview.set(null);
+    const business = await this.business.ensure().catch(() => null);
+    if (!business) {
+      this.overviewState.set('error');
+      this.list.reset();
+      return;
     }
+    const company = business.name;
+    await Promise.all([
+      this.list.loadFirst((start, size) => this.api.orders(company, start, size)),
+      this.api
+        .overview(company, business.currency)
+        .then((overview) => {
+          this.overview.set(overview);
+          this.overviewState.set('ready');
+        })
+        .catch(() => this.overviewState.set('error')),
+    ]);
   }
 
   protected newOrder(): void {

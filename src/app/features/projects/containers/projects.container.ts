@@ -12,8 +12,10 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { ClientWindow } from '../../../core/util/paged-list';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { ProjectSummary } from '../data-access/project.models';
@@ -28,6 +30,7 @@ const SEARCH_DELAY_MS = 250;
   imports: [
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
   ],
@@ -75,6 +78,7 @@ const SEARCH_DELAY_MS = 250;
         } @empty {
           <p class="muted">{{ typed() ? txt.noResults : txt.empty }}</p>
         }
+        <app-load-more [hasMore]="window.hasMore()" (more)="window.more()" />
         @if (caps().manageProjects) {
           <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
             {{ txt.newProject }}
@@ -93,7 +97,8 @@ export class ProjectsContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  private readonly projects = signal<ProjectSummary[]>([]);
+  /** Every match is read at once (the search is by words, in any order), shown 50 at a time. */
+  protected readonly window = new ClientWindow<ProjectSummary>();
   protected readonly capped = signal(false);
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly term = signal('');
@@ -119,7 +124,7 @@ export class ProjectsContainer {
   });
 
   protected readonly cards = computed(() =>
-    this.projects().map((p) => ({ id: p.name, view: projectCard(p, this.i18n.tr()) })),
+    this.window.items().map((p) => ({ id: p.name, view: projectCard(p, this.i18n.tr()) })),
   );
 
   constructor() {
@@ -143,6 +148,7 @@ export class ProjectsContainer {
   protected async load(term = this.term()): Promise<void> {
     const run = ++this.run;
     this.state.set('loading');
+    this.window.reset();
     try {
       const business = await this.business.ensure();
       if (!business) {
@@ -150,7 +156,7 @@ export class ProjectsContainer {
       }
       const found = await this.api.search(business.name, term);
       if (run === this.run) {
-        this.projects.set(found.projects);
+        this.window.set(found.projects);
         this.capped.set(found.capped);
         this.state.set('ready');
       }

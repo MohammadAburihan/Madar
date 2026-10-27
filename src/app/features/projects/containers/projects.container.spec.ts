@@ -90,3 +90,29 @@ describe('ProjectsContainer many matching customers', () => {
     });
   });
 });
+
+describe('ProjectsContainer paging', () => {
+  it('shows 50 projects and 50 more each time Show more is pressed', async () => {
+    const many = Array.from({ length: 120 }, (_, i) => ({
+      ...lina,
+      name: `PROJ-${i}`,
+      title: `P${i}`,
+    }));
+    const list = vi.fn().mockResolvedValue({ projects: many, capped: false });
+    const { fixture, el } = setup(list);
+    const cards = () => el.querySelectorAll('button.card').length;
+    const more = () => el.querySelector('app-load-more button') as HTMLButtonElement | null;
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(cards()).toBe(50);
+    });
+
+    more()!.click();
+    fixture.detectChanges();
+    expect(cards()).toBe(100);
+    more()!.click();
+    fixture.detectChanges();
+    expect(cards()).toBe(120);
+    expect(more()).toBeNull();
+  });
+});

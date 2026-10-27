@@ -13,15 +13,17 @@ import { BusinessService } from '../../../core/business/business.service';
 import { toIsoDate } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { LIST_LIMIT, WorkersApiService } from '../data-access/workers-api.service';
+import { WorkersApiService } from '../data-access/workers-api.service';
 import { WorkerDetail, WorkerRow, WorkerTab } from '../data-access/workers.models';
 import { workerCard, workerLines, workerRow, workerSubtitle, workerView } from './workers-view';
 
@@ -35,6 +37,7 @@ const SEARCH_DELAY_MS = 250;
     FeedbackCardComponent,
     FilterChipsComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     PersonCardComponent,
     SearchFieldComponent,
@@ -170,8 +173,13 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ emptyText() }}</p>
         }
       }
-      @if (state() === 'ready' && capped()) {
-        <p class="muted">{{ txt.capped }}</p>
+      @if (state() === 'ready') {
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          (more)="list.loadMore()"
+        />
       }
       @if (!desktop()) {
         <button type="button" class="md-btn md-btn--primary" (click)="add()">
@@ -203,12 +211,14 @@ export class WorkersContainer {
   protected readonly canGiveAdvances = computed(() => this.session.capabilities().giveAdvances);
   protected readonly tab = signal<string>('active');
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  private readonly rows = signal<WorkerRow[]>([]);
+  protected readonly list = new PagedList<WorkerRow>({ key: (r) => r.id });
+  protected readonly state = computed(() =>
+    this.list.status() === 'ready' ? 'ready' : this.list.status() === 'error' ? 'error' : 'loading',
+  );
+  private readonly rows = this.list.items;
   protected readonly selected = signal<string | null>(null);
   private readonly detail = signal<WorkerDetail | null>(null);
   protected readonly panelFailed = signal(false);
-  private run = 0;
   private detailRun = 0;
 
   private readonly current = computed<WorkerTab>(() => (this.tab() === 'left' ? 'left' : 'active'));
@@ -229,7 +239,6 @@ export class WorkersContainer {
       choose: t('workers.choose'),
       openDetail: t('workers.openDetail'),
       panelFailed: t('workers.panelFailed'),
-      capped: t('workers.capped', { count: LIST_LIMIT }),
       add: t('workers.add'),
       addDesktop: t('workers.addDesktop'),
       markAttendance: t('workers.markAttendance'),
@@ -277,8 +286,6 @@ export class WorkersContainer {
     }),
   );
 
-  protected readonly capped = computed(() => this.rows().length >= LIST_LIMIT);
-
   protected readonly emptyText = computed(() =>
     this.i18n.tr().t(this.term().trim() ? 'workers.noResults' : `workers.empty.${this.current()}`),
   );
@@ -314,6 +321,9 @@ export class WorkersContainer {
     effect((onCleanup) => {
       const tab = this.current();
       const term = this.term();
+      // Signing in as someone else or switching business starts the list over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       if (!this.allowed()) {
         return;
       }
@@ -329,27 +339,20 @@ export class WorkersContainer {
     });
   }
 
-  protected async load(tab = this.current(), term = this.term()): Promise<void> {
-    const run = ++this.run;
-    this.state.set('loading');
+  protected load(tab = this.current(), term = this.term()): Promise<void> {
     // A previous list's rows must not stay selectable under the new one.
-    this.rows.set([]);
     this.selected.set(null);
-    try {
+    return this.list.loadFirst(this.fetcher(tab, term));
+  }
+
+  private fetcher(tab: WorkerTab, term: string): PageFetch<WorkerRow> {
+    return async (start, size) => {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
-      const rows = await this.api.list(term, tab, business, toIsoDate(this.clock.now()));
-      if (run === this.run) {
-        this.rows.set(rows);
-        this.state.set('ready');
-      }
-    } catch {
-      if (run === this.run) {
-        this.state.set('error');
-      }
-    }
+      return this.api.list(term, tab, business, toIsoDate(this.clock.now()), start, size);
+    };
   }
 
   private async loadDetail(id: string | null): Promise<void> {

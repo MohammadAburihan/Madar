@@ -33,7 +33,9 @@ const VALUE = {
 describe('LeaveApiService', () => {
   it('lists waiting requests oldest first and decided ones newest first, without the reference', async () => {
     const { listCalls } = fakeErpnext({ 'Leave Application': () => [DOC] });
-    const [row] = await api().requests('waiting', '', BUSINESS);
+    const {
+      items: [row],
+    } = await api().requests('waiting', '', BUSINESS, 0, 50);
     expect(row).toEqual({
       id: 'HR-LAP-1',
       worker: 'E1',
@@ -53,9 +55,10 @@ describe('LeaveApiService', () => {
       ['docstatus', '=', 0],
     ]);
     expect(listCalls[0].query.orderBy).toBe('from_date asc, name asc');
-    await api().requests('decided', 'Kha', BUSINESS);
+    await api().requests('decided', 'Kha', BUSINESS, 50, 50);
     expect(listCalls[1].query.filters).toContainEqual(['status', 'in', ['Approved', 'Rejected']]);
-    expect(listCalls[1].query.orderBy).toBe('modified desc');
+    expect(listCalls[1].query.orderBy).toBe('modified desc, name desc');
+    expect(listCalls[1].query).toMatchObject({ limit: 51, limitStart: 50 });
     expect(listCalls[1].query.orFilters).toContainEqual(['employee_name', 'like', '%Kha%']);
   });
 

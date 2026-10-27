@@ -1,6 +1,6 @@
 import { realTranslator } from '../../../../testing/real-translator';
-import { ProjectDetail, ProjectSales } from '../data-access/project.models';
-import { billedText, moreSalesText, saleLinks, sellSection } from './project-sell-view';
+import { ProjectDetail, ProjectSale, ProjectSales } from '../data-access/project.models';
+import { billedText, saleLinks, sellSection } from './project-sell-view';
 
 const visible = <T>(value: T): T => JSON.parse(JSON.stringify(value).replace(/[⁨⁩]/g, '')) as T;
 const en = realTranslator('en');
@@ -83,51 +83,35 @@ describe('project sell view', () => {
     });
   });
 
-  const SALES: ProjectSales = {
-    rows: [
-      {
-        kind: 'invoice',
-        name: 'SI-1043',
-        status: 'Credit Note Issued',
-        isReturn: true,
-        amount: -40,
-      },
-      { kind: 'order', name: 'SO-7', status: 'To Deliver and Bill', isReturn: false, amount: 500 },
-      { kind: 'invoice', name: 'SI-1042', status: 'Paid', isReturn: false, amount: 320 },
-      { kind: 'invoice', name: 'SI-1041', status: 'Partly Paid', isReturn: false, amount: 100 },
-      { kind: 'invoice', name: 'SI-1040', status: 'Overdue', isReturn: false, amount: 90 },
-    ],
-    billed: 480,
-    moreInvoices: 0,
-    moreOrders: 0,
-  };
+  const ROWS: ProjectSale[] = [
+    {
+      kind: 'invoice',
+      name: 'SI-1043',
+      status: 'Credit Note Issued',
+      isReturn: true,
+      amount: -40,
+    },
+    { kind: 'order', name: 'SO-7', status: 'To Deliver and Bill', isReturn: false, amount: 500 },
+    { kind: 'invoice', name: 'SI-1042', status: 'Paid', isReturn: false, amount: 320 },
+    { kind: 'invoice', name: 'SI-1041', status: 'Partly Paid', isReturn: false, amount: 100 },
+    { kind: 'invoice', name: 'SI-1040', status: 'Overdue', isReturn: false, amount: 90 },
+  ];
+  const SALES: ProjectSales = { billed: 480, fetch: async () => ({ items: [], more: false }) };
 
   it('lists each sale with its amount and status, opening its record', () => {
-    expect(visible(saleLinks(SALES, 'ILS', en))).toEqual([
+    expect(visible(saleLinks(ROWS, 'ILS', en))).toEqual([
       { id: 'invoice:SI-1043', label: 'SI-1043 · ILS -40.00 · Return', openable: true },
       { id: 'order:SO-7', label: 'SO-7 · ILS 500.00 · To deliver and bill', openable: true },
       { id: 'invoice:SI-1042', label: 'SI-1042 · ILS 320.00 · Paid', openable: true },
       { id: 'invoice:SI-1041', label: 'SI-1041 · ILS 100.00 · Partly paid', openable: true },
       { id: 'invoice:SI-1040', label: 'SI-1040 · ILS 90.00 · Unpaid', openable: true },
     ]);
-    expect(visible(saleLinks(SALES, 'ILS', ar))[2].label).toContain('مدفوعة');
+    expect(visible(saleLinks(ROWS, 'ILS', ar))[2].label).toContain('مدفوعة');
   });
 
   it('shows the billed total, or none when only the user’s own sales are listed', () => {
     expect(visible(billedText(SALES, 'ILS', en))).toBe('Billed ILS 480.00');
     expect(visible(billedText(SALES, 'ILS', ar))).toContain('المفوتر');
     expect(billedText({ ...SALES, billed: null }, 'ILS', en)).toBeNull();
-  });
-
-  it('says how many invoices and orders the capped list leaves out', () => {
-    expect(moreSalesText(SALES, en)).toEqual([]);
-    const more = { ...SALES, moreInvoices: 7, moreOrders: 1 };
-    expect(visible(moreSalesText(more, en))).toEqual([
-      '7 more invoices in ERPNext',
-      '1 more order in ERPNext',
-    ]);
-    expect(visible(moreSalesText({ ...SALES, moreInvoices: 2 }, ar))).toEqual([
-      'فاتورتان أخريان في ERPNext',
-    ]);
   });
 });

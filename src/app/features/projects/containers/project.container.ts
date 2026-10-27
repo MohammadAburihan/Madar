@@ -14,11 +14,13 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PagedList } from '../../../core/util/paged-list';
 import { TaskPrefillService } from '../../../core/tasks/task-prefill.service';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
@@ -26,7 +28,12 @@ import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
 import { ProjectSectionComponent } from '../components/project-section.component';
 import { ProjectSellComponent } from '../components/project-sell.component';
 import { RecordLinksComponent } from '../components/record-links.component';
-import { LinkedRecord, ProjectDetail, SiteBalance } from '../data-access/project.models';
+import {
+  LinkedRecord,
+  ProjectDetail,
+  ProjectSale,
+  SiteBalance,
+} from '../data-access/project.models';
 import { ProjectsApiService } from '../data-access/projects-api.service';
 import { SiteApiService } from '../data-access/site-api.service';
 import {
@@ -38,7 +45,7 @@ import {
   siteRow,
   taskCard,
 } from './project-view';
-import { billedText, moreSalesText, saleLinks, sellSection } from './project-sell-view';
+import { billedText, saleLinks, sellSection } from './project-sell-view';
 import {
   ledgerRows,
   ledgerTitle,
@@ -60,6 +67,7 @@ const LEDGER_LIMIT = 5;
     DataTableComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     ProjectSectionComponent,
     ProjectSellComponent,
@@ -236,14 +244,17 @@ const LEDGER_LIMIT = 5;
             <app-record-links
               [heading]="salesTitle"
               [links]="v.sales"
-              [empty]="txt.noSales"
+              [empty]="salesEmpty()"
               (opened)="openRecord($event)"
+            />
+            <app-load-more
+              [hasMore]="salesList.hasMore()"
+              [loading]="salesList.loadingMore()"
+              [failed]="salesList.moreFailed()"
+              (more)="salesList.loadMore()"
             />
             @if (v.billed; as billed) {
               <p class="muted">{{ billed }}</p>
-            }
-            @for (more of v.more; track more) {
-              <p class="muted">{{ more }}</p>
             }
           }
           <app-record-links
@@ -316,14 +327,17 @@ const LEDGER_LIMIT = 5;
         <app-record-links
           [heading]="salesTitle"
           [links]="v.sales"
-          [empty]="txt.noSales"
+          [empty]="salesEmpty()"
           (opened)="openRecord($event)"
+        />
+        <app-load-more
+          [hasMore]="salesList.hasMore()"
+          [loading]="salesList.loadingMore()"
+          [failed]="salesList.moreFailed()"
+          (more)="salesList.loadMore()"
         />
         @if (v.billed; as billed) {
           <p class="muted">{{ billed }}</p>
-        }
-        @for (more of v.more; track more) {
-          <p class="muted">{{ more }}</p>
         }
       }
       @if (v.records.some((r) => r.openable)) {
@@ -376,6 +390,7 @@ export class ProjectContainer {
   protected readonly i18n = injectI18n();
 
   private readonly project = signal<ProjectDetail | null>(null);
+  protected readonly salesList = new PagedList<ProjectSale>({ key: (s) => `${s.kind}:${s.name}` });
   /** Site movements per item, for the desktop workspace; read once the project is in. */
   private readonly balances = signal<SiteBalance[]>([]);
   private balancesFor: ProjectDetail | null = null;
@@ -433,6 +448,16 @@ export class ProjectContainer {
     };
   });
 
+  /** "No sales" only once the first page has come: an empty list while it loads would say so wrongly. */
+  protected readonly salesEmpty = computed(() => {
+    const status = this.salesList.status();
+    return status === 'ready'
+      ? this.text().noSales
+      : status === 'error'
+        ? this.text().loadFailed.message
+        : '';
+  });
+
   protected readonly view = computed(() => {
     const project = this.project();
     if (!project) {
@@ -458,8 +483,7 @@ export class ProjectContainer {
         tr,
       ),
       salesTitle: sales ? tr.t('project.sell.salesHeading') : null,
-      sales: sales ? saleLinks(sales, currency, tr) : [],
-      more: sales ? moreSalesText(sales, tr) : [],
+      sales: sales ? saleLinks(this.salesList.items(), currency, tr) : [],
       billed: sales ? (billedText(sales, currency, tr) ?? this.text().ownSales) : null,
       heading: overviewHeading(project, tr),
       stats: budgetStats(project, currency, tr),
@@ -535,6 +559,7 @@ export class ProjectContainer {
   protected async load(name: string): Promise<void> {
     const run = ++this.run;
     this.project.set(null);
+    this.salesList.reset();
     this.balances.set([]);
     this.failed.set(false);
     try {
@@ -550,6 +575,9 @@ export class ProjectContainer {
       );
       if (run === this.run) {
         this.project.set(project);
+        if (project.sales) {
+          void this.salesList.loadFirst(project.sales.fetch);
+        }
       }
     } catch {
       if (run === this.run) {

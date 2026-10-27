@@ -366,32 +366,31 @@ describe('ProjectsApiService', () => {
     it('lists the submitted invoices and orders newest first with the billed total', async () => {
       const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
       const project = await api().project('PROJ-0001', SCOPE);
-      expect(project.sales).toEqual({
-        rows: [
-          {
-            kind: 'invoice',
-            name: 'SI-2',
-            status: 'Credit Note Issued',
-            isReturn: true,
-            amount: -40,
-          },
-          {
-            kind: 'order',
-            name: 'SO-1',
-            status: 'To Deliver and Bill',
-            isReturn: false,
-            amount: 500,
-          },
-          { kind: 'invoice', name: 'SI-1', status: 'Paid', isReturn: false, amount: 320 },
-        ],
-        billed: 280,
-        moreInvoices: 0,
-        moreOrders: 0,
-      });
+      expect(project.sales?.billed).toBe(280);
+      const page = await project.sales!.fetch(0, 50);
+      expect(page.items).toEqual([
+        {
+          kind: 'invoice',
+          name: 'SI-2',
+          status: 'Credit Note Issued',
+          isReturn: true,
+          amount: -40,
+        },
+        {
+          kind: 'order',
+          name: 'SO-1',
+          status: 'To Deliver and Bill',
+          isReturn: false,
+          amount: 500,
+        },
+        { kind: 'invoice', name: 'SI-1', status: 'Paid', isReturn: false, amount: 320 },
+      ]);
+      expect(page.more).toBe(false);
       expect(project.customerActive).toBe(true);
       const invoices = listCalls.filter(
-        (c) => c.doctype === 'Sales Invoice' && c.query.limit === 20,
+        (c) => c.doctype === 'Sales Invoice' && c.query.limit === 51,
       );
+      expect(invoices[0].query.orderBy).toBe('creation desc, name desc');
       expect(invoices[0].query.filters).toEqual([
         ['project', '=', 'PROJ-0001'],
         ['company', '=', 'Rehan Nursery'],
@@ -411,24 +410,58 @@ describe('ProjectsApiService', () => {
       expect(sums[1].query.filters).toContainEqual(['base_rounded_total', '=', 0]);
     });
 
-    it('counts the invoices and orders beyond the rows listed', async () => {
+    it('pages the sales from a cursor on invoices and one on orders, newest first', async () => {
+      const day = (i: number) => `2026-09-${String(30 - Math.floor(i / 3)).padStart(2, '0')}`;
+      const invoices = Array.from({ length: 70 }, (_, i) => ({
+        name: `SI-${String(i).padStart(3, '0')}`,
+        status: 'Paid',
+        is_return: 0,
+        base_grand_total: 10,
+        base_rounded_total: 0,
+        creation: `${day(i)} 10:00:00`,
+      }));
+      const orders = Array.from({ length: 40 }, (_, i) => ({
+        name: `SO-${String(i).padStart(3, '0')}`,
+        status: 'Completed',
+        base_grand_total: 20,
+        base_rounded_total: 0,
+        creation: `${day(i)} 11:00:00`,
+      }));
+      const slice = (rows: unknown[]) => (q: { limit?: number; limitStart?: number }) =>
+        rows.slice(q.limitStart ?? 0, (q.limitStart ?? 0) + (q.limit ?? 20));
       fakeErpnext(
-        lists,
+        {
+          ...lists,
+          'Sales Invoice': (q: { fields: unknown[]; limit?: number; limitStart?: number }) =>
+            JSON.stringify(q.fields).includes('SUM')
+              ? [{ 'SUM(`base_grand_total`)': 1 }]
+              : slice(invoices)(q),
+          'Sales Order': slice(orders),
+        },
         {},
         { 'Project/PROJ-0001': PROJECT },
-        { 'Sales Invoice': 27, 'Sales Order': 2 },
       );
-      const sales = (await api().project('PROJ-0001', SCOPE)).sales;
-      expect(sales?.moreInvoices).toBe(25);
-      expect(sales?.moreOrders).toBe(1);
+      const { fetch } = (await api().project('PROJ-0001', SCOPE)).sales!;
+      const first = await fetch(0, 50);
+      const second = await fetch(50, 50);
+      const third = await fetch(100, 50);
+
+      const all = [...first.items, ...second.items, ...third.items];
+      expect([first.more, second.more, third.more]).toEqual([true, true, false]);
+      expect(all).toHaveLength(110);
+      expect(new Set(all.map((s) => `${s.kind}:${s.name}`)).size).toBe(110);
     });
 
     it('lists only the user’s own sales, with no billed total, for a salesperson', async () => {
       const { listCalls } = fakeErpnext(lists, {}, { 'Project/PROJ-0001': PROJECT });
       const project = await api().project('PROJ-0001', { ...SCOPE, owner: 'lina@example.com' });
       expect(project.sales?.billed).toBeNull();
+      await project.sales!.fetch(0, 50);
       for (const call of listCalls.filter(
-        (c) => c.doctype.startsWith('Sales') && c.query.limit === 20,
+        (c) =>
+          c.doctype.startsWith('Sales') &&
+          !JSON.stringify(c.query.fields).includes('SUM') &&
+          JSON.stringify(c.query.filters).includes('["docstatus","=",1]'),
       )) {
         expect(call.query.filters).toContainEqual(['owner', '=', 'lina@example.com']);
       }

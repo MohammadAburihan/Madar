@@ -14,15 +14,17 @@ import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { toIsoDate } from '../../../core/format/format';
 import { SiteClockService } from '../../../core/time/site-clock.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
-import { CATALOG_LIMIT, ItemsApiService } from '../data-access/items-api.service';
+import { ItemsApiService } from '../data-access/items-api.service';
 import { CatalogItem, ItemDetail, ItemKind } from '../data-access/items.models';
 import { catalogCard, catalogRow, itemView } from './items-view';
 
@@ -37,6 +39,7 @@ const SEARCH_DELAY_MS = 250;
     FilterChipsComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
     TotalsCardComponent,
@@ -92,7 +95,13 @@ const SEARCH_DELAY_MS = 250;
             [empty]="term().trim() ? txt.noResults : txt.empty"
             (opened)="selected.set($event)"
           />
-          <p class="muted">{{ capped() ? txt.capped : txt.note }}</p>
+          <app-load-more
+            [hasMore]="list.hasMore()"
+            [loading]="list.loadingMore()"
+            [failed]="list.moreFailed()"
+            (more)="list.loadMore()"
+          />
+          <p class="muted">{{ txt.note }}</p>
         </div>
         <section class="panel" [attr.aria-label]="txt.title">
           @if (panel(); as p) {
@@ -132,9 +141,12 @@ const SEARCH_DELAY_MS = 250;
       } @empty {
         <p class="muted">{{ term().trim() ? txt.noResults : txt.empty }}</p>
       }
-      @if (capped()) {
-        <p class="muted">{{ txt.capped }}</p>
-      }
+      <app-load-more
+        [hasMore]="list.hasMore()"
+        [loading]="list.loadingMore()"
+        [failed]="list.moreFailed()"
+        (more)="list.loadMore()"
+      />
       @if (canAdd()) {
         <button type="button" class="md-btn md-btn--primary" (click)="add()">
           {{ txt.add }}
@@ -156,12 +168,14 @@ export class CatalogContainer {
   protected readonly canAdd = computed(() => this.session.capabilities().manageItems);
   protected readonly term = signal('');
   protected readonly kind = signal<string>('all');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  protected readonly items = signal<CatalogItem[]>([]);
+  protected readonly state = computed(() =>
+    this.list.status() === 'ready' ? 'ready' : this.list.status() === 'error' ? 'error' : 'loading',
+  );
+  protected readonly list = new PagedList<CatalogItem>({ key: (i) => i.code });
+  protected readonly items = this.list.items;
   protected readonly selected = signal<string | null>(null);
   private readonly detail = signal<ItemDetail | null>(null);
   protected readonly panelFailed = signal(false);
-  private run = 0;
   private detailRun = 0;
 
   private readonly currency = computed(() => this.business.active()?.currency ?? '');
@@ -184,7 +198,6 @@ export class CatalogContainer {
       loading: t('items.loading'),
       empty: t('items.empty'),
       noResults: t('items.noResults'),
-      capped: t('items.capped', { count: CATALOG_LIMIT }),
       note: t('items.note'),
       add: t('items.add'),
       addDesktop: t('items.addDesktop'),
@@ -203,7 +216,6 @@ export class CatalogContainer {
   protected readonly rows = computed(() =>
     this.items().map((i) => catalogRow(i, this.currency(), this.i18n.tr())),
   );
-  protected readonly capped = signal(false);
 
   /** The row picked, else the first; never one the current list doesn't hold. */
   private readonly shownCode = computed(() => {
@@ -228,6 +240,9 @@ export class CatalogContainer {
     effect((onCleanup) => {
       const term = this.term();
       const kind = this.kind();
+      // Signing in as someone else or switching business starts the list over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       const timer = setTimeout(() => untracked(() => void this.load(term, kind)), SEARCH_DELAY_MS);
       onCleanup(() => clearTimeout(timer));
     });
@@ -239,31 +254,19 @@ export class CatalogContainer {
     });
   }
 
-  protected async load(term = this.term(), kind = this.kind()): Promise<void> {
-    const run = ++this.run;
-    this.state.set('loading');
-    try {
+  protected load(term = this.term(), kind = this.kind()): Promise<void> {
+    return this.list.loadFirst(this.fetcher(term, kind as ItemKind | 'all'));
+  }
+
+  private fetcher(term: string, kind: ItemKind | 'all'): PageFetch<CatalogItem> {
+    return async (start, size) => {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       if (!business) {
         throw new Error('No active business');
       }
       const today = toIsoDate(this.clock.now());
-      const { items, capped } = await this.api.catalog(
-        term,
-        kind as ItemKind | 'all',
-        business.name,
-        today,
-      );
-      if (run === this.run) {
-        this.items.set(items);
-        this.capped.set(capped);
-        this.state.set('ready');
-      }
-    } catch {
-      if (run === this.run) {
-        this.state.set('error');
-      }
-    }
+      return this.api.catalog(term, kind, business.name, today, start, size);
+    };
   }
 
   private async loadDetail(code: string): Promise<void> {
