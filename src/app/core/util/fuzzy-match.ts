@@ -152,9 +152,13 @@ function scoreTokens(q: string[], n: string[]): number {
   return Math.max(...scores);
 }
 
+const numbersOf = (tokens: string[]): string =>
+  (tokens.join(' ').match(/\d+/g) ?? []).sort().join(',');
+
 /**
  * How alike a typed name and a stored name are, 0 to 1, on normalized text: number words read as digits, and a
  * long enough name is also compared without its Arabic long vowels, a little less sure than the exact spelling.
+ * A typed name with numbers never counts as sure for a name with other numbers (pot 12 cm is not pot 10 cm).
  */
 export function nameScore(query: string, name: string): number {
   const q = tokensOf(query);
@@ -162,6 +166,14 @@ export function nameScore(query: string, name: string): number {
   if (!q.join('') || !n.join('')) {
     return 0;
   }
+  const score = scoreByForm(q, n);
+  const typedNumbers = numbersOf(q);
+  return typedNumbers && typedNumbers !== numbersOf(n)
+    ? Math.min(score, SURE_THRESHOLD - 0.05)
+    : score;
+}
+
+function scoreByForm(q: string[], n: string[]): number {
   const exact = scoreTokens(q, n);
   const qs = q.map(skeletonOf);
   const ns = n.map(skeletonOf);

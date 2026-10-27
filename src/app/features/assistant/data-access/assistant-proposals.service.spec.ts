@@ -1020,6 +1020,21 @@ describe('AssistantProposalsService', () => {
       expect(found.choices).toEqual([{ id: 'BRS-7', label: 'برش 7 لتر', suggested: true }]);
     });
 
+    it('offers add as new for an item that differs only in its number', async () => {
+      const { run } = setup({
+        Item: (query) => (query.fields?.length === 2 ? [item('SMD-20', 'سماد 20 كيلو')] : []),
+      });
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'سماد 50 كيلو', qty: 1 }] }),
+      );
+      expect(found.payload).toMatchObject({ did_you_mean: true, can_create: true });
+      expect(found.choices).toEqual([
+        { id: 'SMD-20', label: 'سماد 20 كيلو', suggested: true },
+        { id: ADD_NEW, label: 'سماد 50 كيلو' },
+      ]);
+    });
+
     it('offers add as new after the suggestions when the best match is weaker than sure', async () => {
       const { run } = setup({
         Item: (query) => (query.fields?.length === 2 ? [item('BRS-8', 'برش 8 لتر')] : []),

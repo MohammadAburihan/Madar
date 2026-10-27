@@ -162,6 +162,27 @@ describe('number words and Arabic long vowels', () => {
     expect(nameScore('سعيد', 'سعد')).toBeLessThan(SURE_THRESHOLD);
   });
 
+  it.each([
+    ['Plastic pot 12 cm', 'Plastic pot 10 cm'],
+    ['كيس تربة 20 لتر', 'كيس تربة 10 لتر'],
+    ['سماد 50 كيلو', 'سماد 20 كيلو'],
+  ])('keeps %s a near match, not a sure one, for %s', (typed, stored) => {
+    const score = nameScore(typed, stored);
+    expect(score).toBeGreaterThanOrEqual(SIMILARITY_THRESHOLD);
+    expect(score).toBeLessThan(SURE_THRESHOLD);
+  });
+
+  it('still scores the same numbers 0.95 and does not cap a query without numbers', () => {
+    expect(nameScore('بروش سبعة لتر', 'برش 7 لتر')).toBeCloseTo(0.95, 5);
+    expect(nameScore('برش', 'برش 7 لتر')).toBeGreaterThanOrEqual(SIMILARITY_THRESHOLD);
+    expect(nameScore('برش', 'برش 7 لتر')).toBe(1);
+  });
+
+  it('ranks the name with the same number first', () => {
+    const ranked = rankScored('سماد 50 كيلو', ['سماد 20 كيلو', 'سماد 50 كيلو'], (n) => n);
+    expect(ranked.map((r) => r.row)).toEqual(['سماد 50 كيلو', 'سماد 20 كيلو']);
+  });
+
   it('returns scores with the ranked rows', () => {
     const [best] = rankScored('بروش سبعة لتر', ['برش 7 لتر'], (n) => n);
     expect(best.score).toBeGreaterThanOrEqual(SURE_THRESHOLD);
