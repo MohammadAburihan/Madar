@@ -6,6 +6,7 @@ import {
   reusableDraft,
   unresolvedOr,
 } from '../../../core/erpnext/confirmation';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
@@ -32,7 +33,6 @@ interface EntryDoc {
   [key: string]: unknown;
 }
 
-const HISTORY_LIMIT = 30;
 // Keeps `in` filters short enough for the GET URL (see stockFor on Home).
 const ITEM_BATCH = 100;
 
@@ -151,18 +151,20 @@ export class InventoryApiService {
     return item ?? null;
   }
 
-  async history(item: string, warehouses: string[]): Promise<Movement[]> {
-    const rows = await firstValueFrom(
-      this.erpnext.list<{
-        voucher_type: string;
-        voucher_no: string;
-        warehouse: string;
-        actual_qty: number;
-        qty_after_transaction: number;
-        posting_date: string;
-        posting_time: string;
-      }>('Stock Ledger Entry', {
+  /**
+   * One page of an item's stock ledger rows, newest first. A voucher can span rows (a transfer is two), and pages cut
+   * between them, so `movementsOf` groups every row loaded.
+   */
+  async history(
+    item: string,
+    warehouses: string[],
+    start: number,
+    size: number,
+  ): Promise<Page<LedgerRow>> {
+    const read = await firstValueFrom(
+      this.erpnext.list<LedgerRow>('Stock Ledger Entry', {
         fields: [
+          'name',
           'voucher_type',
           'voucher_no',
           'warehouse',
@@ -176,35 +178,13 @@ export class InventoryApiService {
           ['warehouse', 'in', warehouses],
           ['is_cancelled', '=', 0],
         ],
-        orderBy: 'posting_datetime desc, creation desc',
-        limit: HISTORY_LIMIT,
+        orderBy: 'posting_datetime desc, creation desc, name desc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
-    const movements: Movement[] = [];
-    for (const row of rows) {
-      const existing = movements.find((m) => m.voucher === row.voucher_no);
-      const line = {
-        warehouse: row.warehouse,
-        qty: row.actual_qty,
-        after: row.qty_after_transaction,
-      };
-      if (existing) {
-        existing.lines.push(line);
-      } else {
-        movements.push({
-          voucherType: row.voucher_type,
-          voucher: row.voucher_no,
-          postingDate: row.posting_date,
-          postingTime: row.posting_time,
-          lines: [line],
-        });
-      }
-    }
-    // At the limit, the oldest voucher may be cut off (a transfer is two rows); leave it out.
-    if (rows.length === HISTORY_LIMIT && movements.length > 1) {
-      movements.pop();
-    }
-    return movements;
+    const { rows, more } = pageOf(read, size);
+    return { items: rows, more };
   }
 
   /**
@@ -667,6 +647,48 @@ export class InventoryApiService {
       .filter((item) => includeEmpty || Object.values(item.stock).some((qty) => qty !== 0))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
+}
+
+export interface LedgerRow {
+  name: string;
+  voucher_type: string;
+  voucher_no: string;
+  warehouse: string;
+  actual_qty: number;
+  qty_after_transaction: number;
+  posting_date: string;
+  posting_time: string;
+}
+
+/** Ledger rows grouped into one movement per voucher, in the order the rows came. */
+export function movementsOf(rows: readonly LedgerRow[]): Movement[] {
+  const movements: Movement[] = [];
+  for (const row of rows) {
+    const existing = movements.find((m) => m.voucher === row.voucher_no);
+    const line = {
+      warehouse: row.warehouse,
+      qty: row.actual_qty,
+      after: row.qty_after_transaction,
+    };
+    if (existing) {
+      existing.lines.push(line);
+    } else {
+      movements.push({
+        voucherType: row.voucher_type,
+        voucher: row.voucher_no,
+        postingDate: row.posting_date,
+        postingTime: row.posting_time,
+        lines: [line],
+      });
+    }
+  }
+  return movements;
+}
+
+/** Like `movementsOf`, but while more rows exist the last voucher is held back: the next page may complete it. */
+export function settledMovements(rows: readonly LedgerRow[], more: boolean): Movement[] {
+  const movements = movementsOf(rows);
+  return more ? movements.slice(0, -1) : movements;
 }
 
 function sameTransfer(entry: EntryDoc, request: TransferRequest): boolean {

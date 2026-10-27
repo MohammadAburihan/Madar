@@ -19,16 +19,18 @@ import { deletedNoticeText } from '../../../core/drafts/draft-delete-view';
 import { injectDraftDeleter } from '../../../core/drafts/draft-deleter';
 import { DeletedDraftsService } from '../../../core/tasks/deleted-drafts.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
+import { ClientWindow } from '../../../core/util/paged-list';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { DraftsListComponent } from '../components/drafts-list.component';
 import { DraftsApiService } from '../data-access/drafts-api.service';
 import { DraftEntry, DraftKind } from '../data-access/drafts.models';
-import { buildDraftsView, draftId, draftTarget } from './drafts-view';
+import { DraftsView, buildDraftsView, draftId, draftTarget } from './drafts-view';
 
 /** Unfinished work: every draft sale, quotation, order, purchase and supplier payment the user can continue. */
 @Component({
@@ -39,6 +41,7 @@ import { buildDraftsView, draftId, draftTarget } from './drafts-view';
     DraftsListComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
   ],
@@ -73,12 +76,13 @@ import { buildDraftsView, draftId, draftTarget } from './drafts-view';
         }
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
         <app-drafts-list
-          [cards]="v.cards"
+          [cards]="window.items()"
           [empty]="v.empty"
           [busy]="deleter.running()"
           (continued)="open($event)"
           (deleteAsked)="askDelete($event)"
         />
+        <app-load-more [hasMore]="window.hasMore()" (more)="window.more()" />
         <p class="muted">{{ v.note }}</p>
       }
     }
@@ -113,13 +117,15 @@ export class DraftsContainer {
   private readonly deleted = inject(DeletedDraftsService);
   private readonly lastDeleted = signal<{ kind: DraftKind; party: string } | null>(null);
   protected readonly deleter = injectDraftDeleter({
-    reload: () => void this.load(),
+    reload: () => void this.load(true),
     done: () => undefined,
   });
   protected readonly notice = computed(() => {
     const draft = this.lastDeleted();
     return draft ? deletedNoticeText(this.i18n.tr(), draft.kind, draft.party) : null;
   });
+  /** Every draft is read at once (the subtitle counts them), and the cards show 50 at a time. */
+  protected readonly window = new ClientWindow<DraftsView['cards'][number]>();
   private readonly now = signal(new Date());
   private run = 0;
 
@@ -157,6 +163,14 @@ export class DraftsContainer {
   );
 
   constructor() {
+    effect(() => {
+      const cards = this.view().cards;
+      untracked(() => this.window.refresh(cards));
+    });
+    effect(() => {
+      this.term();
+      untracked(() => this.window.restart());
+    });
     // Whoever deleted a draft tells the page; one that opened the page arrives in the navigation state.
     let seen = this.deleted.latest();
     const fromPage = readDeletedDraft(this.router.getCurrentNavigation()?.extras.state);
@@ -191,12 +205,15 @@ export class DraftsContainer {
     });
   }
 
-  protected async load(): Promise<void> {
+  protected async load(keepWindow = false): Promise<void> {
     const run = ++this.run;
     if (run > 1) {
       this.lastDeleted.set(null);
     }
     this.state.set('loading');
+    if (!keepWindow) {
+      this.window.restart();
+    }
     try {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       const userId = this.session.user()?.id;

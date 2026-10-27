@@ -11,13 +11,15 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { ExpenseApiService } from '../data-access/expense-api.service';
-import { MoneyApiService, MoneyOverview } from '../data-access/money-api.service';
+import { MoneyApiService, MoneyOverview, PaymentRecord } from '../data-access/money-api.service';
 import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
 
 /** Money: payment history with shortcuts to receive, pay and record an expense. */
@@ -27,6 +29,7 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
     DataTableComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
   ],
@@ -90,6 +93,13 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
           [ltrColumns]="[2]"
           [empty]="emptyText()"
         />
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
+          (more)="list.loadMore()"
+        />
         @if (balances().length) {
           <div class="balances">
             @for (balance of balances(); track balance.title) {
@@ -104,6 +114,13 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
         } @empty {
           <p class="muted">{{ emptyText() }}</p>
         }
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
+          (more)="list.loadMore()"
+        />
       }
       @if (!desktop()) {
         @for (action of actions(); track action.id; let first = $first) {
@@ -130,7 +147,19 @@ export class MoneyContainer implements OnInit {
   protected readonly i18n = injectI18n();
 
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly list = new PagedList<PaymentRecord>({
+    key: (p) => `${p.direction === 'expense' ? 'JE' : 'PE'}:${p.name}`,
+  });
+  private readonly overviewState = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly state = computed(() => {
+    const status = this.list.status();
+    const overview = this.overviewState();
+    return status === 'error' || overview === 'error'
+      ? 'error'
+      : status === 'ready' && overview === 'ready'
+        ? 'ready'
+        : 'loading';
+  });
   private readonly overview = signal<MoneyOverview | null>(null);
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
@@ -172,7 +201,7 @@ export class MoneyContainer implements OnInit {
   });
 
   private readonly visible = computed(() =>
-    (this.overview()?.payments ?? []).filter((p) => matches(p, this.term())),
+    this.list.items().filter((p) => matches(p, this.term())),
   );
 
   protected readonly cards = computed(() =>
@@ -196,7 +225,10 @@ export class MoneyContainer implements OnInit {
 
   protected readonly emptyText = computed(() => {
     const { t } = this.i18n.tr();
-    return this.term().trim() ? t('money.noResults') : t('money.empty');
+    if (!this.term().trim()) {
+      return t('money.empty');
+    }
+    return this.list.hasMore() ? t('paging.searching') : t('money.noResults');
   });
 
   ngOnInit(): void {
@@ -218,28 +250,37 @@ export class MoneyContainer implements OnInit {
     if (access === 'none') {
       return;
     }
-    this.state.set('loading');
-    try {
-      const business = await this.business.ensure();
-      if (!business) {
-        this.state.set('error');
-        return;
-      }
-      const owner = access === 'own' ? (this.session.user()?.id ?? null) : null;
-      // Expenses show for the roles that record them; their categories pick them out of the journal.
-      const categories = this.caps().recordExpenses
-        ? await this.expenses.categories(business.name).catch(() => [])
-        : [];
-      this.overview.set(
-        await this.api.overview(
-          business.name,
-          owner,
-          categories.map((c) => c.account),
-        ),
-      );
-      this.state.set('ready');
-    } catch {
-      this.state.set('error');
+    this.overviewState.set('loading');
+    const business = await this.business.ensure().catch(() => null);
+    if (!business) {
+      this.overviewState.set('error');
+      return;
     }
+    const company = business.name;
+    const owner = access === 'own' ? (this.session.user()?.id ?? null) : null;
+    let history: PageFetch<PaymentRecord> | null = null;
+    await Promise.all([
+      this.list.loadFirst(async (start, size) => {
+        if (!history) {
+          // Expenses show for the roles that record them; their categories pick them out of the journal.
+          const categories = this.caps().recordExpenses
+            ? await this.expenses.categories(company).catch(() => [])
+            : [];
+          history = this.api.history(
+            company,
+            owner,
+            categories.map((c) => c.account),
+          );
+        }
+        return history(start, size);
+      }),
+      this.api
+        .overview(company, owner)
+        .then((overview) => {
+          this.overview.set(overview);
+          this.overviewState.set('ready');
+        })
+        .catch(() => this.overviewState.set('error')),
+    ]);
   }
 }

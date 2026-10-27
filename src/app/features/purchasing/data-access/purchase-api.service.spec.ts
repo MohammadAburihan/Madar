@@ -129,7 +129,9 @@ describe('PurchaseApiService', () => {
         ['per_billed', '<', 100],
       ],
     ]);
-    expect(overview.orders).toEqual([
+    const page = await api().orders('Rehan Nursery', 0, 50);
+    expect(page.more).toBe(false);
+    expect(page.items).toEqual([
       {
         name: 'PO-2048',
         supplier: 'Green Clay',
@@ -142,11 +144,23 @@ describe('PurchaseApiService', () => {
         receivedQty: 6,
       },
     ]);
-    expect(listCalls.find((c) => c.doctype === 'Purchase Order')!.query.filters).toContainEqual([
-      'company',
-      '=',
-      'Rehan Nursery',
-    ]);
+    const query = listCalls.find((c) => c.doctype === 'Purchase Order')!.query;
+    expect(query.filters).toContainEqual(['company', '=', 'Rehan Nursery']);
+    expect(query).toMatchObject({ limit: 51, limitStart: 0, orderBy: 'creation desc, name desc' });
+  });
+
+  it('pages orders from the offset and reads quantities only for the ones shown', async () => {
+    const { listCalls } = fakeErpnext({
+      'Purchase Order': () => Array.from({ length: 51 }, (_, i) => ({ ...ORDER, name: `PO-${i}` })),
+      'Purchase Order Item': () => [],
+    });
+    const page = await api().orders('Rehan Nursery', 50, 50);
+
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(true);
+    expect(listCalls.find((c) => c.doctype === 'Purchase Order')!.query.limitStart).toBe(50);
+    const filter = listCalls.find((c) => c.doctype === 'Purchase Order Item')!.query.filters!;
+    expect((filter[0][2] as string[]).length).toBe(50);
   });
 
   it("leaves the supplier balance out when the role can't read supplier invoices", async () => {

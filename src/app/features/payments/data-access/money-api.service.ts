@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
+import { PageFetch, filledSource, mergeSources } from '../../../core/util/paged-list';
 
 export interface PaymentRecord {
   name: string;
@@ -27,13 +28,11 @@ export interface OpenBalance {
 }
 
 export interface MoneyOverview {
-  payments: PaymentRecord[];
   /** Largest unpaid customer invoice and supplier bill, when the role can read them. */
   receivable: OpenBalance | null;
   payable: OpenBalance | null;
 }
 
-const HISTORY_LIMIT = 50;
 // Account names are long; batches keep each GET URL well under the request-line limit.
 const ACCOUNT_BATCH = 30;
 
@@ -49,68 +48,72 @@ function batches<T>(values: readonly T[], size: number): T[][] {
 export class MoneyApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /**
-   * `expenseAccounts` (the expense categories) adds the expenses recorded against them; roles that don't record
-   * expenses pass none.
-   */
-  async overview(
-    company: string,
-    owner: string | null,
-    expenseAccounts: readonly string[] = [],
-  ): Promise<MoneyOverview> {
-    const [payments, expenses, receivable, payable] = await Promise.all([
-      this.payments(company, owner),
-      expenseAccounts.length
-        ? this.expenses(company, expenseAccounts).catch(() => [])
-        : Promise.resolve([]),
+  /** The largest unpaid customer invoice and supplier bill, when the role can read them. */
+  async overview(company: string, owner: string | null): Promise<MoneyOverview> {
+    const [receivable, payable] = await Promise.all([
       this.largestOpen('Sales Invoice', 'customer_name', company).catch(() => null),
       owner
         ? Promise.resolve(null)
         : this.largestOpen('Purchase Invoice', 'supplier_name', company).catch(() => null),
     ]);
-    // Both lists come newest first; merged, a day's payments and expenses interleave by when they were entered.
-    const history = expenses.length
-      ? [...payments, ...expenses].sort(newestFirst).slice(0, HISTORY_LIMIT)
-      : payments;
-    return { payments: history, receivable, payable };
+    return { receivable, payable };
   }
 
-  /** Journal Entries that debit an expense category: Madar's expenses, and ones made the same way in Desk. */
+  /**
+   * The payment history, newest first: Payment Entries, and (with `expenseAccounts`, the expense categories) the
+   * Journal Entries debiting them, each read from its own cursor and merged by date, then entry time. Make one per
+   * query.
+   */
+  history(
+    company: string,
+    owner: string | null,
+    expenseAccounts: readonly string[] = [],
+  ): PageFetch<PaymentRecord> {
+    return mergeSources<PaymentRecord>(
+      [
+        (start, size) => this.payments(company, owner, start, size),
+        ...batches(expenseAccounts, ACCOUNT_BATCH).map((accounts) =>
+          filledSource((rawStart, size) =>
+            this.expenses(company, accounts, expenseAccounts, rawStart, size),
+          ),
+        ),
+      ],
+      newestFirst,
+      (r) => `${r.direction === 'expense' ? 'JE' : 'PE'}:${r.name}`,
+    );
+  }
+
+  /** One page of Journal Entries that debit these expense categories: Madar's expenses, and ones made in Desk. */
   private async expenses(
     company: string,
+    accounts: readonly string[],
     expenseAccounts: readonly string[],
-  ): Promise<PaymentRecord[]> {
-    const found = await Promise.all(
-      batches(expenseAccounts, ACCOUNT_BATCH).map((accounts) =>
-        firstValueFrom(
-          this.erpnext.list<{
-            name: string;
-            posting_date: string;
-            creation: string;
-            docstatus: number;
-          }>('Journal Entry', {
-            fields: ['name', 'posting_date', 'creation', 'docstatus'],
-            filters: [
-              ['company', '=', company],
-              ['docstatus', '<', 2],
-              ['Journal Entry Account', 'account', 'in', accounts],
-            ],
-            orderBy: 'posting_date desc, creation desc',
-            limit: HISTORY_LIMIT,
-          }),
-        ),
-      ),
+    start: number,
+    size: number,
+  ): Promise<{ rows: PaymentRecord[]; raw: number }> {
+    const found = await firstValueFrom(
+      this.erpnext.list<{
+        name: string;
+        posting_date: string;
+        creation: string;
+        docstatus: number;
+      }>('Journal Entry', {
+        fields: ['name', 'posting_date', 'creation', 'docstatus'],
+        filters: [
+          ['company', '=', company],
+          ['docstatus', '<', 2],
+          ['Journal Entry Account', 'account', 'in', accounts],
+        ],
+        orderBy: 'posting_date desc, creation desc, name desc',
+        limit: size,
+        limitStart: start,
+      }),
     );
-    // Batches overlap, and an entry with two expense rows comes back once per row.
-    const entries = found
-      .flat()
-      .sort(
-        (a, b) =>
-          b.posting_date.localeCompare(a.posting_date) || b.creation.localeCompare(a.creation),
-      );
-    const names = [...new Set(entries.map((e) => e.name))].slice(0, HISTORY_LIMIT);
+    // An entry with two expense rows comes back once per row.
+    const entries = found.filter((e, i) => found.findIndex((o) => o.name === e.name) === i);
+    const names = entries.map((e) => e.name);
     if (!names.length) {
-      return [];
+      return { rows: [], raw: found.length };
     }
     const [rows, files] = await Promise.all([
       firstValueFrom(
@@ -136,15 +139,14 @@ export class MoneyApiService {
       ).catch(() => []),
     ]);
     const expense = new Set(expenseAccounts);
-    const accounts = await this.accountNames([...new Set(rows.map((r) => r.account))]);
+    const accountNames = await this.accountNames([...new Set(rows.map((r) => r.account))]);
     const name = (account: string | undefined) =>
-      account ? (accounts.get(account) ?? account) : '';
-    const records = names.map((entryName): PaymentRecord => {
-      const entry = entries.find((e) => e.name === entryName)!;
-      const own = rows.filter((r) => r.parent === entryName);
+      account ? (accountNames.get(account) ?? account) : '';
+    const records = entries.map((entry): PaymentRecord => {
+      const own = rows.filter((r) => r.parent === entry.name);
       const debits = own.filter((r) => expense.has(r.account) && r.debit > 0);
       return {
-        name: entryName,
+        name: entry.name,
         direction: 'expense',
         party: debits.map((r) => name(r.account)).join(', '),
         account: name(own.find((r) => r.credit > 0)?.account),
@@ -153,14 +155,19 @@ export class MoneyApiService {
         postingDate: entry.posting_date,
         created: entry.creation,
         invoices: [],
-        receipt: files.some((f) => f.attached_to_name === entryName),
+        receipt: files.some((f) => f.attached_to_name === entry.name),
       };
     });
     // Entries that only credit an expense account (reversals, refunds made in Desk) aren't expenses.
-    return records.filter((r) => r.amount > 0);
+    return { rows: records.filter((r) => r.amount > 0), raw: found.length };
   }
 
-  private async payments(company: string, owner: string | null): Promise<PaymentRecord[]> {
+  private async payments(
+    company: string,
+    owner: string | null,
+    start: number,
+    size: number,
+  ): Promise<PaymentRecord[]> {
     const filters: Filter[] = [['company', '=', company]];
     if (owner) {
       filters.push(['owner', '=', owner]);
@@ -189,8 +196,9 @@ export class MoneyApiService {
           'creation',
         ],
         filters,
-        orderBy: 'posting_date desc, creation desc',
-        limit: HISTORY_LIMIT,
+        orderBy: 'posting_date desc, creation desc, name desc',
+        limit: size,
+        limitStart: start,
       }),
     );
     if (!rows.length) {
@@ -272,4 +280,6 @@ export class MoneyApiService {
 }
 
 const newestFirst = (a: PaymentRecord, b: PaymentRecord) =>
-  b.postingDate.localeCompare(a.postingDate) || b.created.localeCompare(a.created);
+  b.postingDate.localeCompare(a.postingDate) ||
+  b.created.localeCompare(a.created) ||
+  b.name.localeCompare(a.name);

@@ -5196,6 +5196,34 @@
               }
             },
             {
+              "type": "text",
+              "id": "pa9j5",
+              "name": "Loading more",
+              "context": "Shown while the next 50 rows load, when the list is scrolled near its end.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Loading more…",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "y42W4",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Show more",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Show more. Loads the next 50 rows (also loads automatically near the end of the list). Hidden when there are no more rows; after a failed page it reads Try again.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Show more"
+                }
+              }
+            },
+            {
               "id": "m9RrPW",
               "type": "ref",
               "ref": "wk3Ko",
@@ -78008,6 +78036,34 @@
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "JGtZW",
+              "name": "Loading more",
+              "context": "Shown while the next 50 rows load, when the list is scrolled near its end.",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "جارٍ تحميل المزيد…",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "UjTbj",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Show more",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: عرض المزيد. Loads the next 50 rows (also loads automatically near the end of the list). Hidden when there are no more rows; after a failed page it reads Try again.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "عرض المزيد"
                 }
               }
             },

@@ -9,6 +9,7 @@ import {
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { spellings } from '../../../core/util/fuzzy-match';
+import { mapPage, mergeSources } from '../../../core/util/paged-list';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
 import {
@@ -64,7 +65,6 @@ const BATCH = 30;
 const TASK_LIMIT = 5;
 const CUSTOMER_MATCH_LIMIT = 1000;
 const LINK_LIMIT = 5;
-const SALES_LIMIT = 20;
 
 function batches<T>(values: readonly T[], size = BATCH): T[][] {
   const chunks: T[][] = [];
@@ -670,7 +670,10 @@ export class ProjectsApiService {
       .catch(() => null);
   }
 
-  /** Submitted invoices (credit notes as their own negative rows) and sales orders, newest first. */
+  /**
+   * What the project billed, and a reader of its submitted invoices (credit notes as their own negative rows) and sales
+   * orders, newest first, one page at a time from a cursor on each.
+   */
   private async sales(
     project: string,
     company: string,
@@ -682,29 +685,47 @@ export class ProjectsApiService {
       ['docstatus', '=', 1],
       ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
     ];
-    const read = (doctype: string, extra: string[]) =>
-      firstValueFrom(
-        this.erpnext.list<{
-          name: string;
-          status: string;
-          is_return?: number;
-          base_grand_total: number;
-          base_rounded_total: number;
-          creation: string;
-        }>(doctype, {
-          fields: [
-            'name',
-            'status',
-            'base_grand_total',
-            'base_rounded_total',
-            'creation',
-            ...extra,
-          ],
-          filters,
-          orderBy: 'creation desc',
-          limit: SALES_LIMIT,
-        }),
-      );
+    type Row = { sale: ProjectSale; created: string };
+    const read =
+      (doctype: string, kind: ProjectSale['kind'], extra: string[]) =>
+      async (start: number, size: number): Promise<Row[]> => {
+        const rows = await firstValueFrom(
+          this.erpnext.list<{
+            name: string;
+            status: string;
+            is_return?: number;
+            base_grand_total: number;
+            base_rounded_total: number;
+            creation: string;
+          }>(doctype, {
+            fields: [
+              'name',
+              'status',
+              'base_grand_total',
+              'base_rounded_total',
+              'creation',
+              ...extra,
+            ],
+            filters,
+            orderBy: 'creation desc, name desc',
+            limit: size,
+            limitStart: start,
+          }),
+        );
+        return rows.map((r) => ({
+          created: r.creation,
+          sale: {
+            kind,
+            name: r.name,
+            status: r.status,
+            isReturn: !!r.is_return,
+            amount: invoiceTotal({
+              grand_total: r.base_grand_total,
+              rounded_total: r.base_rounded_total,
+            }),
+          },
+        }));
+      };
     const sum = (field: string, extra: Filter[]) =>
       firstValueFrom(
         this.erpnext.list<Record<string, unknown>>('Sales Invoice', {
@@ -713,34 +734,24 @@ export class ProjectsApiService {
           limit: 1,
         }),
       ).then((rows) => Number(rows[0]?.[`SUM(\`${field}\`)`] ?? 0));
-    const [invoices, orders, invoiceCount, orderCount, rounded, plain] = await Promise.all([
-      read('Sales Invoice', ['is_return']),
-      read('Sales Order', []),
+    // The counts also tell a role that can't read these records, before any row is asked for.
+    const [, , rounded, plain] = await Promise.all([
       firstValueFrom(this.erpnext.count('Sales Invoice', filters)),
       firstValueFrom(this.erpnext.count('Sales Order', filters)),
       owner ? Promise.resolve(null) : sum('base_rounded_total', [['base_rounded_total', '!=', 0]]),
       owner ? Promise.resolve(null) : sum('base_grand_total', [['base_rounded_total', '=', 0]]),
     ]);
-    const rows = [
-      ...invoices.map((r) => ({ r, kind: 'invoice' as const })),
-      ...orders.map((r) => ({ r, kind: 'order' as const })),
-    ]
-      .sort((a, b) => b.r.creation.localeCompare(a.r.creation))
-      .map(({ r, kind }): ProjectSale => ({
-        kind,
-        name: r.name,
-        status: r.status,
-        isReturn: !!r.is_return,
-        amount: invoiceTotal({
-          grand_total: r.base_grand_total,
-          rounded_total: r.base_rounded_total,
-        }),
-      }));
+    const merged = mergeSources<Row>(
+      [read('Sales Invoice', 'invoice', ['is_return']), read('Sales Order', 'order', [])],
+      (a, b) =>
+        b.created.localeCompare(a.created) ||
+        b.sale.kind.localeCompare(a.sale.kind) ||
+        b.sale.name.localeCompare(a.sale.name),
+      (r) => `${r.sale.kind}:${r.sale.name}`,
+    );
     return {
-      rows,
       billed: rounded === null || plain === null ? null : Math.round((rounded + plain) * 100) / 100,
-      moreInvoices: Math.max(0, invoiceCount - invoices.length),
-      moreOrders: Math.max(0, orderCount - orders.length),
+      fetch: mapPage(merged, (rows) => rows.map((r) => r.sale)),
     };
   }
 

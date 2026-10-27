@@ -4,6 +4,7 @@ import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.ser
 import { PartyBalancesService, inCompany } from '../../../core/customers/party-balances.service';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { Page, PageFetch, mapPage, mergeSources, pageOf } from '../../../core/util/paged-list';
 import {
   ContactInfo,
   ContactKind,
@@ -12,11 +13,6 @@ import {
   HistoryEntry,
   SupplierDetail,
 } from './contacts.models';
-
-/** Lists show this many rows; the screen says so when there may be more. */
-export const LIST_LIMIT = 30;
-/** History shows each kind's newest this many. */
-export const HISTORY_LIMIT = 50;
 
 interface PartyDoc {
   name: string;
@@ -54,16 +50,18 @@ export class ContactsApiService {
   private readonly erpnext = inject(ErpnextClient);
   private readonly balances = inject(PartyBalancesService);
 
-  /** Customers matching the term, with what each owes across currencies, as their page totals it. */
+  /** One page of customers matching the term, with what each owes across currencies, as their page totals it. */
   /** `owner` limits the balances to that user's own sales (salespeople, store associates). */
   async customerList(
     term: string,
     company: Company,
     owner: string | null,
-    active = true,
-  ): Promise<ContactRow[]> {
+    active: boolean,
+    start: number,
+    size: number,
+  ): Promise<Page<ContactRow>> {
     const like = `%${term.trim()}%`;
-    const rows = await firstValueFrom(
+    const read = await firstValueFrom(
       this.erpnext.list<{
         name: string;
         customer_name: string;
@@ -83,10 +81,12 @@ export class ContactsApiService {
               ['name', 'like', like],
             ]
           : undefined,
-        orderBy: 'customer_name asc',
-        limit: LIST_LIMIT,
+        orderBy: 'customer_name asc, name asc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
+    const { rows, more } = pageOf(read, size);
     // Roles that can't read Sales Invoices still see the customers.
     const balances = rows.length
       ? await this.balances
@@ -99,13 +99,16 @@ export class ContactsApiService {
           )
           .catch(() => null)
       : null;
-    return rows.map((r) => ({
-      id: r.name,
-      name: r.customer_name,
-      phone: r.mobile_no,
-      city: lines(r.primary_address)[0] ?? null,
-      outstanding: balances ? (balances.get(r.name) ?? 0) : null,
-    }));
+    return {
+      more,
+      items: rows.map((r) => ({
+        id: r.name,
+        name: r.customer_name,
+        phone: r.mobile_no,
+        city: lines(r.primary_address)[0] ?? null,
+        outstanding: balances ? (balances.get(r.name) ?? 0) : null,
+      })),
+    };
   }
 
   /** Suppliers matching the term; balances only for roles that see supplier money. */
@@ -113,10 +116,12 @@ export class ContactsApiService {
     term: string,
     company: Company,
     withBalances: boolean,
-    active = true,
-  ): Promise<ContactRow[]> {
+    active: boolean,
+    start: number,
+    size: number,
+  ): Promise<Page<ContactRow>> {
     const like = `%${term.trim()}%`;
-    const rows = await firstValueFrom(
+    const read = await firstValueFrom(
       this.erpnext.list<{
         name: string;
         supplier_name: string;
@@ -132,10 +137,12 @@ export class ContactsApiService {
               ['name', 'like', like],
             ]
           : undefined,
-        orderBy: 'supplier_name asc',
-        limit: LIST_LIMIT,
+        orderBy: 'supplier_name asc, name asc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
+    const { rows, more } = pageOf(read, size);
     const balances =
       withBalances && rows.length
         ? await this.balances
@@ -148,13 +155,16 @@ export class ContactsApiService {
             )
             .catch(() => null)
         : null;
-    return rows.map((r) => ({
-      id: r.name,
-      name: r.supplier_name,
-      phone: r.mobile_no,
-      city: lines(r.primary_address)[0] ?? null,
-      outstanding: balances ? (balances.get(r.name) ?? 0) : null,
-    }));
+    return {
+      more,
+      items: rows.map((r) => ({
+        id: r.name,
+        name: r.supplier_name,
+        phone: r.mobile_no,
+        city: lines(r.primary_address)[0] ?? null,
+        outstanding: balances ? (balances.get(r.name) ?? 0) : null,
+      })),
+    };
   }
 
   /**
@@ -353,16 +363,17 @@ export class ContactsApiService {
   }
 
   /**
-   * The contact's invoices, returns, payments and deliveries, newest first (each kind its newest 50).
-   * `owner` keeps sales roles to their own; `withMoney` false leaves a supplier's money out (non-cost roles).
+   * The contact's invoices, returns, payments and deliveries, newest first. Each kind is paged from its own cursor and
+   * merged by date, then creation time. `owner` keeps sales roles to their own; `withMoney` false leaves a
+   * supplier's money out (non-cost roles). Make one per query: it caches what each kind has read.
    */
-  async history(
+  history(
     kind: ContactKind,
     id: string,
     company: Company,
     owner: string | null,
     withMoney: boolean,
-  ): Promise<HistoryEntry[]> {
+  ): PageFetch<HistoryEntry> {
     const customer = kind === 'customers';
     const scope = (party: string): Filter[] => [
       [party, '=', id],
@@ -370,63 +381,125 @@ export class ContactsApiService {
       ['docstatus', '=', 1],
       ...(owner ? ([['owner', '=', owner]] as Filter[]) : []),
     ];
-    const recent = { orderBy: 'posting_date desc, creation desc', limit: HISTORY_LIMIT };
-    const [invoices, payments, deliveries] = await Promise.all([
-      withMoney
-        ? // A role that can't read invoices or payments still sees the rest of the history.
-          firstValueFrom(
-            this.erpnext.list<Record<string, unknown>>(
-              customer ? 'Sales Invoice' : 'Purchase Invoice',
-              {
-                fields: [
-                  'name',
-                  'posting_date',
-                  'status',
-                  'is_return',
-                  'base_grand_total',
-                  'base_rounded_total',
-                  'outstanding_amount',
-                  'conversion_rate',
-                  'party_account_currency',
-                  'return_against',
-                  'update_outstanding_for_self',
-                  'creation',
-                ],
-                filters: scope(customer ? 'customer' : 'supplier'),
-                ...recent,
-              },
-            ),
-          ).catch(forbiddenAsNone)
-        : Promise.resolve([]),
-      withMoney
-        ? firstValueFrom(
-            this.erpnext.list<{
-              name: string;
-              posting_date: string;
-              base_paid_amount: number;
-              paid_to: string;
-              paid_from: string;
-              creation?: string;
-            }>('Payment Entry', {
-              fields: [
-                'name',
-                'posting_date',
-                'base_paid_amount',
-                'paid_to',
-                'paid_from',
-                'creation',
-              ],
-              // Money received from customers or paid to suppliers; refunds the other way aren't these.
-              filters: [
-                ['party_type', '=', customer ? 'Customer' : 'Supplier'],
-                ['payment_type', '=', customer ? 'Receive' : 'Pay'],
-                ...scope('party'),
-              ],
-              ...recent,
-            }),
-          ).catch(forbiddenAsNone)
-        : Promise.resolve([]),
+    const recent = (start: number, size: number) => ({
+      orderBy: 'posting_date desc, creation desc, name desc',
+      limit: size,
+      limitStart: start,
+    });
+    type Row = { entry: HistoryEntry; made: string };
+    // A role that can't read invoices or payments still sees the rest of the history.
+    const none = (): Promise<Row[]> => Promise.resolve([]);
+    const invoices = (start: number, size: number): Promise<Row[]> =>
       firstValueFrom(
+        this.erpnext.list<Record<string, unknown>>(
+          customer ? 'Sales Invoice' : 'Purchase Invoice',
+          {
+            fields: [
+              'name',
+              'posting_date',
+              'status',
+              'is_return',
+              'base_grand_total',
+              'base_rounded_total',
+              'outstanding_amount',
+              'conversion_rate',
+              'party_account_currency',
+              'return_against',
+              'update_outstanding_for_self',
+              'creation',
+            ],
+            filters: scope(customer ? 'customer' : 'supplier'),
+            ...recent(start, size),
+          },
+        ),
+      )
+        .then((rows) =>
+          rows.map((r) => ({
+            made: String(r['creation'] ?? ''),
+            entry: {
+              kind: r['is_return'] ? ('return' as const) : ('invoice' as const),
+              name: String(r['name']),
+              date: String(r['posting_date']),
+              amount: Math.abs(owed(r)),
+              outstanding: inCompany(r['outstanding_amount'], r, company.currency),
+              credited: 0,
+              // Credit notes that reduced an invoice's balance aren't payments against it.
+              ...(r['is_return'] && !r['update_outstanding_for_self']
+                ? { creditFor: String(r['return_against'] ?? ''), creditAmount: Math.abs(owed(r)) }
+                : {}),
+              status: String(r['status']),
+              place: null,
+              invoices: [],
+              qty: 0,
+            },
+          })),
+        )
+        .catch(forbiddenAsNone);
+    const payments = async (start: number, size: number): Promise<Row[]> => {
+      const rows = await firstValueFrom(
+        this.erpnext.list<{
+          name: string;
+          posting_date: string;
+          base_paid_amount: number;
+          paid_to: string;
+          paid_from: string;
+          creation?: string;
+        }>('Payment Entry', {
+          fields: ['name', 'posting_date', 'base_paid_amount', 'paid_to', 'paid_from', 'creation'],
+          // Money received from customers or paid to suppliers; refunds the other way aren't these.
+          filters: [
+            ['party_type', '=', customer ? 'Customer' : 'Supplier'],
+            ['payment_type', '=', customer ? 'Receive' : 'Pay'],
+            ...scope('party'),
+          ],
+          ...recent(start, size),
+        }),
+      );
+      const [allocations, accounts] = await Promise.all([
+        rows.length
+          ? firstValueFrom(
+              this.erpnext.list<{ parent: string; reference_name: string }>(
+                'Payment Entry Reference',
+                {
+                  fields: ['parent', 'reference_name'],
+                  filters: [['parent', 'in', rows.map((p) => p.name)]],
+                  parent: 'Payment Entry',
+                  limit: 0,
+                },
+              ),
+            ).catch(forbiddenAsNone)
+          : Promise.resolve([]),
+        this.names(
+          'Account',
+          'account_name',
+          rows.map((p) => (customer ? p.paid_to : p.paid_from)),
+        ),
+      ]);
+      return rows.map((p) => {
+        const account = customer ? p.paid_to : p.paid_from;
+        return {
+          made: p.creation ?? '',
+          entry: {
+            kind: 'payment' as const,
+            name: p.name,
+            date: p.posting_date,
+            amount: Number(p.base_paid_amount),
+            outstanding: 0,
+            credited: 0,
+            status: '',
+            place: accounts.get(account) ?? account,
+            invoices: [
+              ...new Set(
+                allocations.filter((a) => a.parent === p.name).map((a) => a.reference_name),
+              ),
+            ],
+            qty: 0,
+          },
+        };
+      });
+    };
+    const deliveries = async (start: number, size: number): Promise<Row[]> => {
+      const rows = await firstValueFrom(
         this.erpnext.list<{
           name: string;
           posting_date: string;
@@ -437,95 +510,44 @@ export class ContactsApiService {
         }>(customer ? 'Delivery Note' : 'Purchase Receipt', {
           fields: ['name', 'posting_date', 'total_qty', 'set_warehouse', 'is_return', 'creation'],
           filters: scope(customer ? 'customer' : 'supplier'),
-          ...recent,
+          ...recent(start, size),
         }),
-      ).catch(forbiddenAsNone),
-    ]);
-    const [allocations, accounts, warehouses] = await Promise.all([
-      payments.length
-        ? firstValueFrom(
-            this.erpnext.list<{ parent: string; reference_name: string }>(
-              'Payment Entry Reference',
-              {
-                fields: ['parent', 'reference_name'],
-                filters: [['parent', 'in', payments.map((p) => p.name)]],
-                parent: 'Payment Entry',
-                limit: 0,
-              },
-            ),
-          ).catch(forbiddenAsNone)
-        : Promise.resolve([]),
-      this.names(
-        'Account',
-        'account_name',
-        payments.map((p) => (customer ? p.paid_to : p.paid_from)),
-      ),
-      this.names(
+      );
+      const warehouses = await this.names(
         'Warehouse',
         'warehouse_name',
-        deliveries.map((d) => d.set_warehouse ?? ''),
-      ),
-    ]);
-    // Credit notes that reduced an invoice's balance aren't payments against it.
-    const credited = new Map<string, number>();
-    for (const r of invoices.filter((r) => r['is_return'] && !r['update_outstanding_for_self'])) {
-      const against = String(r['return_against'] ?? '');
-      credited.set(against, (credited.get(against) ?? 0) + Math.abs(owed(r)));
-    }
-    const entries: HistoryEntry[] = [
-      ...invoices.map((r) => ({
-        kind: r['is_return'] ? ('return' as const) : ('invoice' as const),
-        name: String(r['name']),
-        date: String(r['posting_date']),
-        amount: Math.abs(owed(r)),
-        outstanding: inCompany(r['outstanding_amount'], r, company.currency),
-        credited: credited.get(String(r['name'])) ?? 0,
-        status: String(r['status']),
-        place: null,
-        invoices: [],
-        qty: 0,
-      })),
-      ...payments.map((p) => {
-        const account = customer ? p.paid_to : p.paid_from;
-        return {
-          kind: 'payment' as const,
-          name: p.name,
-          date: p.posting_date,
-          amount: Number(p.base_paid_amount),
+        rows.map((d) => d.set_warehouse ?? ''),
+      );
+      return rows.map((d) => ({
+        made: d.creation ?? '',
+        entry: {
+          kind: 'delivery' as const,
+          name: d.name,
+          date: d.posting_date,
+          amount: null,
           outstanding: 0,
           credited: 0,
-          status: '',
-          place: accounts.get(account) ?? account,
-          invoices: [
-            ...new Set(allocations.filter((a) => a.parent === p.name).map((a) => a.reference_name)),
-          ],
-          qty: 0,
-        };
-      }),
-      ...deliveries.map((d) => ({
-        kind: 'delivery' as const,
-        name: d.name,
-        date: d.posting_date,
-        amount: null,
-        outstanding: 0,
-        credited: 0,
-        status: d.is_return ? 'Return' : '',
-        place: d.set_warehouse ? (warehouses.get(d.set_warehouse) ?? d.set_warehouse) : null,
-        invoices: [],
-        qty: Math.abs(Number(d.total_qty)),
-      })),
-    ];
-    // Same-day records in the order they were made, newest first, across all kinds.
-    const made = new Map<string, string>([
-      ...invoices.map((r) => [String(r['name']), String(r['creation'] ?? '')] as const),
-      ...payments.map((p) => [p.name, p.creation ?? ''] as const),
-      ...deliveries.map((d) => [d.name, d.creation ?? ''] as const),
-    ]);
-    return entries.sort(
+          status: d.is_return ? 'Return' : '',
+          place: d.set_warehouse ? (warehouses.get(d.set_warehouse) ?? d.set_warehouse) : null,
+          invoices: [],
+          qty: Math.abs(Number(d.total_qty)),
+        },
+      }));
+    };
+    const merged = mergeSources<Row>(
+      [
+        withMoney ? invoices : none,
+        withMoney ? (start, size) => payments(start, size).catch(forbiddenAsNone) : none,
+        (start, size) => deliveries(start, size).catch(forbiddenAsNone),
+      ],
+      // Same-day records in the order they were made, newest first, across all kinds.
       (a, b) =>
-        b.date.localeCompare(a.date) ||
-        (made.get(b.name) ?? '').localeCompare(made.get(a.name) ?? ''),
+        b.entry.date.localeCompare(a.entry.date) ||
+        b.made.localeCompare(a.made) ||
+        b.entry.name.localeCompare(a.entry.name),
+      (r) => `${r.entry.kind === 'return' ? 'invoice' : r.entry.kind}:${r.entry.name}`,
     );
+    return mapPage(merged, (rows) => rows.map((r) => r.entry));
   }
 
   /** The contact's display name, for pages that only have its id. */
@@ -562,4 +584,17 @@ function info(doc: PartyDoc, name: string): ContactInfo {
     address: lines(doc.primary_address),
     active: !doc['disabled'],
   };
+}
+
+/** Fills in what credit notes took off each invoice among the entries shown. */
+export function withCredits(entries: readonly HistoryEntry[]): HistoryEntry[] {
+  const credited = new Map<string, number>();
+  for (const e of entries) {
+    if (e.creditFor) {
+      credited.set(e.creditFor, (credited.get(e.creditFor) ?? 0) + (e.creditAmount ?? 0));
+    }
+  }
+  return entries.map((e) =>
+    e.kind === 'invoice' || e.kind === 'return' ? { ...e, credited: credited.get(e.name) ?? 0 } : e,
+  );
 }

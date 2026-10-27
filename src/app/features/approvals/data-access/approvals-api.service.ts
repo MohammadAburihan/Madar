@@ -4,10 +4,8 @@ import { Business } from '../../../core/business/business.service';
 import { UnresolvedError, confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { PageFetch, filledSource, mapPage, mergeSources } from '../../../core/util/paged-list';
 import { ApprovalDetail, ApprovalItem } from './approvals.models';
-
-/** The inbox shows this many; the screen says so when there may be more. */
-export const APPROVAL_LIMIT = 50;
 
 type Doc = Record<string, unknown> & { name: string; doctype: string };
 
@@ -15,6 +13,8 @@ const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : nul
 /** Text as written, without the Madar reference saved after it ("Madar leave LEV-…"). */
 const prose = (v: unknown) =>
   text(typeof v === 'string' ? v.replace(/\s*Madar [a-z]+ [A-Z]+-[0-9A-Z]+\s*$/, '') : v);
+const rowKey = (r: { item: ApprovalItem }) =>
+  `${r.item.leaveOnly ? 'leave' : 'flow'}:${r.item.doctype}/${r.item.name}`;
 const number = (v: unknown) => (v === undefined || v === null || v === '' ? null : Number(v));
 
 /** Who or what a document is about, from the fields the common doctypes carry. */
@@ -63,10 +63,36 @@ export class ApprovalsApiService {
   private readonly stateFields = new Map<string, Promise<string>>();
 
   /**
-   * Documents waiting for the user, newest first; another company's are left out. `capped` when ERPNext had as many
-   * open actions as were asked for, so there may be more.
+   * What waits for the user, newest first: the open workflow actions (another company's documents left out) and, with
+   * `withLeave`, the leave requests not yet decided. Each is read from its own cursor and merged by creation time.
+   * Leave under a workflow is listed twice; the rows say which is which (`leaveOnly`). Make one per query.
    */
-  async inbox(business: Business): Promise<{ items: ApprovalItem[]; capped: boolean }> {
+  inbox(business: Business, withLeave: boolean): PageFetch<ApprovalItem> {
+    type Row = { item: ApprovalItem; created: string };
+    const leave = (start: number, size: number): Promise<Row[]> =>
+      this.leaveWaiting(business, start, size).catch((error: unknown) => {
+        // A role that can't read leave still sees its workflow items.
+        if (ErpnextError.from(error).kind === 'forbidden') {
+          return [];
+        }
+        throw error;
+      });
+    const merged = mergeSources<Row>(
+      [
+        filledSource((rawStart, size) => this.workflowActions(business, rawStart, size)),
+        ...(withLeave ? [leave] : []),
+      ],
+      (a, b) => b.created.localeCompare(a.created) || rowKey(b).localeCompare(rowKey(a)),
+      rowKey,
+    );
+    return mapPage(merged, (rows) => rows.map((r) => r.item));
+  }
+
+  private async workflowActions(
+    business: Business,
+    start: number,
+    size: number,
+  ): Promise<{ rows: { item: ApprovalItem; created: string }[]; raw: number }> {
     const actions = await firstValueFrom(
       this.erpnext.list<{
         reference_doctype: string;
@@ -77,8 +103,9 @@ export class ApprovalsApiService {
         fields: ['reference_doctype', 'reference_name', 'workflow_state', 'creation'],
         // Frappe limits these to the user's roles itself.
         filters: [['status', '=', 'Open']],
-        orderBy: 'creation desc',
-        limit: APPROVAL_LIMIT,
+        orderBy: 'creation desc, name desc',
+        limit: size,
+        limitStart: start,
       }),
     );
     const seen = new Set<string>();
@@ -107,28 +134,36 @@ export class ApprovalsApiService {
         ),
       ),
     );
-    const items = docs
+    const rows = docs
       .map((doc, i) => ({ doc, action: unique[i] }))
       .filter(
         (x): x is { doc: Doc; action: (typeof unique)[number] } =>
           !!x.doc && (!x.doc['company'] || x.doc['company'] === business.name),
       )
       .map(({ doc, action }) => ({
-        doctype: action.reference_doctype,
-        name: doc.name,
-        title: titleOf(doc),
-        amount: amountOf(doc, business.currency),
-        state: String(doc[fields.get(action.reference_doctype)!] ?? action.workflow_state),
-        date: String(doc['posting_date'] ?? doc['transaction_date'] ?? action.creation).slice(
-          0,
-          10,
-        ),
+        created: action.creation,
+        item: {
+          doctype: action.reference_doctype,
+          name: doc.name,
+          title: titleOf(doc),
+          amount: amountOf(doc, business.currency),
+          state: String(doc[fields.get(action.reference_doctype)!] ?? action.workflow_state),
+          date: String(doc['posting_date'] ?? doc['transaction_date'] ?? action.creation).slice(
+            0,
+            10,
+          ),
+        },
       }));
-    return { items, capped: actions.length >= APPROVAL_LIMIT };
+    // The cursor counts the actions ERPNext returned, before repeats and unreadable documents came out.
+    return { rows, raw: actions.length };
   }
 
-  /** Leave requests waiting for a decision (decided on the Leave requests pages under Workers). */
-  async leaveWaiting(business: Business): Promise<ApprovalItem[]> {
+  /** One page of the leave requests waiting for a decision (decided on the Leave requests pages under Workers). */
+  private async leaveWaiting(
+    business: Business,
+    start: number,
+    size: number,
+  ): Promise<{ item: ApprovalItem; created: string }[]> {
     const rows = await firstValueFrom(
       this.erpnext.list<{
         name: string;
@@ -137,24 +172,37 @@ export class ApprovalsApiService {
         from_date: string;
         to_date: string;
         status: string;
+        creation: string;
       }>('Leave Application', {
-        fields: ['name', 'employee_name', 'leave_type', 'from_date', 'to_date', 'status'],
+        fields: [
+          'name',
+          'employee_name',
+          'leave_type',
+          'from_date',
+          'to_date',
+          'status',
+          'creation',
+        ],
         filters: [
           ['company', '=', business.name],
           ['docstatus', '=', 0],
         ],
-        // Newest first, as the cap note says.
-        orderBy: 'creation desc',
-        limit: APPROVAL_LIMIT,
+        orderBy: 'creation desc, name desc',
+        limit: size,
+        limitStart: start,
       }),
     );
     return rows.map((r) => ({
-      doctype: 'Leave Application',
-      name: r.name,
-      title: `${r.employee_name} · ${r.leave_type}`,
-      amount: null,
-      state: r.status,
-      date: r.from_date,
+      created: r.creation,
+      item: {
+        doctype: 'Leave Application',
+        name: r.name,
+        title: `${r.employee_name} · ${r.leave_type}`,
+        amount: null,
+        state: r.status,
+        date: r.from_date,
+        leaveOnly: true,
+      },
     }));
   }
 

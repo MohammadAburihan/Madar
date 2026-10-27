@@ -1,3 +1,4 @@
+import { PageFetch } from '../../../core/util/paged-list';
 export type ProjectKind = 'customer' | 'internal';
 export type ProjectStatus = 'open' | 'completed' | 'cancelled';
 
@@ -62,12 +63,10 @@ export interface ProjectSale {
 }
 
 export interface ProjectSales {
-  rows: ProjectSale[];
   /** Submitted invoices less credit notes in company currency; null when only the user's own sales are listed. */
   billed: number | null;
-  /** Submitted invoices and orders beyond the rows listed. */
-  moreInvoices: number;
-  moreOrders: number;
+  /** Reads the invoices and orders, newest first, a page at a time. */
+  fetch: PageFetch<ProjectSale>;
 }
 
 export interface ProjectDetail extends ProjectSummary {

@@ -7,6 +7,13 @@
   "language": {
     "switchTo": "Change language to {{language}}"
   },
+  "paging": {
+    "more": "Show more",
+    "loading": "Loading more…",
+    "failed": "Couldn't load more. What's shown is still right.",
+    "retry": "Try again",
+    "searching": "Searching the loaded entries — show more to search further."
+  },
   "nav": {
     "label": "Main navigation",
     "home": "Home",
@@ -1822,14 +1829,6 @@
       "salesHeading": "Sales for this project",
       "noSales": "Nothing has been sold to this project yet.",
       "billed": "Billed {{amount}}",
-      "moreInvoices": {
-        "one": "{{count}} more invoice in ERPNext",
-        "other": "{{count}} more invoices in ERPNext"
-      },
-      "moreOrders": {
-        "one": "{{count}} more order in ERPNext",
-        "other": "{{count}} more orders in ERPNext"
-      },
       "ownOnly": "Only your own sales are listed.",
       "row": "{{name}} · {{amount}} · {{status}}",
       "status": {
@@ -2100,7 +2099,6 @@
         "title": "Sales are for the selling roles",
         "message": "Your role doesn't sell. Ask the owner if you need to."
       },
-      "newest": "The {{count}} newest are shown; search to find older ones.",
       "heading": "Sales",
       "title": "{{name}} · {{customer}}",
       "goodsReturned": "Goods returned",
@@ -2555,7 +2553,6 @@
       "title": "This contact couldn't load",
       "message": "Check the connection and try again."
     },
-    "capped": "Showing the first {{count}}. Search to find others.",
     "add": "Add customer or supplier",
     "addDesktop": "+ Add contact",
     "viewTransactions": "View transactions",
@@ -2615,7 +2612,6 @@
       "placeholder": "Search by document number",
       "empty": "No transactions yet.",
       "noResults": "No transactions match your search.",
-      "capped": "Showing the newest {{count}} of each kind.",
       "loadFailed": {
         "title": "The history couldn't load",
         "message": "Check the connection and try again."
@@ -2834,7 +2830,6 @@
       "active": "No workers yet.",
       "left": "No one has left."
     },
-    "capped": "Showing the first {{count}}. Search to find others.",
     "today": {
       "notMarked": "Not marked today",
       "Present": "Present today",
@@ -3006,7 +3001,6 @@
         "decided": "No leave has been decided yet."
       },
       "noResults": "No leave requests match your search.",
-      "capped": "Showing the first {{count}}. Search to find others.",
       "error": {
         "title": "Leave requests couldn't load",
         "message": "Check the connection and try again."
@@ -3389,7 +3383,6 @@
     "loading": "Loading what waits for you…",
     "empty": "Nothing is waiting for you.",
     "noResults": "Nothing waiting matches your search.",
-    "capped": "Showing the newest {{count}}.",
     "error": {
       "title": "Approvals couldn't load",
       "message": "Check the connection and try again."
@@ -3602,7 +3595,6 @@
     "loading": "Loading the catalog…",
     "empty": "No items or services yet.",
     "noResults": "No items or services match.",
-    "capped": "Showing the first {{count}}. Search to find others.",
     "note": "Prices are the selling price list's; products show stock across your locations. Select a row to inspect.",
     "add": "Add item or service",
     "addDesktop": "+ Add item",

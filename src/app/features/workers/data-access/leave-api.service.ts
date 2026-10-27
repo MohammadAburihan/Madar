@@ -4,6 +4,7 @@ import { Business } from '../../../core/business/business.service';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import {
   LeaveBalance,
   LeaveDecision,
@@ -12,7 +13,6 @@ import {
   LeaveTab,
 } from './workers.models';
 
-export const LEAVE_LIMIT = 50;
 const LEAVE_METHODS = 'hrms.hr.doctype.leave_application.leave_application';
 
 interface LeaveDoc {
@@ -72,11 +72,17 @@ export class LeaveApiService {
 
   /**
    * Waiting: every request not yet submitted, oldest first, including ones given a status in Desk without
-   * submitting. Decided: approved or rejected ones, newest first.
+   * submitting. Decided: approved or rejected ones, newest first. One page at a time.
    */
-  async requests(tab: LeaveTab, term: string, business: Business): Promise<LeaveRequest[]> {
+  async requests(
+    tab: LeaveTab,
+    term: string,
+    business: Business,
+    start: number,
+    size: number,
+  ): Promise<Page<LeaveRequest>> {
     const like = `%${term.trim()}%`;
-    const rows = await firstValueFrom(
+    const read = await firstValueFrom(
       this.erpnext.list<LeaveDoc>('Leave Application', {
         fields: FIELDS,
         filters: [
@@ -95,11 +101,13 @@ export class LeaveApiService {
               ['name', 'like', like],
             ]
           : undefined,
-        orderBy: tab === 'waiting' ? 'from_date asc, name asc' : 'modified desc',
-        limit: LEAVE_LIMIT,
+        orderBy: tab === 'waiting' ? 'from_date asc, name asc' : 'modified desc, name desc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
-    return rows.map(toRequest);
+    const { rows, more } = pageOf(read, size);
+    return { items: rows.map(toRequest), more };
   }
 
   /** One request, only if it belongs to this business. */

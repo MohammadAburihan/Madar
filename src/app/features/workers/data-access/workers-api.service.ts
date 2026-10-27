@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Business } from '../../../core/business/business.service';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
@@ -15,7 +16,6 @@ import {
 } from './workers.models';
 
 /** Lists show this many rows; the screen says so when there may be more. */
-export const LIST_LIMIT = 50;
 const RECENT_LIMIT = 5;
 
 interface EmployeeRow {
@@ -108,15 +108,17 @@ function nameParts(name: string): { first_name: string; last_name: string } {
 export class WorkersApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  /** Workers on the tab matching the term, with how each is today. */
+  /** One page of the workers on the tab matching the term, with how each is today. */
   async list(
     term: string,
     tab: WorkerTab,
     business: Business,
     today: string,
-  ): Promise<WorkerRow[]> {
+    start: number,
+    size: number,
+  ): Promise<Page<WorkerRow>> {
     const like = `%${term.trim()}%`;
-    const [rows, departments] = await Promise.all([
+    const [read, departments] = await Promise.all([
       firstValueFrom(
         this.erpnext.list<EmployeeRow>('Employee', {
           fields: EMPLOYEE_FIELDS,
@@ -132,21 +134,26 @@ export class WorkersApiService {
                 ['name', 'like', like],
               ]
             : undefined,
-          orderBy: 'employee_name asc',
-          limit: LIST_LIMIT,
+          orderBy: 'employee_name asc, name asc',
+          limit: size + 1,
+          limitStart: start,
         }),
       ),
       this.departmentNames(business),
     ]);
+    const { rows, more } = pageOf(read, size);
     const ids = rows.map((r) => r.name);
     const todays =
       tab === 'active' && ids.length
         ? await this.todayFor(ids, today).catch(forbiddenAsNull)
         : null;
-    return rows.map((r) => ({
-      ...this.row(r, departments),
-      today: todays ? (todays.map.get(r.name) ?? todays.fallback) : null,
-    }));
+    return {
+      more,
+      items: rows.map((r) => ({
+        ...this.row(r, departments),
+        today: todays ? (todays.map.get(r.name) ?? todays.fallback) : null,
+      })),
+    };
   }
 
   /** One worker: details, this month's attendance, leave left, advances to repay and the latest pay. */

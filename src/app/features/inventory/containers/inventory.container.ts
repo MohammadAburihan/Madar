@@ -16,17 +16,23 @@ import { toIsoDate } from '../../../core/format/format';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
+import { ClientWindow, PagedList } from '../../../core/util/paged-list';
 import { DataTableComponent } from '../../../shared/ui/data-table.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { HistoryListComponent } from '../../../shared/ui/history-list.component';
 import { ItemCardComponent } from '../../../shared/ui/item-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
-import { InventoryApiService } from '../data-access/inventory-api.service';
-import { InventoryOverview, Movement, StockItem } from '../data-access/inventory.models';
+import {
+  InventoryApiService,
+  LedgerRow,
+  settledMovements,
+} from '../data-access/inventory-api.service';
+import { InventoryOverview, StockItem } from '../data-access/inventory.models';
 import {
   itemRow,
   movementEntry,
@@ -45,6 +51,7 @@ import {
     HistoryListComponent,
     ItemCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
     StatCardComponent,
@@ -105,6 +112,7 @@ import {
           [empty]="emptyText()"
           (opened)="selectedCode.set($event)"
         />
+        <app-load-more [hasMore]="stock.hasMore()" (more)="stock.more()" />
         <div class="split">
           @if (stockActions().length) {
             <div class="actions">
@@ -125,6 +133,12 @@ import {
                   [rows]="historyRows()"
                   [empty]="txt.noHistory"
                 />
+                <app-load-more
+                  [hasMore]="ledger.hasMore()"
+                  [loading]="ledger.loadingMore()"
+                  [failed]="ledger.moreFailed()"
+                  (more)="ledger.loadMore()"
+                />
               }
             </div>
           }
@@ -142,7 +156,7 @@ import {
         <app-stat-card [stats]="stats()" />
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
         @if (term().trim()) {
-          @for (item of matching(); track item.code) {
+          @for (item of stock.items(); track item.code) {
             <app-item-card
               [interactive]="true"
               [title]="item.name"
@@ -153,6 +167,7 @@ import {
           } @empty {
             <p class="muted">{{ txt.noResults }}</p>
           }
+          <app-load-more [hasMore]="stock.hasMore()" (more)="stock.more()" />
         } @else if (selected(); as item) {
           <h2>{{ itemHeading() }}</h2>
           @for (card of warehouseCards(); track card.title) {
@@ -164,6 +179,12 @@ import {
               [label]="txt.historyHeading"
               [entries]="historyEntries()"
               [empty]="txt.noHistory"
+            />
+            <app-load-more
+              [hasMore]="ledger.hasMore()"
+              [loading]="ledger.loadingMore()"
+              [failed]="ledger.moreFailed()"
+              (more)="ledger.loadMore()"
             />
           }
         } @else {
@@ -199,9 +220,15 @@ export class InventoryContainer implements OnInit {
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   protected readonly selectedCode = signal<string | null>(null);
   /** The selected item's movements; null when the role can't read the stock ledger. */
-  protected readonly history = signal<Movement[] | null>(null);
+  protected readonly ledger = new PagedList<LedgerRow>();
+  protected readonly history = computed(() =>
+    this.ledger.status() === 'ready'
+      ? settledMovements(this.ledger.items(), this.ledger.hasMore())
+      : null,
+  );
+  /** Search results and the balances table show 50 at a time; the whole list is already loaded. */
+  protected readonly stock = new ClientWindow<StockItem>();
   private readonly overview = signal<InventoryOverview | null>(null);
-  private historyRun = 0;
 
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly caps = this.session.capabilities;
@@ -270,7 +297,7 @@ export class InventoryContainer implements OnInit {
   });
 
   protected readonly rows = computed(() =>
-    this.matching().map((item) => itemRow(item, this.columns(), this.i18n.tr())),
+    this.stock.items().map((item) => itemRow(item, this.columns(), this.i18n.tr())),
   );
 
   protected readonly emptyText = computed(() => {
@@ -343,9 +370,10 @@ export class InventoryContainer implements OnInit {
   });
 
   constructor() {
+    effect(() => this.stock.set(this.matching()));
     effect(() => {
       const item = this.selected();
-      untracked(() => void this.loadHistory(item));
+      untracked(() => this.loadHistory(item));
     });
   }
 
@@ -404,24 +432,14 @@ export class InventoryContainer implements OnInit {
     }
   }
 
-  private async loadHistory(item: StockItem | null): Promise<void> {
-    const run = ++this.historyRun;
-    this.history.set(null);
+  private loadHistory(item: StockItem | null): void {
     if (!item) {
+      this.ledger.reset();
       return;
     }
-    try {
-      const movements = await this.api.history(
-        item.code,
-        this.warehouses().map((w) => w.id),
-      );
-      if (run === this.historyRun) {
-        this.history.set(movements);
-      }
-    } catch {
-      if (run === this.historyRun) {
-        this.history.set(null);
-      }
-    }
+    const warehouses = this.warehouses().map((w) => w.id);
+    void this.ledger.loadFirst((start, size) =>
+      this.api.history(item.code, warehouses, start, size),
+    );
   }
 }

@@ -14,12 +14,14 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { ContactsApiService, HISTORY_LIMIT } from '../data-access/contacts-api.service';
+import { ContactsApiService, withCredits } from '../data-access/contacts-api.service';
 import { ContactKind, HistoryEntry } from '../data-access/contacts.models';
 import { contactKinds } from './contacts-access';
 import { historyCard } from './contacts-view';
@@ -31,6 +33,7 @@ import { historyCard } from './contacts-view';
     BackLinkComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     SearchFieldComponent,
   ],
@@ -61,14 +64,14 @@ import { historyCard } from './contacts-view';
         [title]="txt.noAccess.title"
         [message]="txt.noAccess.message"
       />
-    } @else if (failed()) {
+    } @else if (list.status() === 'error') {
       <app-feedback-card
         tone="danger"
         [title]="txt.loadFailed.title"
         [message]="txt.loadFailed.message"
       />
       <button type="button" class="md-btn" (click)="load()">{{ txt.retry }}</button>
-    } @else if (!entries()) {
+    } @else if (list.status() !== 'ready') {
       <p class="muted" role="status">{{ txt.loading }}</p>
     } @else {
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
@@ -81,11 +84,15 @@ import { historyCard } from './contacts-view';
           <app-feedback-card [title]="card.title" [message]="card.message" />
         }
       } @empty {
-        <p class="muted">{{ term().trim() ? txt.noResults : txt.empty }}</p>
+        <p class="muted">{{ emptyText() }}</p>
       }
-      @if (capped()) {
-        <p class="muted">{{ txt.capped }}</p>
-      }
+      <app-load-more
+        [hasMore]="list.hasMore()"
+        [loading]="list.loadingMore()"
+        [failed]="list.moreFailed()"
+        [autoLoad]="!term().trim()"
+        (more)="list.loadMore()"
+      />
     }
   `,
 })
@@ -101,9 +108,12 @@ export class ContactHistoryContainer {
   protected readonly i18n = injectI18n();
 
   protected readonly term = signal('');
-  protected readonly entries = signal<HistoryEntry[] | null>(null);
+  protected readonly list = new PagedList<HistoryEntry>({
+    key: (e) => `${e.kind === 'return' ? 'invoice' : e.kind}:${e.name}`,
+  });
+  /** Credit notes reduce invoices already shown, so the totals are worked out over every page loaded. */
+  private readonly entries = computed(() => withCredits(this.list.items()));
   private readonly contactName = signal<string | null>(null);
-  protected readonly failed = signal(false);
   private run = 0;
 
   private readonly contactKind = computed<ContactKind>(() =>
@@ -139,10 +149,18 @@ export class ContactHistoryContainer {
       retry: t('contacts.retry'),
       empty: t('contacts.history.empty'),
       noResults: t('contacts.history.noResults'),
-      capped: t('contacts.history.capped', { count: HISTORY_LIMIT }),
+      searching: t('paging.searching'),
       noAccess: block('contacts.noAccess'),
       loadFailed: block('contacts.history.loadFailed'),
     };
+  });
+
+  protected readonly emptyText = computed(() => {
+    const txt = this.text();
+    if (!this.term().trim()) {
+      return txt.empty;
+    }
+    return this.list.hasMore() ? txt.searching : txt.noResults;
   });
 
   protected readonly cards = computed(() => {
@@ -150,7 +168,7 @@ export class ContactHistoryContainer {
     const kind = this.contactKind();
     const currency = this.business.active()?.currency ?? '';
     const tr = this.i18n.tr();
-    return (this.entries() ?? [])
+    return this.entries()
       .filter((e) => !query || e.name.toLowerCase().includes(query))
       .map((e) => ({
         id: `${e.kind}:${e.name}`,
@@ -164,48 +182,36 @@ export class ContactHistoryContainer {
       }));
   });
 
-  /** A kind came back full: older entries of it may be missing. */
-  protected readonly capped = computed(() => {
-    const counts = new Map<string, number>();
-    for (const e of this.entries() ?? []) {
-      const key = e.kind === 'return' ? 'invoice' : e.kind;
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return [...counts.values()].some((n) => n >= HISTORY_LIMIT);
-  });
-
   constructor() {
     effect(() => {
       const kind = this.contactKind();
       const id = this.id();
+      // Signing in as someone else or switching business starts the history over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       if (this.allowed()) {
         untracked(() => void this.load(kind, id));
       }
     });
   }
 
-  protected async load(kind = this.contactKind(), id = this.id()): Promise<void> {
+  protected load(kind = this.contactKind(), id = this.id()): Promise<void> {
     const run = ++this.run;
-    this.entries.set(null);
-    this.failed.set(false);
     this.contactName.set(null);
     void this.api
       .displayName(kind, id)
       .then((name) => run === this.run && this.contactName.set(name));
-    try {
-      const business = await this.business.ensure();
-      if (!business) {
-        throw new Error('No active business');
+    let merged: PageFetch<HistoryEntry> | null = null;
+    return this.list.loadFirst(async (start, size) => {
+      if (!merged) {
+        const business = await this.business.ensure();
+        if (!business) {
+          throw new Error('No active business');
+        }
+        merged = this.api.history(kind, id, business, this.owner(), this.withMoney());
       }
-      const entries = await this.api.history(kind, id, business, this.owner(), this.withMoney());
-      if (run === this.run) {
-        this.entries.set(entries);
-      }
-    } catch {
-      if (run === this.run) {
-        this.failed.set(true);
-      }
-    }
+      return merged(start, size);
+    });
   }
 
   protected back(): void {

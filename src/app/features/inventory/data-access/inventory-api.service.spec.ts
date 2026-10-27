@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ListQuery } from '../../../core/erpnext/erpnext-client';
-import { InventoryApiService } from './inventory-api.service';
+import { InventoryApiService, movementsOf, settledMovements } from './inventory-api.service';
 import { TransferRequest } from './inventory.models';
 
 const MAIN = 'Main warehouse - RN';
@@ -176,21 +176,50 @@ describe('InventoryApiService', () => {
     ]);
   });
 
-  it('leaves out the oldest voucher when the history hits its limit, since it may be cut off', async () => {
-    fakeErpnext({
-      'Stock Ledger Entry': () =>
-        Array.from({ length: 30 }, (_, i) => ({
-          voucher_type: 'Stock Entry',
-          voucher_no: `STE-${Math.floor(i / 2)}`,
-          warehouse: i % 2 ? SHOP : MAIN,
-          actual_qty: i % 2 ? 1 : -1,
-          posting_date: '2026-10-14',
-          posting_time: '09:00:00',
-        })),
+  it('pages the ledger rows, one past the page, and joins a voucher a page boundary cut in two', async () => {
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      name: `SLE-${i}`,
+      voucher_type: 'Stock Entry',
+      voucher_no: `STE-${Math.floor((i + 1) / 2)}`,
+      warehouse: i % 2 ? MAIN : SHOP,
+      actual_qty: i % 2 ? -1 : 1,
+      qty_after_transaction: 5,
+      posting_date: '2026-10-14',
+      posting_time: '09:00:00',
+    }));
+    const { listCalls } = fakeErpnext({ 'Stock Ledger Entry': () => rows });
+    const page = await TestBed.inject(InventoryApiService).history('OLV-20', [MAIN, SHOP], 0, 50);
+
+    expect(listCalls[0].query).toMatchObject({
+      limit: 51,
+      limitStart: 0,
+      orderBy: 'posting_datetime desc, creation desc, name desc',
     });
-    const movements = await TestBed.inject(InventoryApiService).history('OLV-20', [MAIN, SHOP]);
-    expect(movements).toHaveLength(14);
-    expect(movements.every((m) => m.lines.length === 2)).toBe(true);
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(true);
+    const next = rows.slice(50).map((r) => ({ ...r, voucher_no: 'STE-25' }));
+    const movements = movementsOf([...page.items, ...next]);
+    expect(movements.find((m) => m.voucher === 'STE-25')!.lines).toHaveLength(2);
+  });
+
+  it('holds back the last voucher while more rows exist, then shows it whole once', () => {
+    const row = (name: string, voucher: string, warehouse: string, qty: number) => ({
+      name,
+      voucher_type: 'Stock Entry',
+      voucher_no: voucher,
+      warehouse,
+      actual_qty: qty,
+      qty_after_transaction: 5,
+      posting_date: '2026-10-14',
+      posting_time: '09:00:00',
+    });
+    const first = [row('1', 'STE-2', SHOP, 1), row('2', 'STE-1', MAIN, -1)];
+    const second = [row('3', 'STE-1', SHOP, 1)];
+
+    expect(settledMovements(first, true).map((m) => m.voucher)).toEqual(['STE-2']);
+    const done = settledMovements([...first, ...second], false);
+    expect(done.map((m) => m.voucher)).toEqual(['STE-2', 'STE-1']);
+    expect(done[1].lines).toHaveLength(2);
   });
 
   it('totals a move without the project sites, as the move screen does', async () => {
@@ -270,7 +299,13 @@ describe('InventoryApiService', () => {
         },
       ],
     });
-    const movements = await TestBed.inject(InventoryApiService).history('OLV-20', [MAIN, SHOP]);
+    const { items } = await TestBed.inject(InventoryApiService).history(
+      'OLV-20',
+      [MAIN, SHOP],
+      0,
+      50,
+    );
+    const movements = movementsOf(items);
 
     expect(movements).toEqual([
       {
@@ -296,7 +331,7 @@ describe('InventoryApiService', () => {
       ['warehouse', 'in', [MAIN, SHOP]],
       ['is_cancelled', '=', 0],
     ]);
-    expect(listCalls[0].query.orderBy).toBe('posting_datetime desc, creation desc');
+    expect(listCalls[0].query.orderBy).toBe('posting_datetime desc, creation desc, name desc');
   });
 
   describe('transfer', () => {

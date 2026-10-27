@@ -10,15 +10,16 @@ import {
 import { Router } from '@angular/router';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
-import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { APPROVAL_LIMIT, ApprovalsApiService } from '../data-access/approvals-api.service';
+import { ApprovalsApiService } from '../data-access/approvals-api.service';
 import { ApprovalItem } from '../data-access/approvals.models';
 import { approvalCard } from './approvals-view';
 
@@ -28,6 +29,7 @@ import { approvalCard } from './approvals-view';
   imports: [
     FeedbackCardComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     PersonCardComponent,
     SearchFieldComponent,
@@ -61,11 +63,15 @@ import { approvalCard } from './approvals-view';
             (picked)="open(card.id)"
           />
         } @empty {
-          <p class="muted">{{ term().trim() ? txt.noResults : txt.empty }}</p>
+          <p class="muted">{{ emptyText() }}</p>
         }
-        @if (capped()) {
-          <p class="muted">{{ txt.capped }}</p>
-        }
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
+          (more)="list.loadMore()"
+        />
       }
       @if (manageWorkers()) {
         <button
@@ -93,12 +99,32 @@ export class ApprovalsContainer {
   protected readonly allowed = computed(() => this.session.capabilities().approve);
   protected readonly manageWorkers = computed(() => this.session.capabilities().manageWorkers);
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  private readonly items = signal<ApprovalItem[]>([]);
+  protected readonly list = new PagedList<ApprovalItem>({
+    key: (i) => `${i.leaveOnly ? 'leave' : 'flow'}:${i.doctype}/${i.name}`,
+  });
+  protected readonly state = computed(() =>
+    this.list.status() === 'ready' ? 'ready' : this.list.status() === 'error' ? 'error' : 'loading',
+  );
+  /**
+   * A site with a workflow on leave lists the same request twice: its steps are taken on the approval page, since the
+   * leave page's decision would bypass the workflow. Judged over the pages loaded, so a later page can fold a row.
+   */
+  private readonly items = computed(() => {
+    const all = this.list.items();
+    const underWorkflow = new Set(
+      all.filter((i) => i.doctype === 'Leave Application' && !i.leaveOnly).map((i) => i.name),
+    );
+    return all.filter((i) => !(i.leaveOnly && underWorkflow.has(i.name)));
+  });
   /** Leave requests listed from Frappe HR (not a workflow): decided on the leave page. */
-  private readonly leaveRows = signal(new Set<string>());
-  protected readonly capped = signal(false);
-  private run = 0;
+  private readonly leaveRows = computed(
+    () =>
+      new Set(
+        this.items()
+          .filter((i) => i.leaveOnly)
+          .map((i) => i.name),
+      ),
+  );
 
   protected readonly text = computed(() => {
     const { t } = this.i18n.tr();
@@ -111,13 +137,21 @@ export class ApprovalsContainer {
       loading: t('approvals.loading'),
       empty: t('approvals.empty'),
       noResults: t('approvals.noResults'),
-      capped: t('approvals.capped', { count: APPROVAL_LIMIT }),
+      searching: t('paging.searching'),
       leaveRequests: t('approvals.leaveRequests'),
       backHome: t('approvals.backHome'),
       retry: t('workers.retry'),
       error: block('approvals.error'),
       noAccess: block('approvals.noAccess'),
     };
+  });
+
+  protected readonly emptyText = computed(() => {
+    const txt = this.text();
+    if (!this.term().trim()) {
+      return txt.empty;
+    }
+    return this.list.hasMore() ? txt.searching : txt.noResults;
   });
 
   protected readonly cards = computed(() => {
@@ -138,50 +172,28 @@ export class ApprovalsContainer {
 
   constructor() {
     effect(() => {
+      // Signing in as someone else or switching business starts the inbox over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       if (this.allowed()) {
         untracked(() => void this.load());
       }
     });
   }
 
-  protected async load(): Promise<void> {
-    const run = ++this.run;
-    this.state.set('loading');
-    this.items.set([]);
-    try {
-      const business = await this.business.ensure();
-      if (!business) {
-        throw new Error('No active business');
+  protected load(): Promise<void> {
+    const withLeave = this.manageWorkers();
+    let inbox: PageFetch<ApprovalItem> | null = null;
+    return this.list.loadFirst(async (start, size) => {
+      if (!inbox) {
+        const business = await this.business.ensure();
+        if (!business) {
+          throw new Error('No active business');
+        }
+        inbox = this.api.inbox(business, withLeave);
       }
-      const [workflow, leave] = await Promise.all([
-        this.api.inbox(business),
-        this.manageWorkers()
-          ? this.api.leaveWaiting(business).catch((error: unknown) => {
-              // A role that can't read leave still sees its workflow items.
-              if (ErpnextError.from(error).kind === 'forbidden') {
-                return [];
-              }
-              throw error;
-            })
-          : Promise.resolve([]),
-      ]);
-      if (run === this.run) {
-        // A site with a workflow on leave lists the same request twice: its steps are taken on the approval page,
-        // since the leave page's decision would bypass the workflow.
-        const underWorkflow = new Set(
-          workflow.items.filter((w) => w.doctype === 'Leave Application').map((w) => w.name),
-        );
-        this.capped.set(workflow.capped || leave.length >= APPROVAL_LIMIT);
-        const leaveOnly = leave.filter((l) => !underWorkflow.has(l.name));
-        this.leaveRows.set(new Set(leaveOnly.map((l) => l.name)));
-        this.items.set([...leaveOnly, ...workflow.items]);
-        this.state.set('ready');
-      }
-    } catch {
-      if (run === this.run) {
-        this.state.set('error');
-      }
-    }
+      return inbox(start, size);
+    });
   }
 
   protected open(id: string): void {

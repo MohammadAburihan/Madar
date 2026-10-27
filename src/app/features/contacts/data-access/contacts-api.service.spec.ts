@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
-import { ContactsApiService } from './contacts-api.service';
+import { PagedList } from '../../../core/util/paged-list';
+import { ContactsApiService, withCredits } from './contacts-api.service';
+import { HistoryEntry } from './contacts.models';
 
 const COMPANY = { name: 'Rehan Nursery', currency: 'ILS' };
 const api = () => TestBed.inject(ContactsApiService);
@@ -33,9 +35,18 @@ describe('ContactsApiService', () => {
         },
       ],
     });
-    expect(await api().customerList('lin', COMPANY, null)).toEqual([
-      { id: 'Lina Haddad', name: 'Lina Haddad', phone: '059', city: 'Ramallah', outstanding: 117 },
-    ]);
+    expect(await api().customerList('lin', COMPANY, null, true, 0, 50)).toEqual({
+      more: false,
+      items: [
+        {
+          id: 'Lina Haddad',
+          name: 'Lina Haddad',
+          phone: '059',
+          city: 'Ramallah',
+          outstanding: 117,
+        },
+      ],
+    });
     expect(listCalls[0].query.filters).toContainEqual(['name', '!=', 'Walk-in Customer']);
     expect(listCalls[0].query.filters).toContainEqual(['customer_name', '!=', 'Walk-in Customer']);
   });
@@ -45,7 +56,9 @@ describe('ContactsApiService', () => {
       Customer: () => [{ name: 'L', customer_name: 'L', mobile_no: null, primary_address: null }],
       'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 403 })),
     });
-    expect((await api().customerList('', COMPANY, null))[0].outstanding).toBeNull();
+    expect(
+      (await api().customerList('', COMPANY, null, true, 0, 50)).items[0].outstanding,
+    ).toBeNull();
   });
 
   it('totals a customer: invoiced, paid after returns, and outstanding', async () => {
@@ -184,13 +197,13 @@ describe('ContactsApiService', () => {
       Account: () => [{ name: 'Cash - RN', account_name: 'Main cash' }],
       Warehouse: () => [{ name: 'Main - RN', warehouse_name: 'Main warehouse' }],
     });
-    const history = await api().history(
+    const { items: history } = await api().history(
       'customers',
       'Lina Haddad',
       COMPANY,
       'lina@rehan.example',
       true,
-    );
+    )(0, 50);
     expect(history.map((e) => [e.kind, e.name])).toEqual([
       ['payment', 'PAY-1'],
       ['delivery', 'DN-1'],
@@ -217,7 +230,13 @@ describe('ContactsApiService', () => {
         },
       ],
     });
-    const history = await api().history('suppliers', 'Green Clay', COMPANY, null, false);
+    const { items: history } = await api().history(
+      'suppliers',
+      'Green Clay',
+      COMPANY,
+      null,
+      false,
+    )(0, 50);
     expect(history.map((e) => e.kind)).toEqual(['delivery']);
     expect(listCalls.map((c) => c.doctype)).toEqual(['Purchase Receipt']);
   });
@@ -236,7 +255,13 @@ describe('ContactsApiService', () => {
         },
       ],
     });
-    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    const { items: history } = await api().history(
+      'customers',
+      'Lina Haddad',
+      COMPANY,
+      null,
+      true,
+    )(0, 50);
     expect(history.map((e) => e.name)).toEqual(['DN-1']);
   });
 
@@ -245,7 +270,7 @@ describe('ContactsApiService', () => {
       'Sales Invoice': () => throwError(() => new HttpErrorResponse({ status: 0 })),
     });
     await expect(
-      api().history('customers', 'Lina Haddad', COMPANY, null, true),
+      api().history('customers', 'Lina Haddad', COMPANY, null, true)(0, 50),
     ).rejects.toBeTruthy();
   });
 
@@ -274,8 +299,14 @@ describe('ContactsApiService', () => {
         },
       ],
     });
-    const history = await api().history('customers', 'Lina Haddad', COMPANY, null, true);
-    expect(history.find((e) => e.name === 'SI-1')!.credited).toBe(30);
+    const { items: history } = await api().history(
+      'customers',
+      'Lina Haddad',
+      COMPANY,
+      null,
+      true,
+    )(0, 50);
+    expect(withCredits(history).find((e) => e.name === 'SI-1')!.credited).toBe(30);
   });
 
   it("deactivates and reactivates through ERPNext's Disabled flag", async () => {
@@ -294,12 +325,108 @@ describe('ContactsApiService', () => {
       {},
       { 'Supplier/Green Clay': { name: 'Green Clay', supplier_name: 'Green Clay', disabled: 1 } },
     );
-    await api().customerList('', COMPANY, null, false);
-    await api().supplierList('', COMPANY, false, false);
+    await api().customerList('', COMPANY, null, false, 0, 50);
+    await api().supplierList('', COMPANY, false, false, 0, 50);
     expect(listCalls.map((c) => c.query.filters?.[0])).toEqual([
       ['disabled', '=', 1],
       ['disabled', '=', 1],
     ]);
     expect((await api().supplier('Green Clay', COMPANY, false)).active).toBe(false);
+  });
+
+  it('pages customers and suppliers: one row past the page, from the offset, in a stable order', async () => {
+    const many = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        name: `C${i}`,
+        customer_name: `C${i}`,
+        supplier_name: `C${i}`,
+        mobile_no: null,
+        primary_address: null,
+      }));
+    const { listCalls } = fakeErpnext({ Customer: () => many(51), Supplier: () => many(3) });
+    const customers = await api().customerList('', COMPANY, null, true, 100, 50);
+    const suppliers = await api().supplierList('', COMPANY, false, true, 50, 50);
+
+    expect(listCalls.find((c) => c.doctype === 'Customer')!.query).toMatchObject({
+      limit: 51,
+      limitStart: 100,
+      orderBy: 'customer_name asc, name asc',
+    });
+    expect(customers.items).toHaveLength(50);
+    expect(customers.more).toBe(true);
+    expect(listCalls.find((c) => c.doctype === 'Supplier')!.query).toMatchObject({
+      limit: 51,
+      limitStart: 50,
+      orderBy: 'supplier_name asc, name asc',
+    });
+    expect(suppliers).toMatchObject({ more: false });
+    expect(suppliers.items).toHaveLength(3);
+  });
+
+  it('pages a history from one cursor per kind, merged newest first', async () => {
+    const day = (n: number) => `2026-09-${String(30 - n).padStart(2, '0')}`;
+    const invoices = Array.from({ length: 70 }, (_, i) => ({
+      name: `SI-${String(i).padStart(3, '0')}`,
+      posting_date: day(Math.floor(i / 3)),
+      creation: `${day(Math.floor(i / 3))} 1${i % 3}:00:00`,
+      status: 'Paid',
+      is_return: 0,
+      base_grand_total: 10,
+      outstanding_amount: 0,
+      party_account_currency: 'ILS',
+    }));
+    const deliveries = Array.from({ length: 30 }, (_, i) => ({
+      name: `DN-${String(i).padStart(3, '0')}`,
+      posting_date: day(i),
+      creation: `${day(i)} 09:00:00`,
+      total_qty: 1,
+      set_warehouse: null,
+      is_return: 0,
+    }));
+    const slice = (rows: unknown[]) => (q: { limit?: number; limitStart?: number }) =>
+      rows.slice(q.limitStart ?? 0, (q.limitStart ?? 0) + (q.limit ?? 20));
+    const { listCalls } = fakeErpnext({
+      'Sales Invoice': slice(invoices),
+      'Delivery Note': slice(deliveries),
+      'Payment Entry': () => [],
+    });
+    const fetch = api().history('customers', 'Lina Haddad', COMPANY, null, true);
+    const first = await fetch(0, 50);
+    const second = await fetch(50, 50);
+
+    const all = [...first.items, ...second.items];
+    expect(first.more).toBe(true);
+    expect(second.more).toBe(false);
+    expect(all).toHaveLength(100);
+    expect(all.map((e) => e.date)).toEqual([...all.map((e) => e.date)].sort().reverse());
+    expect(new Set(all.map((e) => e.name)).size).toBe(100);
+    expect(listCalls.find((c) => c.doctype === 'Sales Invoice')!.query.orderBy).toBe(
+      'posting_date desc, creation desc, name desc',
+    );
+    expect(listCalls.some((c) => (c.query.limitStart ?? 0) > 0)).toBe(true);
+  });
+});
+
+describe('withCredits across pages', () => {
+  const entry = (over: Partial<HistoryEntry>): HistoryEntry =>
+    ({ kind: 'invoice', name: 'SI-1', credited: 0, ...over }) as HistoryEntry;
+
+  it('adds a credit note from a later page to its invoice once it is loaded, never twice', async () => {
+    const pages = [
+      [entry({ name: 'SI-1' })],
+      [entry({ kind: 'return', name: 'SI-2', creditFor: 'SI-1', creditAmount: 30 })],
+    ];
+    const list = new PagedList<HistoryEntry>({ key: (e) => e.name });
+    await list.loadFirst(async (start) => ({
+      items: pages[start] ?? [],
+      more: start === 0,
+      fetched: 1,
+    }));
+    expect(withCredits(list.items())[0].credited).toBe(0);
+
+    await list.loadMore();
+    const shown = withCredits(list.items());
+    expect(shown.find((e) => e.name === 'SI-1')?.credited).toBe(30);
+    expect(withCredits(shown).find((e) => e.name === 'SI-1')?.credited).toBe(30);
   });
 });

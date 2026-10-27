@@ -56,7 +56,8 @@ describe('ApprovalsApiService', () => {
         'Purchase Order/PO-9': () => throwError(() => new HttpErrorResponse({ status: 403 })),
       },
     );
-    expect(await api().inbox(BUSINESS)).toEqual({
+    expect(await api().inbox(BUSINESS, false)(0, 50)).toMatchObject({
+      more: false,
       items: [
         {
           doctype: 'Expense Claim',
@@ -67,20 +68,73 @@ describe('ApprovalsApiService', () => {
           date: '2026-10-17',
         },
       ],
-      capped: false,
     });
     expect(listCalls[0].query.filters).toEqual([['status', '=', 'Open']]);
   });
 
-  it('says the inbox is capped by the actions ERPNext returned, not those left after filtering', async () => {
-    const actions = Array.from({ length: 50 }, (_, i) => ({
+  it('keeps reading actions past a run of documents it drops, so a short page never hides the rest', async () => {
+    const actions = Array.from({ length: 120 }, (_, i) => ({
       reference_doctype: 'Expense Claim',
-      reference_name: `HR-EXP-${i}`,
+      reference_name: `HR-EXP-${String(i).padStart(3, '0')}`,
       workflow_state: 'Draft',
-      creation: '2026-10-17 10:00:00',
+      creation: `2026-10-17 ${String(23 - Math.floor(i / 6)).padStart(2, '0')}:00:00`,
     }));
-    fakeErpnext({ 'Workflow Action': () => actions }, {}, {});
-    expect(await api().inbox(BUSINESS)).toEqual({ items: [], capped: true });
+    const docs = Object.fromEntries(
+      actions.map((a, i) => [
+        `Expense Claim/${a.reference_name}`,
+        { ...CLAIM, name: a.reference_name, company: i < 70 ? 'Other Co' : 'Rehan Nursery' },
+      ]),
+    );
+    const { listCalls } = fakeErpnext(
+      {
+        'Workflow Action': (q) =>
+          actions.slice(q.limitStart ?? 0, (q.limitStart ?? 0) + (q.limit ?? 20)),
+      },
+      {},
+      docs,
+    );
+    const page = await api().inbox(BUSINESS, false)(0, 50);
+
+    expect(page.items).toHaveLength(50);
+    expect(page.more).toBe(false);
+    const reads = listCalls.filter((c) => c.doctype === 'Workflow Action');
+    expect(reads.map((c) => c.query.limitStart ?? 0)).toEqual([0, 51, 102]);
+    expect(reads[0].query.orderBy).toBe('creation desc, name desc');
+  });
+
+  it('merges leave waiting into the inbox by creation time, from its own cursor', async () => {
+    const leave = Array.from({ length: 3 }, (_, i) => ({
+      name: `HR-LAP-${i}`,
+      employee_name: 'Khaled Omar',
+      leave_type: 'Privilege Leave',
+      from_date: '2026-10-26',
+      to_date: '2026-10-28',
+      status: 'Open',
+      creation: `2026-10-17 1${i}:30:00`,
+    }));
+    fakeErpnext(
+      {
+        'Leave Application': () => [...leave].reverse(),
+        'Workflow Action': () => [
+          {
+            reference_doctype: 'Expense Claim',
+            reference_name: 'HR-EXP-1',
+            workflow_state: 'Draft',
+            creation: '2026-10-17 11:45:00',
+          },
+        ],
+      },
+      {},
+      { 'Expense Claim/HR-EXP-1': CLAIM },
+    );
+    const { items } = await api().inbox(BUSINESS, true)(0, 50);
+
+    expect(items.map((i) => i.name)).toEqual(['HR-LAP-2', 'HR-EXP-1', 'HR-LAP-1', 'HR-LAP-0']);
+    expect(items.filter((i) => i.leaveOnly).map((i) => i.name)).toEqual([
+      'HR-LAP-2',
+      'HR-LAP-1',
+      'HR-LAP-0',
+    ]);
   });
 
   it('takes the grand total when rounding is off (rounded total 0)', async () => {
@@ -301,30 +355,5 @@ describe('ApprovalsApiService', () => {
     await expect(api().item('Expense Claim', 'X', BUSINESS, 'x')).rejects.toMatchObject({
       excType: 'DoesNotExistError',
     });
-  });
-
-  it('lists leave waiting for a decision', async () => {
-    fakeErpnext({
-      'Leave Application': () => [
-        {
-          name: 'HR-LAP-1',
-          employee_name: 'Khaled Omar',
-          leave_type: 'Privilege Leave',
-          from_date: '2026-10-26',
-          to_date: '2026-10-28',
-          status: 'Open',
-        },
-      ],
-    });
-    expect(await api().leaveWaiting(BUSINESS)).toEqual([
-      {
-        doctype: 'Leave Application',
-        name: 'HR-LAP-1',
-        title: 'Khaled Omar · Privilege Leave',
-        amount: null,
-        state: 'Open',
-        date: '2026-10-26',
-      },
-    ]);
   });
 });

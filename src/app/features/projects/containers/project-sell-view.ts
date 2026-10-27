@@ -100,8 +100,12 @@ function statusText(sale: ProjectSale, tr: Translator): string {
 }
 
 /** "SI-1042 · ILS 320.00 · Paid" per sale, newest first; each opens its record page. */
-export function saleLinks(sales: ProjectSales, currency: string, tr: Translator): RecordLinkItem[] {
-  return sales.rows.map((sale) => ({
+export function saleLinks(
+  sales: readonly ProjectSale[],
+  currency: string,
+  tr: Translator,
+): RecordLinkItem[] {
+  return sales.map((sale) => ({
     id: `${sale.kind}:${sale.name}`,
     label: tr.t('project.sell.row', {
       name: sale.name,
@@ -116,12 +120,4 @@ export function billedText(sales: ProjectSales, currency: string, tr: Translator
   return sales.billed === null
     ? null
     : tr.t('project.sell.billed', { amount: formatMoney(sales.billed, currency) });
-}
-
-/** What the capped sales list leaves out, so the rest isn't mistaken for nothing. */
-export function moreSalesText(sales: ProjectSales, tr: Translator): string[] {
-  return [
-    ...(sales.moreInvoices > 0 ? [tr.plural('project.sell.moreInvoices', sales.moreInvoices)] : []),
-    ...(sales.moreOrders > 0 ? [tr.plural('project.sell.moreOrders', sales.moreOrders)] : []),
-  ];
 }

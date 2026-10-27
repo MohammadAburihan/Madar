@@ -202,8 +202,6 @@ export function paymentStatus(invoice: { total: number; outstanding: number }): 
 }
 
 export interface PurchasingOverview {
-  /** The most recent orders, for the table. */
-  orders: OrderSummary[];
   /** Counted over every order, not just the listed ones. */
   openOrders: number;
   awaitingReceipt: number;

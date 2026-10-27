@@ -12,6 +12,7 @@ import {
   referenceIn,
 } from '../../../core/erpnext/draft';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import { BuyingPricesService } from '../../../core/pricing/buying-prices.service';
 import {
   DraftOrder,
@@ -72,7 +73,6 @@ const ORDER_FIELDS = [
   'per_received',
   'per_billed',
 ];
-const ORDER_LIMIT = 50;
 const SEARCH_LIMIT = 10;
 
 /** Purchase orders: the purchasing workspace, item prices, and creating and confirming an order. */
@@ -88,18 +88,7 @@ export class PurchaseApiService {
       // On Hold orders can't be received or billed until reopened, so they aren't open work.
       ['status', 'not in', ['Closed', 'On Hold']],
     ];
-    const [rows, awaitingReceipt, awaitingInvoice, supplierBalance] = await Promise.all([
-      firstValueFrom(
-        this.erpnext.list<OrderDoc>('Purchase Order', {
-          fields: ORDER_FIELDS,
-          filters: [
-            ['company', '=', company],
-            ['docstatus', '<', 2],
-          ],
-          orderBy: 'creation desc',
-          limit: ORDER_LIMIT,
-        }),
-      ),
+    const [awaitingReceipt, awaitingInvoice, supplierBalance] = await Promise.all([
       firstValueFrom(
         this.erpnext.count('Purchase Order', [...submitted, ['per_received', '<', 100]]),
       ),
@@ -112,13 +101,26 @@ export class PurchaseApiService {
       ),
       this.supplierBalance(company, companyCurrency).catch(() => null),
     ]);
+    return { openOrders: awaitingReceipt + awaitingInvoice, awaitingReceipt, supplierBalance };
+  }
+
+  /** One page of the business's orders, newest first. */
+  async orders(company: string, start: number, size: number): Promise<Page<OrderSummary>> {
+    const read = await firstValueFrom(
+      this.erpnext.list<OrderDoc>('Purchase Order', {
+        fields: ORDER_FIELDS,
+        filters: [
+          ['company', '=', company],
+          ['docstatus', '<', 2],
+        ],
+        orderBy: 'creation desc, name desc',
+        limit: size + 1,
+        limitStart: start,
+      }),
+    );
+    const { rows, more } = pageOf(read, size);
     const quantities = await this.quantities(rows.map((r) => r.name));
-    return {
-      orders: rows.map((r) => summary(r, quantities.get(r.name))),
-      openOrders: awaitingReceipt + awaitingInvoice,
-      awaitingReceipt,
-      supplierBalance,
-    };
+    return { items: rows.map((r) => summary(r, quantities.get(r.name))), more };
   }
 
   async order(name: string): Promise<OrderDetail> {

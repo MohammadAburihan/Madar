@@ -12,14 +12,16 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { PageFetch, PagedList } from '../../../core/util/paged-list';
 import { BackLinkComponent } from '../../../shared/ui/back-link.component';
 import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.component';
 import { FilterChipsComponent } from '../../../shared/ui/filter-chips.component';
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
+import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { PersonCardComponent } from '../../../shared/ui/person-card.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { LEAVE_LIMIT, LeaveApiService } from '../data-access/leave-api.service';
+import { LeaveApiService } from '../data-access/leave-api.service';
 import { LeaveRequest, LeaveTab } from '../data-access/workers.models';
 import { leaveCard } from './leave-view';
 
@@ -33,6 +35,7 @@ const SEARCH_DELAY_MS = 250;
     FeedbackCardComponent,
     FilterChipsComponent,
     LanguageSwitcherComponent,
+    LoadMoreComponent,
     PageHeadingComponent,
     PersonCardComponent,
     SearchFieldComponent,
@@ -70,9 +73,12 @@ const SEARCH_DELAY_MS = 250;
         } @empty {
           <p class="muted">{{ emptyText() }}</p>
         }
-        @if (rows().length >= limit) {
-          <p class="muted">{{ txt.capped }}</p>
-        }
+        <app-load-more
+          [hasMore]="list.hasMore()"
+          [loading]="list.loadingMore()"
+          [failed]="list.moreFailed()"
+          (more)="list.loadMore()"
+        />
       }
       <button
         type="button"
@@ -96,13 +102,14 @@ export class LeaveRequestsContainer {
   protected readonly viewport = inject(ViewportService).viewport;
   protected readonly i18n = injectI18n();
 
-  protected readonly limit = LEAVE_LIMIT;
   protected readonly allowed = computed(() => this.session.capabilities().manageWorkers);
   protected readonly tab = signal<string>('waiting');
   protected readonly term = signal('');
-  protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
-  protected readonly rows = signal<LeaveRequest[]>([]);
-  private run = 0;
+  protected readonly list = new PagedList<LeaveRequest>({ key: (r) => r.id });
+  protected readonly state = computed(() =>
+    this.list.status() === 'ready' ? 'ready' : this.list.status() === 'error' ? 'error' : 'loading',
+  );
+  protected readonly rows = this.list.items;
 
   private readonly current = computed<LeaveTab>(() =>
     this.tab() === 'decided' ? 'decided' : 'waiting',
@@ -122,7 +129,6 @@ export class LeaveRequestsContainer {
       })),
       loading: t('workers.leave.loading'),
       retry: t('workers.retry'),
-      capped: t('workers.leave.capped', { count: LEAVE_LIMIT }),
       request: t('workers.leave.request'),
       backToWorkers: t('workers.leave.backToWorkers'),
       error: { title: t('workers.leave.error.title'), message: t('workers.leave.error.message') },
@@ -147,6 +153,9 @@ export class LeaveRequestsContainer {
     effect((onCleanup) => {
       const tab = this.current();
       const term = this.term();
+      // Signing in as someone else or switching business starts the list over.
+      void this.session.user()?.id;
+      void this.business.active()?.name;
       if (!this.allowed()) {
         return;
       }
@@ -158,24 +167,17 @@ export class LeaveRequestsContainer {
     });
   }
 
-  protected async load(tab = this.current(), term = this.term()): Promise<void> {
-    const run = ++this.run;
-    this.state.set('loading');
-    this.rows.set([]);
-    try {
+  protected load(tab = this.current(), term = this.term()): Promise<void> {
+    return this.list.loadFirst(this.fetcher(tab, term));
+  }
+
+  private fetcher(tab: LeaveTab, term: string): PageFetch<LeaveRequest> {
+    return async (start, size) => {
       const business = await this.business.ensure();
       if (!business) {
         throw new Error('No active business');
       }
-      const rows = await this.api.requests(tab, term, business);
-      if (run === this.run) {
-        this.rows.set(rows);
-        this.state.set('ready');
-      }
-    } catch {
-      if (run === this.run) {
-        this.state.set('error');
-      }
-    }
+      return this.api.requests(tab, term, business, start, size);
+    };
   }
 }

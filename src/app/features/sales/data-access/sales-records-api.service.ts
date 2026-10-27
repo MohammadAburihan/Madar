@@ -1,10 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
+import { Page, pageOf } from '../../../core/util/paged-list';
 import { InvoiceRecord, OrderRecord, QuoteRecord } from './sales-records.models';
-
-/** The newest records each list shows; searching narrows them. */
-export const RECORDS_LIMIT = 30;
 
 export interface RecordsQuery {
   company: string;
@@ -14,13 +12,13 @@ export interface RecordsQuery {
   owner: string | null;
 }
 
-/** The sales records lists: invoices, orders and quotations, newest first. */
+/** The sales records lists, a page at a time: invoices, orders and quotations, newest first. */
 @Injectable({ providedIn: 'root' })
 export class SalesRecordsApiService {
   private readonly erpnext = inject(ErpnextClient);
 
-  async invoices(q: RecordsQuery): Promise<InvoiceRecord[]> {
-    const rows = await firstValueFrom(
+  async invoices(q: RecordsQuery, start: number, size: number): Promise<Page<InvoiceRecord>> {
+    const read = await firstValueFrom(
       this.erpnext.list<{
         name: string;
         customer_name: string;
@@ -51,14 +49,16 @@ export class SalesRecordsApiService {
         ],
         filters: scope(q),
         orFilters: search(q.term, 'customer_name'),
-        orderBy: 'posting_date desc, creation desc',
-        limit: RECORDS_LIMIT,
+        orderBy: 'posting_date desc, creation desc, name desc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
+    const { rows, more } = pageOf(read, size);
     const fromDeliveries = await this.billedDeliveries(
       rows.filter((r) => r.docstatus === 1).map((r) => r.name),
     );
-    return rows.map((r) => ({
+    const items = rows.map((r) => ({
       name: r.name,
       customer: r.customer_name,
       docstatus: r.docstatus,
@@ -82,6 +82,7 @@ export class SalesRecordsApiService {
           : 0,
       date: r.posting_date,
     }));
+    return { items, more };
   }
 
   /**
@@ -157,8 +158,8 @@ export class SalesRecordsApiService {
     return [...new Set(rows.filter((r) => done.has(r.so_detail)).map((r) => r.name))];
   }
 
-  async orders(q: RecordsQuery): Promise<OrderRecord[]> {
-    const rows = await firstValueFrom(
+  async orders(q: RecordsQuery, start: number, size: number): Promise<Page<OrderRecord>> {
+    const read = await firstValueFrom(
       this.erpnext.list<{
         name: string;
         customer_name: string;
@@ -185,11 +186,13 @@ export class SalesRecordsApiService {
         ],
         filters: scope(q),
         orFilters: search(q.term, 'customer_name'),
-        orderBy: 'transaction_date desc, creation desc',
-        limit: RECORDS_LIMIT,
+        orderBy: 'transaction_date desc, creation desc, name desc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
-    return rows.map((r) => ({
+    const { rows, more } = pageOf(read, size);
+    const items = rows.map((r) => ({
       name: r.name,
       customer: r.customer_name,
       docstatus: r.docstatus,
@@ -200,10 +203,11 @@ export class SalesRecordsApiService {
       total: r.base_rounded_total || r.base_grand_total,
       date: r.transaction_date,
     }));
+    return { items, more };
   }
 
-  async quotes(q: RecordsQuery): Promise<QuoteRecord[]> {
-    const rows = await firstValueFrom(
+  async quotes(q: RecordsQuery, start: number, size: number): Promise<Page<QuoteRecord>> {
+    const read = await firstValueFrom(
       this.erpnext.list<{
         name: string;
         customer_name: string;
@@ -227,11 +231,13 @@ export class SalesRecordsApiService {
         // Quotations to Leads belong to Desk's CRM, not to the customer's sales.
         filters: [...scope(q), ['quotation_to', '=', 'Customer']],
         orFilters: search(q.term, 'customer_name'),
-        orderBy: 'transaction_date desc, creation desc',
-        limit: RECORDS_LIMIT,
+        orderBy: 'transaction_date desc, creation desc, name desc',
+        limit: size + 1,
+        limitStart: start,
       }),
     );
-    return rows.map((r) => ({
+    const { rows, more } = pageOf(read, size);
+    const items = rows.map((r) => ({
       name: r.name,
       customer: r.customer_name,
       docstatus: r.docstatus,
@@ -240,6 +246,7 @@ export class SalesRecordsApiService {
       validTill: r.valid_till,
       date: r.transaction_date,
     }));
+    return { items, more };
   }
 }
 
