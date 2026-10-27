@@ -31,14 +31,30 @@ const objects = (schema: unknown): Record<string, unknown>[] => {
   return node['type'] === 'object' ? [node, ...nested] : nested;
 };
 
+type Node = {
+  properties?: Record<string, Node>;
+  items?: Node;
+  required?: string[];
+};
+
+const mandatory = (schema: Node): string[] => schema.required ?? [];
+
 describe('tool registry', () => {
+  it('sets strict on no tool', () => {
+    for (const [name, def] of Object.entries(toolRegistry)) {
+      expect(
+        def,
+        `${name}: strict tools hit Anthropic's grammar limits (24 optional parameters, 16 union-typed parameters across all tools in a request), so the app validates every input against TOOL_SCHEMAS instead.`,
+      ).not.toHaveProperty('strict');
+    }
+  });
+
   it('defines the seven lookups, the six proposals and the three new-record proposals the app sends', () => {
     expect(Object.keys(toolRegistry)).toEqual(NAMES);
   });
 
-  it('keeps every tool strict, closed and described', () => {
+  it('keeps every tool closed and described', () => {
     for (const [name, def] of Object.entries(toolRegistry)) {
-      expect(def.strict, name).toBe(true);
       expect(def.description, name).toBeTruthy();
       for (const object of objects(def.input_schema)) {
         expect(object['additionalProperties'], name).toBe(false);
@@ -47,8 +63,7 @@ describe('tool registry', () => {
   });
 
   it('requires the search text and the invoice name, and nothing else', () => {
-    const required = (name: string) =>
-      (toolRegistry[name]!.input_schema as { required?: string[] }).required ?? [];
+    const required = (name: string) => mandatory(toolRegistry[name]!.input_schema as Node);
     expect(required('search_customers')).toEqual(['query']);
     expect(required('search_items')).toEqual(['query']);
     expect(required('get_invoice')).toEqual(['name']);
@@ -62,11 +77,10 @@ describe('tool registry', () => {
   });
 
   it('requires what each proposal needs, and leaves prices, warehouses and amounts optional', () => {
-    const schema = (name: string) =>
-      toolRegistry[name]!.input_schema as {
-        required?: string[];
-        properties: Record<string, { items?: { required?: string[]; properties: object } }>;
-      };
+    const schema = (name: string) => {
+      const node = toolRegistry[name]!.input_schema as Node;
+      return { properties: node.properties!, required: mandatory(node) };
+    };
     expect(schema('propose_quick_sale').required).toEqual(['items']);
     expect(Object.keys(schema('propose_quick_sale').properties)).toContain('project');
     expect(Object.keys(schema('propose_quotation').properties)).not.toContain('project');
@@ -80,7 +94,7 @@ describe('tool registry', () => {
     expect(schema('propose_new_item').required).toEqual(['name', 'kind']);
     const line = schema('propose_quick_sale').properties['items']!.items!;
     expect(Object.keys(line.properties)).toEqual(['item', 'qty', 'rate']);
-    expect(line.required).toEqual(['item', 'qty']);
+    expect(mandatory(line)).toEqual(['item', 'qty']);
   });
 
   it('lets open_record name only the kinds of record Madar can open', () => {

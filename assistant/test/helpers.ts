@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createAuth } from '../src/auth.js';
 import type { ErpRequester } from '../src/erpnext-http.js';
 import { createLimits } from '../src/limits.js';
+import type { SelfCheck } from '../src/self-check.js';
 import { createApp, type AnthropicLike, type MessageStreamLike } from '../src/server.js';
 
 export const body = (over: Record<string, unknown> = {}) => ({
@@ -60,6 +61,7 @@ export interface HarnessOptions {
   onAbort?: () => void;
   afterReserve?: () => void;
   request?: ErpRequester;
+  selfCheck?: Pick<SelfCheck, 'state'>;
 }
 
 export async function startHarness(options: HarnessOptions = {}): Promise<Harness> {
@@ -121,6 +123,7 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
         return result;
       },
     },
+    selfCheck: options.selfCheck,
     log: (l) => logs.push(l),
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));

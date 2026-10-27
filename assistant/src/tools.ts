@@ -38,7 +38,6 @@ export const toolRegistry: Record<string, ToolDef> = {
     description:
       "Returns the business's confirmed sales total and count for today and the amount customers still owe, in the business currency.",
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
-    strict: true,
   },
   search_customers: {
     description:
@@ -52,7 +51,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['query'],
       additionalProperties: false,
     },
-    strict: true,
   },
   search_items: {
     description:
@@ -66,7 +64,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['query'],
       additionalProperties: false,
     },
-    strict: true,
   },
   find_invoices: {
     description:
@@ -85,7 +82,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       },
       additionalProperties: false,
     },
-    strict: true,
   },
   get_invoice: {
     description:
@@ -96,13 +92,11 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   list_drafts: {
     description:
       'Lists the unfinished documents (drafts) the user can continue: sales, orders, quotations and purchase orders.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
-    strict: true,
   },
   find_purchase_orders: {
     description:
@@ -119,7 +113,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       },
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_quick_sale: {
     description:
@@ -146,7 +139,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_quotation: {
     description:
@@ -160,7 +152,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['customer', 'items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_purchase_order: {
     description:
@@ -174,7 +165,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['supplier', 'items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_collect_payment: {
     description:
@@ -191,7 +181,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['customer'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_stock_move: {
     description:
@@ -213,7 +202,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['item', 'qty'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_customer: {
     description:
@@ -232,7 +220,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_supplier: {
     description:
@@ -247,7 +234,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_item: {
     description:
@@ -269,7 +255,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['name', 'kind'],
       additionalProperties: false,
     },
-    strict: true,
   },
   open_record: {
     description:
@@ -292,7 +277,6 @@ export const toolRegistry: Record<string, ToolDef> = {
       required: ['kind', 'name'],
       additionalProperties: false,
     },
-    strict: true,
   },
 };
 
