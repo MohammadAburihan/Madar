@@ -117,7 +117,7 @@ describe('prompt and tools', () => {
     const tools = h.params[0]!.tools as Anthropic.Tool[];
     expect(tools.map((t) => t.name)).toEqual(['get_today_summary']);
     expect(tools[0]).not.toHaveProperty('eager_input_streaming');
-    expect(tools[0]).toMatchObject({ strict: true });
+    expect(tools[0]).not.toHaveProperty('strict');
     expect(JSON.stringify(tools)).not.toContain('cache_control');
   });
 

@@ -449,10 +449,7 @@ describe('the service registry', () => {
 
   it('describes the same fields, types and required fields as the app checks', () => {
     interface Node {
-      properties: Record<
-        string,
-        { type: string | string[]; format?: string; enum?: string[]; items?: Node }
-      >;
+      properties: Record<string, { type: string; format?: string; enum?: string[]; items?: Node }>;
       required?: string[];
     }
     interface Mine {
@@ -464,17 +461,10 @@ describe('the service registry', () => {
     }
     const compare = (mine: Mine, theirs: Node, where: string) => {
       expect(Object.keys(mine.properties), where).toEqual(Object.keys(theirs.properties));
-      const nullable = (type: string | string[]) => Array.isArray(type) && type.includes('null');
-      expect(theirs.required, where).toEqual(Object.keys(theirs.properties));
-      expect(mine.required, where).toEqual(
-        Object.keys(theirs.properties).filter((key) => !nullable(theirs.properties[key].type)),
-      );
+      expect(mine.required, where).toEqual(theirs.required ?? []);
       for (const [field, property] of Object.entries(mine.properties)) {
         const other = theirs.properties[field];
-        const type = Array.isArray(other.type)
-          ? other.type.filter((t) => t !== 'null')
-          : [other.type];
-        expect([property.type], `${where}.${field}`).toEqual(type);
+        expect(property.type, `${where}.${field}`).toBe(other.type);
         expect(property.format, `${where}.${field}`).toBe(other.format);
         expect(property.enum, `${where}.${field}`).toEqual(other.enum);
         expect(!!property.items, `${where}.${field} items`).toBe(!!other.items);

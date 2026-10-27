@@ -74,11 +74,7 @@ const lines: PropertySchema = {
   },
 };
 
-/**
- * The input each tool takes: the same names and types as `assistant/src/tools.ts`. There every field is required
- * for the strict-tool limit on optional parameters, and an optional one is nullable; here `required` lists the
- * fields that may not be null or missing.
- */
+/** The input each tool takes: the same names, types and required fields as `assistant/src/tools.ts`. */
 export const TOOL_SCHEMAS: Record<ToolName, ToolSchema> = {
   get_today_summary: { properties: {}, required: [] },
   search_customers: { properties: { query: text, limit: count(10) }, required: ['query'] },

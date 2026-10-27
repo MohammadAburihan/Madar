@@ -32,65 +32,29 @@ const objects = (schema: unknown): Record<string, unknown>[] => {
 };
 
 type Node = {
-  type?: string | string[];
   properties?: Record<string, Node>;
   items?: Node;
   required?: string[];
 };
 
-const nullable = (property: Node) => Array.isArray(property.type) && property.type.includes('null');
-
-const optionalCount = (schema: Node): number => {
-  const own = Object.keys(schema.properties ?? {}).filter(
-    (key) => !(schema.required ?? []).includes(key),
-  ).length;
-  return (
-    own +
-    Object.values(schema.properties ?? {}).reduce((sum, child) => sum + optionalCount(child), 0) +
-    (schema.items ? optionalCount(schema.items) : 0)
-  );
-};
-
-const mandatory = (schema: Node): string[] =>
-  Object.entries(schema.properties ?? {})
-    .filter(([, property]) => !nullable(property))
-    .map(([key]) => key);
+const mandatory = (schema: Node): string[] => schema.required ?? [];
 
 describe('tool registry', () => {
-  it('stays under the optional-parameter limit Anthropic applies to strict tools', () => {
-    const total = Object.values(toolRegistry).reduce(
-      (sum, def) => sum + optionalCount(def.input_schema as Node),
-      0,
-    );
-    expect(
-      total,
-      `Anthropic rejects a request whose strict tools hold more than 24 optional (not required) properties in total (limit 24, "Schemas contains too many optional parameters"). Make an optional field required and nullable instead; this suite keeps headroom at 20. Found ${total}.`,
-    ).toBeLessThanOrEqual(20);
-  });
-
-  it('sends every optional field as required but nullable, and says what null means', () => {
-    const check = (schema: Node, where: string) => {
-      expect(schema.required, where).toEqual(Object.keys(schema.properties ?? {}));
-      for (const [key, property] of Object.entries(schema.properties ?? {})) {
-        if (nullable(property)) {
-          expect((property as { description?: string }).description, `${where}.${key}`).toMatch(
-            /Null when not given\.$/,
-          );
-        }
-        if (property.items) check(property.items, `${where}.${key}[]`);
-        if (property.properties) check(property, `${where}.${key}`);
-      }
-    };
-    for (const [name, def] of Object.entries(toolRegistry)) check(def.input_schema as Node, name);
+  it('sets strict on no tool', () => {
+    for (const [name, def] of Object.entries(toolRegistry)) {
+      expect(
+        def,
+        `${name}: strict tools hit Anthropic's grammar limits (24 optional parameters, 16 union-typed parameters across all tools in a request), so the app validates every input against TOOL_SCHEMAS instead.`,
+      ).not.toHaveProperty('strict');
+    }
   });
 
   it('defines the seven lookups, the six proposals and the three new-record proposals the app sends', () => {
     expect(Object.keys(toolRegistry)).toEqual(NAMES);
   });
 
-  it('keeps every tool strict, closed and described', () => {
+  it('keeps every tool closed and described', () => {
     for (const [name, def] of Object.entries(toolRegistry)) {
-      expect(def.strict, name).toBe(true);
       expect(def.description, name).toBeTruthy();
       for (const object of objects(def.input_schema)) {
         expect(object['additionalProperties'], name).toBe(false);

@@ -288,8 +288,8 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   `X-Forwarded-For` hop: the proxy directly in front (host nginx) must append the client address; with another layer
   (an ALB) in front of it, set real IPs there first.
   After deploying the assistant, `curl https://<host>/assistant/healthz` must return `ok`: it only does once the
-  start-up self-check (one real request to Claude with every tool) has passed. Strict tools may hold at most 24
-  optional properties in total, so new tool fields are required-but-nullable (see README).
+  start-up self-check (one real request to Claude with every tool) has passed. Tools are not strict (Anthropic's
+  grammar limits on optional and union-typed parameters); the app validates inputs.
 - Android release: `npm run cap:sync`, then `JAVA_HOME=$(/usr/libexec/java_home -v 21)
   ANDROID_HOME=~/Library/Android/sdk ./gradlew bundleRelease` in `android/`; signing reads the git-ignored
   `android/keystore.properties` (key and a copy of the properties in `../secrets/`, outside git).

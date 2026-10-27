@@ -175,11 +175,8 @@ every 10 minutes while it fails. It catches what only the API reports, such as a
 `ASSISTANT_SELF_CHECK=0` to skip it (tests, CI, runs without a real key); `healthz` then answers `ok` straight away.
 API errors from Claude are logged with their status, type and message, never request content, cookies or headers.
 
-Adding a tool: Anthropic limits the optional (not required) properties across all strict tools in one request to 24
-("Schemas contains too many optional parameters"). So every property in `assistant/src/tools.ts` is sent as required, and
-an optional one is nullable (`"type": ["string", "null"]`, described as "Null when not given"); the registry does this
-for any property missing from its `required` list. The app reads null like a missing field. `assistant/test/tools.test.ts`
-counts optional properties and fails above 20.
+Adding a tool: tools are not strict (Anthropic's strict grammar limits optional and union-typed parameters across all tools in a
+request), so inputs are validated in the app (`assistant-tools.ts`). Keep `TOOL_SCHEMAS` and `assistant/src/tools.ts` in sync.
 
 Voice and privacy: the microphone button in the assistant fills the message field; nothing is sent until the user presses
 Send. Speech is turned into text on the user's device or by their browser, never by Madar: in a browser the recognition may
@@ -199,8 +196,8 @@ must have the same host and port as the request's `Host` header (the scheme is i
 ERPNext desk users (a role with desk access) are accepted. One request per user can run at a time (a second gets 429
 `busy`), and bodies are capped at 64 KB, 60 messages and 60,000 characters. Messages may hold only `text`,
 `tool_result`, `thinking`, `redacted_thinking` and `tool_use` blocks; every `tool_use` must name a tool that is both
-known to the service and listed in the request's `tools`. `strict: true` is set on tools, but the service does not
-check what the model returns: clients must still validate tool inputs before acting on them.
+known to the service and listed in the request's `tools`. Tools are not strict and the service does not
+check what the model returns: clients must validate tool inputs before acting on them.
 
 | Variable | Default | Purpose |
 |---|---|---|

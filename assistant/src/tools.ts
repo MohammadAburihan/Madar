@@ -33,12 +33,11 @@ const RECORD_KINDS = [
   'draft',
 ];
 
-const definitions: Record<string, ToolDef> = {
+export const toolRegistry: Record<string, ToolDef> = {
   get_today_summary: {
     description:
       "Returns the business's confirmed sales total and count for today and the amount customers still owe, in the business currency.",
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
-    strict: true,
   },
   search_customers: {
     description:
@@ -52,7 +51,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['query'],
       additionalProperties: false,
     },
-    strict: true,
   },
   search_items: {
     description:
@@ -66,7 +64,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['query'],
       additionalProperties: false,
     },
-    strict: true,
   },
   find_invoices: {
     description:
@@ -85,7 +82,6 @@ const definitions: Record<string, ToolDef> = {
       },
       additionalProperties: false,
     },
-    strict: true,
   },
   get_invoice: {
     description:
@@ -96,13 +92,11 @@ const definitions: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   list_drafts: {
     description:
       'Lists the unfinished documents (drafts) the user can continue: sales, orders, quotations and purchase orders.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
-    strict: true,
   },
   find_purchase_orders: {
     description:
@@ -119,7 +113,6 @@ const definitions: Record<string, ToolDef> = {
       },
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_quick_sale: {
     description:
@@ -146,7 +139,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_quotation: {
     description:
@@ -160,7 +152,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['customer', 'items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_purchase_order: {
     description:
@@ -174,7 +165,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['supplier', 'items'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_collect_payment: {
     description:
@@ -191,7 +181,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['customer'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_stock_move: {
     description:
@@ -213,7 +202,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['item', 'qty'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_customer: {
     description:
@@ -232,7 +220,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_supplier: {
     description:
@@ -247,7 +234,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['name'],
       additionalProperties: false,
     },
-    strict: true,
   },
   propose_new_item: {
     description:
@@ -269,7 +255,6 @@ const definitions: Record<string, ToolDef> = {
       required: ['name', 'kind'],
       additionalProperties: false,
     },
-    strict: true,
   },
   open_record: {
     description:
@@ -292,46 +277,8 @@ const definitions: Record<string, ToolDef> = {
       required: ['kind', 'name'],
       additionalProperties: false,
     },
-    strict: true,
   },
 };
-
-type Node = Record<string, unknown>;
-
-const isNode = (value: unknown): value is Node => typeof value === 'object' && value !== null;
-
-// Strict tools allow at most 24 optional properties across one request, so an optional field is
-// sent as required but nullable instead. Null means the same as leaving it out.
-function strictify(schema: unknown): unknown {
-  if (!isNode(schema)) return schema;
-  const out: Node = { ...schema };
-  if (isNode(schema['items'])) out['items'] = strictify(schema['items']);
-  if (!isNode(schema['properties'])) return out;
-  const mandatory = new Set((schema['required'] as string[] | undefined) ?? []);
-  const properties: Node = {};
-  for (const [key, raw] of Object.entries(schema['properties'])) {
-    const property = strictify(raw) as Node;
-    properties[key] = mandatory.has(key)
-      ? property
-      : {
-          ...property,
-          type: [property['type'], 'null'],
-          ...(typeof property['description'] === 'string'
-            ? { description: `${property['description']} Null when not given.` }
-            : {}),
-        };
-  }
-  out['properties'] = properties;
-  out['required'] = Object.keys(properties);
-  return out;
-}
-
-export const toolRegistry: Record<string, ToolDef> = Object.fromEntries(
-  Object.entries(definitions).map(([name, def]) => [
-    name,
-    { ...def, input_schema: strictify(def.input_schema) as ToolDef['input_schema'] },
-  ]),
-);
 
 export function selectTools(names: readonly string[]): Anthropic.Tool[] {
   const unique = [...new Set(names)].filter((name) => Object.hasOwn(toolRegistry, name));
