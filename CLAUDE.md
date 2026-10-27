@@ -115,6 +115,10 @@ src/app/
   flow route component whose constructor calls `store.resume()`. It is created only when the task is entered
   from elsewhere, so that is the "fresh visit": a half-done task starts over, while a running, unresolved, or
   not-yet-shown confirmation is kept. Moving between steps, including the back button, keeps the work.
+- Record lists page 50 at a time through `PagedList` (`core/util/paged-list.ts`; ask for 51 to know there is more, a unique
+  `orderBy` tiebreaker, `mergeSources` for lists merged from several doctypes) with `shared/ui/load-more` at the end. Counts
+  and totals come from count/aggregate queries, never from the loaded rows. Pickers, Home cards and allocation inputs stay
+  unpaged.
 - Containers turn data into display strings with a pure `*-view.ts` builder (see `home-view.ts`), so wording,
   plurals and formatting are unit-tested without rendering. Presenters receive plain strings.
 - The Assistant (`features/assistant`) runs its read-only tools in the app with the user's own session; the `assistant/`
