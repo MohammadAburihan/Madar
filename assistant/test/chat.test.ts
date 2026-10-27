@@ -50,8 +50,8 @@ describe('relay', () => {
     expect(parseSse(await (await h.post(body())).text())).toEqual([
       { event: 'error', data: { code: 'unavailable' } },
     ]);
-    expect(h.logs[0]).toMatch(/error=RateLimitError status=429 provider_rate_limited/);
-    expect(h.logs[0]).not.toContain('slow down');
+    expect(h.logs[0]).toMatch(/error=RateLimitError status=429 type=none provider_rate_limited/);
+    expect(h.logs[0]).toContain('message="429');
     await h.close();
     h = await startHarness({ failWith: new Anthropic.APIConnectionError({ message: 'offline' }) });
     expect(parseSse(await (await h.post(body())).text())).toEqual([
@@ -117,7 +117,7 @@ describe('prompt and tools', () => {
     const tools = h.params[0]!.tools as Anthropic.Tool[];
     expect(tools.map((t) => t.name)).toEqual(['get_today_summary']);
     expect(tools[0]).not.toHaveProperty('eager_input_streaming');
-    expect(tools[0]).toMatchObject({ strict: true });
+    expect(tools[0]).not.toHaveProperty('strict');
     expect(JSON.stringify(tools)).not.toContain('cache_control');
   });
 
@@ -492,6 +492,25 @@ describe('limits', () => {
     h = await startHarness();
     const res = await fetch(`${h.url}/assistant/healthz`);
     expect(await res.text()).toBe('ok\n');
+  });
+
+  it('logs the status, type and message of an API error, never the request', async () => {
+    const bad = new Anthropic.BadRequestError(
+      400,
+      {
+        type: 'error',
+        error: { type: 'invalid_request_error', message: 'too many optional parameters' },
+      },
+      undefined,
+      new Headers({ 'x-secret': 'hdr' }),
+    );
+    h = await startHarness({ failWith: bad });
+    await (await h.post(body(), 'sid=cookie123')).text();
+    expect(h.logs[0]).toMatch(/error=BadRequestError status=400 type=invalid_request_error/);
+    expect(h.logs[0]).toContain('too many optional parameters');
+    for (const secret of ['cookie123', 'hdr', 'How much did we sell']) {
+      expect(h.logs[0]).not.toContain(secret);
+    }
   });
 });
 

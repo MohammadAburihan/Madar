@@ -293,13 +293,13 @@ function checkObject(schema: ToolSchema, input: unknown, path = ''): Validation 
     }
   }
   for (const key of schema.required) {
-    if (input[key] === undefined) {
+    if (input[key] === undefined || input[key] === null) {
       return { ok: false, error: `Field "${at(key)}" is required.` };
     }
   }
   const clean: ToolInput = {};
   for (const [key, property] of Object.entries(schema.properties)) {
-    if (input[key] === undefined) {
+    if (input[key] === undefined || input[key] === null) {
       continue;
     }
     const checked = checkValue(at(key), property, input[key]);

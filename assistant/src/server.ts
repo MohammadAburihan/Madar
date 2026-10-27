@@ -3,7 +3,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { UpstreamError, type Auth } from './auth.js';
 import type { Config } from './config.js';
 import { billedTokens, emptyUsage, type Limits, type Usage } from './limits.js';
+import { describeApiError } from './errors.js';
 import { buildSystem } from './prompt.js';
+import type { SelfCheck } from './self-check.js';
 import { selectTools } from './tools.js';
 import { MAX_BODY_BYTES, validateChat } from './validate.js';
 
@@ -32,6 +34,7 @@ export interface Deps {
   client: AnthropicLike;
   auth: Auth;
   limits: Limits;
+  selfCheck?: Pick<SelfCheck, 'state'>;
   log?: (line: string) => void;
   now?: () => number;
 }
@@ -88,12 +91,11 @@ function fromUsage(u: {
 const describe = (u: Usage): string =>
   `in=${u.input} out=${u.output} cache_read=${u.cacheRead} cache_write=${u.cacheWrite}`;
 
-// Only the class and status are logged: never headers, cookies or message content.
 function describeError(error: unknown): string {
   const name = error instanceof Error ? error.constructor.name : 'unknown';
-  const status = error instanceof Anthropic.APIError ? (error.status ?? 'none') : 'none';
+  const { status, type, message } = describeApiError(error);
   const throttled = error instanceof Anthropic.RateLimitError ? ' provider_rate_limited' : '';
-  return ` error=${name} status=${status}${throttled}`;
+  return ` error=${name} status=${status} type=${type}${throttled} message=${JSON.stringify(message)}`;
 }
 
 class BodyTooLarge extends Error {}
@@ -233,8 +235,11 @@ export function createApp(deps: Deps): Server {
   return createServer((req, res) => {
     const path = (req.url ?? '').split('?')[0];
     if (req.method === 'GET' && path === '/assistant/healthz') {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('ok\n');
+      const state = deps.selfCheck?.state() ?? { status: 'ok' as const };
+      if (state.status === 'failed')
+        return sendJson(res, 503, { code: 'self_check_failed', message: state.message });
+      res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
+      res.end(state.status === 'ok' ? 'ok\n' : 'starting\n');
       return;
     }
     if (path === '/assistant/chat') {
