@@ -3,7 +3,10 @@ import { answer, ask, bubbles, scriptAssistant, toolCall } from './assistant-sup
 import type { ChatBody } from './assistant-support';
 import { CUSTOMER, choose, erp, expectHeading, named, runId, signIn, toArabic } from './support';
 
-/** Letters only and unlike any earlier run's name, so an old record is never a close match to a new one. */
+/**
+ * Letters only and unlike any earlier run's name. Not-found names use two, so a shared word (Odeh, Clay Works)
+ * keeps earlier runs' records under the near-match line.
+ */
 const unique = () =>
   Array.from({ length: 8 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join(
     '',
@@ -73,16 +76,13 @@ test('finds an Arabic item typed with long vowels and number words, with no add-
   await toArabic(page);
   await ask(page, `بيع بروش سبعة لتر ${id}`);
 
-  await expect(choices(page).filter({ hasText: stored })).toHaveCount(1, { timeout: 30_000 });
-  await expect(choices(page)).toHaveCount(2);
+  // Earlier runs' items with the same words may be listed after it; this run's item ranks first.
+  await expect(choices(page).first()).toHaveText(stored, { timeout: 30_000 });
   await expect(choices(page).last()).toHaveText('لا أحد منهم');
   await expect(page.locator('app-assistant-choices').getByText('كجديد')).toHaveCount(0);
-  expect(JSON.parse(lastResult(requests[1]).content)).toMatchObject({
-    did_you_mean: true,
-    field: 'item',
-    can_create: false,
-    options: [{ label: stored }],
-  });
+  const result = JSON.parse(lastResult(requests[1]).content);
+  expect(result).toMatchObject({ did_you_mean: true, field: 'item', can_create: false });
+  expect(result.options[0].label).toBe(stored);
 
   await choices(page).filter({ hasText: stored }).click();
   expect(requests[2].messages.at(-1)).toEqual({ role: 'user', content: stored });
@@ -106,16 +106,15 @@ test('offers the near item and add-as-new when the name is only close, and add-a
   await page.goto('/assistant');
   await ask(page, `Sell ${typed}`);
 
-  await expect(choices(page)).toHaveCount(3, { timeout: 30_000 });
-  await expect(choices(page).nth(0)).toContainText(`برش 7 لتر ${id}`);
-  await expect(choices(page).nth(1)).toHaveText(label);
-  await expect(choices(page).nth(2)).toHaveText('None of these');
+  await expect(choices(page).first()).toContainText(`برش 7 لتر ${id}`, { timeout: 30_000 });
+  await expect(choices(page).nth(-2)).toHaveText(label);
+  await expect(choices(page).last()).toHaveText('None of these');
   expect(JSON.parse(lastResult(requests[1]).content)).toMatchObject({
     did_you_mean: true,
     can_create: true,
   });
 
-  await choices(page).nth(1).click();
+  await choices(page).nth(-2).click();
   await expect(bubbles(page, 'user').last()).toHaveText(label);
   expect(requests[2].messages.at(-1)).toEqual({ role: 'user', content: label });
   await expect(card(page)).toContainText(named('New item:', typed), { timeout: 30_000 });
@@ -124,7 +123,7 @@ test('offers the near item and add-as-new when the name is only close, and add-a
 
 test('offers add-as-new as a button when nothing is close @phone', async ({ page }) => {
   await signIn(page, 'owner');
-  const name = `${unique()} Odeh`;
+  const name = `${unique()} ${unique()} Odeh`;
   await scriptAssistant(page, [
     () => ({ body: toolCall('t1', 'propose_collect_payment', { customer: name }) }),
     () => ({ body: answer('I could not find that customer. Add it as new?') }),
@@ -223,7 +222,7 @@ test('offers a new customer when nothing is close, and the form saves it as usua
   page,
 }) => {
   await signIn(page, 'owner');
-  const name = `${unique()} Odeh`;
+  const name = `${unique()} ${unique()} Odeh`;
   const requests = await scriptAssistant(page, [
     () => ({ body: toolCall('t1', 'propose_collect_payment', { customer: name }) }),
     () => ({ body: toolCall('t2', 'propose_new_customer', { name, phone: '0599 123 456' }) }),
@@ -267,7 +266,7 @@ test('offers a new customer when nothing is close, and the form saves it as usua
 
 test('offers a new supplier, and the form saves it as a supplier @desktop', async ({ page }) => {
   await signIn(page, 'owner');
-  const name = `${unique()} Clay Works`;
+  const name = `${unique()} ${unique()} Clay Works`;
   const requests = await scriptAssistant(page, [
     () => ({
       body: toolCall('t1', 'propose_purchase_order', {
@@ -300,7 +299,7 @@ test('offers a new item, and the item form saves it with the owner’s price @ph
 }) => {
   await signIn(page, 'owner');
   const id = runId();
-  const name = `${unique()} fig tree`;
+  const name = `${unique()} ${unique()} fig tree`;
   const code = `E2E-FIG-${id}`;
   await scriptAssistant(page, [
     () => ({
@@ -377,7 +376,7 @@ test('a salesperson can add customers but is never offered a new item @phone', a
 
 test('shows the new-customer card and the filled-in form in Arabic @phone', async ({ page }) => {
   await signIn(page, 'owner');
-  const name = `سامر ${unique()}`;
+  const name = `سامر ${unique()} ${unique()}`;
   await scriptAssistant(page, [
     () => ({ body: toolCall('t1', 'propose_new_customer', { name }) }),
     () => ({ body: answer('جهّزت عميلاً جديداً. راجعه ثم احفظه.') }),
