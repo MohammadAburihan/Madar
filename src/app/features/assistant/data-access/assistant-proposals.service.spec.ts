@@ -12,7 +12,7 @@ import { BuyingPricesService } from '../../../core/pricing/buying-prices.service
 import { SellingPricesService } from '../../../core/pricing/selling-prices.service';
 import { WarehouseDirectoryService } from '../../../core/stock/warehouse-directory.service';
 import { SupplierDirectoryService } from '../../../core/suppliers/supplier-directory.service';
-import { ToolFailure, ToolScope } from './assistant.models';
+import { ADD_NEW, ToolFailure, ToolScope } from './assistant.models';
 import { AssistantProposalsService } from './assistant-proposals.service';
 import { ToolInput, ToolName } from './assistant-tools';
 
@@ -995,8 +995,89 @@ describe('AssistantProposalsService', () => {
         options: [{ id: 'C-1', label: 'Lina Haddad' }],
         can_create: true,
       });
-      expect(found.choices).toEqual([{ id: 'C-1', label: 'Lina Haddad', suggested: true }]);
+      expect(found.choices).toEqual([
+        { id: 'C-1', label: 'Lina Haddad', suggested: true },
+        { id: ADD_NEW, label: 'Leena' },
+      ]);
       expect(found.proposals).toBeUndefined();
+    });
+
+    it('offers no add as new when the best match is sure, even to a role that may add', async () => {
+      const { run } = setup({
+        Item: (query) =>
+          query.fields?.length === 2 ? [item('BRS-7', 'برش 7 لتر'), item('X-1', 'سماد عضوي')] : [],
+      });
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'بروش سبعة لتر', qty: 1 }] }),
+      );
+      expect(found.payload).toMatchObject({
+        did_you_mean: true,
+        field: 'item',
+        options: [{ id: 'BRS-7', label: 'برش 7 لتر' }],
+        can_create: false,
+      });
+      expect(found.choices).toEqual([{ id: 'BRS-7', label: 'برش 7 لتر', suggested: true }]);
+    });
+
+    it('offers add as new for an item that differs only in its number', async () => {
+      const { run } = setup({
+        Item: (query) => (query.fields?.length === 2 ? [item('SMD-20', 'سماد 20 كيلو')] : []),
+      });
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'سماد 50 كيلو', qty: 1 }] }),
+      );
+      expect(found.payload).toMatchObject({ did_you_mean: true, can_create: true });
+      expect(found.choices).toEqual([
+        { id: 'SMD-20', label: 'سماد 20 كيلو', suggested: true },
+        { id: ADD_NEW, label: 'سماد 50 كيلو' },
+      ]);
+    });
+
+    it('offers add as new after the suggestions when the best match is weaker than sure', async () => {
+      const { run } = setup({
+        Item: (query) => (query.fields?.length === 2 ? [item('BRS-8', 'برش 8 لتر')] : []),
+      });
+      const found = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'بروش سبعة لترر', qty: 1 }] }),
+      );
+      expect(found.payload).toMatchObject({ did_you_mean: true, can_create: true });
+      expect(found.choices).toEqual([
+        { id: 'BRS-8', label: 'برش 8 لتر', suggested: true },
+        { id: ADD_NEW, label: 'بروش سبعة لترر' },
+      ]);
+    });
+
+    it('never offers add as new to a role that may not add items', async () => {
+      const { run } = setup({
+        Item: (query) => (query.fields?.length === 2 ? [item('BRS-8', 'برش 8 لتر')] : []),
+      });
+      const near = await run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'بروش سبعة لترر', qty: 1 }] }),
+        SCOPE('salesperson'),
+      );
+      expect(near.payload).toMatchObject({ can_create: false });
+      expect(near.choices?.map((c) => c.id)).toEqual(['BRS-8']);
+      const none = run(
+        'propose_quick_sale',
+        sale({ items: [{ item: 'Zed Quartz', qty: 1 }] }),
+        SCOPE('salesperson'),
+      );
+      await expect(none).rejects.toMatchObject({ payload: { can_create: false }, choices: [] });
+    });
+
+    it('offers add as new as a choice when nothing is similar and the role may add', async () => {
+      const { run, customers } = setup();
+      noExact(customers);
+      await expect(
+        run('propose_collect_payment', { customer: 'Zed Quartz' }),
+      ).rejects.toMatchObject({
+        payload: { not_found: true, can_create: true },
+        choices: [{ id: ADD_NEW, label: 'Zed Quartz' }],
+      });
     });
 
     it('labels suggestions with the id only when their names collide', async () => {

@@ -159,9 +159,11 @@ describe('new-record tools', () => {
 
 describe('system prompt', () => {
   it('shows suggestions for a name not found, offers to add only when can_create, and never creates silently', () => {
-    expect(STABLE_PROMPT).toMatch(
-      /was not found, show the suggestions it returns \(did_you_mean\)/,
-    );
+    expect(STABLE_PROMPT).toMatch(/did_you_mean options are near matches/);
+    expect(STABLE_PROMPT).toMatch(/never use a near match until the user picks it/);
+    expect(STABLE_PROMPT).toMatch(/if can_create is false never offer to add it/);
+    expect(STABLE_PROMPT).toMatch(/Add “name” as new/);
+    expect(STABLE_PROMPT).toMatch(/similar true are near matches/);
     expect(STABLE_PROMPT).toMatch(/never invent names/);
     expect(STABLE_PROMPT).toMatch(/can_create is true, offer to add it as new/);
     expect(STABLE_PROMPT).toMatch(

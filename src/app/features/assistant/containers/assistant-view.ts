@@ -4,6 +4,7 @@ import { Translator } from '../../../core/i18n/translator';
 import { SpeechInputProblem, SpeechLanguage } from '../../../core/speech/speech.models';
 import { PrefillKind } from '../../../core/tasks/task-prefill.service';
 import {
+  ADD_NEW,
   ApiMessage,
   ChoiceOption,
   ContentBlock,
@@ -339,9 +340,18 @@ function linksFor(text: string, records: readonly RecordLink[], tr: Translator):
   return links.slice(0, MAX_LINKS);
 }
 
-/** The matches to pick from; close matches to a name nothing matched also get a way to say none of them is it. */
-function withNone(options: readonly ChoiceOption[], none: string): ChoiceView[] {
-  const views = options.map(({ id, label }) => ({ id, label }));
+/**
+ * The matches to pick from, with "Add <name> as new" worded here; close matches to a name nothing matched also get
+ * a way to say none of them is it.
+ */
+function withNone(options: readonly ChoiceOption[], none: string, tr: Translator): ChoiceView[] {
+  // The label is also sent as the user's message, so it carries no bidi isolates around the name.
+  const addNew = (name: string) =>
+    tr.t('assistant.choices.addNew', { name }).replace(/[\u2066-\u2069]/g, '');
+  const views = options.map(({ id, label }) => ({
+    id,
+    label: id === ADD_NEW ? addNew(label) : label,
+  }));
   return options.some((option) => option.suggested)
     ? [...views, { id: NONE_OF_THESE, label: none }]
     : views;
@@ -372,7 +382,7 @@ export function buildAssistantView(input: AssistantViewInput, tr: Translator): A
       choices:
         user || index !== input.messages.length - 1
           ? []
-          : withNone(input.choices[index] ?? [], t('assistant.choices.none')),
+          : withNone(input.choices[index] ?? [], t('assistant.choices.none'), tr),
       choicesLabel: t('assistant.choices.label'),
       speech: spoken
         ? {

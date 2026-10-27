@@ -7,7 +7,12 @@ import { westernDigits } from '../format/number';
  */
 export const SIMILARITY_THRESHOLD = 0.6;
 
+/** A best match this alike is the name the user meant, so adding it as a new record is not offered. */
+export const SURE_THRESHOLD = 0.9;
+
 const MIN_QUERY_LENGTH = 3;
+const SKELETON_DISCOUNT = 0.95;
+const MIN_SKELETON_LENGTH = 6;
 const MAX_TERMS = 12;
 
 const ARABIC_FOLDS: [RegExp, string][] = [
@@ -30,11 +35,72 @@ function fold(text: string): string {
 /** Lowercase Latin, folded Arabic letter variants, no marks, spaces or punctuation: what two spellings are compared on. */
 export const normalizeText = (text: string): string => fold(text).replace(/[^\p{L}\p{N}]/gu, '');
 
+const NUMBER_WORDS: Record<string, string[]> = {
+  '0': ['صفر', 'zero'],
+  '1': ['واحد', 'واحده', 'one'],
+  '2': ['اثنين', 'اثنان', 'اثنتين', 'ثنتين', 'اثنتان', 'اثنه', 'two'],
+  '3': ['ثلاث', 'ثلاثه', 'three'],
+  '4': ['اربع', 'اربعه', 'four'],
+  '5': ['خمس', 'خمسه', 'five'],
+  '6': ['ست', 'سته', 'six'],
+  '7': ['سبع', 'سبعه', 'seven'],
+  '8': ['ثمان', 'ثماني', 'ثمانيه', 'eight'],
+  '9': ['تسع', 'تسعه', 'nine'],
+  '10': ['عشر', 'عشره', 'ten'],
+  '11': ['احدعشر', 'احدعشره', 'احداشر', 'eleven'],
+  '12': ['اثناعشر', 'اثنعشر', 'اثنيعشر', 'اثنتاعشره', 'twelve'],
+  '13': ['ثلاثعشر', 'ثلاثهعشر', 'thirteen'],
+  '14': ['اربععشر', 'اربعهعشر', 'fourteen'],
+  '15': ['خمسعشر', 'خمسهعشر', 'fifteen'],
+  '16': ['ستعشر', 'ستهعشر', 'sixteen'],
+  '17': ['سبععشر', 'سبعهعشر', 'seventeen'],
+  '18': ['ثمانعشر', 'ثمانيهعشر', 'eighteen'],
+  '19': ['تسععشر', 'تسعهعشر', 'nineteen'],
+  '20': ['عشرين', 'عشرون', 'twenty'],
+  '30': ['ثلاثين', 'ثلاثون', 'thirty'],
+  '40': ['اربعين', 'اربعون', 'forty'],
+  '50': ['خمسين', 'خمسون', 'fifty'],
+  '60': ['ستين', 'ستون', 'sixty'],
+  '70': ['سبعين', 'سبعون', 'seventy'],
+  '80': ['ثمانين', 'ثمانون', 'eighty'],
+  '90': ['تسعين', 'تسعون', 'ninety'],
+  '100': ['ميه', 'مايه', 'مئه', 'hundred'],
+};
+
+const NUMBER_BY_WORD = new Map(
+  Object.entries(NUMBER_WORDS).flatMap(([digits, words]) => words.map((w) => [w, digits] as const)),
+);
+
+/** The digits a folded number word stands for, also with the Arabic "and" glued on (وسبعه); null for other words. */
+function numberOf(token: string): string | null {
+  return (
+    NUMBER_BY_WORD.get(token) ??
+    (token.startsWith('و') ? (NUMBER_BY_WORD.get(token.slice(1)) ?? null) : null)
+  );
+}
+
 function tokensOf(text: string): string[] {
-  return fold(text)
+  const words = fold(text)
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
+  const tokens: string[] = [];
+  for (let i = 0; i < words.length; i++) {
+    const joined = /^عشر/.test(words[i + 1] ?? '') ? words[i] + words[i + 1] : null;
+    if (joined && numberOf(joined)) {
+      tokens.push(numberOf(joined)!);
+      i++;
+    } else {
+      tokens.push(numberOf(words[i]) ?? words[i]);
+    }
+  }
+  return tokens;
 }
+
+const ARABIC_WORD = /^[\u0600-\u06FF]+$/;
+
+/** An Arabic word without its long vowels (ا و ي after the first letter): the spelling people vary most. */
+const skeletonOf = (token: string): string =>
+  ARABIC_WORD.test(token) ? token[0] + token.slice(1).replace(/[اوي]/g, '') : token;
 
 /** Edits (insert, delete, replace, swap of neighbours) that turn one text into the other. */
 export function editDistance(a: string, b: string): number {
@@ -64,15 +130,9 @@ function similarity(a: string, b: string): number {
   return longest ? 1 - editDistance(a, b) / longest : 0;
 }
 
-/** How alike a typed name and a stored name are, 0 to 1, on normalized text. */
-export function nameScore(query: string, name: string): number {
-  const q = tokensOf(query);
-  const n = tokensOf(name);
+function scoreTokens(q: string[], n: string[]): number {
   const typed = q.join('');
   const stored = n.join('');
-  if (!typed || !stored) {
-    return 0;
-  }
   if (typed === stored) {
     return 1;
   }
@@ -92,6 +152,55 @@ export function nameScore(query: string, name: string): number {
   return Math.max(...scores);
 }
 
+const numbersOf = (tokens: string[]): string =>
+  (tokens.join(' ').match(/\d+/g) ?? []).sort().join(',');
+
+/**
+ * How alike a typed name and a stored name are, 0 to 1, on normalized text: number words read as digits, and a
+ * long enough name is also compared without its Arabic long vowels, a little less sure than the exact spelling.
+ * A typed name with numbers never counts as sure for a name with other numbers (pot 12 cm is not pot 10 cm).
+ */
+export function nameScore(query: string, name: string): number {
+  const q = tokensOf(query);
+  const n = tokensOf(name);
+  if (!q.join('') || !n.join('')) {
+    return 0;
+  }
+  const score = scoreByForm(q, n);
+  const typedNumbers = numbersOf(q);
+  return typedNumbers && typedNumbers !== numbersOf(n)
+    ? Math.min(score, SURE_THRESHOLD - 0.05)
+    : score;
+}
+
+function scoreByForm(q: string[], n: string[]): number {
+  const exact = scoreTokens(q, n);
+  const qs = q.map(skeletonOf);
+  const ns = n.map(skeletonOf);
+  if (
+    [...qs.join('')].length < MIN_SKELETON_LENGTH ||
+    [...ns.join('')].length < MIN_SKELETON_LENGTH
+  ) {
+    return exact;
+  }
+  return Math.max(exact, scoreTokens(qs, ns) * SKELETON_DISCOUNT);
+}
+
+/** The rows whose names are close enough to the query with their scores, closest first. */
+export function rankScored<T>(
+  query: string,
+  rows: readonly T[],
+  nameOf: (row: T) => string,
+  limit = 5,
+): { row: T; score: number }[] {
+  return rows
+    .map((row) => ({ row, name: nameOf(row), score: nameScore(query, nameOf(row)) }))
+    .filter((entry) => entry.score >= SIMILARITY_THRESHOLD)
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+    .slice(0, limit)
+    .map(({ row, score }) => ({ row, score }));
+}
+
 /** The rows whose names are close enough to the query, closest first. */
 export function rankSimilar<T>(
   query: string,
@@ -99,12 +208,7 @@ export function rankSimilar<T>(
   nameOf: (row: T) => string,
   limit = 5,
 ): T[] {
-  return rows
-    .map((row) => ({ row, name: nameOf(row), score: nameScore(query, nameOf(row)) }))
-    .filter((entry) => entry.score >= SIMILARITY_THRESHOLD)
-    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
-    .slice(0, limit)
-    .map((entry) => entry.row);
+  return rankScored(query, rows, nameOf, limit).map((entry) => entry.row);
 }
 
 /** Whether two names are the same once case, marks, spaces, punctuation and Arabic letter variants are ignored. */
@@ -151,25 +255,46 @@ export function spellings(word: string): string[] {
   ];
 }
 
+/** An Arabic word's skeleton as a gapped pattern; null when it has fewer than two letters a stored spelling must keep. */
+function gappedSkeleton(word: string): string | null {
+  const folded = fold(word);
+  if (!ARABIC_WORD.test(folded)) {
+    return null;
+  }
+  const letters = [...skeletonOf(folded)]
+    .filter((c, i) => i > 0 || c !== 'ا')
+    .map((c) => (c === 'ه' || c === 'ي' ? '_' : c));
+  return letters.filter((c) => c !== '_').length >= 2 ? `%${letters.join('%')}%` : null;
+}
+
 /**
- * `like` patterns that find names a typo may have missed: each word of three letters or more, its first three
- * letters, its Arabic spelling variants, and for Latin words of four letters or more their consonants in order
- * (Leena finds Lina). The caller reads a capped set of matches and ranks them.
+ * `like` patterns that find names a typo may have missed: each word of three letters or more, its Arabic spelling
+ * variants, its Arabic skeleton without long vowels as a gapped pattern (بروش finds برش), its first three letters,
+ * and for Latin words of four letters or more their consonants in order (Leena finds Lina). Number words give none:
+ * the ranking compares them as digits. The most specific patterns come first; the caller reads a capped set of
+ * matches and ranks them.
  */
 export function candidatePatterns(query: string): string[] {
-  const terms = new Map<string, string>();
-  for (const word of wordsOf(query).filter((w) => [...w].length >= 3)) {
-    for (const spelling of spellings(word)) {
-      addTerm(terms, `%${spelling}%`);
+  const words = wordsOf(query).filter((w) => [...w].length >= 3 && numberOf(fold(w)) === null);
+  const tiers: string[][] = [[], [], [], []];
+  for (const word of words) {
+    tiers[0].push(...spellings(word).map((spelling) => `%${spelling}%`));
+    const skeleton = gappedSkeleton(word);
+    if (skeleton) {
+      tiers[1].push(skeleton);
     }
     const letters = [...word];
     if (letters.length > 3) {
-      addTerm(terms, `%${letters.slice(0, 3).join('')}%`);
+      tiers[2].push(`%${letters.slice(0, 3).join('')}%`);
     }
     const consonants = [...word.toLowerCase()].filter((c) => /[b-df-hj-np-tv-z]/.test(c));
     if (letters.length >= 4 && consonants.length >= 2 && /^[a-z]+$/i.test(word)) {
-      addTerm(terms, `%${consonants.join('%')}%`);
+      tiers[3].push(`%${consonants.join('%')}%`);
     }
+  }
+  const terms = new Map<string, string>();
+  for (const term of tiers.flat()) {
+    addTerm(terms, term);
   }
   return [...terms.values()].slice(0, MAX_TERMS);
 }

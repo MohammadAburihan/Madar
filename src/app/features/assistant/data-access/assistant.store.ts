@@ -182,7 +182,11 @@ export class AssistantStore {
         proposals.push(...outcomes.flatMap((outcome) => outcome.proposals ?? []));
         // Only the question asked last is open: a choice made since has been answered.
         const asked = outcomes.flatMap((outcome) => outcome.choices ?? []);
-        choices = asked.length ? asked : choices;
+        if (asked.length) {
+          choices = asked;
+        } else if (outcomes.some((outcome) => outcome.proposals?.length)) {
+          choices = [];
+        }
         const results: ToolResultBlock[] = calls.map((call, i) => ({
           type: 'tool_result',
           tool_use_id: call.id,

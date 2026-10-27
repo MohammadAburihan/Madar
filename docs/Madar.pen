@@ -148018,6 +148018,1782 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "npdre",
+      "x": 7530,
+      "y": 30033,
+      "name": "04 Mobile / Assistant Did you mean / Weak match — add new",
+      "context": " | Conversation: assistant found only weak matches (best under 90% similar) for a loosely typed item name; choices are the closest items, then Add “Brush 7 L” as new, then None of these. Add-new sends the choice as the user's reply and the assistant proposes a new item for confirmation; nothing is saved until the user confirms. Add-new is absent when the best match is 90% or more (close match: f3Jc0). Handoff: English LTR; counterpart q0A86S. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "lK54m",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ikuga",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ikx5b",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "VpvEt",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "u1T0Jk",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "d9Vtjq",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ROXU8",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "Q6Eji",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ytMgM",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "bSgxV",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: q0A86S. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "TxUIE",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Assistant",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "p5XXr",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Ask about customers, items, sales and stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "fsWg7",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: Conversation with the assistant. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "a1XvsL",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vMMd1",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BcNQl",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sell 2 Brush 7 L to Lina",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "td7Mk",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "C1Qpme",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "f2mAE",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qeDj8",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "I couldn't find Brush 7 L. Did you mean:",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$md-font",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "UeEnu",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Brush 5 L",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: Brush 5 L. Choosing sends this choice as the user's next message and the assistant continues with that item. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Brush 5 L"
+                            }
+                          }
+                        },
+                        {
+                          "id": "FhYkX",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Add Brush 7 L as new",
+                          "context": "Role: button. Accessible name: Add “Brush 7 L” as new. Sends this choice as the user's next message; the assistant proposes a new item for confirmation, nothing is saved yet. Shown only when the best match is under 90% similar or nothing matched. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "width": "fill_container",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Add “Brush 7 L” as new"
+                            }
+                          }
+                        },
+                        {
+                          "id": "kFA5P",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "None of these",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: None of these. Sends None of these as the user's next message; the assistant asks for a different name or offers to add a new customer. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "None of these"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tFyrO",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "m1icTZ",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "The assistant looks things up. It never changes anything without you.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "mmweY",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AhuiA",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: Ask the assistant. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SEJEY",
+                          "name": "Placeholder",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Ask the assistant…",
+                          "lineHeight": 1.6,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hgwps",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: Send. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Ud8ZN",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "yfOdQ",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "zAAVZ",
+              "type": "ref",
+              "ref": "H3AT9w",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "kyQJu": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Home. Route specification: Lqpaw. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "i4H0c": {
+                  "fill": "$md-muted"
+                },
+                "W7M2mb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "ZHpcp": {
+                  "fill": "$md-muted"
+                },
+                "h1Rv3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Stock. Route specification: NTybC. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "jfsLn": {
+                  "fill": "$md-muted"
+                },
+                "W5nhJn": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "n3DGL": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "q0A86S",
+      "x": 8000,
+      "y": 30033,
+      "name": "Arabic / 04 Mobile / Assistant Did you mean / Weak match — add new",
+      "context": " | Arabic counterpart of npdre. Language switch preserves business, route, input and draft. Conversation: assistant found only weak matches (best under 90% similar) for a loosely typed item name; choices are the closest items, then «إضافة «بروش سبعة لتر» كجديد», then None of these. Add-new sends the choice as the user's reply and the assistant proposes a new item for confirmation; nothing is saved until the user confirms. Add-new is absent when the best match is 90% or more (close match: C2mn0F). Handoff: Arabic RTL; counterpart npdre. Annotated route specification; native interactions unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "yqgux",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "VOnie",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "k33zps",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "M0Eu04",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "v4yyd",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "AFHqD",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Q8smge",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "LFpBy",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "gbdYo",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oPQBC",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "XL8Wf",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: npdre. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "ulMWI",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المساعد",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "tQFC3",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "اسأل عن العملاء والأصناف والمبيعات والمخزون",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "q21L7D",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: المحادثة مع المساعد. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DGUaD",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "phO81",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R2ysr",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "بع ٢ بروش سبعة لتر للينا",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gXqHN",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ks744",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "sdILC",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ApnVt",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "لم أجد «بروش سبعة لتر». هل تقصد:",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "WnhAr",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "برش 5 لتر",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: برش 5 لتر. Choosing sends this choice as the user's next message and the assistant continues with that item. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "برش 5 لتر",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "center"
+                            }
+                          }
+                        },
+                        {
+                          "id": "K5JTU4",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "إضافة «بروش سبعة لتر» كجديد",
+                          "context": "Role: button. Accessible name: إضافة «بروش سبعة لتر» كجديد. Sends this choice as the user's next message; the assistant proposes a new item for confirmation, nothing is saved yet. Shown only when the best match is under 90% similar or nothing matched. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "width": "fill_container",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "إضافة «بروش سبعة لتر» كجديد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "center"
+                            }
+                          }
+                        },
+                        {
+                          "id": "hVQdR",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "لا أحد منهم",
+                          "width": "fill_container",
+                          "context": "Role: button. Accessible name: لا أحد منهم. Sends «لا أحد منهم» as the user's next message; the assistant asks for a different name or offers to add a new customer. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "لا أحد منهم",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "center"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xc6wz",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lkMUq",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "يبحث المساعد عن المعلومات، ولا يغيّر شيئاً دون موافقتك.",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "CGh4F",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sw5Se",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: إرسال. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "w7w0T",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lr1n5",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: اسأل المساعد. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eabwM",
+                          "name": "Placeholder",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "اسأل المساعد…",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ABU0T",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "jx6wY",
+              "type": "ref",
+              "ref": "WaFGl",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "oHf5n": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: المزيد. Route specification: gGafI. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "UVGWb": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                },
+                "c3UIOS": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المخزون. Route specification: h0Bmm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "lYc9B": {
+                  "fill": "$md-muted"
+                },
+                "Z0WdPb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "z5QTU": {
+                  "fill": "$md-muted"
+                },
+                "p74FW3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "jsBhC": {
+                  "fill": "$md-muted"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Imm8D",
+      "x": 7530,
+      "y": 30957,
+      "name": "04 Mobile / Assistant Did you mean / Not found — add new choice",
+      "context": " | Conversation: nothing matched the typed item name, so the assistant offers a single choice, Add “Brush 7 L” as new, with no suggestions and no None of these. Tapping it sends the choice as the user's reply and the assistant proposes a new item for confirmation; next step is the proposal card in MRn1F. Nothing is saved until the user confirms. Handoff: English LTR; counterpart Q2bNK2. All route and accessibility behaviors are specifications; native prototype transition API unavailable. Runtime: not run—requires runnable application.",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "cAy4J",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "tRjD6",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "ZADrS",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G  ▰",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "BVcxA",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "GvmJO",
+              "name": "Business context",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NRTrk",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: Rehan Nursery. Route specification: XBVPW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OebKQ",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Rehan Nursery",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$md-font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "u7yDdu",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ijOfd",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "Madar",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "id": "iLXym",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: Change language to Arabic. Route specification: Q2bNK2. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "العربية",
+                  "fontFamily": "$md-arabic"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "Y3Rst7",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Assistant",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "WC4Ml",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Ask about customers, items, sales and stock",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "TMdHR",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: Conversation with the assistant. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DrAme",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "i7G8gb",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E316GA",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sell 2 Brush 7 L to Lina",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CUT6l",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ycpMD",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dYfi2",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OFgRF",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "I couldn't find “Brush 7 L”.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$md-font",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "kbW2I",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Add Brush 7 L as new",
+                          "context": "Role: button. Accessible name: Add “Brush 7 L” as new. Sends this choice as the user's next message; the assistant proposes a new item for confirmation (next step: MRn1F). Shown when nothing matched. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "width": "fill_container",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Add “Brush 7 L” as new"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "uGdmt",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hl0fV",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "The assistant looks things up. It never changes anything without you.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$md-font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "L1fquD",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "D00RT",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: Ask the assistant. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vK8yN",
+                          "name": "Placeholder",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Ask the assistant…",
+                          "lineHeight": 1.6,
+                          "fontFamily": "$md-font",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dPNzL",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: Send. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "QZnUw",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "p2BWg",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "W9TvJT",
+              "type": "ref",
+              "ref": "H3AT9w",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "kyQJu": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Home. Route specification: Lqpaw. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "i4H0c": {
+                  "fill": "$md-muted"
+                },
+                "W7M2mb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Sales. Route specification: qk3We. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "ZHpcp": {
+                  "fill": "$md-muted"
+                },
+                "h1Rv3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: Stock. Route specification: NTybC. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "jfsLn": {
+                  "fill": "$md-muted"
+                },
+                "W5nhJn": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: More. Route specification: yqgux. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w."
+                },
+                "n3DGL": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Q2bNK2",
+      "x": 8000,
+      "y": 30957,
+      "name": "Arabic / 04 Mobile / Assistant Did you mean / Not found — add new choice",
+      "context": " | Arabic counterpart of Imm8D. Language switch preserves business, route, input and draft. Conversation: nothing matched the typed item name, so the assistant offers a single choice, «إضافة «بروش سبعة لتر» كجديد», with no suggestions and no None of these. Tapping it sends the choice as the user's reply and the assistant proposes a new item for confirmation; next step is the proposal card in bWOOj. Nothing is saved until the user confirms. Handoff: Arabic RTL; counterpart Imm8D. Annotated route specification; native interactions unavailable. Runtime: not run—requires runnable application.",
+      "metadata": {
+        "type": "madar-localization",
+        "source": "yqgux",
+        "language": "ar",
+        "direction": "rtl"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$md-bg",
+      "layout": "vertical",
+      "padding": [
+        0,
+        0,
+        20,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "tKYUY",
+          "name": "System status",
+          "width": "fill_container",
+          "height": 44,
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "XMTx4",
+              "name": "Time",
+              "fill": "$md-ink",
+              "content": "9:41",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Vda5n",
+              "name": "Connection",
+              "fill": "$md-ink",
+              "content": "5G ▰",
+              "lineHeight": 1.5,
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gJOXd",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            16,
+            20,
+            24,
+            20
+          ],
+          "alignItems": "end",
+          "children": [
+            {
+              "type": "frame",
+              "id": "L1jk9",
+              "name": "Business context",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 12,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hJESk",
+                  "name": "Brand",
+                  "fill": "$md-primary",
+                  "content": "مدار",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 16,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "gX0qg",
+                  "name": "Business switch control",
+                  "context": "Role: button. Accessible name: مشتل ريحان للنباتات والحدائق. Route specification: SOqwG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "width": "fill_container",
+                  "height": 48,
+                  "gap": 8,
+                  "padding": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "SL7an",
+                      "name": "Switch business chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-down",
+                      "library": "lucide",
+                      "fill": "$md-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "A7QWW",
+                      "name": "Active business",
+                      "fill": "$md-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "مشتل ريحان للنباتات والحدائق",
+                      "lineHeight": 1.5,
+                      "textAlign": "right",
+                      "fontFamily": "$md-arabic",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "T5rH7a",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Language switch",
+              "width": 120,
+              "context": "Role: button. Accessible name: تغيير اللغة إلى الإنجليزية. Route specification: Imm8D. Preserve business, current route, input, query, filters, allocation, draft ID and focused control. Language switch does not trigger unsaved guard. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "English"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "LXX7E",
+              "name": "Screen title",
+              "fill": "$md-ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "المساعد",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 28,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "L4EQ5",
+              "name": "Screen subtitle",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "اسأل عن العملاء والأصناف والمبيعات والمخزون",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "uX0jA",
+              "name": "Conversation",
+              "context": "Role: log, polite live region. Accessible name: المحادثة مع المساعد. Newest message last; scrolls to the newest message. Reply and activity text announced when they arrive.",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "henUh",
+                  "name": "User message row",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vOwXx",
+                      "name": "User bubble",
+                      "width": 300,
+                      "fill": "$md-tint",
+                      "cornerRadius": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "i4Y2t",
+                          "name": "User message",
+                          "fill": "$md-ink",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "بع ٢ بروش سبعة لتر للينا",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KLw82",
+                  "name": "Assistant message row",
+                  "width": "fill_container",
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yiaXV",
+                      "name": "Assistant reply group",
+                      "width": 320,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Lkffn",
+                          "name": "Assistant bubble",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$md-line",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hd9Gb",
+                              "name": "Assistant message",
+                              "fill": "$md-ink",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "لم أجد «بروش سبعة لتر».",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$md-arabic",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "vfXvZ",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "إضافة «بروش سبعة لتر» كجديد",
+                          "context": "Role: button. Accessible name: إضافة «بروش سبعة لتر» كجديد. Sends this choice as the user's next message; the assistant proposes a new item for confirmation (next step: bWOOj). Shown when nothing matched. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                          "width": "fill_container",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "إضافة «بروش سبعة لتر» كجديد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "center"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qtA7v",
+              "name": "Composer group",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "GGSHe",
+                  "name": "Assistant note",
+                  "fill": "$md-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "يبحث المساعد عن المعلومات، ولا يغيّر شيئاً دون موافقتك.",
+                  "lineHeight": 1.5,
+                  "textAlign": "right",
+                  "fontFamily": "$md-arabic",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "ZnrhF",
+                  "name": "Composer",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "c093b",
+                      "name": "Send",
+                      "context": "Role: button. Accessible name: إرسال. Icon button 48x48. Disabled while the field is empty or a reply is loading. Icon mirrors in Arabic (RTL). Annotation only; native activation unavailable.",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "$md-primary",
+                      "cornerRadius": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "M7Lxh2",
+                          "name": "Send icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "send",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jdURJ",
+                      "name": "Message input",
+                      "context": "Role: textbox (multiline, grows to 4 lines). Accessible name: اسأل المساعد. Enter sends; Shift+Enter adds a line. Disabled while a reply is loading. Annotation only; native activation unavailable.",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "stroke": "$md-control",
+                      "strokeWidth": 1,
+                      "padding": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FrWLK",
+                          "name": "Placeholder",
+                          "fill": "$md-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "اسأل المساعد…",
+                          "lineHeight": 1.5,
+                          "textAlign": "right",
+                          "fontFamily": "$md-arabic",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jKuHQ",
+          "name": "Bottom navigation inset",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "id": "yESkW",
+              "type": "ref",
+              "ref": "WaFGl",
+              "name": "Bottom navigation",
+              "width": "fill_container",
+              "descendants": {
+                "oHf5n": {
+                  "fill": "$md-tint",
+                  "context": "Role: button. Accessible name: المزيد. Route specification: gGafI. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "UVGWb": {
+                  "fill": "$md-primary",
+                  "fontWeight": "700"
+                },
+                "c3UIOS": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المخزون. Route specification: h0Bmm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "lYc9B": {
+                  "fill": "$md-muted"
+                },
+                "Z0WdPb": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: المبيعات. Route specification: Wnz61. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "z5QTU": {
+                  "fill": "$md-muted"
+                },
+                "p74FW3": {
+                  "fill": "#FFFFFF",
+                  "context": "Role: button. Accessible name: الرئيسية. Route specification: cB7Nm. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ."
+                },
+                "jsBhC": {
+                  "fill": "$md-muted"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

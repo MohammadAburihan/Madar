@@ -679,6 +679,28 @@ describe('buildAssistantView proposals and choices', () => {
     expect(build({ messages, choices: several }).items[1].choices).toHaveLength(1);
   });
 
+  it('words "Add <name> as new" in both languages, between the close matches and "None of these"', () => {
+    const asked = {
+      1: [
+        { id: 'C-1', label: 'Lina Haddad', suggested: true },
+        { id: 'add-new', label: 'Leena' },
+      ],
+    };
+    expect(build({ messages, choices: asked }).items[1].choices).toEqual([
+      { id: 'C-1', label: 'Lina Haddad' },
+      { id: 'add-new', label: 'Add “Leena” as new' },
+      { id: 'none-of-these', label: 'None of these' },
+    ]);
+    expect(build({ messages, choices: asked }, 'ar').items[1].choices.slice(1)).toEqual([
+      { id: 'add-new', label: 'إضافة «Leena» كجديد' },
+      { id: 'none-of-these', label: 'لا أحد منهم' },
+    ]);
+    const notFound = { 1: [{ id: 'add-new', label: 'Zed Quartz' }] };
+    expect(build({ messages, choices: notFound }).items[1].choices).toEqual([
+      { id: 'add-new', label: 'Add “Zed Quartz” as new' },
+    ]);
+  });
+
   it('gives the user’s own messages no cards and no choices', () => {
     const view = build({
       messages,

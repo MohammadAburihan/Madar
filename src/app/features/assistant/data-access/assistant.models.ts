@@ -108,6 +108,9 @@ export interface Proposal {
   similarNames?: boolean;
 }
 
+/** The reserved id of the choice "Add <name> as new": its label is the name the user typed. */
+export const ADD_NEW = 'add-new';
+
 /** One of the matches a name could mean; `label` is what the user sends back to pick it. */
 export interface ChoiceOption {
   id: string;
@@ -134,6 +137,7 @@ export class NotFoundFailure extends ToolFailure {
   constructor(
     message: string,
     readonly payload: Record<string, unknown>,
+    readonly choices: ChoiceOption[] = [],
   ) {
     super(message);
   }
