@@ -84,12 +84,13 @@ import { historyCard } from './contacts-view';
           <app-feedback-card [title]="card.title" [message]="card.message" />
         }
       } @empty {
-        <p class="muted">{{ term().trim() ? txt.noResults : txt.empty }}</p>
+        <p class="muted">{{ emptyText() }}</p>
       }
       <app-load-more
         [hasMore]="list.hasMore()"
         [loading]="list.loadingMore()"
         [failed]="list.moreFailed()"
+        [autoLoad]="!term().trim()"
         (more)="list.loadMore()"
       />
     }
@@ -148,9 +149,18 @@ export class ContactHistoryContainer {
       retry: t('contacts.retry'),
       empty: t('contacts.history.empty'),
       noResults: t('contacts.history.noResults'),
+      searching: t('paging.searching'),
       noAccess: block('contacts.noAccess'),
       loadFailed: block('contacts.history.loadFailed'),
     };
+  });
+
+  protected readonly emptyText = computed(() => {
+    const txt = this.text();
+    if (!this.term().trim()) {
+      return txt.empty;
+    }
+    return this.list.hasMore() ? txt.searching : txt.noResults;
   });
 
   protected readonly cards = computed(() => {

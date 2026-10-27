@@ -31,15 +31,19 @@ const entry = (name: string): DraftEntry => ({
 });
 
 interface Internals {
+  window: { items: () => unknown[]; more: () => void };
   notice: () => unknown;
   load: () => Promise<void>;
   deleter: { ask: (t: object) => void; answer: (id: string) => void; running: () => boolean };
 }
 
-function setup(remove: ReturnType<typeof vi.fn>, state?: unknown, before?: () => void) {
-  const load = vi
-    .fn()
-    .mockResolvedValue({ entries: [entry('SI-1'), entry('SI-2')], allForbidden: false });
+function setup(
+  remove: ReturnType<typeof vi.fn>,
+  state?: unknown,
+  before?: () => void,
+  entries = [entry('SI-1'), entry('SI-2')],
+) {
+  const load = vi.fn().mockResolvedValue({ entries, allForbidden: false });
   const business = { name: 'Rehan Nursery', currency: 'ILS' };
   TestBed.configureTestingModule({
     imports: [translocoTesting()],
@@ -154,5 +158,32 @@ describe('DraftsContainer deleted notice', () => {
 
     await page.load();
     expect(page.notice()).toBeNull();
+  });
+});
+
+describe('DraftsContainer paging', () => {
+  it('keeps the window it showed when a changed draft reloads the list', async () => {
+    const many = Array.from({ length: 120 }, (_, i) => entry(`SI-${i}`));
+    const { fixture, page, load } = setup(
+      vi.fn().mockResolvedValue('changed'),
+      undefined,
+      undefined,
+      many,
+    );
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(page.window.items().length).toBe(50);
+    });
+    page.window.more();
+    fixture.detectChanges();
+    expect(page.window.items().length).toBe(100);
+
+    page.deleter.ask(target('SI-1'));
+    page.deleter.answer('delete');
+    await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(page.window.items().length).toBe(100);
+    });
   });
 });

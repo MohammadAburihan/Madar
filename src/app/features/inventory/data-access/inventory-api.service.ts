@@ -685,6 +685,12 @@ export function movementsOf(rows: readonly LedgerRow[]): Movement[] {
   return movements;
 }
 
+/** Like `movementsOf`, but while more rows exist the last voucher is held back: the next page may complete it. */
+export function settledMovements(rows: readonly LedgerRow[], more: boolean): Movement[] {
+  const movements = movementsOf(rows);
+  return more ? movements.slice(0, -1) : movements;
+}
+
 function sameTransfer(entry: EntryDoc, request: TransferRequest): boolean {
   const rows = (entry['items'] as Record<string, unknown>[] | undefined) ?? [];
   return (

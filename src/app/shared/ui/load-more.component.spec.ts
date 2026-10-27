@@ -45,13 +45,42 @@ describe('LoadMoreComponent', () => {
     expect(emitted.length).toBe(1);
   });
 
-  it('shows a muted loading line instead of the button while loading', async () => {
+  it('keeps the button while loading, disabled and busy, and announces loading in a live region', async () => {
     fixture.componentRef.setInput('hasMore', true);
+    await fixture.whenStable();
+    const live = (): HTMLElement => fixture.nativeElement.querySelector('[aria-live="polite"]');
+    expect(live().textContent?.trim()).toBe('');
+    const before = button();
+
     fixture.componentRef.setInput('loading', true);
     await fixture.whenStable();
 
-    expect(text()).toBe('Loading more…');
-    expect(button()).toBeNull();
+    expect(button()).toBe(before);
+    expect(button()?.textContent?.trim()).toBe('Show more');
+    expect(button()?.disabled).toBe(true);
+    expect(button()?.getAttribute('aria-busy')).toBe('true');
+    expect(live().textContent?.trim()).toBe('Loading more…');
+  });
+
+  it('does not watch the scroll position when autoLoad is off', async () => {
+    let created = 0;
+    const original = globalThis.IntersectionObserver;
+    globalThis.IntersectionObserver = class {
+      constructor() {
+        created++;
+      }
+      observe() {}
+      disconnect() {}
+    } as unknown as typeof IntersectionObserver;
+    try {
+      fixture.componentRef.setInput('hasMore', true);
+      fixture.componentRef.setInput('autoLoad', false);
+      await fixture.whenStable();
+      expect(created).toBe(0);
+      expect(button()?.textContent?.trim()).toBe('Show more');
+    } finally {
+      globalThis.IntersectionObserver = original;
+    }
   });
 
   it('says it failed and retries through the same output', async () => {

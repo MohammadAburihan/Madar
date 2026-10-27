@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
 import { PostedEarlierError, UnresolvedError } from '../../../core/erpnext/confirmation';
 import { ListQuery } from '../../../core/erpnext/erpnext-client';
-import { InventoryApiService, movementsOf } from './inventory-api.service';
+import { InventoryApiService, movementsOf, settledMovements } from './inventory-api.service';
 import { TransferRequest } from './inventory.models';
 
 const MAIN = 'Main warehouse - RN';
@@ -200,6 +200,26 @@ describe('InventoryApiService', () => {
     const next = rows.slice(50).map((r) => ({ ...r, voucher_no: 'STE-25' }));
     const movements = movementsOf([...page.items, ...next]);
     expect(movements.find((m) => m.voucher === 'STE-25')!.lines).toHaveLength(2);
+  });
+
+  it('holds back the last voucher while more rows exist, then shows it whole once', () => {
+    const row = (name: string, voucher: string, warehouse: string, qty: number) => ({
+      name,
+      voucher_type: 'Stock Entry',
+      voucher_no: voucher,
+      warehouse,
+      actual_qty: qty,
+      qty_after_transaction: 5,
+      posting_date: '2026-10-14',
+      posting_time: '09:00:00',
+    });
+    const first = [row('1', 'STE-2', SHOP, 1), row('2', 'STE-1', MAIN, -1)];
+    const second = [row('3', 'STE-1', SHOP, 1)];
+
+    expect(settledMovements(first, true).map((m) => m.voucher)).toEqual(['STE-2']);
+    const done = settledMovements([...first, ...second], false);
+    expect(done.map((m) => m.voucher)).toEqual(['STE-2', 'STE-1']);
+    expect(done[1].lines).toHaveLength(2);
   });
 
   it('totals a move without the project sites, as the move screen does', async () => {

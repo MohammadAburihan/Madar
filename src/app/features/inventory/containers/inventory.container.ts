@@ -27,7 +27,11 @@ import { PageHeadingComponent } from '../../../shared/ui/page-heading.component'
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
-import { InventoryApiService, LedgerRow, movementsOf } from '../data-access/inventory-api.service';
+import {
+  InventoryApiService,
+  LedgerRow,
+  settledMovements,
+} from '../data-access/inventory-api.service';
 import { InventoryOverview, StockItem } from '../data-access/inventory.models';
 import {
   itemRow,
@@ -218,7 +222,9 @@ export class InventoryContainer implements OnInit {
   /** The selected item's movements; null when the role can't read the stock ledger. */
   protected readonly ledger = new PagedList<LedgerRow>();
   protected readonly history = computed(() =>
-    this.ledger.status() === 'ready' ? movementsOf(this.ledger.items()) : null,
+    this.ledger.status() === 'ready'
+      ? settledMovements(this.ledger.items(), this.ledger.hasMore())
+      : null,
   );
   /** Search results and the balances table show 50 at a time; the whole list is already loaded. */
   protected readonly stock = new ClientWindow<StockItem>();

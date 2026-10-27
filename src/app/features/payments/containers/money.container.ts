@@ -97,6 +97,7 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
           [hasMore]="list.hasMore()"
           [loading]="list.loadingMore()"
           [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
           (more)="list.loadMore()"
         />
         @if (balances().length) {
@@ -117,6 +118,7 @@ import { balanceCard, matches, paymentCard, paymentRow } from './money-view';
           [hasMore]="list.hasMore()"
           [loading]="list.loadingMore()"
           [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
           (more)="list.loadMore()"
         />
       }
@@ -223,7 +225,10 @@ export class MoneyContainer implements OnInit {
 
   protected readonly emptyText = computed(() => {
     const { t } = this.i18n.tr();
-    return this.term().trim() ? t('money.noResults') : t('money.empty');
+    if (!this.term().trim()) {
+      return t('money.empty');
+    }
+    return this.list.hasMore() ? t('paging.searching') : t('money.noResults');
   });
 
   ngOnInit(): void {

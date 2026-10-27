@@ -22,12 +22,22 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { LoadMoreComponent } from '../../../shared/ui/load-more.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SearchFieldComponent } from '../../../shared/ui/search-field.component';
-import { RecordKind } from '../data-access/sales-records.models';
+import {
+  InvoiceRecord,
+  OrderRecord,
+  QuoteRecord,
+  RecordKind,
+} from '../data-access/sales-records.models';
 import { SalesRecordsApiService } from '../data-access/sales-records-api.service';
 import { RecordCard, invoiceCard, orderCard, quoteCard } from './sales-records-view';
 
 const KINDS: readonly RecordKind[] = ['invoices', 'orders', 'quotes'];
 const SEARCH_DELAY_MS = 250;
+
+type Raw =
+  | { kind: 'invoices'; record: InvoiceRecord }
+  | { kind: 'orders'; record: OrderRecord }
+  | { kind: 'quotes'; record: QuoteRecord };
 
 /** Sales: the business's invoices, orders and quotations, and where a new sale starts. */
 @Component({
@@ -147,7 +157,7 @@ export class SalesContainer {
   protected readonly desktop = computed(() => this.viewport() !== 'mobile');
   protected readonly kind = signal<string>('invoices');
   protected readonly term = signal('');
-  protected readonly list = new PagedList<RecordCard>({ key: (c) => c.id });
+  protected readonly list = new PagedList<Raw>({ key: (r) => r.record.name });
   protected readonly state = computed(() => {
     const status = this.list.status();
     if (status === 'error') {
@@ -155,7 +165,19 @@ export class SalesContainer {
     }
     return status === 'ready' ? 'ready' : 'loading';
   });
-  protected readonly cards = this.list.items;
+  protected readonly cards = computed<RecordCard[]>(() => {
+    const currency = this.business.active()?.currency ?? '';
+    const language = this.i18n.language();
+    const tr = this.i18n.tr();
+    return this.list.items().map((raw) => {
+      if (raw.kind === 'invoices') {
+        return invoiceCard(raw.record, currency, tr);
+      }
+      return raw.kind === 'orders'
+        ? orderCard(raw.record, currency, tr)
+        : quoteCard(raw.record, currency, language, tr);
+    });
+  });
   private run = 0;
 
   protected readonly text = computed(() => {
@@ -200,8 +222,6 @@ export class SalesContainer {
     effect((onCleanup) => {
       const kind = this.kind() as RecordKind;
       const term = this.term();
-      // Language changes reword the cards, so they are rebuilt from fresh records.
-      this.i18n.language();
       // Signing in as someone else or switching business starts the list over.
       void this.session.user()?.id;
       void this.business.active()?.name;
@@ -220,32 +240,29 @@ export class SalesContainer {
     return this.list.loadFirst(this.fetcher(kind, term));
   }
 
-  private fetcher(kind: RecordKind, term: string): PageFetch<RecordCard> {
+  private fetcher(kind: RecordKind, term: string): PageFetch<Raw> {
     return async (start, size) => {
       try {
         const business = await this.business.ensure();
         if (!business) {
           throw new Error('No business');
         }
-        const tr = this.i18n.tr();
-        const language = this.i18n.language();
-        const currency = business.currency;
         const query = {
           company: business.name,
-          currency,
+          currency: business.currency,
           term,
           owner: this.own() ? (this.session.user()?.id ?? null) : null,
         };
         if (kind === 'invoices') {
           const page = await this.api.invoices(query, start, size);
-          return { ...page, items: page.items.map((r) => invoiceCard(r, currency, tr)) };
+          return { ...page, items: page.items.map((record) => ({ kind, record })) };
         }
         if (kind === 'orders') {
           const page = await this.api.orders(query, start, size);
-          return { ...page, items: page.items.map((r) => orderCard(r, currency, tr)) };
+          return { ...page, items: page.items.map((record) => ({ kind, record })) };
         }
         const page = await this.api.quotes(query, start, size);
-        return { ...page, items: page.items.map((r) => quoteCard(r, currency, language, tr)) };
+        return { ...page, items: page.items.map((record) => ({ kind, record })) };
       } catch (error) {
         // 403 is also how an expired session answers; that one goes back to sign-in.
         if (ErpnextError.from(error).kind === 'forbidden') {

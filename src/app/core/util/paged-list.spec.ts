@@ -1,4 +1,12 @@
-import { ClientWindow, PageFetch, PagedList, mapPage, mergeSources, pageOf } from './paged-list';
+import {
+  ClientWindow,
+  PageFetch,
+  PagedList,
+  filledSource,
+  mapPage,
+  mergeSources,
+  pageOf,
+} from './paged-list';
 
 const rowsOf = (n: number, from = 0) => Array.from({ length: n }, (_, i) => from + i);
 
@@ -223,10 +231,95 @@ describe('mergeSources', () => {
     expect(page.more).toBe(false);
   });
 
+  it('keeps merging when one source finishes mid-way', async () => {
+    const a = make('a', 70, 2);
+    const b = make('b', 10, 9, 1);
+    const list = new PagedList<Row>();
+    await list.loadFirst(mergeSources([feed(a).read, feed(b).read], newest, by));
+    while (list.hasMore()) {
+      await list.loadMore();
+    }
+    expect(list.items()).toEqual([...a, ...b].sort(newest));
+  });
+
+  it('retries a failed read without losing or repeating rows', async () => {
+    const a = make('a', 120, 2);
+    let fail = false;
+    const flaky = async (start: number, size: number) => {
+      if (fail) {
+        fail = false;
+        throw new Error('offline');
+      }
+      return a.slice(start, start + size);
+    };
+    const list = new PagedList<Row>();
+    await list.loadFirst(mergeSources([flaky], newest, by));
+    fail = true;
+    await list.loadMore();
+    expect(list.moreFailed()).toBe(true);
+    await list.loadMore();
+    await list.loadMore();
+    expect(list.items()).toEqual(a);
+  });
+
+  it('shows a row inserted between pages once', async () => {
+    const a = make('a', 120, 2);
+    const rows = [...a];
+    const read = async (start: number, size: number) => rows.slice(start, start + size);
+    const list = new PagedList<Row>({ key: by });
+    await list.loadFirst(mergeSources([read], newest, by));
+    rows.unshift({ name: 'new000', date: 2000 });
+    while (list.hasMore()) {
+      await list.loadMore();
+    }
+    const names = list.items().map(by);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names).toContain('a119');
+  });
+
   it('is empty with no rows, and reports the 51st row as more', async () => {
     expect((await mergeSources([feed([]).read], newest, by)(0, 50)).items).toEqual([]);
     const page = await mergeSources([feed(make('a', 51, 1)).read], newest, by)(0, 50);
     expect(page.items.length).toBe(50);
     expect(page.more).toBe(true);
+  });
+});
+
+describe('filledSource', () => {
+  const source = (rows: number[], keep: (n: number) => boolean, failOn: number[] = []) => {
+    let calls = 0;
+    const starts: number[] = [];
+    const src = filledSource<number>(async (rawStart, size) => {
+      calls++;
+      starts.push(rawStart);
+      if (failOn.includes(calls)) {
+        throw new Error('offline');
+      }
+      const raw = rows.slice(rawStart, rawStart + size);
+      return { rows: raw.filter(keep), raw: raw.length };
+    });
+    return { src, starts };
+  };
+
+  it('reads on until it has a full page of kept rows', async () => {
+    const rows = Array.from({ length: 200 }, (_, i) => i);
+    const { src } = source(rows, (n) => n % 2 === 0);
+    const first = await src(0, 50);
+    expect(first.length).toBeGreaterThanOrEqual(50);
+    expect(first.slice(0, 3)).toEqual([0, 2, 4]);
+  });
+
+  it('keeps the rows of an earlier read when a later read throws, and returns them on retry', async () => {
+    const rows = Array.from({ length: 200 }, (_, i) => i);
+    const { src, starts } = source(rows, (n) => n % 5 === 0, [2]);
+    await expect(src(0, 30)).rejects.toThrow('offline');
+    const retry = await src(0, 30);
+    expect(retry.slice(0, 3)).toEqual([0, 5, 10]);
+    expect(starts[2]).toBe(0);
+  });
+
+  it('treats a short answer as the end', async () => {
+    const { src } = source([1, 2, 3], () => true);
+    expect(await src(0, 50)).toEqual([1, 2, 3]);
   });
 });

@@ -12,8 +12,8 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
- * The end of a paged list: asks for the next page when it scrolls into view, and always offers a "Show more"
- * button for keyboard and screen-reader users and for tables.
+ * The end of a paged list: asks for the next page when it scrolls into view (unless `autoLoad` is off), and always
+ * offers a "Show more" button for keyboard and screen-reader users and for tables.
  */
 @Component({
   selector: 'app-load-more',
@@ -28,13 +28,20 @@ import { TranslocoPipe } from '@jsverse/transloco';
           <button type="button" class="md-btn" (click)="more.emit()">
             {{ 'paging.retry' | transloco }}
           </button>
-        } @else if (loading()) {
-          <p class="muted" role="status">{{ 'paging.loading' | transloco }}</p>
         } @else {
-          <button type="button" class="md-btn" (click)="more.emit()">
+          <button
+            type="button"
+            class="md-btn"
+            [disabled]="loading()"
+            [attr.aria-busy]="loading() ? 'true' : null"
+            (click)="more.emit()"
+          >
             {{ 'paging.more' | transloco }}
           </button>
         }
+        <p class="muted" aria-live="polite">
+          {{ loading() ? ('paging.loading' | transloco) : '' }}
+        </p>
       </div>
     }
   `,
@@ -59,6 +66,10 @@ import { TranslocoPipe } from '@jsverse/transloco';
       pointer-events: none;
     }
 
+    .muted:empty {
+      margin-block-start: -12px;
+    }
+
     .muted {
       margin: 0;
       color: var(--md-muted);
@@ -70,6 +81,7 @@ export class LoadMoreComponent {
   readonly hasMore = input(false);
   readonly loading = input(false);
   readonly failed = input(false);
+  readonly autoLoad = input(true);
   readonly more = output<void>();
 
   private readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
@@ -79,7 +91,7 @@ export class LoadMoreComponent {
     inject(DestroyRef).onDestroy(() => this.observer?.disconnect());
     effect(() => {
       const target = this.sentinel()?.nativeElement;
-      const idle = !this.loading() && !this.failed();
+      const idle = !this.loading() && !this.failed() && this.autoLoad();
       this.observer?.disconnect();
       this.observer = null;
       if (!target || !idle || typeof IntersectionObserver === 'undefined') {

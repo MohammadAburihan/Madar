@@ -117,7 +117,7 @@ export class DraftsContainer {
   private readonly deleted = inject(DeletedDraftsService);
   private readonly lastDeleted = signal<{ kind: DraftKind; party: string } | null>(null);
   protected readonly deleter = injectDraftDeleter({
-    reload: () => void this.load(),
+    reload: () => void this.load(true),
     done: () => undefined,
   });
   protected readonly notice = computed(() => {
@@ -205,13 +205,15 @@ export class DraftsContainer {
     });
   }
 
-  protected async load(): Promise<void> {
+  protected async load(keepWindow = false): Promise<void> {
     const run = ++this.run;
     if (run > 1) {
       this.lastDeleted.set(null);
     }
     this.state.set('loading');
-    this.window.restart();
+    if (!keepWindow) {
+      this.window.restart();
+    }
     try {
       const [business] = await Promise.all([this.business.ensure(), this.clock.ensure()]);
       const userId = this.session.user()?.id;

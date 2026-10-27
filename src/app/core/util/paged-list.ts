@@ -239,14 +239,16 @@ export function filledSource<T>(
   let next = 0;
   return async (_start, size) => {
     const out: T[] = [];
+    let cursor = next;
     while (out.length < size) {
-      const page = await read(next, size);
-      next += page.raw;
+      const page = await read(cursor, size);
+      cursor += page.raw;
       out.push(...page.rows);
       if (page.raw < size) {
         break;
       }
     }
+    next = cursor;
     return out;
   };
 }

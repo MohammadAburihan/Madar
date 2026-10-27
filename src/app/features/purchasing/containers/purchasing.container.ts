@@ -113,6 +113,7 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
               [hasMore]="list.hasMore()"
               [loading]="list.loadingMore()"
               [failed]="list.moreFailed()"
+              [autoLoad]="!term().trim()"
               (more)="list.loadMore()"
             />
           </div>
@@ -161,6 +162,7 @@ import { orderCard, orderPanel, orderRow, progressChip, workspaceStats } from '.
           [hasMore]="list.hasMore()"
           [loading]="list.loadingMore()"
           [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
           (more)="list.loadMore()"
         />
       }
@@ -272,9 +274,13 @@ export class PurchasingContainer implements OnInit {
     panelInvoiceRows(this.panelInvoices(), this.i18n.tr()),
   );
 
-  protected readonly emptyText = computed(() =>
-    this.i18n.tr().t(this.term().trim() ? 'purchase.noResults' : 'purchase.empty'),
-  );
+  protected readonly emptyText = computed(() => {
+    const { t } = this.i18n.tr();
+    if (!this.term().trim()) {
+      return t('purchase.empty');
+    }
+    return this.list.hasMore() ? t('paging.searching') : t('purchase.noResults');
+  });
 
   constructor() {
     effect(() => {

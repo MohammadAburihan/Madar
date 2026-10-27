@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { fakeErpnext } from '../../../../testing/fake-erpnext';
+import { PagedList } from '../../../core/util/paged-list';
 import { ContactsApiService, withCredits } from './contacts-api.service';
+import { HistoryEntry } from './contacts.models';
 
 const COMPANY = { name: 'Rehan Nursery', currency: 'ILS' };
 const api = () => TestBed.inject(ContactsApiService);
@@ -402,5 +404,29 @@ describe('ContactsApiService', () => {
       'posting_date desc, creation desc, name desc',
     );
     expect(listCalls.some((c) => (c.query.limitStart ?? 0) > 0)).toBe(true);
+  });
+});
+
+describe('withCredits across pages', () => {
+  const entry = (over: Partial<HistoryEntry>): HistoryEntry =>
+    ({ kind: 'invoice', name: 'SI-1', credited: 0, ...over }) as HistoryEntry;
+
+  it('adds a credit note from a later page to its invoice once it is loaded, never twice', async () => {
+    const pages = [
+      [entry({ name: 'SI-1' })],
+      [entry({ kind: 'return', name: 'SI-2', creditFor: 'SI-1', creditAmount: 30 })],
+    ];
+    const list = new PagedList<HistoryEntry>({ key: (e) => e.name });
+    await list.loadFirst(async (start) => ({
+      items: pages[start] ?? [],
+      more: start === 0,
+      fetched: 1,
+    }));
+    expect(withCredits(list.items())[0].credited).toBe(0);
+
+    await list.loadMore();
+    const shown = withCredits(list.items());
+    expect(shown.find((e) => e.name === 'SI-1')?.credited).toBe(30);
+    expect(withCredits(shown).find((e) => e.name === 'SI-1')?.credited).toBe(30);
   });
 });

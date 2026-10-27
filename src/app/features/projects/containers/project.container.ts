@@ -247,6 +247,11 @@ const LEDGER_LIMIT = 5;
               [empty]="salesEmpty()"
               (opened)="openRecord($event)"
             />
+            @if (salesList.status() === 'error') {
+              <button type="button" class="md-btn" (click)="salesList.retry()">
+                {{ txt.retry }}
+              </button>
+            }
             <app-load-more
               [hasMore]="salesList.hasMore()"
               [loading]="salesList.loadingMore()"
@@ -330,6 +335,11 @@ const LEDGER_LIMIT = 5;
           [empty]="salesEmpty()"
           (opened)="openRecord($event)"
         />
+        @if (salesList.status() === 'error') {
+          <button type="button" class="md-btn" (click)="salesList.retry()">
+            {{ txt.retry }}
+          </button>
+        }
         <app-load-more
           [hasMore]="salesList.hasMore()"
           [loading]="salesList.loadingMore()"

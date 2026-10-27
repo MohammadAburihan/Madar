@@ -63,12 +63,13 @@ import { approvalCard } from './approvals-view';
             (picked)="open(card.id)"
           />
         } @empty {
-          <p class="muted">{{ term().trim() ? txt.noResults : txt.empty }}</p>
+          <p class="muted">{{ emptyText() }}</p>
         }
         <app-load-more
           [hasMore]="list.hasMore()"
           [loading]="list.loadingMore()"
           [failed]="list.moreFailed()"
+          [autoLoad]="!term().trim()"
           (more)="list.loadMore()"
         />
       }
@@ -136,12 +137,21 @@ export class ApprovalsContainer {
       loading: t('approvals.loading'),
       empty: t('approvals.empty'),
       noResults: t('approvals.noResults'),
+      searching: t('paging.searching'),
       leaveRequests: t('approvals.leaveRequests'),
       backHome: t('approvals.backHome'),
       retry: t('workers.retry'),
       error: block('approvals.error'),
       noAccess: block('approvals.noAccess'),
     };
+  });
+
+  protected readonly emptyText = computed(() => {
+    const txt = this.text();
+    if (!this.term().trim()) {
+      return txt.empty;
+    }
+    return this.list.hasMore() ? txt.searching : txt.noResults;
   });
 
   protected readonly cards = computed(() => {

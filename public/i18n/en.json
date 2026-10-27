@@ -11,7 +11,8 @@
     "more": "Show more",
     "loading": "Loading more…",
     "failed": "Couldn't load more. What's shown is still right.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "searching": "Searching the loaded entries — show more to search further."
   },
   "nav": {
     "label": "Main navigation",
