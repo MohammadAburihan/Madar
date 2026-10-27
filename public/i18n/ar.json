@@ -72,7 +72,8 @@
       "catalog": "دليل الأصناف",
       "receiveGoods": "استلام البضائع",
       "countStock": "جرد المخزون",
-      "supplyProjectShort": "تجهيز مشروع"
+      "supplyProjectShort": "تجهيز مشروع",
+      "assistant": "المساعد"
     },
     "attentionHeading": "مهام تحتاج إلى متابعتك",
     "table": {

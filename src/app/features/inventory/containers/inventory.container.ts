@@ -154,6 +154,16 @@ import {
         <app-feedback-card tone="danger" [title]="txt.error.title" [message]="txt.error.message" />
       } @else {
         <app-stat-card [stats]="stats()" />
+        @if (caps().transferStock) {
+          <button type="button" class="md-btn md-btn--primary" (click)="move()">
+            {{ txt.move }}
+          </button>
+        }
+        @for (action of stockActions(); track action.id) {
+          <button type="button" class="md-btn" (click)="open(action.id)">
+            {{ action.label }}
+          </button>
+        }
         <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
         @if (term().trim()) {
           @for (item of stock.items(); track item.code) {
@@ -189,16 +199,6 @@ import {
           }
         } @else {
           <p class="muted">{{ txt.empty }}</p>
-        }
-        @if (caps().transferStock) {
-          <button type="button" class="md-btn md-btn--primary" (click)="move()">
-            {{ txt.move }}
-          </button>
-        }
-        @for (action of stockActions(); track action.id) {
-          <button type="button" class="md-btn" (click)="open(action.id)">
-            {{ action.label }}
-          </button>
         }
       }
     }

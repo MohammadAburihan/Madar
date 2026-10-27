@@ -47,6 +47,16 @@ function setup(list: ReturnType<typeof vi.fn>) {
 }
 
 describe('ProjectsContainer search', () => {
+  it('puts the New project button above the search field', async () => {
+    const list = vi.fn().mockResolvedValue({ projects: [lina], capped: false });
+    const { el } = setup(list);
+    await vi.waitFor(() => expect(el.querySelector('button.card')).not.toBeNull());
+    const primary = el.querySelector('button.md-btn--primary') as HTMLElement;
+    const search = el.querySelector('app-search-field') as HTMLElement;
+    expect(primary).not.toBeNull();
+    expect(primary.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('loads everything first, then searches the typed text after a pause', async () => {
     const list = vi.fn().mockResolvedValue({ projects: [lina], capped: false });
     const { type } = setup(list);

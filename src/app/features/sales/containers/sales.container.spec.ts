@@ -55,6 +55,15 @@ describe('SalesContainer', () => {
     await vi.waitFor(() => expect(page.cards().length).toBe(1));
     const english = page.cards()[0].message;
 
+    const primary = (fixture.nativeElement as HTMLElement).querySelector(
+      'button.md-btn--primary',
+    ) as HTMLElement;
+    const search = (fixture.nativeElement as HTMLElement).querySelector(
+      'app-search-field',
+    ) as HTMLElement;
+    expect(primary).not.toBeNull();
+    expect(primary.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
     await TestBed.inject(LanguageService).use('ar');
     fixture.detectChanges();
     await fixture.whenStable();

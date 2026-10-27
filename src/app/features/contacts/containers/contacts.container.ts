@@ -96,6 +96,11 @@ const SEARCH_DELAY_MS = 250;
         [message]="txt.noAccess.message"
       />
     } @else {
+      @if (!desktop() && canAdd()) {
+        <button type="button" class="md-btn md-btn--primary" (click)="add()">
+          {{ txt.add }}
+        </button>
+      }
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       @if (kinds().length > 1) {
         <app-filter-chips [label]="txt.title" [options]="txt.kindOptions" [(value)]="kind" />
@@ -209,11 +214,6 @@ const SEARCH_DELAY_MS = 250;
           [failed]="list.moreFailed()"
           (more)="list.loadMore()"
         />
-      }
-      @if (!desktop() && canAdd()) {
-        <button type="button" class="md-btn md-btn--primary" (click)="add()">
-          {{ txt.add }}
-        </button>
       }
     }
   `,

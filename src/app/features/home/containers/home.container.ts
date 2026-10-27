@@ -135,6 +135,7 @@ export class HomeContainer {
       countStock: ['/inventory/count'],
       customers: ['/contacts'],
       catalog: ['/catalog'],
+      assistant: ['/assistant'],
     };
     void this.router.navigate(routes[id] ?? ['/task', id]);
   }

@@ -4004,17 +4004,39 @@
               ]
             },
             {
-              "id": "uOIZw",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Supply a project",
+              "type": "frame",
+              "id": "puQjb",
+              "name": "Quick actions 6",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Supply a project"
+              "gap": 12,
+              "children": [
+                {
+                  "id": "uOIZw",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Supply a project",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Supply a project"
+                    }
+                  }
+                },
+                {
+                  "id": "T0A96S",
+                  "type": "ref",
+                  "ref": "Ab7yc",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "JgY9L": {
+                      "content": "Assistant"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -4391,6 +4413,19 @@
               ]
             },
             {
+              "id": "xBWBw",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Assistant"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "XuBIt",
               "name": "Pending heading",
@@ -4765,6 +4800,19 @@
               ]
             },
             {
+              "id": "I8Kc0h",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Assistant"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "b49vJ2",
               "name": "Pending heading",
@@ -5050,6 +5098,19 @@
               "fontWeight": "normal"
             },
             {
+              "id": "m9RrPW",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Add item or service",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add item or service. Route specification: Wj8ai. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Add item or service"
+                }
+              }
+            },
+            {
               "id": "TVMle",
               "type": "ref",
               "ref": "SeemW",
@@ -5220,19 +5281,6 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Show more"
-                }
-              }
-            },
-            {
-              "id": "m9RrPW",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Add item or service",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Add item or service. Route specification: Wj8ai. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Add item or service"
                 }
               }
             }
@@ -8748,17 +8796,39 @@
                       ]
                     },
                     {
-                      "id": "XroHV",
-                      "type": "ref",
-                      "ref": "Ab7yc",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "DcA0n",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host Pd5Js and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "JgY9L": {
-                          "content": "Supply a project"
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "XroHV",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Supply a project",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host Pd5Js and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Supply a project"
+                            }
+                          }
+                        },
+                        {
+                          "id": "NiZjt",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Assistant",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Assistant"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -12882,6 +12952,19 @@
               "fontWeight": "normal"
             },
             {
+              "id": "O2Gi8",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Add customer or supplier",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add customer or supplier. Route specification: ylrkE. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Add customer or supplier"
+                }
+              }
+            },
+            {
               "id": "HByQH",
               "type": "ref",
               "ref": "SeemW",
@@ -13024,19 +13107,6 @@
                 },
                 "TQSOO": {
                   "content": "Outstanding ILS 260.00"
-                }
-              }
-            },
-            {
-              "id": "O2Gi8",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Add customer or supplier",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Add customer or supplier. Route specification: ylrkE. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Add customer or supplier"
                 }
               }
             }
@@ -16346,6 +16416,32 @@
               "fontWeight": "normal"
             },
             {
+              "id": "MypL1",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Quick sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Quick sale. Route specification: LZt1B. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Quick sale"
+                }
+              }
+            },
+            {
+              "id": "J2z1Fd",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Create quotation",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Create quotation. Route specification: gLucp. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Create quotation"
+                }
+              }
+            },
+            {
               "id": "Cqa7N",
               "type": "ref",
               "ref": "SeemW",
@@ -16455,32 +16551,6 @@
                 },
                 "RKM9S": {
                   "content": "Confirmed order · 2 trees\nDelivery pending · Not invoiced"
-                }
-              }
-            },
-            {
-              "id": "MypL1",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Quick sale",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Quick sale. Route specification: LZt1B. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Quick sale"
-                }
-              }
-            },
-            {
-              "id": "J2z1Fd",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Create quotation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Create quotation. Route specification: gLucp. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Create quotation"
                 }
               }
             }
@@ -20650,6 +20720,84 @@
               ]
             },
             {
+              "id": "CNV1f",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Move stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Move stock. Route specification: KxHPU. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Move stock"
+                }
+              }
+            },
+            {
+              "id": "DrpEM",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Add stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Add stock"
+                }
+              }
+            },
+            {
+              "id": "M5S5Y",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Count stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Count stock"
+                }
+              }
+            },
+            {
+              "id": "oJgQz",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Record damage or loss",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Record damage or loss"
+                }
+              }
+            },
+            {
+              "id": "ElqUO",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Supply a project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Supply a project"
+                }
+              }
+            },
+            {
+              "id": "nKLIK",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Items & services",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Items & services"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "NF2l7",
               "name": "Location balances heading",
@@ -20841,84 +20989,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "id": "CNV1f",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Move stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Move stock. Route specification: KxHPU. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Move stock"
-                }
-              }
-            },
-            {
-              "id": "DrpEM",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Add stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Add stock"
-                }
-              }
-            },
-            {
-              "id": "M5S5Y",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Count stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Count stock. Route specification: I6uep. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Count stock"
-                }
-              }
-            },
-            {
-              "id": "oJgQz",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Record damage or loss",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Record damage or loss"
-                }
-              }
-            },
-            {
-              "id": "ElqUO",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Supply a project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Supply a project"
-                }
-              }
-            },
-            {
-              "id": "nKLIK",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Items & services",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Record damage or loss. Route specification: dXeSv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Items & services"
-                }
-              }
             }
           ]
         },
@@ -25197,17 +25267,39 @@
                       ]
                     },
                     {
-                      "id": "fSFnY",
-                      "type": "ref",
-                      "ref": "Ab7yc",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "yPc21",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host QfZBs and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "JgY9L": {
-                          "content": "Supply a project"
+                      "gap": 12,
+                      "children": [
+                        {
+                          "id": "fSFnY",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Supply a project",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: Supply a project. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Desktop presentation: keep host QfZBs and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Supply a project"
+                            }
+                          }
+                        },
+                        {
+                          "id": "BYXOa",
+                          "type": "ref",
+                          "ref": "Ab7yc",
+                          "name": "Assistant",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: Assistant. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "JgY9L": {
+                              "content": "Assistant"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -26249,6 +26341,32 @@
               ]
             },
             {
+              "id": "O8Dyf4",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Review materials and supply",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Review materials and supply. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Review materials and supply"
+                }
+              }
+            },
+            {
+              "id": "onJKl",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Edit project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Edit project. Route specification: VYpxr. Load the existing record; save returns to its detail. Preserve active business. Annotation only.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Edit project"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "ZpTCC",
               "name": "Tasks heading",
@@ -26821,32 +26939,6 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Project records · Purchase · PO-2048"
-                }
-              }
-            },
-            {
-              "id": "O8Dyf4",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Review materials and supply",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Review materials and supply. Route specification: Jrpjv. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Review materials and supply"
-                }
-              }
-            },
-            {
-              "id": "onJKl",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Edit project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Edit project. Route specification: VYpxr. Load the existing record; save returns to its detail. Preserve active business. Annotation only.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Edit project"
                 }
               }
             }
@@ -35286,6 +35378,19 @@
               "fontWeight": "normal"
             },
             {
+              "id": "sJ68T",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Sales",
+              "context": "Role: button. Accessible name: Sales. Route specification: Sales screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Sales"
+                }
+              }
+            },
+            {
               "id": "v4ymRa",
               "type": "ref",
               "ref": "Ab7yc",
@@ -35295,6 +35400,19 @@
               "descendants": {
                 "JgY9L": {
                   "content": "Purchases"
+                }
+              }
+            },
+            {
+              "id": "a9R5Xf",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Inventory",
+              "context": "Role: button. Accessible name: Inventory. Route specification: Inventory screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Inventory"
                 }
               }
             },
@@ -36054,39 +36172,6 @@
               }
             },
             {
-              "id": "G8ogI",
-              "type": "ref",
-              "ref": "d3sxVd",
-              "name": "Next tasks",
-              "width": "fill_container",
-              "fill": "$md-tint",
-              "descendants": {
-                "Z8awi6": {
-                  "content": "Next tasks",
-                  "fill": "$md-primary"
-                },
-                "RKM9S": {
-                  "content": "Order shelving · 13 Oct · Salim\nInstall shelving · 17 Oct · Yara"
-                }
-              }
-            },
-            {
-              "id": "Uomaj",
-              "type": "ref",
-              "ref": "aFORo",
-              "name": "No customer notice",
-              "width": "fill_container",
-              "context": "Role: status. Accessible name: This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it. Internal project: the Sell section is not shown. Annotation only.",
-              "descendants": {
-                "NxqlX": {
-                  "enabled": false
-                },
-                "OhjBF": {
-                  "content": "This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it."
-                }
-              }
-            },
-            {
               "id": "Rgjtv",
               "type": "ref",
               "ref": "wk3Ko",
@@ -36111,19 +36196,6 @@
                   "content": "Add customer"
                 }
               }
-            },
-            {
-              "type": "text",
-              "id": "RqyIg",
-              "name": "Interaction notes",
-              "fill": "$md-muted",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "Linked records: shelving purchase, installation service, transport expense. Attachments: floor plan and progress photos.",
-              "lineHeight": 1.4,
-              "fontFamily": "$md-font",
-              "fontSize": 14,
-              "fontWeight": "normal"
             },
             {
               "id": "j7j8tl",
@@ -36163,6 +36235,52 @@
                   "content": "Edit project"
                 }
               }
+            },
+            {
+              "id": "G8ogI",
+              "type": "ref",
+              "ref": "d3sxVd",
+              "name": "Next tasks",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "Z8awi6": {
+                  "content": "Next tasks",
+                  "fill": "$md-primary"
+                },
+                "RKM9S": {
+                  "content": "Order shelving · 13 Oct · Salim\nInstall shelving · 17 Oct · Yara"
+                }
+              }
+            },
+            {
+              "id": "Uomaj",
+              "type": "ref",
+              "ref": "aFORo",
+              "name": "No customer notice",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it. Internal project: the Sell section is not shown. Annotation only.",
+              "descendants": {
+                "NxqlX": {
+                  "enabled": false
+                },
+                "OhjBF": {
+                  "content": "This project has no customer, so there's nothing to sell to. Supply it from stock, or add a customer to sell to it."
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "RqyIg",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Linked records: shelving purchase, installation service, transport expense. Attachments: floor plan and progress photos.",
+              "lineHeight": 1.4,
+              "fontFamily": "$md-font",
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         }
@@ -36337,6 +36455,45 @@
               "fontWeight": "normal"
             },
             {
+              "id": "DP1R7",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Receive payment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Receive payment. Route specification: K0MB7. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Receive payment"
+                }
+              }
+            },
+            {
+              "id": "A85Pg",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Pay supplier",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Pay supplier. Route specification: Y2qWpX. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Pay supplier"
+                }
+              }
+            },
+            {
+              "id": "KAVKF",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Record expense",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Record expense. Route specification: xjNpD. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Record expense"
+                }
+              }
+            },
+            {
               "id": "maHGM",
               "type": "ref",
               "ref": "SeemW",
@@ -36394,45 +36551,6 @@
                 },
                 "RKM9S": {
                   "content": "Fuel & transport · Main cash\nReceipt not attached"
-                }
-              }
-            },
-            {
-              "id": "DP1R7",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Receive payment",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Receive payment. Route specification: K0MB7. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Receive payment"
-                }
-              }
-            },
-            {
-              "id": "A85Pg",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Pay supplier",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Pay supplier. Route specification: Y2qWpX. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Pay supplier"
-                }
-              }
-            },
-            {
-              "id": "KAVKF",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Record expense",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Record expense. Route specification: xjNpD. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w. Before commit, validate required data and permissions. Permission denied: show fRNi2 in the same task; dismiss keeps input. Timeout: show d6qmOh for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Record expense"
                 }
               }
             }
@@ -47097,6 +47215,54 @@
               "fontWeight": "normal"
             },
             {
+              "id": "Ed2Qu",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Receive payment",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: استلام دفعة. Route specification: ViEoW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "استلام دفعة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "k6lBN",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Pay supplier",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: دفع للمورد. Route specification: fmj9G. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "دفع للمورد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "KmyGt",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Record expense",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل مصروف. Route specification: K5INo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تسجيل مصروف",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "kjA7E",
               "type": "ref",
               "ref": "gMHOU",
@@ -47169,54 +47335,6 @@
                 },
                 "CZQQN": {
                   "content": "الوقود والنقل · الصندوق الرئيسي\nالإيصال غير مرفق",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "Ed2Qu",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Receive payment",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: استلام دفعة. Route specification: ViEoW. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "استلام دفعة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "k6lBN",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Pay supplier",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: دفع للمورد. Route specification: fmj9G. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "دفع للمورد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "KmyGt",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Record expense",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تسجيل مصروف. Route specification: K5INo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تسجيل مصروف",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -47443,6 +47561,45 @@
               "fontWeight": "normal"
             },
             {
+              "id": "FEYR8",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: New project. Route specification: VYpxr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "New project"
+                }
+              }
+            },
+            {
+              "id": "tHWsO",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Open garden project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open garden project. Route specification: r3QqKG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Open garden project"
+                }
+              }
+            },
+            {
+              "id": "zVwv1",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Open internal project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Open internal project. Route specification: uYuRo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Open internal project"
+                }
+              }
+            },
+            {
               "id": "xWNFY",
               "type": "ref",
               "ref": "SeemW",
@@ -47505,45 +47662,6 @@
                 },
                 "RKM9S": {
                   "content": "Internal project · No customer required"
-                }
-              }
-            },
-            {
-              "id": "FEYR8",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "New project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: New project. Route specification: VYpxr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "New project"
-                }
-              }
-            },
-            {
-              "id": "tHWsO",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Open garden project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Open garden project. Route specification: r3QqKG. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Open garden project"
-                }
-              }
-            },
-            {
-              "id": "zVwv1",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Open internal project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Open internal project. Route specification: uYuRo. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Open internal project"
                 }
               }
             }
@@ -52487,6 +52605,102 @@
               ]
             },
             {
+              "id": "o3aZX9",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Move stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: نقل المخزون. Route specification: hHzim. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "نقل المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "gaWm1",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Add stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إضافة مخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "dCoPz",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Count stock",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "جرد المخزون",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "x6EJsu",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Record damage or loss",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تسجيل التلف أو الفقد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "C4xBSH",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "توريد لمشروع",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "توريد لمشروع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "kEGUS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Items & services",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "الأصناف والخدمات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "SSBft",
               "name": "Location balances heading",
@@ -52708,102 +52922,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "id": "o3aZX9",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Move stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: نقل المخزون. Route specification: hHzim. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "نقل المخزون",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "gaWm1",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Add stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "إضافة مخزون",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "dCoPz",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Count stock",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: جرد المخزون. Route specification: y9LQT9. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "جرد المخزون",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "x6EJsu",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Record damage or loss",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تسجيل التلف أو الفقد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "C4xBSH",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "توريد لمشروع",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "توريد لمشروع",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "kEGUS",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Items & services",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تسجيل التلف أو الفقد. Route specification: OEm1d. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Before commit, validate required data and permissions. Permission denied: show P5mdIX in the same task; dismiss keeps input. Timeout: show izD5U for this operation, block repeat submit, and Check result with its idempotency key. Found returns existing detail; pending stays unresolved; definite failure returns preserved review.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "الأصناف والخدمات",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
             }
           ]
         },
@@ -55496,6 +55614,35 @@
               ]
             },
             {
+              "id": "DGksL",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Review materials and supply",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: مراجعة المواد والتوريد. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "مراجعة المواد والتوريد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "waKZh",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Edit project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تعديل المشروع. Route specification: Mi3vr. Load the existing record; save returns to its detail. Preserve active business. Annotation only.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تعديل المشروع"
+                }
+              }
+            },
+            {
               "type": "text",
               "id": "pp0l3",
               "name": "Tasks heading",
@@ -56108,35 +56255,6 @@
               "descendants": {
                 "yHiIx": {
                   "content": "سجلات المشروع · مشتريات · PO-2048"
-                }
-              }
-            },
-            {
-              "id": "DGksL",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Review materials and supply",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: مراجعة المواد والتوريد. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "مراجعة المواد والتوريد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "waKZh",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Edit project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تعديل المشروع. Route specification: Mi3vr. Load the existing record; save returns to its detail. Preserve active business. Annotation only.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تعديل المشروع"
                 }
               }
             }
@@ -59367,45 +59485,6 @@
               }
             },
             {
-              "id": "DE7rM",
-              "type": "ref",
-              "ref": "eoTqH",
-              "name": "Next tasks",
-              "width": "fill_container",
-              "fill": "$md-tint",
-              "descendants": {
-                "v5EFM": {
-                  "content": "المهام التالية",
-                  "fill": "$md-primary",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                },
-                "CZQQN": {
-                  "content": "طلب الرفوف · 13 أكتوبر · سليم\nتركيب الرفوف · 17 أكتوبر · يارا",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "wbTy5",
-              "type": "ref",
-              "ref": "X803zR",
-              "name": "No customer notice",
-              "width": "fill_container",
-              "context": "Role: status. Accessible name: هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له. Internal project: the Sell section is not shown. Annotation only.",
-              "descendants": {
-                "HJXqj": {
-                  "enabled": false
-                },
-                "Mem91": {
-                  "content": "هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له."
-                }
-              }
-            },
-            {
               "id": "P3WOM",
               "type": "ref",
               "ref": "V1NTE",
@@ -59430,20 +59509,6 @@
                   "content": "إضافة عميل"
                 }
               }
-            },
-            {
-              "type": "text",
-              "id": "RjkWF",
-              "name": "Interaction notes",
-              "fill": "$md-muted",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "السجلات المرتبطة: شراء رفوف وخدمة تركيب ومصروف نقل. المرفقات: مخطط الطابق وصور التقدم.",
-              "lineHeight": 1.5,
-              "textAlign": "right",
-              "fontFamily": "$md-arabic",
-              "fontSize": 14,
-              "fontWeight": "normal"
             },
             {
               "id": "OZAS3",
@@ -59489,6 +59554,59 @@
                   "content": "تعديل المشروع"
                 }
               }
+            },
+            {
+              "id": "DE7rM",
+              "type": "ref",
+              "ref": "eoTqH",
+              "name": "Next tasks",
+              "width": "fill_container",
+              "fill": "$md-tint",
+              "descendants": {
+                "v5EFM": {
+                  "content": "المهام التالية",
+                  "fill": "$md-primary",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                },
+                "CZQQN": {
+                  "content": "طلب الرفوف · 13 أكتوبر · سليم\nتركيب الرفوف · 17 أكتوبر · يارا",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "wbTy5",
+              "type": "ref",
+              "ref": "X803zR",
+              "name": "No customer notice",
+              "width": "fill_container",
+              "context": "Role: status. Accessible name: هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له. Internal project: the Sell section is not shown. Annotation only.",
+              "descendants": {
+                "HJXqj": {
+                  "enabled": false
+                },
+                "Mem91": {
+                  "content": "هذا المشروع بلا عميل، لذا لا يمكن البيع له. زوّده من المخزون، أو أضف عميلاً للبيع له."
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "RjkWF",
+              "name": "Interaction notes",
+              "fill": "$md-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "السجلات المرتبطة: شراء رفوف وخدمة تركيب ومصروف نقل. المرفقات: مخطط الطابق وصور التقدم.",
+              "lineHeight": 1.5,
+              "textAlign": "right",
+              "fontFamily": "$md-arabic",
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         }
@@ -63885,6 +64003,54 @@
               "fontWeight": "normal"
             },
             {
+              "id": "L5agf",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: مشروع جديد. Route specification: Mi3vr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "مشروع جديد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Q86bIC",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Open garden project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: فتح مشروع الحديقة. Route specification: k1fawA. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "فتح مشروع الحديقة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "CcOTs",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Open internal project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: فتح المشروع الداخلي. Route specification: AQY6o. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "فتح المشروع الداخلي",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "QCQEj",
               "type": "ref",
               "ref": "gMHOU",
@@ -63956,54 +64122,6 @@
                 },
                 "CZQQN": {
                   "content": "مشروع داخلي · لا يلزم عميل",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "L5agf",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "New project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: مشروع جديد. Route specification: Mi3vr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "مشروع جديد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "Q86bIC",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Open garden project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: فتح مشروع الحديقة. Route specification: k1fawA. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "فتح مشروع الحديقة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "CcOTs",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Open internal project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: فتح المشروع الداخلي. Route specification: AQY6o. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "فتح المشروع الداخلي",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -75419,20 +75537,61 @@
               ]
             },
             {
-              "id": "zflgh",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Supply a project",
+              "type": "frame",
+              "id": "VVvtb",
+              "name": "Quick actions 6",
               "width": "fill_container",
-              "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تجهيز مشروع",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
+              "gap": 12,
+              "children": [
+                {
+                  "id": "QWLDU",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "المساعد",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "zflgh",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Supply a project",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "تجهيز مشروع",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
+                },
+                {
+                  "id": "S13xUU",
+                  "type": "ref",
+                  "ref": "S1PTe",
+                  "name": "Assistant",
+                  "width": "fill_container",
+                  "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                  "descendants": {
+                    "yHiIx": {
+                      "content": "المساعد",
+                      "fontFamily": "$md-arabic",
+                      "lineHeight": 1.5,
+                      "textAlign": "right"
+                    }
+                  }
                 }
-              }
+              ]
             },
             {
               "type": "text",
@@ -75848,6 +76007,22 @@
                   }
                 }
               ]
+            },
+            {
+              "id": "Z5T5gw",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Assistant",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المساعد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
             },
             {
               "type": "text",
@@ -77448,6 +77623,22 @@
               "fontWeight": "normal"
             },
             {
+              "id": "M8DtSS",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Sales",
+              "context": "Role: button. Accessible name: المبيعات. Route specification: Sales screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المبيعات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "ZMvoR",
               "type": "ref",
               "ref": "S1PTe",
@@ -77457,6 +77648,22 @@
               "descendants": {
                 "yHiIx": {
                   "content": "المشتريات",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "A1drL",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Inventory",
+              "context": "Role: button. Accessible name: المخزون. Route specification: Inventory screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "المخزون",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -77859,6 +78066,22 @@
               "fontWeight": "normal"
             },
             {
+              "id": "rp5EC",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Add item or service",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إضافة صنف أو خدمة. Route specification: A9g50X. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "إضافة صنف أو خدمة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "XGvSL",
               "type": "ref",
               "ref": "gMHOU",
@@ -78064,22 +78287,6 @@
               "descendants": {
                 "yHiIx": {
                   "content": "عرض المزيد"
-                }
-              }
-            },
-            {
-              "id": "rp5EC",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Add item or service",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: إضافة صنف أو خدمة. Route specification: A9g50X. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "إضافة صنف أو خدمة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
                 }
               }
             }
@@ -83767,6 +83974,22 @@
               "fontWeight": "normal"
             },
             {
+              "id": "PdXdw",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Add customer or supplier",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إضافة عميل أو مورّد. Route specification: WpA39. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "إضافة عميل أو مورّد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "j2MxV",
               "type": "ref",
               "ref": "gMHOU",
@@ -83936,22 +84159,6 @@
                 },
                 "ysT02": {
                   "content": "المتبقي ILS 260.00",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "PdXdw",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Add customer or supplier",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: إضافة عميل أو مورّد. Route specification: WpA39. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "إضافة عميل أو مورّد",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -85558,6 +85765,38 @@
               "fontWeight": "normal"
             },
             {
+              "id": "fPTdZ",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Quick sale",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: بيع سريع. Route specification: H7SYD. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "بيع سريع",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "XvMU3",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Create quotation",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إنشاء عرض سعر. Route specification: j2MTn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إنشاء عرض سعر",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "iXULs",
               "type": "ref",
               "ref": "gMHOU",
@@ -85685,38 +85924,6 @@
                 },
                 "CZQQN": {
                   "content": "الطلب مؤكد · شجرتان\nالتسليم قيد الانتظار · لم تصدر الفاتورة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "fPTdZ",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Quick sale",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: بيع سريع. Route specification: H7SYD. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "بيع سريع",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "XvMU3",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Create quotation",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: إنشاء عرض سعر. Route specification: j2MTn. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "yHiIx": {
-                  "content": "إنشاء عرض سعر",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -88029,20 +88236,46 @@
                       ]
                     },
                     {
-                      "id": "qKZ9q",
-                      "type": "ref",
-                      "ref": "S1PTe",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "w9TvDn",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host C9G6N and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "yHiIx": {
-                          "content": "تجهيز مشروع",
-                          "fontFamily": "$md-arabic",
-                          "lineHeight": 1.5,
-                          "textAlign": "right"
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "C8EJq",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Assistant",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "المساعد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "qKZ9q",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Supply a project",
+                          "width": 264,
+                          "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host C9G6N and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "تجهيز مشروع",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -91408,20 +91641,46 @@
                       ]
                     },
                     {
-                      "id": "L592l6",
-                      "type": "ref",
-                      "ref": "S1PTe",
-                      "name": "Supply a project",
+                      "type": "frame",
+                      "id": "fvYXd",
+                      "name": "Quick action row",
                       "width": "fill_container",
-                      "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host L80c2 and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
-                      "descendants": {
-                        "yHiIx": {
-                          "content": "تجهيز مشروع",
-                          "fontFamily": "$md-arabic",
-                          "lineHeight": 1.5,
-                          "textAlign": "right"
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "id": "QZITp",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Assistant",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: المساعد. Route specification: Assistant screen. Annotation only; native activation unavailable. Keep active business and input. Focus returns to opener.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "المساعد",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
+                        },
+                        {
+                          "id": "L592l6",
+                          "type": "ref",
+                          "ref": "S1PTe",
+                          "name": "Supply a project",
+                          "width": 196,
+                          "context": "Role: button. Accessible name: تجهيز مشروع. Route specification: XYGw8. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ. Desktop presentation: keep host L80c2 and its sidebar; destination identifies the canonical task body or detail rendered inside this desktop panel at 640px. Preserve viewport, origin, input and draft. Back closes task to its originating desktop workspace.",
+                          "descendants": {
+                            "yHiIx": {
+                              "content": "تجهيز مشروع",
+                              "fontFamily": "$md-arabic",
+                              "lineHeight": 1.5,
+                              "textAlign": "right"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "text",
@@ -110749,6 +111008,58 @@
               "fontWeight": "normal"
             },
             {
+              "id": "X1WDM",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Add worker",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Add worker. Route specification: h5hAM (/workers/new). Shown only to roles that may create Employees.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Add worker"
+                }
+              }
+            },
+            {
+              "id": "PvGh3",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Mark attendance",
+              "context": "Role: button. Accessible name: Mark attendance. Route specification: B9L1Dy (/workers/attendance).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Mark attendance"
+                }
+              }
+            },
+            {
+              "id": "S6mGG",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Leave requests",
+              "context": "Role: button. Accessible name: Leave requests. Route specification: CEskZ (/workers/leave).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Leave requests"
+                }
+              }
+            },
+            {
+              "id": "IfNcq",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Pay",
+              "context": "Role: button. Accessible name: Pay. Route specification: W70td (/workers/pay).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Pay"
+                }
+              }
+            },
+            {
               "id": "BqoCw",
               "type": "ref",
               "ref": "SeemW",
@@ -110847,58 +111158,6 @@
                 },
                 "TQSOO": {
                   "content": "On leave until 20 Oct"
-                }
-              }
-            },
-            {
-              "id": "X1WDM",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Add worker",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Add worker. Route specification: h5hAM (/workers/new). Shown only to roles that may create Employees.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Add worker"
-                }
-              }
-            },
-            {
-              "id": "PvGh3",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Mark attendance",
-              "context": "Role: button. Accessible name: Mark attendance. Route specification: B9L1Dy (/workers/attendance).",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Mark attendance"
-                }
-              }
-            },
-            {
-              "id": "S6mGG",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Leave requests",
-              "context": "Role: button. Accessible name: Leave requests. Route specification: CEskZ (/workers/leave).",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Leave requests"
-                }
-              }
-            },
-            {
-              "id": "IfNcq",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Pay",
-              "context": "Role: button. Accessible name: Pay. Route specification: W70td (/workers/pay).",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Pay"
                 }
               }
             }
@@ -111812,6 +112071,70 @@
               "fontWeight": "normal"
             },
             {
+              "id": "aUQKS",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Add worker",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: إضافة عامل. Route specification: YNLq6 (/workers/new). Shown only to roles that may create Employees.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "إضافة عامل",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "mHqk3",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Mark attendance",
+              "context": "Role: button. Accessible name: تسجيل الحضور. Route specification: W6xF3V (/workers/attendance).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "تسجيل الحضور",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "gQh6F",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Leave requests",
+              "context": "Role: button. Accessible name: طلبات الإجازة. Route specification: xtIVr (/workers/leave).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "طلبات الإجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "dyKBe",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Pay",
+              "context": "Role: button. Accessible name: الرواتب. Route specification: Y8olo (/workers/pay).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "الرواتب",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "aLl1n",
               "type": "ref",
               "ref": "gMHOU",
@@ -111931,70 +112254,6 @@
                 },
                 "ysT02": {
                   "content": "في إجازة حتى 20 أكتوبر",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "aUQKS",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Add worker",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: إضافة عامل. Route specification: YNLq6 (/workers/new). Shown only to roles that may create Employees.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "إضافة عامل",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "mHqk3",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Mark attendance",
-              "context": "Role: button. Accessible name: تسجيل الحضور. Route specification: W6xF3V (/workers/attendance).",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "تسجيل الحضور",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "gQh6F",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Leave requests",
-              "context": "Role: button. Accessible name: طلبات الإجازة. Route specification: xtIVr (/workers/leave).",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "طلبات الإجازة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "dyKBe",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Pay",
-              "context": "Role: button. Accessible name: الرواتب. Route specification: Y8olo (/workers/pay).",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "الرواتب",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -115784,6 +116043,32 @@
               "fontWeight": "normal"
             },
             {
+              "id": "nZk6b",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Request leave"
+                }
+              }
+            },
+            {
+              "id": "Tki5T",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: ILlnI (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back to workers"
+                }
+              }
+            },
+            {
               "id": "f0d9KN",
               "type": "ref",
               "ref": "SeemW",
@@ -115882,32 +116167,6 @@
                 },
                 "TQSOO": {
                   "content": "1 day · Waiting for approval"
-                }
-              }
-            },
-            {
-              "id": "nZk6b",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new).",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Request leave"
-                }
-              }
-            },
-            {
-              "id": "Tki5T",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: Back to workers. Route specification: ILlnI (/workers).",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Back to workers"
                 }
               }
             }
@@ -116147,6 +116406,38 @@
               "fontWeight": "normal"
             },
             {
+              "id": "fEwrh",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: X4z11j (/workers/leave/new).",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "طلب إجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "tqbwR",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: pkBhQ (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "العودة إلى العمال",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "jTDNz",
               "type": "ref",
               "ref": "gMHOU",
@@ -116266,38 +116557,6 @@
                 },
                 "ysT02": {
                   "content": "يوم واحد · بانتظار الاعتماد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "fEwrh",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Request leave. Route specification: X4z11j (/workers/leave/new).",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "طلب إجازة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "tqbwR",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: Back to workers. Route specification: pkBhQ (/workers).",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "العودة إلى العمال",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -119083,6 +119342,32 @@
               "fontWeight": "normal"
             },
             {
+              "id": "YAE0p",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Confirm draft slips. Submits the month's draft Salary Slips.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Confirm 1 draft slip"
+                }
+              }
+            },
+            {
+              "id": "D1EQ6H",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Create salary slips. Makes a draft Salary Slip for each active worker with a salary and none this month.",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Create 1 salary slip"
+                }
+              }
+            },
+            {
               "type": "frame",
               "id": "y0wB03",
               "name": "Contact type filters",
@@ -119166,32 +119451,6 @@
                 },
                 "TQSOO": {
                   "content": "Set a salary to make a slip"
-                }
-              }
-            },
-            {
-              "id": "YAE0p",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Confirm draft slips. Submits the month's draft Salary Slips.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Confirm 1 draft slip"
-                }
-              }
-            },
-            {
-              "id": "D1EQ6H",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: Create salary slips. Makes a draft Salary Slip for each active worker with a salary and none this month.",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Create 1 salary slip"
                 }
               }
             }
@@ -119431,6 +119690,38 @@
               "fontWeight": "normal"
             },
             {
+              "id": "P1j4yY",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: تأكيد القسائم.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "تأكيد قسيمة مسودة واحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "atUSM",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: إنشاء قسائم الرواتب.",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "إنشاء قسيمة واحدة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "type": "frame",
               "id": "t2O2a",
               "name": "Contact type filters",
@@ -119535,38 +119826,6 @@
                 },
                 "ysT02": {
                   "content": "حدّد راتباً لإنشاء قسيمة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "P1j4yY",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: تأكيد القسائم.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "تأكيد قسيمة مسودة واحدة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "atUSM",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: إنشاء قسائم الرواتب.",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "إنشاء قسيمة واحدة",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -120992,6 +121251,32 @@
               "fontWeight": "normal"
             },
             {
+              "id": "evn4c",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new).",
+              "descendants": {
+                "rPCdT": {
+                  "content": "Open leave requests"
+                }
+              }
+            },
+            {
+              "id": "BHNBF",
+              "type": "ref",
+              "ref": "Ab7yc",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: ILlnI (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "JgY9L": {
+                  "content": "Back to Home"
+                }
+              }
+            },
+            {
               "id": "cX2Nc",
               "type": "ref",
               "ref": "SeemW",
@@ -121041,32 +121326,6 @@
                 },
                 "TQSOO": {
                   "content": "ILS 120.00 · Draft"
-                }
-              }
-            },
-            {
-              "id": "evn4c",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Request leave. Route specification: CqHE0 (/workers/leave/new).",
-              "descendants": {
-                "rPCdT": {
-                  "content": "Open leave requests"
-                }
-              }
-            },
-            {
-              "id": "BHNBF",
-              "type": "ref",
-              "ref": "Ab7yc",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: Back to workers. Route specification: ILlnI (/workers).",
-              "width": "fill_container",
-              "descendants": {
-                "JgY9L": {
-                  "content": "Back to Home"
                 }
               }
             }
@@ -121306,6 +121565,38 @@
               "fontWeight": "normal"
             },
             {
+              "id": "AbWm3",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "Request leave",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: Request leave. Route specification: X4z11j (/workers/leave/new).",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "فتح طلبات الإجازة",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
+              "id": "Y1V7fE",
+              "type": "ref",
+              "ref": "S1PTe",
+              "name": "Back to workers",
+              "context": "Role: button. Accessible name: Back to workers. Route specification: pkBhQ (/workers).",
+              "width": "fill_container",
+              "descendants": {
+                "yHiIx": {
+                  "content": "العودة إلى الرئيسية",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "Y7gj3e",
               "type": "ref",
               "ref": "gMHOU",
@@ -121370,38 +121661,6 @@
                 },
                 "ysT02": {
                   "content": "ILS 120.00 · مسودة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "AbWm3",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "Request leave",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: Request leave. Route specification: X4z11j (/workers/leave/new).",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "فتح طلبات الإجازة",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
-                }
-              }
-            },
-            {
-              "id": "Y1V7fE",
-              "type": "ref",
-              "ref": "S1PTe",
-              "name": "Back to workers",
-              "context": "Role: button. Accessible name: Back to workers. Route specification: pkBhQ (/workers).",
-              "width": "fill_container",
-              "descendants": {
-                "yHiIx": {
-                  "content": "العودة إلى الرئيسية",
                   "fontFamily": "$md-arabic",
                   "lineHeight": 1.5,
                   "textAlign": "right"
@@ -146614,6 +146873,19 @@
               "fontWeight": "normal"
             },
             {
+              "id": "xO315",
+              "type": "ref",
+              "ref": "wk3Ko",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: New project. Route specification: VYpxr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
+              "descendants": {
+                "rPCdT": {
+                  "content": "New project"
+                }
+              }
+            },
+            {
               "id": "JlPrv",
               "type": "ref",
               "ref": "SeemW",
@@ -146645,19 +146917,6 @@
                 },
                 "RKM9S": {
                   "content": "Try another project or customer name."
-                }
-              }
-            },
-            {
-              "id": "xO315",
-              "type": "ref",
-              "ref": "wk3Ko",
-              "name": "New project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: New project. Route specification: VYpxr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: a2cCNb; connection/session recovery: VyL0w.",
-              "descendants": {
-                "rPCdT": {
-                  "content": "New project"
                 }
               }
             }
@@ -146846,6 +147105,22 @@
               "fontWeight": "normal"
             },
             {
+              "id": "fXuKS",
+              "type": "ref",
+              "ref": "V1NTE",
+              "name": "New project",
+              "width": "fill_container",
+              "context": "Role: button. Accessible name: مشروع جديد. Route specification: Mi3vr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
+              "descendants": {
+                "c6rXZg": {
+                  "content": "مشروع جديد",
+                  "fontFamily": "$md-arabic",
+                  "lineHeight": 1.5,
+                  "textAlign": "right"
+                }
+              }
+            },
+            {
               "id": "Y2fMLF",
               "type": "ref",
               "ref": "gMHOU",
@@ -146877,22 +147152,6 @@
                 },
                 "E0Pjjn": {
                   "content": "جرّب اسم مشروع أو عميل آخر."
-                }
-              }
-            },
-            {
-              "id": "fXuKS",
-              "type": "ref",
-              "ref": "V1NTE",
-              "name": "New project",
-              "width": "fill_container",
-              "context": "Role: button. Accessible name: مشروع جديد. Route specification: Mi3vr. Annotation only; native activation unavailable. Keep active business and input. Keyboard: native field behavior or Enter/Space action. Focus returns to opener. Validation: prSKE; connection/session recovery: X4pbZ.",
-              "descendants": {
-                "c6rXZg": {
-                  "content": "مشروع جديد",
-                  "fontFamily": "$md-arabic",
-                  "lineHeight": 1.5,
-                  "textAlign": "right"
                 }
               }
             }

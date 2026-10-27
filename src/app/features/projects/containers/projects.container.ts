@@ -61,6 +61,11 @@ const SEARCH_DELAY_MS = 250;
         [message]="txt.noAccess.message"
       />
     } @else {
+      @if (caps().manageProjects) {
+        <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
+          {{ txt.newProject }}
+        </button>
+      }
       <app-search-field [label]="txt.search" [placeholder]="txt.placeholder" [(value)]="term" />
       @if (state() === 'loading') {
         <p class="muted" role="status">{{ txt.loading }}</p>
@@ -79,11 +84,6 @@ const SEARCH_DELAY_MS = 250;
           <p class="muted">{{ typed() ? txt.noResults : txt.empty }}</p>
         }
         <app-load-more [hasMore]="window.hasMore()" (more)="window.more()" />
-        @if (caps().manageProjects) {
-          <button type="button" class="md-btn md-btn--primary" (click)="newProject()">
-            {{ txt.newProject }}
-          </button>
-        }
       }
     }
   `,

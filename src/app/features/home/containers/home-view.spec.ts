@@ -100,6 +100,7 @@ describe('buildHomeView', () => {
       'Record expense',
       'Transfer stock',
       'Supply a project',
+      'Assistant',
     ]);
     expect(view.actionColumns).toBe(3);
     expect(view.cards).toEqual([
@@ -167,6 +168,7 @@ describe('buildHomeView', () => {
       'Receive payment',
       'Customers',
       'Catalog',
+      'Assistant',
     ]);
     expect(view.cards).toEqual([
       {
@@ -221,6 +223,7 @@ describe('buildHomeView', () => {
       'receivePayment',
       'receiveGoods',
       'transferStock',
+      'assistant',
     ]);
     expect(view.cards[0]).toEqual({
       title: 'Continue your sale',
@@ -256,6 +259,7 @@ describe('buildHomeView', () => {
       'Transfer stock',
       'Count stock',
       'Supply project',
+      'Assistant',
     ]);
     expect(view.cards).toEqual([
       { title: '3 items running low', message: 'Main warehouse · View stock' },
@@ -291,7 +295,7 @@ describe('buildHomeView', () => {
     );
     expect(view.title).toBe('Today in purchasing');
     expect(view.roleLabel).toBe('Purchasing officer');
-    expect(view.actions.map((a) => a.id)).toEqual(['buy', 'receiveGoods']);
+    expect(view.actions.map((a) => a.id)).toEqual(['buy', 'receiveGoods', 'assistant']);
     expect(view.cards[0].title).toBe('Delivery arriving today');
     expect(view.draftsLink).toBeNull();
     expect(view.note).toBeNull();
@@ -321,6 +325,23 @@ describe('buildHomeView', () => {
       realTranslator('en'),
     );
     expect(view.actions.map((a) => a.id)).not.toContain('receiveGoods');
+  });
+
+  it('ends every persona quick actions with the Assistant, in both languages', () => {
+    for (const persona of [
+      'owner',
+      'salesperson',
+      'storeAssociate',
+      'warehouse',
+      'purchasing',
+      'projectManager',
+    ] as const) {
+      expect(buildHomeView(input({ persona }), realTranslator('en')).actions.at(-1)).toMatchObject({
+        id: 'assistant',
+        label: 'Assistant',
+      });
+    }
+    expect(buildHomeView(input(), realTranslator('ar')).actions.at(-1)?.label).toBe('المساعد');
   });
 
   it("hides Supply project from a user whose roles can't supply projects", () => {
