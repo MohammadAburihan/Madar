@@ -51,6 +51,10 @@ export interface Capabilities {
   giveAdvances: boolean;
   /** The Approvals inbox: steps ERPNext's workflows let the user's roles take. */
   approve: boolean;
+  /** See and edit a contact's bank details (a Bank Account in ERPNext; Accounts User or Manager). */
+  editBankDetails: boolean;
+  /** Also add a bank that isn't in the list (a Bank record; only System Manager may create one). */
+  addBanks: boolean;
   /** Add and edit items and services (ERPNext needs Item Manager). */
   manageItems: boolean;
   /** Set an item's selling price while adding or editing it (needs Sales Master Manager too). */
@@ -81,6 +85,8 @@ const SALES_ROLE: Capabilities = {
   editCustomers: true,
   addSuppliers: false,
   editSuppliers: false,
+  editBankDetails: false,
+  addBanks: false,
   manageWorkers: false,
   giveAdvances: false,
   approve: false,
@@ -113,6 +119,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: true,
     addSuppliers: true,
     editSuppliers: true,
+    editBankDetails: true,
+    addBanks: true,
     manageWorkers: true,
     giveAdvances: true,
     approve: true,
@@ -145,6 +153,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: false,
     addSuppliers: false,
     editSuppliers: false,
+    editBankDetails: false,
+    addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
@@ -175,6 +185,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: true,
     addSuppliers: false,
     editSuppliers: false,
+    editBankDetails: false,
+    addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
@@ -206,6 +218,8 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     editCustomers: false,
     addSuppliers: true,
     editSuppliers: true,
+    editBankDetails: false,
+    addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
     approve: false,
@@ -330,6 +344,11 @@ const EDIT_CUSTOMERS_NEEDS = [['Sales User', 'Sales Master Manager']];
 const ADD_SUPPLIERS_NEEDS = [['Purchase Master Manager']];
 const EDIT_SUPPLIERS_NEEDS = [['Purchase Manager', 'Purchase Master Manager']];
 
+// A contact's bank details are a Bank Account (Accounts User/Manager); the bank list is read with select permission.
+const EDIT_BANK_DETAILS_NEEDS = [['Accounts User', 'Accounts Manager']];
+// Bank (the record behind the list) can be created by System Manager only.
+const ADD_BANKS_ROLES = ['System Manager'];
+
 // Workers are Employees, with their Department and Designation; only HR User/Manager may read them in Frappe HR.
 const HR_ROLES = ['HR User', 'HR Manager'];
 
@@ -394,6 +413,13 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     editSuppliers:
       caps.editSuppliers &&
       EDIT_SUPPLIERS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    editBankDetails:
+      caps.editBankDetails &&
+      EDIT_BANK_DETAILS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    addBanks:
+      caps.addBanks &&
+      EDIT_BANK_DETAILS_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))) &&
+      ADD_BANKS_ROLES.some((role) => roles.includes(role)),
     // HR is added to any role (docs/PERMISSIONS.md): the HR roles alone decide it.
     manageWorkers: HR_ROLES.some((role) => roles.includes(role)),
     giveAdvances:

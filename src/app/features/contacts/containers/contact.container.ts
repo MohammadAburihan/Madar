@@ -22,8 +22,16 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
+import { BankDetailsCardComponent } from '../components/bank-details-card.component';
+import { ContactBankApiService } from '../data-access/contact-bank-api.service';
 import { ContactsApiService } from '../data-access/contacts-api.service';
-import { ContactKind, CustomerDetail, SupplierDetail } from '../data-access/contacts.models';
+import {
+  BankAccountRecord,
+  ContactKind,
+  CustomerDetail,
+  SupplierDetail,
+} from '../data-access/contacts.models';
+import { bankRows } from './bank-details-view';
 import { contactActions, contactKinds, editableKinds, isWalkIn } from './contacts-access';
 import {
   activationDialog,
@@ -38,6 +46,7 @@ import {
   selector: 'app-contact',
   imports: [
     BackLinkComponent,
+    BankDetailsCardComponent,
     ConfirmDialogComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
@@ -82,6 +91,16 @@ import {
       }
       @if (v.lines) {
         <p class="lines">{{ v.lines }}</p>
+      }
+      @if (bankView(); as b) {
+        <app-bank-details-card [title]="b.title" [rows]="b.rows" />
+      } @else if (bankFailed()) {
+        <app-feedback-card
+          tone="danger"
+          [title]="txt.bankFailed.title"
+          [message]="txt.bankFailed.message"
+        />
+        <button type="button" class="md-btn" (click)="loadBank()">{{ txt.retry }}</button>
       }
       @if (v.totals.length) {
         <app-totals-card density="compact" [rows]="v.totals" />
@@ -151,6 +170,7 @@ export class ContactContainer {
   readonly status = input<string | undefined>();
 
   private readonly api = inject(ContactsApiService);
+  private readonly bankApi = inject(ContactBankApiService);
   private readonly business = inject(BusinessService);
   protected readonly router = inject(Router);
   protected readonly viewport = inject(ViewportService).viewport;
@@ -164,6 +184,9 @@ export class ContactContainer {
 
   private readonly detail = signal<CustomerDetail | SupplierDetail | null>(null);
   protected readonly failed = signal(false);
+  private readonly bankRecord = signal<BankAccountRecord | null>(null);
+  protected readonly bankFailed = signal(false);
+  private bankRun = 0;
   /** The deactivate or reactivate question is open. */
   protected readonly asking = signal(false);
   protected readonly switching = signal(false);
@@ -210,7 +233,17 @@ export class ContactContainer {
         title: t('contacts.loadFailed.title'),
         message: t('contacts.loadFailed.message'),
       },
+      bankFailed: {
+        title: t('contacts.bank.loadFailed.title'),
+        message: t('contacts.bank.detailFailed'),
+      },
     };
+  });
+
+  protected readonly bankView = computed(() => {
+    const record = this.bankRecord();
+    const tr = this.i18n.tr();
+    return record ? { title: tr.t('contacts.bank.detailTitle'), rows: bankRows(record, tr) } : null;
   });
 
   protected readonly view = computed(() => {
@@ -338,6 +371,7 @@ export class ContactContainer {
     }
     this.detail.set(null);
     this.failed.set(false);
+    void this.loadBank(kind, id);
     try {
       const business = await this.business.ensure();
       if (!business) {
@@ -353,6 +387,26 @@ export class ContactContainer {
     } catch {
       if (run === this.run) {
         this.failed.set(true);
+      }
+    }
+  }
+
+  /** Only for roles that keep bank details; a role ERPNext keeps them from sees no block, other failures say so. */
+  protected async loadBank(kind = this.contactKind(), id = this.id()): Promise<void> {
+    const run = ++this.bankRun;
+    this.bankRecord.set(null);
+    this.bankFailed.set(false);
+    if (!this.caps().editBankDetails) {
+      return;
+    }
+    try {
+      const account = await this.bankApi.account(kind, id);
+      if (run === this.bankRun) {
+        this.bankRecord.set(account && !account.disabled ? account : null);
+      }
+    } catch (error) {
+      if (run === this.bankRun && ErpnextError.from(error).kind !== 'forbidden') {
+        this.bankFailed.set(true);
       }
     }
   }

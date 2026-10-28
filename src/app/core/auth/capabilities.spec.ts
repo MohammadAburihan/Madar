@@ -26,6 +26,8 @@ describe('capabilitiesFor', () => {
       editCustomers: true,
       addSuppliers: true,
       editSuppliers: true,
+      editBankDetails: true,
+      addBanks: true,
       manageWorkers: true,
       giveAdvances: true,
       approve: true,
@@ -60,6 +62,8 @@ describe('capabilitiesFor', () => {
         editCustomers: true,
         addSuppliers: false,
         editSuppliers: false,
+        editBankDetails: false,
+        addBanks: false,
         manageWorkers: false,
         giveAdvances: false,
         approve: false,
@@ -312,5 +316,26 @@ describe('capabilitiesFor', () => {
     expect(
       capabilitiesFor('owner', ['Accounts Manager', 'Item Manager', 'Sales Master Manager']),
     ).toMatchObject({ manageItems: true, setItemPrices: false });
+  });
+
+  it("keeps contacts' bank details to the Owner, and only with Accounts User or Manager", () => {
+    expect(capabilitiesFor('owner')).toMatchObject({ editBankDetails: true, addBanks: true });
+    expect(capabilitiesFor('owner', ['System Manager', 'Accounts Manager'])).toMatchObject({
+      editBankDetails: true,
+      addBanks: true,
+    });
+    expect(capabilitiesFor('owner', ['Accounts Manager'])).toMatchObject({
+      editBankDetails: true,
+      addBanks: false,
+    });
+    expect(capabilitiesFor('owner', ['System Manager'])).toMatchObject({
+      editBankDetails: false,
+      addBanks: false,
+    });
+    for (const persona of ['salesperson', 'storeAssociate', 'purchasing', 'warehouse'] as const) {
+      expect(
+        capabilitiesFor(persona, ['Accounts User', 'System Manager', 'Sales User']),
+      ).toMatchObject({ editBankDetails: false, addBanks: false });
+    }
   });
 });

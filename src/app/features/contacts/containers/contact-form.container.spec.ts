@@ -10,6 +10,7 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { PrefillRequest, TaskPrefillService } from '../../../core/tasks/task-prefill.service';
+import { ContactBankApiService } from '../data-access/contact-bank-api.service';
 import { ContactFormApiService } from '../data-access/contact-form-api.service';
 import { ContactFormContainer } from './contact-form.container';
 
@@ -35,6 +36,14 @@ async function open({ persona = 'owner', held, missing, otherUser }: Options) {
     imports: [translocoTesting()],
     providers: [
       { provide: ContactFormApiService, useValue: { save, load: vi.fn(), find: vi.fn() } },
+      {
+        provide: ContactBankApiService,
+        useValue: {
+          banks: vi.fn().mockResolvedValue([]),
+          account: vi.fn().mockResolvedValue(null),
+          save: vi.fn().mockResolvedValue(null),
+        },
+      },
       {
         provide: SessionService,
         useValue: { user, capabilities: () => capabilitiesFor(persona), checkExpired: vi.fn() },
@@ -143,11 +152,13 @@ describe('ContactFormContainer with an assistant proposal', () => {
   });
 
   it('saves nothing until the user saves, then through the form’s own save', async () => {
-    const { root, save } = await open({
+    const { fixture, root, save } = await open({
       held: { kind: 'new_customer', payload: { name: 'Samer Odeh' } },
     });
+    await fixture.whenStable();
     expect(save).not.toHaveBeenCalled();
-    (root.querySelector('button.md-btn--primary') as HTMLButtonElement).click();
+    const button = root.querySelector('button.md-btn--primary') as HTMLButtonElement;
+    button.click();
     await Promise.resolve();
     expect(save).toHaveBeenCalledTimes(1);
     expect(save.mock.calls[0][0]).toBe('customers');

@@ -27,8 +27,17 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
+import { BankDetailsSectionComponent } from '../components/bank-details-section.component';
+import { BankChangedError, ContactBankApiService } from '../data-access/contact-bank-api.service';
 import { ContactFormApiService } from '../data-access/contact-form-api.service';
-import { ContactKind } from '../data-access/contacts.models';
+import { BankAccountRecord, ContactKind } from '../data-access/contacts.models';
+import {
+  bankChanged,
+  bankDetailsOf,
+  bankErrors,
+  bankSuggestions,
+  resolveBank,
+} from './bank-details-view';
 import { editableKinds } from './contacts-access';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,6 +47,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   selector: 'app-contact-form',
   imports: [
     BackLinkComponent,
+    BankDetailsSectionComponent,
     FeedbackCardComponent,
     LanguageSwitcherComponent,
     PageHeadingComponent,
@@ -84,6 +94,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       }
       <app-text-field
         [label]="txt.name"
+        [readonly]="!!bankFailure()"
         autocomplete="name"
         [error]="showErrors() && !name().trim() ? txt.nameError : null"
         [value]="name()"
@@ -91,6 +102,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       />
       <app-text-field
         [label]="txt.phone"
+        [readonly]="!!bankFailure()"
         type="tel"
         inputmode="tel"
         autocomplete="tel"
@@ -100,6 +112,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       />
       <app-text-field
         [label]="txt.email"
+        [readonly]="!!bankFailure()"
         type="email"
         inputmode="email"
         autocomplete="email"
@@ -110,10 +123,40 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       />
       <app-text-field
         [label]="txt.address"
+        [readonly]="!!bankFailure()"
         autocomplete="street-address"
         [value]="address()"
         (valueChange)="address.set($event)"
       />
+      @if (bankShown()) {
+        @if (bankState() === 'loading') {
+          <p class="muted" role="status">{{ txt.bank.loading }}</p>
+        } @else if (bankState() === 'failed') {
+          <app-feedback-card
+            tone="danger"
+            [title]="txt.bank.loadFailed.title"
+            [message]="txt.bank.loadFailed.message"
+          />
+          <button type="button" class="md-btn" (click)="loadBank()">{{ txt.retry }}</button>
+        } @else {
+          <app-bank-details-section
+            [text]="txt.bank.section"
+            [bank]="bankText()"
+            (bankChange)="bankText.set($event)"
+            [iban]="iban()"
+            (ibanChange)="iban.set($event)"
+            [accountNo]="accountNo()"
+            (accountNoChange)="accountNo.set($event)"
+            [suggestions]="suggestions()"
+            [bankError]="showErrors() ? bankFieldErrors().bank : null"
+            [readonly]="!!bankFailure()"
+            [ibanError]="bankFieldErrors().iban"
+            [submitted]="showErrors()"
+            [accountNoError]="bankFieldErrors().accountNo"
+            (pick)="pickBank($event)"
+          />
+        }
+      }
       @if (failed(); as f) {
         <app-feedback-card
           tone="danger"
@@ -121,7 +164,28 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           [message]="txt.failed[f].message"
         />
       }
-      @if (unresolved()) {
+      @if (bankFailure(); as bf) {
+        <app-feedback-card
+          tone="warning"
+          [title]="txt.bank[bf].title"
+          [message]="txt.bank[bf].message"
+        />
+        @if (bf === 'changed') {
+          <button type="button" class="md-btn md-btn--primary" (click)="loadBank()">
+            {{ txt.bank.reload }}
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="md-btn md-btn--primary"
+            [disabled]="saving()"
+            (click)="retryBank()"
+          >
+            {{ saving() ? txt.saving : txt.bank.retry }}
+          </button>
+        }
+        <button type="button" class="md-btn" (click)="finish()">{{ txt.bank.continue }}</button>
+      } @else if (unresolved()) {
         <app-feedback-card
           tone="warning"
           [title]="txt.unresolved.title"
@@ -146,7 +210,12 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             [message]="txt.notCreated.message"
           />
         }
-        <button type="button" class="md-btn md-btn--primary" [disabled]="saving()" (click)="save()">
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="saving() || bankBlocked()"
+          (click)="save()"
+        >
           {{ saving() ? txt.saving : txt.save }}
         </button>
       }
@@ -161,6 +230,7 @@ export class ContactFormContainer {
   readonly type = input<string | undefined>();
 
   private readonly api = inject(ContactFormApiService);
+  private readonly bank = inject(ContactBankApiService);
   private readonly business = inject(BusinessService);
   private readonly session = inject(SessionService);
   protected readonly router = inject(Router);
@@ -190,10 +260,24 @@ export class ContactFormContainer {
   protected readonly checking = signal(false);
   protected readonly pending = signal(false);
   protected readonly notCreated = signal(false);
-  private readonly reference = newReference('CON');
+  protected readonly bankText = signal('');
+  protected readonly iban = signal('');
+  protected readonly accountNo = signal('');
+  protected readonly bankState = signal<'loading' | 'ready' | 'failed' | 'hidden'>('loading');
+  /** The contact is saved but its bank step isn't: only that step is retried. */
+  protected readonly bankFailure = signal<'notSaved' | 'changed' | null>(null);
+  private readonly banks = signal<string[]>([]);
+  private readonly addedBank = signal<string | null>(null);
+  private loadedAccount: BankAccountRecord | null = null;
+  private bankRun = 0;
+  private savedId: string | null = null;
+  private readonly referenceId = signal(newReference('CON'));
   /** The contact a lost create turned out to have made; saving again updates it. */
   private created: string | null = null;
   private loadRun = 0;
+  private entered = false;
+  private visit = 0;
+  private finished = false;
 
   /** Which kinds the role may add, or the one being edited when the role may edit it. */
   protected readonly kinds = computed(() => {
@@ -211,6 +295,32 @@ export class ContactFormContainer {
     const wanted = this.lockedKind() ?? this.chosenKind() ?? (this.kind() || this.type());
     return kinds.find((k) => k === wanted) ?? kinds[0] ?? 'customers';
   });
+
+  private readonly bankEntered = computed(
+    () => !!(this.bankText().trim() || this.iban().trim() || this.accountNo().trim()),
+  );
+  protected readonly bankBlocked = computed(
+    () => this.bankShown() && this.bankState() !== 'ready' && this.bankEntered(),
+  );
+  protected readonly bankShown = computed(
+    () => this.session.capabilities().editBankDetails && this.bankState() !== 'hidden',
+  );
+  private readonly canAddBanks = computed(() => this.session.capabilities().addBanks);
+  private readonly bankChoice = computed(() =>
+    resolveBank(this.banks(), this.bankText(), this.addedBank()),
+  );
+  protected readonly suggestions = computed(() =>
+    bankSuggestions(this.banks(), this.bankText(), this.canAddBanks(), this.i18n.tr()),
+  );
+  protected readonly bankFieldErrors = computed(() =>
+    bankErrors(
+      this.bankChoice(),
+      this.iban(),
+      this.accountNo(),
+      this.canAddBanks(),
+      this.i18n.tr(),
+    ),
+  );
 
   protected readonly emailInvalid = computed(
     () => !!this.email().trim() && !EMAIL.test(this.email().trim()),
@@ -231,6 +341,22 @@ export class ContactFormContainer {
       email: t('contacts.form.email'),
       emailError: t('contacts.form.emailError'),
       address: t('contacts.form.address'),
+      bank: {
+        section: {
+          heading: t('contacts.bank.heading'),
+          bank: t('contacts.bank.bank'),
+          bankPlaceholder: t('contacts.bank.bankPlaceholder'),
+          iban: t('contacts.bank.iban'),
+          accountNo: t('contacts.bank.accountNo'),
+        },
+        loading: t('contacts.bank.loading'),
+        loadFailed: block('contacts.bank.loadFailed'),
+        notSaved: block('contacts.bank.notSaved'),
+        changed: block('contacts.bank.changed'),
+        retry: t('contacts.bank.retry'),
+        reload: t('contacts.bank.reload'),
+        continue: t('contacts.bank.continue'),
+      },
       save: t('contacts.form.save'),
       saving: t('contacts.form.saving'),
       loading: t('contacts.loading'),
@@ -243,7 +369,7 @@ export class ContactFormContainer {
       notCreated: block('contacts.form.notCreated'),
       unresolved: {
         title: t('contacts.form.unresolved.title'),
-        message: t('contacts.form.unresolved.message', { reference: this.reference }),
+        message: t('contacts.form.unresolved.message', { reference: this.referenceId() }),
       },
       failed: {
         permission: block('contacts.form.failed.permission'),
@@ -283,6 +409,64 @@ export class ContactFormContainer {
         untracked(() => void this.loadExisting());
       }
     });
+    effect(() => {
+      this.id();
+      if (this.kinds().length) {
+        untracked(() => void this.loadBank());
+      }
+    });
+  }
+
+  /** Ionic keeps this page alive when it is left and reopened at the same address: each visit starts clean. */
+  ionViewWillEnter(): void {
+    if (!this.entered) {
+      this.entered = true;
+      return;
+    }
+    if (
+      this.saving() ||
+      (this.bankFailure() && !this.finished) ||
+      this.unresolved() ||
+      this.notCreated()
+    ) {
+      return;
+    }
+    this.visit++;
+    this.finished = false;
+    this.loadRun++;
+    this.bankRun++;
+    this.created = null;
+    this.savedId = null;
+    this.referenceId.set(newReference('CON'));
+    this.lockedKind.set(null);
+    this.chosenKind.set(null);
+    this.prefillNotice.set(null);
+    this.name.set('');
+    this.phone.set('');
+    this.email.set('');
+    this.address.set('');
+    this.showErrors.set(false);
+    this.failed.set(null);
+    this.unresolved.set(false);
+    this.checking.set(false);
+    this.pending.set(false);
+    this.notCreated.set(false);
+    this.saving.set(false);
+    this.loadFailed.set(false);
+    this.loading.set(false);
+    this.bankFailure.set(null);
+    this.loadedAccount = null;
+    this.bankText.set('');
+    this.iban.set('');
+    this.accountNo.set('');
+    this.addedBank.set(null);
+    this.bankState.set('loading');
+    if (this.id() && this.kinds().length) {
+      void this.loadExisting();
+    }
+    if (this.kinds().length) {
+      void this.loadBank();
+    }
   }
 
   protected setKind(kind: string | null): void {
@@ -316,6 +500,109 @@ export class ContactFormContainer {
     }
   }
 
+  protected pickBank(suggestion: { value: string; add: boolean }): void {
+    this.addedBank.set(suggestion.add ? suggestion.value : null);
+  }
+
+  /** The bank list, and for an existing contact its account; a role ERPNext keeps out of them doesn't see the section. */
+  protected async loadBank(): Promise<void> {
+    if (!this.session.capabilities().editBankDetails) {
+      this.bankState.set('hidden');
+      return;
+    }
+    const run = ++this.bankRun;
+    const id = this.id();
+    const kind = this.contactKind();
+    this.bankState.set('loading');
+    this.bankFailure.set(null);
+    try {
+      const [banks, account] = await Promise.all([
+        this.bank.banks(),
+        id ? this.bank.account(kind, id) : Promise.resolve(null),
+      ]);
+      if (run !== this.bankRun) {
+        return;
+      }
+      this.banks.set(banks);
+      this.loadedAccount = account;
+      const held = account && !account.disabled ? account : null;
+      this.bankText.set(held?.bank ?? '');
+      this.iban.set(held?.iban ?? '');
+      this.accountNo.set(held?.accountNo ?? '');
+      this.addedBank.set(null);
+      this.bankState.set('ready');
+    } catch (error) {
+      if (run === this.bankRun) {
+        this.bankState.set(ErpnextError.from(error).kind === 'forbidden' ? 'hidden' : 'failed');
+      }
+    }
+  }
+
+  /** The bank step on its own: it looks before it writes, so doing it again never doubles anything. */
+  private async writeBank(kind: ContactKind, id: string): Promise<boolean> {
+    if (!this.bankShown() || this.bankState() !== 'ready') {
+      return true;
+    }
+    const visit = this.visit;
+    const choice = this.bankChoice();
+    const details = bankDetailsOf(choice, this.iban(), this.accountNo());
+    if (!bankChanged(details, this.loadedAccount)) {
+      return true;
+    }
+    try {
+      const saved = await this.bank.save(
+        kind,
+        id,
+        details,
+        this.loadedAccount,
+        choice.kind === 'new',
+      );
+      if (visit !== this.visit) {
+        return false;
+      }
+      this.loadedAccount = saved;
+      if (choice.kind === 'new') {
+        this.banks.update((list) => [...list, saved?.bank ?? choice.name]);
+      }
+      this.bankFailure.set(null);
+      return true;
+    } catch (error) {
+      if (visit !== this.visit) {
+        return false;
+      }
+      if (ErpnextError.from(error).kind === 'forbidden') {
+        void this.session.checkExpired();
+      }
+      this.bankFailure.set(error instanceof BankChangedError ? 'changed' : 'notSaved');
+      return false;
+    }
+  }
+
+  protected async retryBank(): Promise<void> {
+    const id = this.savedId;
+    this.showErrors.set(true);
+    if (!id || this.saving() || Object.values(this.bankFieldErrors()).some((e) => !!e)) {
+      return;
+    }
+    this.saving.set(true);
+    try {
+      if (await this.writeBank(this.contactKind(), id)) {
+        this.finish();
+      }
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  protected finish(): void {
+    if (this.savedId) {
+      this.finished = true;
+      void this.router.navigate(['/contacts', this.contactKind(), this.savedId], {
+        replaceUrl: true,
+      });
+    }
+  }
+
   protected async save(): Promise<void> {
     this.showErrors.set(true);
     // Set before the first await: a double tap must not create the contact twice.
@@ -325,13 +612,18 @@ export class ContactFormContainer {
       this.saving() ||
       this.loading() ||
       this.loadFailed() ||
-      this.unresolved()
+      this.unresolved() ||
+      this.bankBlocked() ||
+      (this.bankShown() &&
+        this.bankState() === 'ready' &&
+        Object.values(this.bankFieldErrors()).some((e) => !!e))
     ) {
       return;
     }
     this.saving.set(true);
     this.failed.set(null);
     this.notCreated.set(false);
+    const visit = this.visit;
     const kind = this.contactKind();
     const existing = this.id() ?? this.created;
     if (!existing) {
@@ -343,11 +635,23 @@ export class ContactFormContainer {
         kind,
         { name: this.name(), phone: this.phone(), email: this.email(), address: this.address() },
         existing,
-        this.reference,
+        this.referenceId(),
         business?.country ?? '',
       );
-      void this.router.navigate(['/contacts', kind, saved], { replaceUrl: true });
+      if (visit !== this.visit) {
+        return;
+      }
+      if (!this.id()) {
+        this.created = saved;
+      }
+      this.savedId = saved;
+      if ((await this.writeBank(kind, saved)) && visit === this.visit) {
+        void this.router.navigate(['/contacts', kind, saved], { replaceUrl: true });
+      }
     } catch (error) {
+      if (visit !== this.visit) {
+        return;
+      }
       if (error instanceof UnresolvedError && !existing) {
         // ERPNext may still be creating it: check by reference first, so it isn't created twice.
         this.unresolved.set(true);
@@ -364,7 +668,9 @@ export class ContactFormContainer {
         );
       }
     } finally {
-      this.saving.set(false);
+      if (visit === this.visit) {
+        this.saving.set(false);
+      }
     }
   }
 
@@ -374,8 +680,12 @@ export class ContactFormContainer {
     }
     this.checking.set(true);
     this.pending.set(false);
+    const visit = this.visit;
     try {
-      const found = await this.api.find(this.contactKind(), this.reference);
+      const found = await this.api.find(this.contactKind(), this.referenceId());
+      if (visit !== this.visit) {
+        return;
+      }
       this.unresolved.set(false);
       if (found) {
         // Edits made while waiting are saved over it, as saving again would have.
@@ -386,9 +696,13 @@ export class ContactFormContainer {
       }
       this.notCreated.set(true);
     } catch {
-      this.pending.set(true);
+      if (visit === this.visit) {
+        this.pending.set(true);
+      }
     } finally {
-      this.checking.set(false);
+      if (visit === this.visit) {
+        this.checking.set(false);
+      }
     }
   }
 

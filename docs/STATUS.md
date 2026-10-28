@@ -714,6 +714,13 @@ on the server. Four PRs:
 Defaults: all signed-in users; tools gated by role on the client; no server-side chat history (the client keeps the
 messages); effort low; 20 requests a minute and 50,000 output tokens a day per user.
 
+## Contact bank details (28 Oct 2026)
+
+Optional Bank, IBAN and Account number on the customer and supplier form, shown on the contact page, for roles with
+`editBankDetails` (Owner with Accounts User or Manager). Stored as a Bank Account linked to the party.
+
+- Design debt: docs/Madar.pen still lacks the contact bank-details screens (form section, detail block, invalid-IBAN error, bank-not-saved + Retry), EN + AR — add them in their own PR once Pencil is available.
+
 ## Not started yet
 
 | Step | What | Notes |
