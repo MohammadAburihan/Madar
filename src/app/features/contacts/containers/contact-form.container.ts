@@ -277,6 +277,7 @@ export class ContactFormContainer {
   private loadRun = 0;
   private entered = false;
   private visit = 0;
+  private finished = false;
 
   /** Which kinds the role may add, or the one being edited when the role may edit it. */
   protected readonly kinds = computed(() => {
@@ -295,7 +296,12 @@ export class ContactFormContainer {
     return kinds.find((k) => k === wanted) ?? kinds[0] ?? 'customers';
   });
 
-  protected readonly bankBlocked = computed(() => this.bankShown() && this.bankState() !== 'ready');
+  private readonly bankEntered = computed(
+    () => !!(this.bankText().trim() || this.iban().trim() || this.accountNo().trim()),
+  );
+  protected readonly bankBlocked = computed(
+    () => this.bankShown() && this.bankState() !== 'ready' && this.bankEntered(),
+  );
   protected readonly bankShown = computed(
     () => this.session.capabilities().editBankDetails && this.bankState() !== 'hidden',
   );
@@ -417,7 +423,16 @@ export class ContactFormContainer {
       this.entered = true;
       return;
     }
+    if (
+      this.saving() ||
+      (this.bankFailure() && !this.finished) ||
+      this.unresolved() ||
+      this.notCreated()
+    ) {
+      return;
+    }
     this.visit++;
+    this.finished = false;
     this.loadRun++;
     this.bankRun++;
     this.created = null;
@@ -528,6 +543,7 @@ export class ContactFormContainer {
     if (!this.bankShown() || this.bankState() !== 'ready') {
       return true;
     }
+    const visit = this.visit;
     const choice = this.bankChoice();
     const details = bankDetailsOf(choice, this.iban(), this.accountNo());
     if (!bankChanged(details, this.loadedAccount)) {
@@ -541,6 +557,9 @@ export class ContactFormContainer {
         this.loadedAccount,
         choice.kind === 'new',
       );
+      if (visit !== this.visit) {
+        return false;
+      }
       this.loadedAccount = saved;
       if (choice.kind === 'new') {
         this.banks.update((list) => [...list, saved?.bank ?? choice.name]);
@@ -548,6 +567,9 @@ export class ContactFormContainer {
       this.bankFailure.set(null);
       return true;
     } catch (error) {
+      if (visit !== this.visit) {
+        return false;
+      }
       if (ErpnextError.from(error).kind === 'forbidden') {
         void this.session.checkExpired();
       }
@@ -574,6 +596,7 @@ export class ContactFormContainer {
 
   protected finish(): void {
     if (this.savedId) {
+      this.finished = true;
       void this.router.navigate(['/contacts', this.contactKind(), this.savedId], {
         replaceUrl: true,
       });
@@ -590,8 +613,10 @@ export class ContactFormContainer {
       this.loading() ||
       this.loadFailed() ||
       this.unresolved() ||
+      this.bankBlocked() ||
       (this.bankShown() &&
-        (this.bankState() !== 'ready' || Object.values(this.bankFieldErrors()).some((e) => !!e)))
+        this.bankState() === 'ready' &&
+        Object.values(this.bankFieldErrors()).some((e) => !!e))
     ) {
       return;
     }
@@ -655,8 +680,12 @@ export class ContactFormContainer {
     }
     this.checking.set(true);
     this.pending.set(false);
+    const visit = this.visit;
     try {
       const found = await this.api.find(this.contactKind(), this.referenceId());
+      if (visit !== this.visit) {
+        return;
+      }
       this.unresolved.set(false);
       if (found) {
         // Edits made while waiting are saved over it, as saving again would have.
@@ -667,9 +696,13 @@ export class ContactFormContainer {
       }
       this.notCreated.set(true);
     } catch {
-      this.pending.set(true);
+      if (visit === this.visit) {
+        this.pending.set(true);
+      }
     } finally {
-      this.checking.set(false);
+      if (visit === this.visit) {
+        this.checking.set(false);
+      }
     }
   }
 

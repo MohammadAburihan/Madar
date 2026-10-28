@@ -40,7 +40,7 @@ export interface BankSectionText {
           autocomplete="off"
           aria-autocomplete="list"
           [attr.aria-expanded]="expanded()"
-          aria-controls="bank-options"
+          [attr.aria-controls]="expanded() ? 'bank-options' : null"
           [attr.aria-activedescendant]="
             expanded() && active() >= 0 ? 'bank-option-' + active() : null
           "
@@ -196,9 +196,14 @@ export class BankDetailsSectionComponent {
   protected readonly open = signal(false);
   protected readonly active = signal(-1);
   protected readonly ibanTouched = signal(false);
-  protected readonly expanded = computed(() => this.open() && this.suggestions().length > 0);
+  protected readonly expanded = computed(
+    () => this.open() && !this.readonly() && this.suggestions().length > 0,
+  );
 
   protected keydown(event: KeyboardEvent): void {
+    if (this.readonly() || event.isComposing) {
+      return;
+    }
     const count = this.suggestions().length;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
@@ -227,6 +232,9 @@ export class BankDetailsSectionComponent {
   }
 
   protected choose(suggestion: BankSuggestionView): void {
+    if (this.readonly()) {
+      return;
+    }
     this.bank.set(suggestion.value);
     this.open.set(false);
     this.active.set(-1);

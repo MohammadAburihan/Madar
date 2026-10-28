@@ -173,6 +173,34 @@ describe('BankDetailsSectionComponent', () => {
     expect(bankInput(f).getAttribute('aria-invalid')).toBe('true');
   });
 
+  it('when read only, neither opens the list nor lets a suggestion be chosen', async () => {
+    const f = await section({ suggestions: SUGGESTIONS, readonly: true });
+    const picked = vi.fn();
+    f.componentInstance.pick.subscribe(picked);
+    bankInput(f).dispatchEvent(new Event('focus'));
+    bankInput(f).dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    await f.whenStable();
+    expect(root(f).querySelectorAll('[role=option]')).toHaveLength(0);
+    (f.componentInstance as unknown as { choose(s: unknown): void }).choose(SUGGESTIONS[0]);
+    expect(picked).not.toHaveBeenCalled();
+    expect(f.componentInstance.bank()).toBe('');
+  });
+
+  it('ignores keys during IME composition and sets aria-controls only while listed', async () => {
+    const f = await section({ suggestions: SUGGESTIONS });
+    expect(bankInput(f).hasAttribute('aria-controls')).toBe(false);
+    bankInput(f).dispatchEvent(new Event('focus'));
+    await f.whenStable();
+    expect(bankInput(f).getAttribute('aria-controls')).toBe('bank-options');
+    const enter = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      isComposing: true,
+      cancelable: true,
+    });
+    bankInput(f).dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
   it('can be read only', async () => {
     const f = await section({ readonly: true });
     expect(bankInput(f).readOnly).toBe(true);

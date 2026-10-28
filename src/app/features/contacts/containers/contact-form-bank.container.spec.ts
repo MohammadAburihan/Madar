@@ -278,15 +278,13 @@ describe('ContactFormContainer bank details', () => {
     );
   });
 
-  it('shows the load error and blocks saving when the account fails to load', async () => {
-    const { fixture, root, form, bank } = await open({
+  it('shows the load error and a Retry when the account fails to load', async () => {
+    const { fixture, root, bank } = await open({
       edit: true,
       accountError: new HttpErrorResponse({ status: 500 }),
     });
     expect(plain(root)).toContain("Bank details couldn't be loaded");
     expect(root.querySelector('app-bank-details-section')).toBeNull();
-    await press(fixture, root, /Save contact/);
-    expect(form.save).not.toHaveBeenCalled();
     bank.account.mockResolvedValueOnce(ACCOUNT);
     await press(fixture, root, /^Try again$/);
     expect(bankInput(root)!.value).toBe('Arab Bank');
@@ -326,12 +324,16 @@ describe('ContactFormContainer bank details', () => {
     expect(plain(root)).toContain('Enter a valid IBAN');
   });
 
-  it('disables Save while the bank details are not loaded, and enables it after a retry', async () => {
-    const { fixture, root, bank } = await open({
+  it('blocks saving when bank fields were entered but the bank data is not loaded, until a retry', async () => {
+    const { fixture, root, form, bank } = await open({
       edit: true,
       accountError: new HttpErrorResponse({ status: 500 }),
     });
+    (fixture.componentInstance as unknown as { iban: { set(v: string): void } }).iban.set(IBAN);
+    await fixture.whenStable();
     expect(button(root, /Save contact/).disabled).toBe(true);
+    await press(fixture, root, /Save contact/);
+    expect(form.save).not.toHaveBeenCalled();
     bank.account.mockResolvedValueOnce(ACCOUNT);
     await press(fixture, root, /^Try again$/);
     expect(button(root, /Save contact/).disabled).toBe(false);
@@ -359,6 +361,7 @@ describe('ContactFormContainer bank details', () => {
     expect(plain(root)).toContain('Contact saved, bank details not saved');
     expect(form.save.mock.calls[0][2]).toBeNull();
 
+    await press(fixture, root, /Continue without bank details/);
     page.ionViewWillEnter();
     await fixture.whenStable();
     await fixture.whenStable();
@@ -375,5 +378,72 @@ describe('ContactFormContainer bank details', () => {
     expect(navigate).toHaveBeenLastCalledWith(['/contacts', 'customers', 'Other'], {
       replaceUrl: true,
     });
+  });
+
+  it('keeps a save running through a re-entry: same reference, bank step runs, then leaves', async () => {
+    const { fixture, root, form, bank, navigate } = await open();
+    const page = fixture.componentInstance as unknown as { ionViewWillEnter(): void };
+    page.ionViewWillEnter();
+    await type(fixture, fields(root)[0], 'Nour');
+    await type(fixture, bankInput(root), 'Arab Bank');
+    let release!: (id: string) => void;
+    form.save.mockReturnValueOnce(new Promise<string>((r) => (release = r)));
+    button(root, /Save contact/).click();
+    await fixture.whenStable();
+    page.ionViewWillEnter();
+    await fixture.whenStable();
+    expect(fields(root)[0].value).toBe('Nour');
+    release('Nour');
+    for (let i = 0; i < 5; i++) {
+      await fixture.whenStable();
+    }
+    expect(form.save).toHaveBeenCalledTimes(1);
+    expect(bank.save).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(['/contacts', 'customers', 'Nour'], { replaceUrl: true });
+  });
+
+  it('keeps the bank failure notice through a re-entry', async () => {
+    const { fixture, root, bank } = await open();
+    const page = fixture.componentInstance as unknown as { ionViewWillEnter(): void };
+    page.ionViewWillEnter();
+    await type(fixture, fields(root)[0], 'Nour');
+    await type(fixture, bankInput(root), 'Arab Bank');
+    bank.save.mockRejectedValueOnce(new HttpErrorResponse({ status: 500 }));
+    await press(fixture, root, /Save contact/);
+    page.ionViewWillEnter();
+    await fixture.whenStable();
+    expect(plain(root)).toContain('Contact saved, bank details not saved');
+    await press(fixture, root, /Try bank details again/);
+    expect(bank.save).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores a check answer that arrives after an idle reset', async () => {
+    const { fixture, root, form } = await open();
+    const page = fixture.componentInstance as unknown as {
+      ionViewWillEnter(): void;
+      check(): Promise<void>;
+    };
+    page.ionViewWillEnter();
+    let release!: (id: string | null) => void;
+    form.find.mockReturnValueOnce(new Promise<string | null>((r) => (release = r)));
+    const pending = page.check();
+    page.ionViewWillEnter();
+    release(null);
+    await pending;
+    await fixture.whenStable();
+    expect(form.save).not.toHaveBeenCalled();
+    expect(plain(root)).not.toContain("The contact wasn't created");
+  });
+
+  it('saves the contact when bank data failed to load and no bank fields were entered', async () => {
+    const { fixture, root, form, bank } = await open({
+      banksError: new HttpErrorResponse({ status: 500 }),
+    });
+    await type(fixture, fields(root)[0], 'Nour');
+    expect(plain(root)).toContain("Bank details couldn't be loaded");
+    expect(button(root, /Save contact/).disabled).toBe(false);
+    await press(fixture, root, /Save contact/);
+    expect(form.save).toHaveBeenCalledTimes(1);
+    expect(bank.save).not.toHaveBeenCalled();
   });
 });
