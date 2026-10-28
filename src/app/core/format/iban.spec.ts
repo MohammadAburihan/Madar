@@ -30,4 +30,12 @@ describe('iban', () => {
     expect(isValidAccountNumber('12/34')).toBe(false);
     expect(isValidAccountNumber('12.34')).toBe(false);
   });
+
+  it('drops bidi marks and no-break spaces pasted with a number', () => {
+    const pasted = '\u200EJO94\u00A0CBJO\u202A0010\u2066000000000131000302\u202C\uFEFF';
+    expect(normalizeIban(pasted)).toBe('JO94CBJO0010000000000131000302');
+    expect(isValidIban(pasted)).toBe(true);
+    expect(normalizeAccountNumber('\u200F12\u00A034-5\u200E')).toBe('1234-5');
+    expect(isValidAccountNumber('\u200F12-34\u200E')).toBe(true);
+  });
 });

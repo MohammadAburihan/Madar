@@ -1,11 +1,12 @@
 import { westernDigits } from './number';
 
 const IBAN_SHAPE = /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/;
+const INVISIBLE = /[\u200E\u200F\u202A-\u202E\u2066-\u2069\uFEFF\u00A0]/g;
 const ACCOUNT_NUMBER = /^[A-Za-z0-9-]+$/;
 
-/** Spaces dropped, upper case, Arabic-Indic digits as Western ones. */
+/** Spaces, no-break spaces and bidi marks dropped, upper case, Arabic-Indic digits as Western ones. */
 export function normalizeIban(text: string): string {
-  return westernDigits(text).replace(/\s+/g, '').toUpperCase();
+  return westernDigits(text).replace(INVISIBLE, '').replace(/\s+/g, '').toUpperCase();
 }
 
 /** Same checksum as Frappe's `is_valid_iban` (mod 97), plus the shape of an IBAN. */
@@ -24,9 +25,9 @@ export function isValidIban(text: string): boolean {
   return remainder === 1;
 }
 
-/** Spaces dropped and Western digits; letters, digits and dashes are what an account number holds. */
+/** Spaces and bidi marks dropped and Western digits; letters, digits and dashes are what an account number holds. */
 export function normalizeAccountNumber(text: string): string {
-  return westernDigits(text).replace(/\s+/g, '');
+  return westernDigits(text).replace(INVISIBLE, '').replace(/\s+/g, '');
 }
 
 export function isValidAccountNumber(text: string): boolean {

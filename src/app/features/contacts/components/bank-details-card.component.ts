@@ -4,6 +4,8 @@ export interface BankRow {
   label: string;
   value: string;
   ltr: boolean;
+  /** The value in runs that may wrap between, never inside. */
+  groups?: readonly string[];
 }
 
 /** A contact's saved bank details on its page, one labelled row each. */
@@ -17,7 +19,15 @@ export interface BankRow {
         @for (row of rows(); track row.label) {
           <div class="row">
             <dt>{{ row.label }}</dt>
-            <dd [attr.dir]="row.ltr ? 'ltr' : null" [class.ltr]="row.ltr">{{ row.value }}</dd>
+            <dd [attr.dir]="row.ltr ? 'ltr' : null" [class.ltr]="row.ltr">
+              @if (row.groups) {
+                @for (g of row.groups; track $index) {
+                  <span class="group">{{ g }}</span>
+                }
+              } @else {
+                {{ row.value }}
+              }
+            </dd>
           </div>
         }
       </dl>
@@ -63,6 +73,15 @@ export interface BankRow {
       margin: 0;
       color: var(--md-ink);
       overflow-wrap: anywhere;
+    }
+
+    .group {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .group + .group {
+      margin-inline-start: 0.5ch;
     }
 
     dd.ltr {

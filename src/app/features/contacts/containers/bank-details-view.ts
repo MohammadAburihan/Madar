@@ -122,7 +122,16 @@ export function bankChanged(details: BankDetails, loaded: BankAccountRecord | nu
 export function bankRows(record: BankAccountRecord, tr: Translator) {
   return [
     { label: tr.t('contacts.bank.bank'), value: record.bank, ltr: false },
-    ...(record.iban ? [{ label: tr.t('contacts.bank.iban'), value: record.iban, ltr: true }] : []),
+    ...(record.iban
+      ? [
+          {
+            label: tr.t('contacts.bank.iban'),
+            value: record.iban,
+            ltr: true,
+            groups: record.iban.replace(/\s+/g, '').match(/.{1,4}/g) ?? [],
+          },
+        ]
+      : []),
     ...(record.accountNo
       ? [{ label: tr.t('contacts.bank.accountNo'), value: record.accountNo, ltr: true }]
       : []),

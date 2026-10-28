@@ -152,11 +152,13 @@ describe('ContactFormContainer with an assistant proposal', () => {
   });
 
   it('saves nothing until the user saves, then through the form’s own save', async () => {
-    const { root, save } = await open({
+    const { fixture, root, save } = await open({
       held: { kind: 'new_customer', payload: { name: 'Samer Odeh' } },
     });
+    await fixture.whenStable();
     expect(save).not.toHaveBeenCalled();
-    (root.querySelector('button.md-btn--primary') as HTMLButtonElement).click();
+    const button = root.querySelector('button.md-btn--primary') as HTMLButtonElement;
+    button.click();
     await Promise.resolve();
     expect(save).toHaveBeenCalledTimes(1);
     expect(save.mock.calls[0][0]).toBe('customers');

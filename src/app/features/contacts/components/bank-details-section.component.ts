@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 
 export interface BankSuggestionView {
@@ -23,7 +31,7 @@ export interface BankSectionText {
   template: `
     <section class="section" [attr.aria-label]="text().heading">
       <h2 class="heading">{{ text().heading }}</h2>
-      <div class="field" [class.invalid]="!!bankError()">
+      <div class="field" [class.invalid]="!!bankError()" (focusout)="leave($event)">
         <label class="label" for="bank-input">{{ text().bank }}</label>
         <input
           id="bank-input"
@@ -31,29 +39,33 @@ export interface BankSectionText {
           role="combobox"
           autocomplete="off"
           aria-autocomplete="list"
-          [attr.aria-expanded]="open() && suggestions().length > 0"
+          [attr.aria-expanded]="expanded()"
           aria-controls="bank-options"
+          [attr.aria-activedescendant]="
+            expanded() && active() >= 0 ? 'bank-option-' + active() : null
+          "
           [attr.aria-invalid]="bankError() ? true : null"
           [placeholder]="text().bankPlaceholder"
           [readOnly]="readonly()"
           [value]="bank()"
-          (input)="bank.set($any($event.target).value); open.set(true)"
+          (input)="bank.set($any($event.target).value); open.set(true); active.set(-1)"
           (focus)="open.set(true)"
-          (blur)="open.set(false)"
+          (keydown)="keydown($event)"
         />
-        @if (open() && suggestions().length) {
-          <ul id="bank-options" class="options" role="listbox">
-            @for (s of suggestions(); track s.value + s.add) {
-              <li role="option" [attr.aria-selected]="false">
-                <button
-                  type="button"
-                  class="option"
-                  [class.add]="s.add"
-                  (mousedown)="$event.preventDefault()"
-                  (click)="choose(s)"
-                >
-                  {{ s.label }}
-                </button>
+        @if (expanded()) {
+          <ul id="bank-options" class="options" role="listbox" [attr.aria-label]="text().bank">
+            @for (s of suggestions(); track s.value + s.add; let i = $index) {
+              <li
+                role="option"
+                class="option"
+                [id]="'bank-option-' + i"
+                [class.add]="s.add"
+                [class.active]="i === active()"
+                [attr.aria-selected]="i === active()"
+                (mousedown)="$event.preventDefault()"
+                (click)="choose(s)"
+              >
+                {{ s.label }}
               </li>
             }
           </ul>
@@ -67,7 +79,8 @@ export interface BankSectionText {
         [ltr]="true"
         autocomplete="off"
         [readonly]="readonly()"
-        [error]="ibanError()"
+        [error]="submitted() || ibanTouched() ? ibanError() : null"
+        (focusout)="ibanTouched.set(true)"
         [value]="iban()"
         (valueChange)="iban.set($event)"
       />
@@ -138,7 +151,6 @@ export interface BankSectionText {
     }
 
     .option {
-      all: unset;
       box-sizing: border-box;
       display: block;
       inline-size: 100%;
@@ -147,10 +159,11 @@ export interface BankSectionText {
       color: var(--md-ink);
       font: 400 16px / var(--md-lh) var(--md-font);
       cursor: pointer;
+      list-style: none;
     }
 
     .option:hover,
-    .option:focus-visible {
+    .option.active {
       background: var(--md-tint);
     }
 
@@ -175,14 +188,48 @@ export class BankDetailsSectionComponent {
   readonly ibanError = input<string | null>(null);
   readonly accountNoError = input<string | null>(null);
   readonly readonly = input(false);
+  /** A save was attempted: the IBAN error shows before the field has been left. */
+  readonly submitted = input(false);
   /** A suggestion was chosen: an existing bank, or "Add bank" for a new one. */
   readonly pick = output<BankSuggestionView>();
 
   protected readonly open = signal(false);
+  protected readonly active = signal(-1);
+  protected readonly ibanTouched = signal(false);
+  protected readonly expanded = computed(() => this.open() && this.suggestions().length > 0);
+
+  protected keydown(event: KeyboardEvent): void {
+    const count = this.suggestions().length;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!count) {
+        return;
+      }
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      const from = this.expanded() ? this.active() : -1;
+      this.open.set(true);
+      this.active.set(from < 0 ? (step > 0 ? 0 : count - 1) : (from + step + count) % count);
+    } else if (event.key === 'Enter' && this.expanded() && this.active() >= 0) {
+      event.preventDefault();
+      this.choose(this.suggestions()[this.active()]);
+    } else if (event.key === 'Escape' && this.expanded()) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.open.set(false);
+    }
+  }
+
+  protected leave(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    if (!next || !(event.currentTarget as HTMLElement).contains(next)) {
+      this.open.set(false);
+    }
+  }
 
   protected choose(suggestion: BankSuggestionView): void {
     this.bank.set(suggestion.value);
     this.open.set(false);
+    this.active.set(-1);
     this.pick.emit(suggestion);
   }
 }

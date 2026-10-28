@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { normalizeIban } from '../../../core/format/iban';
 import { BankAccountRecord, BankDetails, ContactKind } from './contacts.models';
 
 interface BankAccountRow {
@@ -148,7 +149,7 @@ export class ContactBankApiService {
     const same =
       !current.disabled &&
       current.bank === details.bank &&
-      current.iban === details.iban &&
+      normalizeIban(current.iban) === normalizeIban(details.iban) &&
       current.accountNo === details.accountNo;
     if (same) {
       return current;
@@ -164,20 +165,31 @@ export class ContactBankApiService {
     });
   }
 
-  /** Clearing keeps the account (payments may link to it) but switches it off. */
+  /** Clearing keeps the accounts (payments may link to them) but switches every enabled one off. */
   private async disable(
     kind: ContactKind,
     id: string,
     loaded: BankAccountRecord | null,
   ): Promise<null> {
-    const current = await this.account(kind, id);
-    if (!current || current.disabled) {
-      return null;
+    const enabled = await firstValueFrom(
+      this.erpnext.list<BankAccountRow>('Bank Account', {
+        fields: ['name', 'bank', 'iban', 'bank_account_no', 'disabled', 'modified'],
+        filters: [
+          ['party_type', '=', PARTY_TYPE[kind]],
+          ['party', '=', id],
+          ['is_company_account', '=', 0],
+          ['disabled', '=', 0],
+        ],
+        orderBy: 'modified desc, name asc',
+        limit: 100,
+      }),
+    );
+    for (const row of enabled.filter((r) => !r.disabled)) {
+      if (row.name === loaded?.name && row.modified !== loaded.modified) {
+        throw new BankChangedError();
+      }
+      await this.saveDoc(row.name, { disabled: 1 });
     }
-    if (current.modified !== loaded?.modified) {
-      throw new BankChangedError();
-    }
-    await this.saveDoc(current.name, { disabled: 1 });
     return null;
   }
 

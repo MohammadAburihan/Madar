@@ -149,7 +149,9 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             (accountNoChange)="accountNo.set($event)"
             [suggestions]="suggestions()"
             [bankError]="showErrors() ? bankFieldErrors().bank : null"
+            [readonly]="!!bankFailure()"
             [ibanError]="bankFieldErrors().iban"
+            [submitted]="showErrors()"
             [accountNoError]="bankFieldErrors().accountNo"
             (pick)="pickBank($event)"
           />
@@ -208,7 +210,12 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             [message]="txt.notCreated.message"
           />
         }
-        <button type="button" class="md-btn md-btn--primary" [disabled]="saving()" (click)="save()">
+        <button
+          type="button"
+          class="md-btn md-btn--primary"
+          [disabled]="saving() || bankBlocked()"
+          (click)="save()"
+        >
           {{ saving() ? txt.saving : txt.save }}
         </button>
       }
@@ -264,10 +271,12 @@ export class ContactFormContainer {
   private loadedAccount: BankAccountRecord | null = null;
   private bankRun = 0;
   private savedId: string | null = null;
-  private readonly reference = newReference('CON');
+  private readonly referenceId = signal(newReference('CON'));
   /** The contact a lost create turned out to have made; saving again updates it. */
   private created: string | null = null;
   private loadRun = 0;
+  private entered = false;
+  private visit = 0;
 
   /** Which kinds the role may add, or the one being edited when the role may edit it. */
   protected readonly kinds = computed(() => {
@@ -286,6 +295,7 @@ export class ContactFormContainer {
     return kinds.find((k) => k === wanted) ?? kinds[0] ?? 'customers';
   });
 
+  protected readonly bankBlocked = computed(() => this.bankShown() && this.bankState() !== 'ready');
   protected readonly bankShown = computed(
     () => this.session.capabilities().editBankDetails && this.bankState() !== 'hidden',
   );
@@ -353,7 +363,7 @@ export class ContactFormContainer {
       notCreated: block('contacts.form.notCreated'),
       unresolved: {
         title: t('contacts.form.unresolved.title'),
-        message: t('contacts.form.unresolved.message', { reference: this.reference }),
+        message: t('contacts.form.unresolved.message', { reference: this.referenceId() }),
       },
       failed: {
         permission: block('contacts.form.failed.permission'),
@@ -399,6 +409,49 @@ export class ContactFormContainer {
         untracked(() => void this.loadBank());
       }
     });
+  }
+
+  /** Ionic keeps this page alive when it is left and reopened at the same address: each visit starts clean. */
+  ionViewWillEnter(): void {
+    if (!this.entered) {
+      this.entered = true;
+      return;
+    }
+    this.visit++;
+    this.loadRun++;
+    this.bankRun++;
+    this.created = null;
+    this.savedId = null;
+    this.referenceId.set(newReference('CON'));
+    this.lockedKind.set(null);
+    this.chosenKind.set(null);
+    this.prefillNotice.set(null);
+    this.name.set('');
+    this.phone.set('');
+    this.email.set('');
+    this.address.set('');
+    this.showErrors.set(false);
+    this.failed.set(null);
+    this.unresolved.set(false);
+    this.checking.set(false);
+    this.pending.set(false);
+    this.notCreated.set(false);
+    this.saving.set(false);
+    this.loadFailed.set(false);
+    this.loading.set(false);
+    this.bankFailure.set(null);
+    this.loadedAccount = null;
+    this.bankText.set('');
+    this.iban.set('');
+    this.accountNo.set('');
+    this.addedBank.set(null);
+    this.bankState.set('loading');
+    if (this.id() && this.kinds().length) {
+      void this.loadExisting();
+    }
+    if (this.kinds().length) {
+      void this.loadBank();
+    }
   }
 
   protected setKind(kind: string | null): void {
@@ -505,7 +558,8 @@ export class ContactFormContainer {
 
   protected async retryBank(): Promise<void> {
     const id = this.savedId;
-    if (!id || this.saving()) {
+    this.showErrors.set(true);
+    if (!id || this.saving() || Object.values(this.bankFieldErrors()).some((e) => !!e)) {
       return;
     }
     this.saving.set(true);
@@ -544,6 +598,7 @@ export class ContactFormContainer {
     this.saving.set(true);
     this.failed.set(null);
     this.notCreated.set(false);
+    const visit = this.visit;
     const kind = this.contactKind();
     const existing = this.id() ?? this.created;
     if (!existing) {
@@ -555,17 +610,23 @@ export class ContactFormContainer {
         kind,
         { name: this.name(), phone: this.phone(), email: this.email(), address: this.address() },
         existing,
-        this.reference,
+        this.referenceId(),
         business?.country ?? '',
       );
+      if (visit !== this.visit) {
+        return;
+      }
       if (!this.id()) {
         this.created = saved;
       }
       this.savedId = saved;
-      if (await this.writeBank(kind, saved)) {
+      if ((await this.writeBank(kind, saved)) && visit === this.visit) {
         void this.router.navigate(['/contacts', kind, saved], { replaceUrl: true });
       }
     } catch (error) {
+      if (visit !== this.visit) {
+        return;
+      }
       if (error instanceof UnresolvedError && !existing) {
         // ERPNext may still be creating it: check by reference first, so it isn't created twice.
         this.unresolved.set(true);
@@ -582,7 +643,9 @@ export class ContactFormContainer {
         );
       }
     } finally {
-      this.saving.set(false);
+      if (visit === this.visit) {
+        this.saving.set(false);
+      }
     }
   }
 
@@ -593,7 +656,7 @@ export class ContactFormContainer {
     this.checking.set(true);
     this.pending.set(false);
     try {
-      const found = await this.api.find(this.contactKind(), this.reference);
+      const found = await this.api.find(this.contactKind(), this.referenceId());
       this.unresolved.set(false);
       if (found) {
         // Edits made while waiting are saved over it, as saving again would have.

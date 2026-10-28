@@ -110,7 +110,7 @@ describe('bank details view', () => {
     };
     expect(bankRows(record, en)).toEqual([
       { label: 'Bank', value: 'Arab Bank', ltr: false },
-      { label: 'IBAN', value: IBAN, ltr: true },
+      { label: 'IBAN', value: IBAN, ltr: true, groups: IBAN.match(/.{1,4}/g) },
     ]);
     expect(bankRows({ ...record, accountNo: '12' }, ar).map((r) => r.label)).toEqual([
       'البنك',

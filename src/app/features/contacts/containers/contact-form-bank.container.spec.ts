@@ -113,7 +113,9 @@ async function type(
   await fixture.whenStable();
 }
 const button = (root: HTMLElement, text: RegExp) =>
-  [...root.querySelectorAll('button')].find((b) => text.test(plain(b))) as HTMLButtonElement;
+  [...root.querySelectorAll('button, [role=option]')].find((b) =>
+    text.test(plain(b)),
+  ) as HTMLButtonElement;
 async function press(fixture: { whenStable(): Promise<unknown> }, root: HTMLElement, text: RegExp) {
   button(root, text).click();
   await fixture.whenStable();
@@ -220,6 +222,7 @@ describe('ContactFormContainer bank details', () => {
     expect(plain(root)).toContain('Contact saved, bank details not saved');
     expect(navigate).not.toHaveBeenCalled();
     expect(button(root, /Save contact/)).toBeUndefined();
+    expect(bankInput(root)!.readOnly).toBe(true);
     await press(fixture, root, /Try bank details again/);
     expect(form.save).toHaveBeenCalledTimes(1);
     expect(bank.save).toHaveBeenCalledTimes(2);
@@ -312,5 +315,65 @@ describe('ContactFormContainer bank details', () => {
     await press(fixture, root, /Reload bank details/);
     expect(button(root, /Save contact/)).toBeDefined();
     expect(fields(root)[4].value).toBe('GB82WEST12345698765432');
+  });
+
+  it('does not show the IBAN error while typing, only after leaving the field or saving', async () => {
+    const { fixture, root } = await open();
+    await type(fixture, fields(root)[4], 'JO95');
+    expect(plain(root)).not.toContain('Enter a valid IBAN');
+    fields(root)[4].dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    await fixture.whenStable();
+    expect(plain(root)).toContain('Enter a valid IBAN');
+  });
+
+  it('disables Save while the bank details are not loaded, and enables it after a retry', async () => {
+    const { fixture, root, bank } = await open({
+      edit: true,
+      accountError: new HttpErrorResponse({ status: 500 }),
+    });
+    expect(button(root, /Save contact/).disabled).toBe(true);
+    bank.account.mockResolvedValueOnce(ACCOUNT);
+    await press(fixture, root, /^Try again$/);
+    expect(button(root, /Save contact/).disabled).toBe(false);
+  });
+
+  it('checks the bank fields again before retrying the bank step', async () => {
+    const { fixture, root, bank } = await open();
+    await type(fixture, fields(root)[0], 'Nour');
+    await type(fixture, bankInput(root), 'Arab Bank');
+    bank.save.mockRejectedValueOnce(new HttpErrorResponse({ status: 500 }));
+    await press(fixture, root, /Save contact/);
+    (fixture.componentInstance as unknown as { iban: { set(v: string): void } }).iban.set('JO95');
+    await press(fixture, root, /Try bank details again/);
+    expect(bank.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts a revisit clean: the earlier contact is not updated by the next add', async () => {
+    const { fixture, root, form, bank, navigate } = await open();
+    const page = fixture.componentInstance as unknown as { ionViewWillEnter(): void };
+    page.ionViewWillEnter();
+    await type(fixture, fields(root)[0], 'Nour');
+    await type(fixture, bankInput(root), 'Arab Bank');
+    bank.save.mockRejectedValueOnce(new HttpErrorResponse({ status: 500 }));
+    await press(fixture, root, /Save contact/);
+    expect(plain(root)).toContain('Contact saved, bank details not saved');
+    expect(form.save.mock.calls[0][2]).toBeNull();
+
+    page.ionViewWillEnter();
+    await fixture.whenStable();
+    await fixture.whenStable();
+    expect(plain(root)).not.toContain('Contact saved, bank details not saved');
+    expect(fields(root)[0].value).toBe('');
+    expect(bankInput(root)!.value).toBe('');
+    expect(bankInput(root)!.readOnly).toBe(false);
+    form.save.mockResolvedValueOnce('Other');
+    await type(fixture, fields(root)[0], 'Other');
+    await press(fixture, root, /Save contact/);
+    expect(form.save).toHaveBeenCalledTimes(2);
+    expect(form.save.mock.calls[1][2]).toBeNull();
+    expect(form.save.mock.calls[1][3]).not.toBe(form.save.mock.calls[0][3]);
+    expect(navigate).toHaveBeenLastCalledWith(['/contacts', 'customers', 'Other'], {
+      replaceUrl: true,
+    });
   });
 });

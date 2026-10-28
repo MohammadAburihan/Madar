@@ -187,4 +187,27 @@ describe('ContactBankApiService', () => {
     await api().save('customers', 'Nour', { bank: '', iban: '', accountNo: '' }, LOADED, false);
     expect(postCalls).toHaveLength(0);
   });
+
+  it('clearing disables every enabled account of the party, not only the newest', async () => {
+    const other = { ...ROW, name: 'Customer Nour - Cairo Bank', modified: '2026-10-27 10:00:00' };
+    const { postCalls, listCalls } = fakeErpnext(
+      { 'Bank Account': () => [ROW, other] },
+      { 'frappe.client.save': (body) => body['doc'] },
+      { [`Bank Account/${ROW.name}`]: ROW, [`Bank Account/${other.name}`]: other },
+    );
+    await api().save('customers', 'Nour', { bank: '', iban: '', accountNo: '' }, LOADED, false);
+    expect(postCalls.map((c) => (c.body['doc'] as { name: string }).name)).toEqual([
+      ROW.name,
+      other.name,
+    ]);
+    expect(listCalls[0].query.filters).toContainEqual(['disabled', '=', 0]);
+  });
+
+  it('treats an IBAN held with spaces or lower case as the same (no write)', async () => {
+    const { postCalls } = fakeErpnext({
+      'Bank Account': () => [{ ...ROW, iban: 'jo94 cbjo 0010 0000 0000 0131 0003 02' }],
+    });
+    await api().save('customers', 'Nour', DETAILS, { ...LOADED, modified: 'older' }, false);
+    expect(postCalls).toHaveLength(0);
+  });
 });
