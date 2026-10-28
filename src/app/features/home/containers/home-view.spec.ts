@@ -1,7 +1,7 @@
 import { realTranslator } from '../../../../testing/real-translator';
 import { HomeData } from '../data-access/home.models';
 import { isolate } from '../../../core/i18n/translator';
-import { buildHomeView as build, HomeViewInput } from './home-view';
+import { ACTION_ICONS, buildHomeView as build, HomeViewInput } from './home-view';
 
 // Mirrors the data in the design mocks (Sunday 11 October, 09:00).
 const NOW = new Date(2026, 9, 11, 9, 0);
@@ -73,6 +73,39 @@ const buildHomeView = (...args: Parameters<typeof build>) =>
   >;
 
 describe('buildHomeView', () => {
+  it('gives every action of every role an icon', () => {
+    for (const persona of [
+      'owner',
+      'salesperson',
+      'storeAssociate',
+      'warehouse',
+      'purchasing',
+      'projectManager',
+    ] as const) {
+      const view = build({ ...input(), persona }, realTranslator('en'));
+      expect(view.actions.length).toBeGreaterThan(0);
+      expect(view.actions.every((a) => !!a.icon)).toBe(true);
+    }
+    const ids = new Set(Object.keys(ACTION_ICONS));
+    for (const id of [
+      'sell',
+      'buy',
+      'receivePayment',
+      'paySupplier',
+      'recordExpense',
+      'transferStock',
+      'countStock',
+      'supplyProject',
+      'supplyProjectShort',
+      'customers',
+      'catalog',
+      'receiveGoods',
+      'assistant',
+    ]) {
+      expect(ids.has(id)).toBe(true);
+    }
+  });
+
   it("hides Transfer stock from an owner whose roles can't move stock", () => {
     const view = buildHomeView(
       { ...input(), capabilities: { transferStock: false } },

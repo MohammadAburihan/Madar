@@ -1,3 +1,4 @@
+import { LucideShoppingCart } from '@lucide/angular';
 import { TestBed } from '@angular/core/testing';
 import { ActionGridComponent } from './action-grid.component';
 
@@ -6,7 +7,11 @@ describe('ActionGridComponent', () => {
     const fixture = TestBed.createComponent(ActionGridComponent);
     fixture.componentRef.setInput(
       'actions',
-      Array.from({ length: count }, (_, i) => ({ id: `a${i}`, label: `Action ${i}` })),
+      Array.from({ length: count }, (_, i) => ({
+        id: `a${i}`,
+        label: `Action ${i}`,
+        icon: LucideShoppingCart,
+      })),
     );
     fixture.componentRef.setInput('columns', columns);
     await fixture.whenStable();
@@ -38,5 +43,16 @@ describe('ActionGridComponent', () => {
 
     expect(buttons.some((b) => b.classList.contains('span-all'))).toBe(false);
     expect(emitted).toEqual(['a2']);
+  });
+
+  it('shows a decorative icon before the label, which stays the accessible name', async () => {
+    const fixture = await render(2, 2);
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    const svg = button.querySelector('svg');
+
+    expect(svg).not.toBeNull();
+    expect(svg?.getAttribute('aria-hidden')).toBe('true');
+    expect(button.firstElementChild).toBe(svg);
+    expect(button.textContent?.trim()).toBe('Action 0');
   });
 });

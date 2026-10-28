@@ -1,3 +1,18 @@
+import {
+  LucideBanknote,
+  LucideArrowLeftRight,
+  LucideClipboardList,
+  LucideHandCoins,
+  LucideIconInput,
+  LucideLayers,
+  LucidePackage,
+  LucidePackageCheck,
+  LucideReceiptText,
+  LucideShoppingBag,
+  LucideShoppingCart,
+  LucideSparkles,
+  LucideUsers,
+} from '@lucide/angular';
 import { Capabilities } from '../../../core/auth/capabilities';
 import { Persona } from '../../../core/auth/persona';
 import { daysUntil, formatLongDate, formatMoney } from '../../../core/format/format';
@@ -32,6 +47,7 @@ export interface HomeViewInput {
 export interface ActionView {
   id: string;
   label: string;
+  icon: LucideIconInput;
 }
 
 export interface CardView {
@@ -69,8 +85,26 @@ export interface HomeView {
   draftsLink: string | null;
 }
 
+export const ACTION_ICONS = {
+  sell: LucideShoppingCart,
+  buy: LucideShoppingBag,
+  receivePayment: LucideHandCoins,
+  paySupplier: LucideBanknote,
+  recordExpense: LucideReceiptText,
+  transferStock: LucideArrowLeftRight,
+  countStock: LucideClipboardList,
+  supplyProject: LucideLayers,
+  supplyProjectShort: LucideLayers,
+  customers: LucideUsers,
+  catalog: LucidePackage,
+  receiveGoods: LucidePackageCheck,
+  assistant: LucideSparkles,
+} satisfies Record<string, LucideIconInput>;
+
+type ActionId = keyof typeof ACTION_ICONS;
+
 // Every quick action uses the secondary button style in the mocks, whatever the persona.
-const ACTIONS: Record<Persona, string[]> = {
+const ACTIONS: Record<Persona, ActionId[]> = {
   owner: [
     'sell',
     'buy',
@@ -327,7 +361,7 @@ export function buildHomeView(input: HomeViewInput, tr: Translator): HomeView {
       .filter(
         (id) => !id.startsWith('supplyProject') || (input.capabilities?.supplyProjects ?? true),
       )
-      .map((id) => ({ id, label: tr.t(`home.actions.${id}`) })),
+      .map((id) => ({ id, label: tr.t(`home.actions.${id}`), icon: ACTION_ICONS[id] })),
     actionColumns: persona === 'owner' ? 3 : 2,
     cards: cards.slice(0, MOBILE_CARD_LIMIT),
     rows: rows

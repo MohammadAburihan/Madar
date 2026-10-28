@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { ActionView } from '../containers/home-view';
 
 @Component({
   selector: 'app-action-grid',
+  imports: [LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[style.--columns]': 'columns()' },
   template: `
@@ -13,7 +15,8 @@ import { ActionView } from '../containers/home-view';
         [class.span-all]="last && lastSpans()"
         (click)="actionSelected.emit(action.id)"
       >
-        {{ action.label }}
+        <svg [lucideIcon]="action.icon" [size]="20" aria-hidden="true"></svg>
+        <span>{{ action.label }}</span>
       </button>
     }
   `,
@@ -22,6 +25,14 @@ import { ActionView } from '../containers/home-view';
       display: grid;
       grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
       gap: var(--row-gap, 12px) 12px;
+    }
+
+    button {
+      gap: 8px;
+    }
+
+    svg {
+      flex: none;
     }
 
     .span-all {
