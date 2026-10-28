@@ -181,6 +181,10 @@ describe('buildMoreView', () => {
     expect(plain(more('owner', undefined, 'ar')).items.at(-1).label).toBe('تبديل المنشأة');
   });
 
+  it('gives every item an icon', () => {
+    expect(more('owner').items.every((i) => !!i.icon)).toBe(true);
+  });
+
   it('follows the role: a warehouse worker has no Sales', () => {
     const ids = more('warehouse', ['Stock User']).items.map((i) => i.id);
     expect(ids).toEqual([

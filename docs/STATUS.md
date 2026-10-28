@@ -721,6 +721,12 @@ Optional Bank, IBAN and Account number on the customer and supplier form, shown 
 
 - Design debt: docs/Madar.pen still lacks the contact bank-details screens (form section, detail block, invalid-IBAN error, bank-not-saved + Retry), EN + AR — add them in their own PR once Pencil is available.
 
+### Design debt — update docs/Madar.pen when the pen.dev quota resets
+
+- Contact bank-details screens: form section, detail block, invalid-IBAN error, bank-not-saved + Retry, EN + AR.
+- Icons on the Home quick actions: all Home frames, EN + AR, mobile, tablet and desktop.
+- Icons on the phone More menu rows, EN + AR.
+
 ## Not started yet
 
 | Step | What | Notes |

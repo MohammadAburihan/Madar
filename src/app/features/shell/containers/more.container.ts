@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { injectI18n } from '../../../core/i18n/i18n';
@@ -11,7 +12,7 @@ import { buildMoreView } from './shell-view';
 /** More, on phones: the role's other destinations, as on the More navigation mock. */
 @Component({
   selector: 'app-more',
-  imports: [LanguageSwitcherComponent, PageHeadingComponent],
+  imports: [LanguageSwitcherComponent, LucideDynamicIcon, PageHeadingComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'task', '[class.desktop]': "viewport() !== 'mobile'" },
   styleUrl: '../../../shared/ui/task-page.scss',
@@ -21,6 +22,14 @@ import { buildMoreView } from './shell-view';
       flex-direction: column;
       gap: 20px;
     }
+
+    .md-btn {
+      gap: 8px;
+    }
+
+    svg {
+      flex: none;
+    }
   `,
   template: `
     @let v = view();
@@ -29,7 +38,8 @@ import { buildMoreView } from './shell-view';
     <nav [attr.aria-label]="v.title">
       @for (item of v.items; track item.id) {
         <button type="button" class="md-btn" (click)="router.navigate([item.route])">
-          {{ item.label }}
+          <svg [lucideIcon]="item.icon" [size]="20" aria-hidden="true"></svg>
+          <span>{{ item.label }}</span>
         </button>
       }
     </nav>

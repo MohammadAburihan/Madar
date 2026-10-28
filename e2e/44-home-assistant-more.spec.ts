@@ -42,3 +42,34 @@ test('More lists Sales and Inventory in Arabic @phone', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'المبيعات', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'المخزون', exact: true })).toBeVisible();
 });
+
+test('Home actions and More rows carry an icon and keep their names @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  const assistant = page.getByRole('button', { name: 'Assistant', exact: true });
+  await expect(assistant.locator('svg[aria-hidden="true"]')).toHaveCount(1);
+  for (const name of ['Sell', 'Receive payment']) {
+    await expect(
+      page.getByRole('button', { name, exact: true }).locator('svg[aria-hidden="true"]'),
+    ).toHaveCount(1);
+  }
+  await page.goto('/more');
+  await expectHeading(page, 'More');
+  for (const name of ['Sales', 'Inventory', 'Switch business']) {
+    await expect(
+      page.getByRole('button', { name, exact: true }).locator('svg[aria-hidden="true"]'),
+    ).toHaveCount(1);
+  }
+});
+
+test('Home actions and More rows carry an icon in Arabic @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  await expect(heading(page)).toContainText('Rehan');
+  await toArabic(page);
+  await expect(
+    page.getByRole('button', { name: 'المساعد', exact: true }).locator('svg[aria-hidden="true"]'),
+  ).toHaveCount(1);
+  await page.goto('/more');
+  await expect(
+    page.getByRole('button', { name: 'المبيعات', exact: true }).locator('svg[aria-hidden="true"]'),
+  ).toHaveCount(1);
+});

@@ -1,4 +1,5 @@
 import {
+  LucideArrowLeftRight,
   LucideBoxes,
   LucideChartColumn,
   LucideCheckCheck,
@@ -172,7 +173,7 @@ export function buildMoreView(input: ShellViewInput, tr: Translator): MoreView {
       ...shell.desktopNav.filter((item) => item.route !== '/'),
       {
         id: 'businesses',
-        icon: LucideHouse,
+        icon: LucideArrowLeftRight,
         route: '/businesses',
         label: tr.t('more.switchBusiness'),
       },
