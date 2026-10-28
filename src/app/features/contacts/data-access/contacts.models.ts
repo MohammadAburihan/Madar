@@ -66,3 +66,17 @@ export interface HistoryEntry {
   /** Deliveries: how many units left or arrived. */
   qty: number;
 }
+
+/** A contact's bank details as typed: all three empty means none. */
+export interface BankDetails {
+  bank: string;
+  iban: string;
+  accountNo: string;
+}
+
+/** The party's Bank Account as ERPNext holds it; `modified` guards the next save against a change made elsewhere. */
+export interface BankAccountRecord extends BankDetails {
+  name: string;
+  modified: string;
+  disabled: boolean;
+}

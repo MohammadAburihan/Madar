@@ -37,6 +37,9 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 | Reports | التقارير |
 | Profit / sales income / cost of goods sold / expenses | الربح / إيرادات المبيعات / تكلفة البضاعة المباعة / المصروفات |
 | Money in / money out / net for the period | الأموال الواردة / الأموال الصادرة / الصافي للفترة |
+| Bank details | بيانات البنك |
+| IBAN | رقم الآيبان (IBAN) |
+| Account number (bank) | رقم الحساب |
 | Customer statement / supplier statement | كشف حساب العميل / كشف حساب المورد |
 | Opening balance / invoiced / balance | الرصيد الافتتاحي / قيمة الفواتير / الرصيد |
 | Period: this month / last month / this year / custom | الفترة: هذا الشهر / الشهر الماضي / هذه السنة / مخصصة |

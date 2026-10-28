@@ -2696,6 +2696,37 @@
           "message": "They're back under Active."
         }
       }
+    },
+    "bank": {
+      "heading": "Bank details (optional)",
+      "bank": "Bank",
+      "bankPlaceholder": "Search or type a bank",
+      "iban": "IBAN",
+      "accountNo": "Account number",
+      "add": "Add bank “{{name}}”",
+      "bankRequired": "Choose the bank these numbers belong to.",
+      "pickBank": "Choose a bank from the list.",
+      "pickOrAdd": "Choose a bank from the list, or choose “Add bank” to create it.",
+      "ibanError": "Enter a valid IBAN, like JO94 CBJO 0010 0000 0000 0131 0003 02.",
+      "accountError": "Use letters, digits and dashes only.",
+      "loading": "Loading bank details…",
+      "loadFailed": {
+        "title": "Bank details couldn't be loaded",
+        "message": "Check the connection and try again. The contact can't be saved until they load."
+      },
+      "notSaved": {
+        "title": "Contact saved, bank details not saved",
+        "message": "The contact is saved. ERPNext didn't take the bank details. Try again, or continue without them."
+      },
+      "changed": {
+        "title": "Bank details changed elsewhere",
+        "message": "Someone changed this contact's bank details after you opened it. Reload them to see the current ones."
+      },
+      "retry": "Try bank details again",
+      "reload": "Reload bank details",
+      "continue": "Continue without bank details",
+      "detailTitle": "Bank details",
+      "detailFailed": "Check the connection and try again."
     }
   },
   "settings": {

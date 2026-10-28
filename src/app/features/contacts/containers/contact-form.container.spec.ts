@@ -10,6 +10,7 @@ import { SessionService } from '../../../core/auth/session.service';
 import { BusinessService } from '../../../core/business/business.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import { PrefillRequest, TaskPrefillService } from '../../../core/tasks/task-prefill.service';
+import { ContactBankApiService } from '../data-access/contact-bank-api.service';
 import { ContactFormApiService } from '../data-access/contact-form-api.service';
 import { ContactFormContainer } from './contact-form.container';
 
@@ -35,6 +36,14 @@ async function open({ persona = 'owner', held, missing, otherUser }: Options) {
     imports: [translocoTesting()],
     providers: [
       { provide: ContactFormApiService, useValue: { save, load: vi.fn(), find: vi.fn() } },
+      {
+        provide: ContactBankApiService,
+        useValue: {
+          banks: vi.fn().mockResolvedValue([]),
+          account: vi.fn().mockResolvedValue(null),
+          save: vi.fn().mockResolvedValue(null),
+        },
+      },
       {
         provide: SessionService,
         useValue: { user, capabilities: () => capabilitiesFor(persona), checkExpired: vi.fn() },
