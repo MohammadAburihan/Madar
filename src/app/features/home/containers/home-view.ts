@@ -85,7 +85,7 @@ export interface HomeView {
   draftsLink: string | null;
 }
 
-export const ACTION_ICONS: Record<string, LucideIconInput> = {
+export const ACTION_ICONS = {
   sell: LucideShoppingCart,
   buy: LucideShoppingBag,
   receivePayment: LucideHandCoins,
@@ -99,10 +99,12 @@ export const ACTION_ICONS: Record<string, LucideIconInput> = {
   catalog: LucidePackage,
   receiveGoods: LucidePackageCheck,
   assistant: LucideSparkles,
-};
+} satisfies Record<string, LucideIconInput>;
+
+type ActionId = keyof typeof ACTION_ICONS;
 
 // Every quick action uses the secondary button style in the mocks, whatever the persona.
-const ACTIONS: Record<Persona, string[]> = {
+const ACTIONS: Record<Persona, ActionId[]> = {
   owner: [
     'sell',
     'buy',

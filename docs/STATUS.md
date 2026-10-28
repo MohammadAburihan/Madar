@@ -719,7 +719,7 @@ messages); effort low; 20 requests a minute and 50,000 output tokens a day per u
 Optional Bank, IBAN and Account number on the customer and supplier form, shown on the contact page, for roles with
 `editBankDetails` (Owner with Accounts User or Manager). Stored as a Bank Account linked to the party.
 
-- Design debt: docs/Madar.pen still lacks the contact bank-details screens (form section, detail block, invalid-IBAN error, bank-not-saved + Retry), EN + AR — add them in their own PR once Pencil is available.
+Its screens are still missing from docs/Madar.pen: see the design debt below.
 
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets
 
