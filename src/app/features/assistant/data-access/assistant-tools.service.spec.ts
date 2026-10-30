@@ -153,6 +153,7 @@ describe('AssistantToolsService', () => {
         ['company', '=', 'Rehan Nursery'],
         ['docstatus', '=', 1],
         ['is_return', '=', 0],
+        ['is_opening', '!=', 'Yes'],
         ['posting_date', '=', '2026-10-25'],
       ]);
       expect(due.filters).toEqual([

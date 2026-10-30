@@ -43,6 +43,7 @@ describe('InvoiceApiService', () => {
       total: 320,
       outstanding: 80,
       delivered: true,
+      opening: false,
       returnable: true,
       quickSale: true,
       saleReference: null,
@@ -109,6 +110,13 @@ describe('InvoiceApiService', () => {
         },
         'Sales Invoice/SI-3': { name: 'SI-3', docstatus: 1, update_stock: 1, is_return: 1 },
         'Sales Invoice/SI-4': { name: 'SI-4', docstatus: 1, update_stock: 1, is_pos: 1 },
+        'Sales Invoice/SI-5': {
+          name: 'SI-5',
+          docstatus: 1,
+          update_stock: 0,
+          is_opening: 'Yes',
+          items: [{ item_code: undefined }],
+        },
       },
     );
     const api = TestBed.inject(InvoiceApiService);
@@ -117,6 +125,10 @@ describe('InvoiceApiService', () => {
     expect((await api.load('SI-3')).returnable).toBe(false);
     // A POS sale's return would refund its payment, which Madar's returns never do.
     expect((await api.load('SI-4')).returnable).toBe(false);
+    // An opening balance has no goods to take back, even though it has no stock items either.
+    const opening = await api.load('SI-5');
+    expect([opening.opening, opening.returnable]).toEqual([true, false]);
+    expect((await api.load('SI-2')).opening).toBe(false);
   });
 
   it('counts every credit note that settled the invoice, as the ledger records it', async () => {

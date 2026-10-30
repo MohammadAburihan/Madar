@@ -31,6 +31,9 @@ const SUPPLIER: SupplierDetail = {
   openOrder: null,
 };
 
+const customerIds = (caps: ReturnType<typeof capabilitiesFor>) =>
+  contactActions('customers', CUSTOMER, caps, en).map((a) => a.id);
+
 describe('contacts access', () => {
   it('recognises the walk-in by id or by customer name, customers only', () => {
     expect(isWalkIn('customers', 'Walk-in Customer', null)).toBe(true);
@@ -49,14 +52,21 @@ describe('contacts access', () => {
   it('offers the tasks the role may start, with the contact chosen', () => {
     const owner = capabilitiesFor('owner');
     const customer = contactActions('customers', CUSTOMER, owner, en);
-    expect(visible(customer.map((a) => a.label))).toEqual(['Receive payment', 'Sell to Lina']);
+    expect(visible(customer.map((a) => a.label))).toEqual([
+      'Receive payment',
+      'Sell to Lina',
+      'Opening balance',
+    ]);
     expect(customer[1]).toMatchObject({
       route: ['/sales/new'],
       query: { customer: 'Lina Haddad' },
     });
     // Nothing owed: no payment to receive.
     const settled = { ...CUSTOMER, totals: { invoiced: 320, paid: 320, outstanding: 0 } };
-    expect(contactActions('customers', settled, owner, en).map((a) => a.id)).toEqual(['sell']);
+    expect(contactActions('customers', settled, owner, en).map((a) => a.id)).toEqual([
+      'sell',
+      'opening',
+    ]);
 
     expect(contactActions('suppliers', SUPPLIER, owner, en)).toEqual([
       {
@@ -71,8 +81,31 @@ describe('contacts access', () => {
         route: ['/purchases/invoice', 'PINV-0068', 'pay'],
         query: {},
       },
+      {
+        id: 'opening',
+        label: 'Opening balance',
+        route: ['/contacts', 'suppliers', 'Green Clay', 'opening-balance'],
+        query: {},
+      },
     ]);
     expect(contactActions('suppliers', SUPPLIER, capabilitiesFor('warehouse'), en)).toEqual([]);
+  });
+
+  it('offers an opening balance only to roles that may record one, never for the walk-in customer', () => {
+    expect(customerIds(capabilitiesFor('salesperson'))).toEqual(['collect', 'sell']);
+    const opening = contactActions('customers', CUSTOMER, capabilitiesFor('owner'), en).find(
+      (a) => a.id === 'opening',
+    );
+    expect(opening).toEqual({
+      id: 'opening',
+      label: 'Opening balance',
+      route: ['/contacts', 'customers', 'Lina Haddad', 'opening-balance'],
+      query: {},
+    });
+    const walkIn = { ...CUSTOMER, id: 'Walk-in Customer', name: 'Walk-in Customer' };
+    expect(
+      contactActions('customers', walkIn, capabilitiesFor('owner'), en).map((a) => a.id),
+    ).not.toContain('opening');
   });
 
   it('lets each role add and edit the contacts ERPNext allows it to', () => {

@@ -325,6 +325,7 @@ describe('SupplierInvoiceApiService', () => {
       currency: 'ILS',
       total: 270,
       outstanding: 170,
+      opening: false,
       submitted: true,
       cancelled: false,
       payments: [{ name: 'PAY-0155', amount: 100, account: 'Main bank' }],

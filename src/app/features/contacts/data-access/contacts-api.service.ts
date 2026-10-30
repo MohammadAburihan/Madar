@@ -195,6 +195,7 @@ export class ContactsApiService {
             'posting_date',
             'status',
             'is_return',
+            'is_opening',
             'base_grand_total',
             'base_rounded_total',
             'outstanding_amount',
@@ -230,7 +231,8 @@ export class ContactsApiService {
       ).catch(() => []),
     ]);
     const sales = invoices?.filter((r) => !r['is_return']) ?? [];
-    const latest = sales[0];
+    // A balance brought in from before Madar counts in the totals but is not a sale.
+    const latest = sales.find((r) => r['is_opening'] !== 'Yes');
     const invoiced = sales.reduce((sum, r) => sum + owed(r), 0);
     const returned = (invoices ?? [])
       .filter((r) => r['is_return'])

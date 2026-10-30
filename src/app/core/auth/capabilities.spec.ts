@@ -30,6 +30,7 @@ describe('capabilitiesFor', () => {
       addBanks: true,
       manageWorkers: true,
       giveAdvances: true,
+      recordOpeningBalance: true,
       approve: true,
       manageItems: true,
       setItemPrices: true,
@@ -66,6 +67,7 @@ describe('capabilitiesFor', () => {
         addBanks: false,
         manageWorkers: false,
         giveAdvances: false,
+        recordOpeningBalance: false,
         approve: false,
         manageItems: false,
         setItemPrices: false,
@@ -288,6 +290,20 @@ describe('capabilitiesFor', () => {
       capabilitiesFor('salesperson', ['Sales User', 'Accounts User', 'HR User', 'Expense Approver'])
         .giveAdvances,
     ).toBe(false);
+  });
+
+  it('records opening balances only as the Owner, and only with Accounts User or Manager', () => {
+    expect(capabilitiesFor('owner').recordOpeningBalance).toBe(true);
+    expect(capabilitiesFor('owner', ['System Manager', 'Accounts User']).recordOpeningBalance).toBe(
+      true,
+    );
+    expect(capabilitiesFor('owner', ['System Manager']).recordOpeningBalance).toBe(false);
+    for (const persona of ['salesperson', 'storeAssociate', 'purchasing', 'warehouse'] as const) {
+      expect(capabilitiesFor(persona).recordOpeningBalance).toBe(false);
+      expect(
+        capabilitiesFor(persona, ['Accounts Manager', 'Accounts User']).recordOpeningBalance,
+      ).toBe(false);
+    }
   });
 
   it('opens Approvals to the Owner and to roles holding HR, not to the other roles alone', () => {

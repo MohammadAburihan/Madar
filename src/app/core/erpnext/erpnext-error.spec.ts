@@ -35,6 +35,21 @@ describe('ErpnextError', () => {
     expect(bare.excType).toBeNull();
   });
 
+  it("keeps Frappe's words for the user apart from the technical error line", () => {
+    const words = ErpnextError.from(
+      new HttpErrorResponse({
+        status: 417,
+        error: { _server_messages: JSON.stringify([JSON.stringify({ message: '<b>Frozen</b>' })]) },
+      }),
+    );
+    expect(words.userMessage).toBe('Frozen');
+    const bare = ErpnextError.from(
+      new HttpErrorResponse({ status: 500, error: { exception: 'ValueError: boom' } }),
+    );
+    expect([bare.message, bare.userMessage]).toEqual(['ValueError: boom', null]);
+    expect(ErpnextError.from(new HttpErrorResponse({ status: 500 })).userMessage).toBeNull();
+  });
+
   it('maps HTTP statuses to kinds', () => {
     expect(ErpnextError.from(new HttpErrorResponse({ status: 0 })).kind).toBe('offline');
     expect(ErpnextError.from(new HttpErrorResponse({ status: 401 })).kind).toBe('unauthorized');

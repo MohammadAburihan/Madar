@@ -145,6 +145,15 @@ describe('HomeApiService', () => {
     const { data } = await api.load(scope('owner'));
 
     expect(data.todaySales).toBe(2850);
+    // An opening balance dated today is owed, not sold: it stays out of today's sales but in what is owed.
+    const sales = calls.find((c) =>
+      (c.query.fields as unknown[]).some(
+        (f) => typeof f === 'object' && (f as Record<string, string>)['SUM'] === 'base_grand_total',
+      ),
+    );
+    expect(sales?.query.filters).toContainEqual(['is_opening', '!=', 'Yes']);
+    const owed = calls.find((c) => c.query.groupBy);
+    expect(owed?.query.filters).not.toContainEqual(['is_opening', '!=', 'Yes']);
     expect(data.receivables).toBeCloseTo(770);
     expect(calls.find((c) => c.query.groupBy)?.query.groupBy).toBe(
       'party_account_currency, conversion_rate',

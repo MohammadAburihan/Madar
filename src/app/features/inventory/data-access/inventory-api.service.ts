@@ -8,7 +8,7 @@ import {
 } from '../../../core/erpnext/confirmation';
 import { Page, pageOf } from '../../../core/util/paged-list';
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
-import { ErpnextError } from '../../../core/erpnext/erpnext-error';
+import { temporaryOpeningAccount } from '../../../core/money/opening-account';
 import { SITE_WAREHOUSE_NAME } from '../../../core/stock/site-warehouse';
 import { StockEntryTypesService } from '../../../core/stock/stock-entry-types.service';
 import {
@@ -348,19 +348,7 @@ export class InventoryApiService {
     }
     const opening =
       request.reason === 'opening'
-        ? await firstValueFrom(
-            this.erpnext.post<string | null>(
-              'erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool.get_temporary_opening_account',
-              { company: request.company },
-            ),
-          ).catch((error: unknown) => {
-            // ERPNext refuses when the company has none; a lost connection or a refusal stays what it is.
-            const e = ErpnextError.from(error);
-            if (e.kind === 'server' && e.status === 417) {
-              return null;
-            }
-            throw error;
-          })
+        ? await temporaryOpeningAccount(this.erpnext, request.company)
         : null;
     if (request.reason === 'opening' && !opening) {
       throw new NoOpeningAccountError();

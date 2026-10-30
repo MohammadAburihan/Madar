@@ -33,6 +33,18 @@ export function contactActions(
   tr: Translator,
 ): ContactAction[] {
   const t = (key: string, params?: Record<string, unknown>) => tr.t(`contacts.${key}`, params);
+  // Every walk-in sale posts to the walk-in customer: it has no past debt to bring in.
+  const opening: ContactAction[] =
+    caps.recordOpeningBalance && !isWalkIn(kind, detail.id, detail.name)
+      ? [
+          {
+            id: 'opening',
+            label: t('opening.action'),
+            route: ['/contacts', kind, detail.id, 'opening-balance'],
+            query: {},
+          },
+        ]
+      : [];
   if (kind === 'customers') {
     const owes = 'totals' in detail && (detail.totals?.outstanding ?? 0) > 0.005;
     return [
@@ -57,6 +69,7 @@ export function contactActions(
             },
           ]
         : []),
+      ...opening,
     ];
   }
   const unpaid = 'unpaid' in detail ? detail.unpaid : null;
@@ -81,6 +94,7 @@ export function contactActions(
           },
         ]
       : []),
+    ...opening,
   ];
 }
 

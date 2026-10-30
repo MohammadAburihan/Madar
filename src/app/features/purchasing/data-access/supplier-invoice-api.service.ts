@@ -185,6 +185,7 @@ export class SupplierInvoiceApiService {
       currency: doc.currency,
       total: payable(doc),
       outstanding: doc.outstanding_amount,
+      opening: doc['is_opening'] === 'Yes',
       submitted: doc.docstatus === 1,
       cancelled: doc.docstatus === 2,
       payments,

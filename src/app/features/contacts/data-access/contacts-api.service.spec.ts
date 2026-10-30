@@ -112,6 +112,40 @@ describe('ContactsApiService', () => {
     expect(customer.recent.map((r) => r.name)).toEqual(['SI-2', 'PAY-1', 'SI-1']);
   });
 
+  it('counts an opening balance in what a customer owes, but never as their latest sale', async () => {
+    fakeErpnext(
+      {
+        'Sales Invoice': () => [
+          {
+            name: 'SI-OPEN',
+            posting_date: '2026-10-20',
+            status: 'Unpaid',
+            is_return: 0,
+            is_opening: 'Yes',
+            base_grand_total: 250,
+            outstanding_amount: 250,
+            party_account_currency: 'ILS',
+          },
+          {
+            name: 'SI-1',
+            posting_date: '2026-10-10',
+            status: 'Paid',
+            is_return: 0,
+            is_opening: 'No',
+            base_grand_total: 320,
+            outstanding_amount: 0,
+            party_account_currency: 'ILS',
+          },
+        ],
+      },
+      {},
+      { 'Customer/Lina Haddad': { name: 'Lina Haddad', customer_name: 'Lina Haddad' } },
+    );
+    const customer = await api().customer('Lina Haddad', COMPANY, null);
+    expect(customer.totals).toEqual({ invoiced: 570, paid: 320, outstanding: 250 });
+    expect(customer.latest).toMatchObject({ name: 'SI-1' });
+  });
+
   it('reads a supplier’s oldest unpaid invoice and open order, and no money for roles without it', async () => {
     const { listCalls } = fakeErpnext(
       {

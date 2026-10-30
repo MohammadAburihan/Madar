@@ -735,8 +735,47 @@ Review pass 1 (1 medium, 1 low, 1 nit) fixed: a save writes About only when the 
 
 Its screens are still missing from docs/Madar.pen: see the design debt below.
 
+## Opening balance (30 Oct 2026)
+
+"Opening balance" on a customer's or supplier's page (Owner only, with Accounts User or Manager; PERMISSIONS.md has the
+row): money a customer already owed, or the business owed a supplier, from before Madar. One task at
+`/contacts/:kind/:id/opening-balance` (amount, date today or earlier, optional note; review; result with a link to the
+invoice), kept in `OpeningBalanceStore`.
+
+- **Posting.** Like ERPNext's Opening Invoice Creation Tool: a submitted Sales Invoice (customer) or Purchase Invoice
+  (supplier) with `is_opening: 'Yes'`, `update_stock: 0`, `set_posting_time: 1`, posting and due date both the chosen date,
+  one line with no item (qty 1, rate = amount, the unit from Stock Settings or "Nos") booked to the company's Temporary
+  Opening account (`income_account` / `expense_account`) and its default cost center. The currency is sent as the company
+  currency (rate 1), with no pricing rule, no tax template and no rounded total, so the posted total is the amount typed
+  (to the cent). Both doctypes have `remarks`: the `OPN-…` reference sits there after the note. The line's name is
+  "Opening balance" / "رصيد افتتاحي" in the language of the person recording it.
+- **Why not a service-item sale.** The Temporary Opening account is neither income nor expense, so sales, profit and the
+  reports' ledger figures (which already skip `is_opening`) don't change.
+- **Blocked, with the reason.** A disabled contact; a contact billed in another currency (its `default_currency`, or the
+  currency of the account `get_party_account` picks); a business without a Temporary Opening account, a default cost
+  center or a party account.
+- **Confirming.** Looks the reference up first, inserts and submits in one request through `confirmRequest`, submits a
+  leftover draft instead of inserting a second invoice, and checks a posted one against the request. A lost answer locks
+  the details and offers only "Check result" (a lookup; nothing is sent), then the same details under the same reference.
+- **Where it shows.** What the contact owes (list, page, statements, Collect payment and Pay supplier allocations: the
+  invoice is a normal unpaid one). Left out as a sale or purchase: Home's "Today's sales", the Assistant's today figure,
+  the customer's "Latest sale" card (the reports' breakdowns and ledger figures already filtered `is_opening`).
+  The sales and supplier invoice pages carry an "Opening balance" chip, and an opening invoice can't be returned.
+
+Review pass 1 (2 medium, 5 low) fixed: the review shows what is typed, not the request of an earlier refused try (the old request is dropped on edit, and used only while busy, lost or confirmed); amounts are checked and compared at the business's money precision (System Settings `currency_precision`, else the number format), more decimals are refused with a message, and a rounding-only difference is never "changed"; a refusal shows ERPNext's own message; the walk-in customer is blocked in the task; a lost task for the same contact is kept (same reference and details) when the user leaves and returns; a mounted page reloads when the store is reset behind it. A dropped connection during the posting already counts as a lost answer (`confirmRequest`), so only a failed lookup before it reads "nothing was recorded".
+
+Review pass 2 (1 high, 1 medium, 3 low) fixed: the money precision comes from the company currency's number format (readable by every role; System Settings is only a best-effort fallback, then two), and a posted invoice counts as the same unless the total differs by a whole unit or more, so ERPNext's rounding never resets the reference; the result shows the total ERPNext posted; only the page in view (`ionViewWillEnter` / `ionViewDidLeave`) reacts to a store reset, so two cached pages no longer reset each other in a loop; after "Check result" finds nothing the review offers "Start over" (new reference, empty details) next to the same-details retry; ERPNext's own words for a refusal are shown only when Frappe sent them (`_server_messages`, on a 4xx), never a bare error line.
+
+Review pass 3 (1 medium) fixed: the page re-enters only when the store was reset (no contact held: a user or business change) and the page is in view, never because the store holds another contact, so a cached page that is still active during a transition can't take it back; `ionViewWillLeave` also clears the flag, and a page coming back loads once (`ionViewWillEnter`). Deferred nits: the under-one-unit tolerance misses small Desk edits of the amount (a change below one unit reads as the same); the Currency number format is preferred even when `use_number_format_from_currency` is off.
+
+Its screens are still missing from docs/Madar.pen: see the design debt below.
+
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets
 
+- Opening balance: the "Opening balance" button on the customer and supplier page (phone page and desktop panel), the
+  form step (amount, date, note, intro), the review step, the recorded step with "View invoice", the blocked states
+  (inactive contact, walk-in customer, other currency, business not set up, no access), the failed and "couldn't confirm / Check result"
+  states (with "Start over" after a check finds nothing), and the "Opening balance" chip on the sales and supplier invoice pages, EN + AR, mobile + desktop.
 - Contact About: the About field (label, hint, multi-line box) on the customer and supplier form and the About block
   (card with title and text) on the contact page, EN + AR, mobile + desktop.
 - Contact bank-details screens: form section, detail block, invalid-IBAN error, bank-not-saved + Retry, EN + AR.

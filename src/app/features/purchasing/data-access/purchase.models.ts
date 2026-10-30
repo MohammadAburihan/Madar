@@ -138,6 +138,8 @@ export interface SupplierInvoice {
   currency: string;
   total: number;
   outstanding: number;
+  /** A balance brought in from before Madar (an opening invoice), not a purchase. */
+  opening: boolean;
   /** Submitted, so it can be paid; a draft can't. */
   submitted: boolean;
   cancelled: boolean;

@@ -667,7 +667,8 @@
     "receivedAll": "All received in {{accounts}}.",
     "loading": "Loading invoice…",
     "credited": "Credited by credit notes",
-    "continueSale": "Continue sale"
+    "continueSale": "Continue sale",
+    "opening": "Opening balance"
   },
   "inventory": {
     "title": "Inventory",
@@ -1192,7 +1193,8 @@
         "charges": "These receipts carry fixed charges such as freight, which Madar can't combine into one invoice yet. Record the supplier's invoice in ERPNext."
       },
       "pay": "Pay supplier",
-      "viewPayment": "View payment record"
+      "viewPayment": "View payment record",
+      "opening": "Opening balance"
     },
     "pay": {
       "title": "Pay supplier",
@@ -2732,6 +2734,125 @@
       "continue": "Continue without bank details",
       "detailTitle": "Bank details",
       "detailFailed": "Check the connection and try again."
+    },
+    "opening": {
+      "action": "Opening balance",
+      "title": "Opening balance",
+      "subtitle": {
+        "customers": "{{name}} · They owe us",
+        "suppliers": "{{name}} · We owe them"
+      },
+      "intro": {
+        "customers": "Money this customer already owed you before Madar. It is recorded as an opening invoice, not a sale, so sales and profit don't change.",
+        "suppliers": "Money you already owed this supplier before Madar. It is recorded as an opening invoice, not an expense, so profit doesn't change."
+      },
+      "step2": "2 of 2 · Check before recording",
+      "amount": "Amount *",
+      "amountError": "Enter an amount above 0",
+      "date": "Date *",
+      "dateHint": "When it was first owed: today or earlier.",
+      "dateError": "Pick today or an earlier date",
+      "note": "Note (optional)",
+      "toReview": "Review",
+      "reviewTitle": "Review opening balance",
+      "ready": "Ready to record",
+      "card": {
+        "customers": "{{name}} owes you {{amount}}",
+        "suppliers": "You owe {{name}} {{amount}}"
+      },
+      "cardMessage": {
+        "customers": "An opening invoice for {{amount}} dated {{date}} is added to what {{name}} owes you. It is not a sale.",
+        "suppliers": "An opening invoice for {{amount}} dated {{date}} is added to what you owe {{name}}. It is not an expense."
+      },
+      "rows": {
+        "direction": "Type",
+        "amount": "Amount",
+        "date": "Date",
+        "note": "Note"
+      },
+      "direction": {
+        "customers": "They owe us",
+        "suppliers": "We owe them"
+      },
+      "none": "None",
+      "record": "Record opening balance",
+      "recording": "Recording…",
+      "edit": "Edit",
+      "reference": "Reference {{reference}}",
+      "itemName": "Opening balance",
+      "recordedTitle": "Opening balance recorded",
+      "recorded": "Recorded",
+      "recordedCard": "{{amount}} opening balance recorded",
+      "recordedMessage": {
+        "customers": "Invoice {{invoice}} is dated {{date}}. It now counts in what {{name}} owes you.",
+        "suppliers": "Invoice {{invoice}} is dated {{date}}. It now counts in what you owe {{name}}."
+      },
+      "viewInvoice": "View invoice",
+      "done": "Back to {{name}}",
+      "loading": "Loading…",
+      "retry": "Try again",
+      "loadFailed": {
+        "title": "Couldn't load this contact",
+        "message": "Check your connection and try again."
+      },
+      "noAccess": {
+        "title": "You can't record opening balances",
+        "message": "Recording opening balances is for the Owner."
+      },
+      "blocked": {
+        "disabled": {
+          "title": "This contact is inactive",
+          "message": "ERPNext refuses new invoices for an inactive customer or supplier. Reactivate them first, then record the opening balance."
+        },
+        "currency": {
+          "title": "Not in the business currency",
+          "message": "This contact is billed in another currency, and opening balances are recorded in the business currency only. Record it in ERPNext."
+        },
+        "setup": {
+          "title": "The business isn't set up for this yet",
+          "message": "It needs a Temporary Opening account, a default cost center and a receivable or payable account for this contact. Ask your administrator to add them."
+        },
+        "missing": {
+          "title": "Contact not found",
+          "message": "This customer or supplier doesn't exist in this business."
+        },
+        "walkIn": {
+          "title": "The walk-in customer can't have an opening balance",
+          "message": "Every walk-in sale posts to this customer and is paid on the spot. Record the debt under the customer who owes it."
+        }
+      },
+      "failed": {
+        "permission": {
+          "title": "Not allowed",
+          "message": "Your role can't record this opening balance. Nothing was recorded."
+        },
+        "offline": {
+          "title": "No connection",
+          "message": "Nothing was recorded. Check your connection and try again."
+        },
+        "error": {
+          "title": "Couldn't record the opening balance",
+          "message": "ERPNext refused it. Nothing was recorded."
+        },
+        "changed": {
+          "title": "That opening balance was changed",
+          "message": "The invoice recorded earlier no longer matches these details, so it isn't shown as this result. Check it on the contact's page before recording again."
+        }
+      },
+      "unresolved": {
+        "title": "Couldn't confirm the result",
+        "message": "The answer from ERPNext was lost, so the opening balance may or may not be recorded. Check the result before doing anything else. Reference {{reference}}."
+      },
+      "check": "Check result",
+      "checking": "Checking…",
+      "pending": "Still can't reach ERPNext. Try again in a moment.",
+      "notCreated": {
+        "title": "Not recorded",
+        "message": "The first try wasn't found under this reference. Record the same details again, or start over with a new reference."
+      },
+      "amountWhole": "Use a whole number, with no decimals",
+      "amountDecimals": "Use at most {{digits}} decimals",
+      "startOver": "Start over"
     }
   },
   "settings": {

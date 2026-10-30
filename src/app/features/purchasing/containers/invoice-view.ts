@@ -103,6 +103,9 @@ export function invoiceView(
       tone: status === 'paid' ? 'tint' : 'warning',
     },
   ];
+  if (invoice.opening) {
+    chips.push({ label: tr.t('purchase.invoice.opening'), tone: 'tint' });
+  }
   if (order) {
     chips.push({
       label: tr.t('purchase.invoice.orderChip', {
