@@ -189,6 +189,7 @@ export class AssistantToolsService {
           company,
           ['docstatus', '=', 1],
           ['is_return', '=', 0],
+          ['is_opening', '!=', 'Yes'],
           ['posting_date', '=', scope.today],
           ...own,
         ],

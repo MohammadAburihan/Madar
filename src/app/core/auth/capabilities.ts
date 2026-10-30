@@ -49,6 +49,8 @@ export interface Capabilities {
   manageWorkers: boolean;
   /** Pay workers an advance from the business's payment accounts. */
   giveAdvances: boolean;
+  /** Record what a customer or supplier already owed before Madar, as an opening invoice. */
+  recordOpeningBalance: boolean;
   /** The Approvals inbox: steps ERPNext's workflows let the user's roles take. */
   approve: boolean;
   /** See and edit a contact's bank details (a Bank Account in ERPNext; Accounts User or Manager). */
@@ -89,6 +91,7 @@ const SALES_ROLE: Capabilities = {
   addBanks: false,
   manageWorkers: false,
   giveAdvances: false,
+  recordOpeningBalance: false,
   approve: false,
   manageItems: false,
   setItemPrices: false,
@@ -123,6 +126,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addBanks: true,
     manageWorkers: true,
     giveAdvances: true,
+    recordOpeningBalance: true,
     approve: true,
     manageItems: true,
     setItemPrices: true,
@@ -157,6 +161,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
+    recordOpeningBalance: false,
     approve: false,
     manageItems: false,
     setItemPrices: false,
@@ -189,6 +194,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
+    recordOpeningBalance: false,
     approve: false,
     manageItems: false,
     setItemPrices: false,
@@ -222,6 +228,7 @@ const CAPABILITIES: Record<Persona, Capabilities> = {
     addBanks: false,
     manageWorkers: false,
     giveAdvances: false,
+    recordOpeningBalance: false,
     approve: false,
     manageItems: true,
     setItemPrices: false,
@@ -355,6 +362,9 @@ const HR_ROLES = ['HR User', 'HR Manager'];
 // An advance is an Employee Advance (only Expense Approver may submit it) paid by a Payment Entry (accounts roles).
 const GIVE_ADVANCES_NEEDS = [HR_ROLES, ['Expense Approver'], ['Accounts User', 'Accounts Manager']];
 
+// An opening invoice is a Sales or Purchase Invoice created and submitted against a Temporary account (v16 permissions).
+const RECORD_OPENING_BALANCE_NEEDS = [['Accounts User', 'Accounts Manager']];
+
 // Reports read the general ledger and the chart of accounts (v16 permissions).
 const SEE_REPORTS_NEEDS = [['Accounts User', 'Accounts Manager', 'Auditor']];
 
@@ -425,6 +435,9 @@ export function capabilitiesFor(persona: Persona, roles?: readonly string[]): Ca
     giveAdvances:
       caps.giveAdvances &&
       GIVE_ADVANCES_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
+    recordOpeningBalance:
+      caps.recordOpeningBalance &&
+      RECORD_OPENING_BALANCE_NEEDS.every((allowed) => allowed.some((role) => roles.includes(role))),
     // HR roles decide leave there; ERPNext's workflows decide what else each role may approve.
     approve: caps.approve || HR_ROLES.some((role) => roles.includes(role)),
     manageItems: caps.manageItems && roles.includes('Item Manager'),

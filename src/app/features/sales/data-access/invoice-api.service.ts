@@ -26,6 +26,8 @@ export interface InvoiceDetail {
   credited: number;
   /** The invoice itself moved the stock (Quick sale invoices do). */
   delivered: boolean;
+  /** A balance brought in from before Madar (an opening invoice), not a sale. */
+  opening: boolean;
   /** A confirmed sale whose goods (if any) left with the invoice itself, so Madar can take a return against it. */
   returnable: boolean;
   payments: { name: string; amount: number; account: string }[];
@@ -53,6 +55,7 @@ export class InvoiceApiService {
           update_stock: number;
           is_return: number;
           is_pos?: number;
+          is_opening?: string;
           items?: {
             item_code: string;
             delivery_note?: string | null;
@@ -137,13 +140,17 @@ export class InvoiceApiService {
       outstanding: invoice.outstanding_amount,
       credited: credits.account,
       delivered: invoice.docstatus === 1 && (!!invoice.update_stock || deliveredElsewhere),
-      returnable: canReturn({
-        docstatus: invoice.docstatus,
-        isReturn: !!invoice.is_return,
-        isPos: !!invoice.is_pos,
-        movesStock: !!invoice.update_stock,
-        hasGoods: goods.size > 0,
-      }),
+      opening: invoice.is_opening === 'Yes',
+      // An opening invoice has no goods to take back.
+      returnable:
+        invoice.is_opening !== 'Yes' &&
+        canReturn({
+          docstatus: invoice.docstatus,
+          isReturn: !!invoice.is_return,
+          isPos: !!invoice.is_pos,
+          movesStock: !!invoice.update_stock,
+          hasGoods: goods.size > 0,
+        }),
       payments: payments.map((p) => ({
         name: p.name,
         amount: references

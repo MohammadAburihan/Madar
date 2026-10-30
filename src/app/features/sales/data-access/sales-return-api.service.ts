@@ -29,6 +29,7 @@ interface InvoiceDoc {
   docstatus: number;
   is_return?: number;
   is_pos?: number;
+  is_opening?: string;
   customer_name: string;
   update_stock: number;
   base_grand_total: number;
@@ -92,13 +93,16 @@ export class SalesReturnApiService {
       invoice: doc.name,
       customerName: doc.customer_name,
       movesStock: !!doc.update_stock,
-      returnable: canReturn({
-        docstatus: doc.docstatus,
-        isReturn: !!doc.is_return,
-        isPos: !!doc.is_pos,
-        movesStock: !!doc.update_stock,
-        hasGoods: stock.size > 0,
-      }),
+      // An opening invoice has no goods to take back.
+      returnable:
+        doc.is_opening !== 'Yes' &&
+        canReturn({
+          docstatus: doc.docstatus,
+          isReturn: !!doc.is_return,
+          isPos: !!doc.is_pos,
+          movesStock: !!doc.update_stock,
+          hasGoods: stock.size > 0,
+        }),
       total: owed(doc),
       outstanding,
       paid: Math.max(Math.round((owed(doc) - outstanding - credited) * 100) / 100, 0),

@@ -15,6 +15,7 @@ const INVOICE: SupplierInvoice = {
   currency: 'ILS',
   total: 270,
   outstanding: 170,
+  opening: false,
   submitted: true,
   cancelled: false,
   payments: [],

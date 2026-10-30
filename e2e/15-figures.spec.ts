@@ -40,6 +40,8 @@ test.describe('the figures on screen are ERPNext’s @desktop', () => {
       [
         ['docstatus', '=', 1],
         ['is_return', '=', 0],
+        // A balance recorded from before Madar is owed, not sold today.
+        ['is_opening', '!=', 'Yes'],
         ['posting_date', '=', today],
       ],
     );

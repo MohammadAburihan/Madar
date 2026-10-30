@@ -44,6 +44,9 @@ export function invoiceView(
             : 'danger',
     });
   }
+  if (invoice.opening) {
+    chips.push({ label: tr.t('invoice.opening'), tone: 'tint' });
+  }
   if (invoice.delivered) {
     chips.push({ label: tr.t('invoice.goods'), tone: 'tint' });
   }

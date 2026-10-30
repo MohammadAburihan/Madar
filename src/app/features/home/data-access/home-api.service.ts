@@ -78,6 +78,8 @@ export class HomeApiService {
       ['company', '=', ctx.company],
       ['docstatus', '=', 1],
       ['is_return', '=', 0],
+      // A balance brought in from before Madar is owed, not sold today.
+      ['is_opening', '!=', 'Yes'],
       ['posting_date', '=', toIsoDate(ctx.today)],
     ];
     if (OWN_SALES_ONLY.includes(ctx.persona)) {

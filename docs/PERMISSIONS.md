@@ -60,6 +60,7 @@ to the Owner.
 | Add or edit suppliers, including the optional About text (ERPNext needs Purchase Master Manager to add, Purchase Manager to edit) | ✅ | — | — | — | ✅ | — |
 | Contact bank details: see, add and edit a customer's or supplier's bank, IBAN and account number (a Bank Account in ERPNext; needs Accounts User or Accounts Manager, and only the Owner has it by default) | ✅ | — | — | — | — | — |
 | Add a bank that isn't in the list while entering bank details (a Bank record; ERPNext lets only System Manager create one) | ✅ | — | — | — | — | — |
+| Record a customer's or supplier's opening balance (what was owed before Madar; an opening invoice against Temporary Opening, so profit doesn't change; needs Accounts User or Accounts Manager) | ✅ | — | — | — | — | — |
 | Deactivate or reactivate customers and suppliers (the roles that edit each kind; history and balances stay) | ✅ | ✅ customers | ✅ customers | — | ✅ suppliers | ✅ customers |
 | Order from suppliers | ✅ | — | — | — | ✅ | — |
 | Receive goods | ✅ | — | ✅ | ✅ | ✅ | — |

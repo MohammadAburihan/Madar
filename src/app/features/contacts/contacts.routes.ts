@@ -22,6 +22,11 @@ export const contactRoutes: Route[] = [
       import('./containers/contact-history.container').then((m) => m.ContactHistoryContainer),
   },
   {
+    path: 'contacts/:kind/:id/opening-balance',
+    loadComponent: () =>
+      import('./containers/opening-balance.container').then((m) => m.OpeningBalanceContainer),
+  },
+  {
     path: 'contacts/:kind/:id',
     loadComponent: () => import('./containers/contact.container').then((m) => m.ContactContainer),
   },

@@ -58,12 +58,23 @@ const INVOICE: SupplierInvoice = {
   currency: 'ILS',
   total: 270,
   outstanding: 270,
+  opening: false,
   submitted: true,
   cancelled: false,
   payments: [],
 };
 
 describe('invoice view', () => {
+  it('marks an opening balance invoice as one', () => {
+    const chips = (opening: boolean, tr: typeof en) =>
+      view
+        .invoiceView({ ...INVOICE, opening, order: null }, null, false, tr)
+        .chips.map((c) => c.label.replace(/[⁨⁩]/g, ''));
+    expect(chips(true, en)).toContain('Opening balance');
+    expect(chips(true, ar)).toContain('الرصيد الافتتاحي');
+    expect(chips(false, en)).not.toContain('Opening balance');
+  });
+
   it('describes the supplier invoice form like its mock', () => {
     expect(visible(view.invoiceFormHeading(ORDER, en))).toEqual({
       title: 'Supplier invoice',

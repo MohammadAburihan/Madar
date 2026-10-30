@@ -19,6 +19,7 @@ const INVOICE: InvoiceDetail = {
   total: 320,
   outstanding: 80,
   delivered: true,
+  opening: false,
   returnable: true,
   credited: 0,
   payments: [
@@ -79,6 +80,21 @@ describe('invoice view', () => {
     );
     expect(none.payments).toEqual({ title: 'No payments yet', message: '' });
     expect(none.chips[1]).toEqual({ label: 'Payment: Unpaid', tone: 'danger' });
+  });
+
+  it('marks an opening balance invoice as one, in both languages', () => {
+    const opening = { ...INVOICE, opening: true, delivered: false };
+    expect(visible(invoiceView(opening, null, 'ILS', 'en', en)).chips.map((c) => c.label)).toEqual([
+      'Invoice: Confirmed',
+      'Payment: Partially paid',
+      'Opening balance',
+    ]);
+    expect(
+      visible(invoiceView(opening, null, 'ILS', 'ar', ar)).chips.map((c) => c.label),
+    ).toContain('الرصيد الافتتاحي');
+    expect(invoiceView(INVOICE, null, 'ILS', 'en', en).chips.map((c) => c.label)).not.toContain(
+      'Opening balance',
+    );
   });
 
   it('marks drafts and cancelled invoices without a payment chip', () => {
