@@ -1,9 +1,12 @@
-const MARKER = /^Madar contact \S+$/;
+const MARKER = /^Madar contact CON-[0-9A-Z]{7}$/;
 
 /** The About text and the `Madar contact …` line that makes a create repeatable, both kept in the party's details field. */
 export function splitAbout(text: unknown): { about: string; marker: string | null } {
   const rows = String(text ?? '').split(/\r?\n/);
-  const at = rows.findIndex((row) => MARKER.test(row.trim()));
+  let at = rows.length - 1;
+  while (at >= 0 && !MARKER.test(rows[at].trim())) {
+    at--;
+  }
   if (at < 0) {
     return { about: rows.join('\n').trim(), marker: null };
   }

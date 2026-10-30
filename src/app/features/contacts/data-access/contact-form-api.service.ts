@@ -73,9 +73,10 @@ export class ContactFormApiService {
     existing: string | null,
     reference: string,
     country: string,
+    loadedAbout = '',
   ): Promise<string> {
     if (existing) {
-      await this.update(kind, existing, value, country);
+      await this.update(kind, existing, value, country, loadedAbout);
       return existing;
     }
     const party = PARTY[kind];
@@ -117,6 +118,7 @@ export class ContactFormApiService {
     id: string,
     value: ContactFormValue,
     country: string,
+    loadedAbout: string,
   ): Promise<void> {
     const party = PARTY[kind];
     const doc = await firstValueFrom(this.erpnext.doc<PartyDoc>(party.doctype, id));
@@ -202,8 +204,11 @@ export class ContactFormApiService {
           [`${party.prefix}_primary_address`]: addressName ?? null,
           // ERPNext keeps the shown address text when the link goes; it must go with it.
           ...(addressName ? {} : { primary_address: '' }),
-          // Only when changed; the reference line stays so a lost create can still be found.
-          ...(about === stored.about ? {} : { [party.details]: joinAbout(about, stored.marker) }),
+          // Only when the user changed it, so an edit made elsewhere since loading isn't overwritten;
+          // the reference line stays so a lost create can still be found.
+          ...(about === loadedAbout.trim()
+            ? {}
+            : { [party.details]: joinAbout(about, stored.marker) }),
         },
       }),
     );

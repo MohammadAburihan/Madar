@@ -280,6 +280,7 @@ export class ContactFormContainer {
   private readonly banks = signal<string[]>([]);
   private readonly addedBank = signal<string | null>(null);
   private loadedAccount: BankAccountRecord | null = null;
+  private loadedAbout = '';
   private bankRun = 0;
   private savedId: string | null = null;
   private readonly referenceId = signal(newReference('CON'));
@@ -459,6 +460,7 @@ export class ContactFormContainer {
     this.email.set('');
     this.address.set('');
     this.about.set('');
+    this.loadedAbout = '';
     this.showErrors.set(false);
     this.failed.set(null);
     this.unresolved.set(false);
@@ -503,6 +505,7 @@ export class ContactFormContainer {
         this.email.set(value.email);
         this.address.set(value.address);
         this.about.set(value.about);
+        this.loadedAbout = value.about;
       }
     } catch {
       if (run === this.loadRun) {
@@ -658,6 +661,7 @@ export class ContactFormContainer {
         existing,
         this.referenceId(),
         business?.country ?? '',
+        this.loadedAbout,
       );
       if (visit !== this.visit) {
         return;

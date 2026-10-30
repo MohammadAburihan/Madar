@@ -731,6 +731,8 @@ found, and clearing About leaves only the line. Same roles as adding and editing
 the contact sees it. Arabic "نبذة" is in the glossary. Contacts search does not match About: the reference line in the
 same field would make short terms like "con" match every contact made in Madar.
 
+Review pass 1 (1 medium, 1 low, 1 nit) fixed: a save writes About only when the form's text differs from what it loaded (an edit made in Desk meanwhile is no longer overwritten, and the reference line is re-read); the reference line must match `Madar contact CON-` plus 7 characters, the last such line wins; About stays read-only after a bank step fails, because the retry saves only the bank details.
+
 Its screens are still missing from docs/Madar.pen: see the design debt below.
 
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets

@@ -167,12 +167,12 @@ describe('ContactsApiService', () => {
         'Customer/Lina Haddad': {
           name: 'Lina Haddad',
           customer_name: 'Lina Haddad',
-          customer_details: 'Landscaper\n\nMadar contact CON-1',
+          customer_details: 'Landscaper\n\nMadar contact CON-0000001',
         },
         'Supplier/Green Clay': {
           name: 'Green Clay',
           supplier_name: 'Green Clay',
-          supplier_details: 'Madar contact CON-2',
+          supplier_details: 'Madar contact CON-0000002',
         },
       },
     );

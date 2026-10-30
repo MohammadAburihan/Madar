@@ -116,6 +116,7 @@ describe('Contact About on the form', () => {
     save(root).click();
     await fixture.whenStable();
     expect(api.save.mock.calls[0][1]).toMatchObject({ about: '' });
+    expect(api.save.mock.calls[0][5]).toBe('Pots');
   });
 
   it('shows the load error and no editable form when the record fails to load', async () => {

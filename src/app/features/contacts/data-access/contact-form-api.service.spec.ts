@@ -178,12 +178,12 @@ describe('ContactFormApiService', () => {
         'Customer/Lina Haddad': {
           name: 'Lina Haddad',
           customer_name: 'Lina Haddad',
-          customer_details: 'Wholesale buyer\n\nMadar contact CON-9',
+          customer_details: 'Wholesale buyer\n\nMadar contact CON-0000009',
         },
         'Supplier/Green Clay': {
           name: 'Green Clay',
           supplier_name: 'Green Clay',
-          supplier_details: 'Madar contact CON-2',
+          supplier_details: 'Madar contact CON-0000002',
         },
       },
     );
@@ -199,7 +199,7 @@ describe('ContactFormApiService', () => {
         'Supplier/Green Clay': {
           name: 'Green Clay',
           supplier_name: 'Green Clay',
-          supplier_details: 'Old text\n\nMadar contact CON-2',
+          supplier_details: 'Old text\n\nMadar contact CON-0000002',
         },
       },
     );
@@ -209,9 +209,10 @@ describe('ContactFormApiService', () => {
       'Green Clay',
       'X',
       '',
+      'Old text',
     );
     expect(postCalls.at(-1)?.body['doc']).toMatchObject({
-      supplier_details: 'Pots\n\nMadar contact CON-2',
+      supplier_details: 'Pots\n\nMadar contact CON-0000002',
     });
     await api().save(
       'suppliers',
@@ -219,9 +220,10 @@ describe('ContactFormApiService', () => {
       'Green Clay',
       'X',
       '',
+      'Pots',
     );
     expect(postCalls.at(-1)?.body['doc']).toMatchObject({
-      supplier_details: 'Madar contact CON-2',
+      supplier_details: 'Madar contact CON-0000002',
     });
   });
 
@@ -243,7 +245,33 @@ describe('ContactFormApiService', () => {
       'Lina Haddad',
       'X',
       '',
+      'Old text',
     );
     expect(postCalls.at(-1)?.body['doc']).toMatchObject({ customer_details: '' });
+  });
+
+  it('leaves About alone when the form still holds what it loaded, even if it changed since', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      {
+        'Supplier/Green Clay': {
+          name: 'Green Clay',
+          supplier_name: 'Green Clay',
+          supplier_details: 'Edited in Desk\n\nMadar contact CON-0000002',
+        },
+      },
+    );
+    await api().save(
+      'suppliers',
+      { ...VALUE, about: 'Loaded text', address: '', phone: '', email: '' },
+      'Green Clay',
+      'X',
+      '',
+      'Loaded text',
+    );
+    expect(postCalls.at(-1)?.body['doc']).toMatchObject({
+      supplier_details: 'Edited in Desk\n\nMadar contact CON-0000002',
+    });
   });
 });
