@@ -5,6 +5,7 @@ import { PartyBalancesService, inCompany } from '../../../core/customers/party-b
 import { ErpnextClient, Filter } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { Page, PageFetch, mapPage, mergeSources, pageOf } from '../../../core/util/paged-list';
+import { splitAbout } from './contact-about';
 import {
   ContactInfo,
   ContactKind,
@@ -583,6 +584,7 @@ function info(doc: PartyDoc, name: string): ContactInfo {
     email: doc.email_id ?? null,
     address: lines(doc.primary_address),
     active: !doc['disabled'],
+    about: splitAbout(doc['customer_details'] ?? doc['supplier_details']).about || null,
   };
 }
 

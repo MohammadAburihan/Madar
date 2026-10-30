@@ -26,6 +26,7 @@ import { FeedbackCardComponent } from '../../../shared/ui/feedback-card.componen
 import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.component';
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { SelectFieldComponent } from '../../../shared/ui/select-field.component';
+import { TextAreaFieldComponent } from '../../../shared/ui/text-area-field.component';
 import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 import { BankDetailsSectionComponent } from '../components/bank-details-section.component';
 import { BankChangedError, ContactBankApiService } from '../data-access/contact-bank-api.service';
@@ -52,6 +53,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     LanguageSwitcherComponent,
     PageHeadingComponent,
     SelectFieldComponent,
+    TextAreaFieldComponent,
     TextFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -127,6 +129,14 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         autocomplete="street-address"
         [value]="address()"
         (valueChange)="address.set($event)"
+      />
+      <app-text-area-field
+        [label]="txt.about"
+        [hint]="txt.aboutHint"
+        [readonly]="!!bankFailure()"
+        [maxlength]="1000"
+        [value]="about()"
+        (valueChange)="about.set($event)"
       />
       @if (bankShown()) {
         @if (bankState() === 'loading') {
@@ -247,6 +257,7 @@ export class ContactFormContainer {
   protected readonly phone = signal('');
   protected readonly email = signal('');
   protected readonly address = signal('');
+  protected readonly about = signal('');
   private readonly chosenKind = signal<ContactKind | null>(null);
   /** Fixed once a create is sent: checking and saving again must stay with that kind. */
   protected readonly lockedKind = signal<ContactKind | null>(null);
@@ -341,6 +352,8 @@ export class ContactFormContainer {
       email: t('contacts.form.email'),
       emailError: t('contacts.form.emailError'),
       address: t('contacts.form.address'),
+      about: t('contacts.form.about'),
+      aboutHint: t('contacts.form.aboutHint'),
       bank: {
         section: {
           heading: t('contacts.bank.heading'),
@@ -445,6 +458,7 @@ export class ContactFormContainer {
     this.phone.set('');
     this.email.set('');
     this.address.set('');
+    this.about.set('');
     this.showErrors.set(false);
     this.failed.set(null);
     this.unresolved.set(false);
@@ -488,6 +502,7 @@ export class ContactFormContainer {
         this.phone.set(value.phone);
         this.email.set(value.email);
         this.address.set(value.address);
+        this.about.set(value.about);
       }
     } catch {
       if (run === this.loadRun) {
@@ -633,7 +648,13 @@ export class ContactFormContainer {
       const business = await this.business.ensure();
       const saved = await this.api.save(
         kind,
-        { name: this.name(), phone: this.phone(), email: this.email(), address: this.address() },
+        {
+          name: this.name(),
+          phone: this.phone(),
+          email: this.email(),
+          address: this.address(),
+          about: this.about(),
+        },
         existing,
         this.referenceId(),
         business?.country ?? '',

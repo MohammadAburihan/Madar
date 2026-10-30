@@ -18,6 +18,8 @@ export interface ContactInfo {
   address: string[];
   /** Not disabled in ERPNext: listed, and can be sold to or bought from. */
   active: boolean;
+  /** What they supply, or who they are; null when empty. */
+  about: string | null;
 }
 
 export interface CustomerDetail extends ContactInfo {
@@ -42,6 +44,8 @@ export interface ContactFormValue {
   phone: string;
   email: string;
   address: string;
+  /** Free text on what they supply or who they are; empty means none. */
+  about: string;
 }
 
 export interface HistoryEntry {

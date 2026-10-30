@@ -44,7 +44,7 @@ async function open(options: Options = {}) {
   TestBed.resetTestingModule();
   const form = {
     save: vi.fn().mockResolvedValue('Nour'),
-    load: vi.fn().mockResolvedValue({ name: 'Nour', phone: '', email: '', address: '' }),
+    load: vi.fn().mockResolvedValue({ name: 'Nour', phone: '', email: '', address: '', about: '' }),
     find: vi.fn(),
   };
   const bank = {

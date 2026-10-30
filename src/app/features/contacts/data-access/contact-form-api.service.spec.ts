@@ -10,6 +10,7 @@ const VALUE = {
   phone: '059-1',
   email: 'nour@example.com',
   address: 'Jerusalem',
+  about: '',
 };
 const api = () => TestBed.inject(ContactFormApiService);
 
@@ -72,7 +73,7 @@ describe('ContactFormApiService', () => {
     );
     await api().save(
       'customers',
-      { name: 'Lina Haddad', phone: '059-new', email: '', address: '12 Garden Street' },
+      { name: 'Lina Haddad', phone: '059-new', email: '', address: '12 Garden Street', about: '' },
       'Lina Haddad',
       'CON-1',
       'Palestine',
@@ -140,7 +141,7 @@ describe('ContactFormApiService', () => {
     );
     await api().save(
       'customers',
-      { name: 'Lina Haddad', phone: '', email: '', address: '' },
+      { name: 'Lina Haddad', phone: '', email: '', address: '', about: '' },
       'Lina Haddad',
       'CON-1',
       'Palestine',
@@ -150,5 +151,99 @@ describe('ContactFormApiService', () => {
       customer_primary_address: null,
       primary_address: '',
     });
+  });
+
+  it('keeps the About text with the Madar reference on a create', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.insert': () => ({ name: 'Nour Saleh' }) },
+    );
+    await api().save(
+      'suppliers',
+      { ...VALUE, about: ' Clay pots\nand soil ' },
+      null,
+      'CON-1',
+      'Palestine',
+    );
+    expect(postCalls[0].body['doc']).toMatchObject({
+      supplier_details: 'Clay pots\nand soil\n\nMadar contact CON-1',
+    });
+  });
+
+  it('loads About without the Madar reference line', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Customer/Lina Haddad': {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          customer_details: 'Wholesale buyer\n\nMadar contact CON-9',
+        },
+        'Supplier/Green Clay': {
+          name: 'Green Clay',
+          supplier_name: 'Green Clay',
+          supplier_details: 'Madar contact CON-2',
+        },
+      },
+    );
+    expect((await api().load('customers', 'Lina Haddad')).about).toBe('Wholesale buyer');
+    expect((await api().load('suppliers', 'Green Clay')).about).toBe('');
+  });
+
+  it('writes a changed About, keeping the reference line, and clears it when emptied', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      {
+        'Supplier/Green Clay': {
+          name: 'Green Clay',
+          supplier_name: 'Green Clay',
+          supplier_details: 'Old text\n\nMadar contact CON-2',
+        },
+      },
+    );
+    await api().save(
+      'suppliers',
+      { ...VALUE, about: 'Pots', address: '', phone: '', email: '' },
+      'Green Clay',
+      'X',
+      '',
+    );
+    expect(postCalls.at(-1)?.body['doc']).toMatchObject({
+      supplier_details: 'Pots\n\nMadar contact CON-2',
+    });
+    await api().save(
+      'suppliers',
+      { ...VALUE, about: '  ', address: '', phone: '', email: '' },
+      'Green Clay',
+      'X',
+      '',
+    );
+    expect(postCalls.at(-1)?.body['doc']).toMatchObject({
+      supplier_details: 'Madar contact CON-2',
+    });
+  });
+
+  it('clears About fully when the party has no reference line', async () => {
+    const { postCalls } = fakeErpnext(
+      {},
+      { 'frappe.client.save': (body) => body['doc'] },
+      {
+        'Customer/Lina Haddad': {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          customer_details: 'Old text',
+        },
+      },
+    );
+    await api().save(
+      'customers',
+      { ...VALUE, about: '', address: '', phone: '', email: '' },
+      'Lina Haddad',
+      'X',
+      '',
+    );
+    expect(postCalls.at(-1)?.body['doc']).toMatchObject({ customer_details: '' });
   });
 });

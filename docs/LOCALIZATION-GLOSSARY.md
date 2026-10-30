@@ -37,6 +37,7 @@ Use these terms across navigation, headings, labels, errors, statuses and access
 | Reports | التقارير |
 | Profit / sales income / cost of goods sold / expenses | الربح / إيرادات المبيعات / تكلفة البضاعة المباعة / المصروفات |
 | Money in / money out / net for the period | الأموال الواردة / الأموال الصادرة / الصافي للفترة |
+| About (a contact) | نبذة |
 | Bank details | بيانات البنك |
 | IBAN | رقم الآيبان (IBAN) |
 | Account number (bank) | رقم الحساب |

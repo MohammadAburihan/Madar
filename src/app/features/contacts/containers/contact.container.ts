@@ -22,6 +22,7 @@ import { LanguageSwitcherComponent } from '../../../shared/ui/language-switcher.
 import { PageHeadingComponent } from '../../../shared/ui/page-heading.component';
 import { StatusChipComponent } from '../../../shared/ui/status-chip.component';
 import { TotalsCardComponent } from '../../../shared/ui/totals-card.component';
+import { AboutCardComponent } from '../components/about-card.component';
 import { BankDetailsCardComponent } from '../components/bank-details-card.component';
 import { ContactBankApiService } from '../data-access/contact-bank-api.service';
 import { ContactsApiService } from '../data-access/contacts-api.service';
@@ -45,6 +46,7 @@ import {
 @Component({
   selector: 'app-contact',
   imports: [
+    AboutCardComponent,
     BackLinkComponent,
     BankDetailsCardComponent,
     ConfirmDialogComponent,
@@ -91,6 +93,9 @@ import {
       }
       @if (v.lines) {
         <p class="lines">{{ v.lines }}</p>
+      }
+      @if (v.about) {
+        <app-about-card [title]="txt.aboutTitle" [text]="v.about" />
       }
       @if (bankView(); as b) {
         <app-bank-details-card [title]="b.title" [rows]="b.rows" />
@@ -222,6 +227,7 @@ export class ContactContainer {
       retry: t('contacts.retry'),
       noAccess: { title: t('contacts.noAccess.title'), message: t('contacts.noAccess.message') },
       history: t('contacts.viewTransactions'),
+      aboutTitle: t('contacts.about.title'),
       editCustomer: t('contacts.editContact'),
       editSupplier: t('contacts.editSupplier'),
       inactive: t('contacts.activation.inactive'),
@@ -259,6 +265,7 @@ export class ContactContainer {
       active: detail.active,
       subtitle: contactSubtitle(kind, detail.id, tr),
       lines: contactLines(detail),
+      about: detail.about,
       // ERPNext refuses new sales or purchases with an inactive contact: none are offered.
       actions: detail.active ? contactActions(kind, detail, this.caps(), tr) : [],
     };

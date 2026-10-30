@@ -721,8 +721,22 @@ Optional Bank, IBAN and Account number on the customer and supplier form, shown 
 
 Its screens are still missing from docs/Madar.pen: see the design debt below.
 
+## Contact About (30 Oct 2026)
+
+Optional multi-line "About" text on the customer and supplier form ("What they supply, or who they are"), shown on the
+contact page when set. Stored in ERPNext's `customer_details` / `supplier_details` (Text, checked in the v16 doctype
+JSON). Madar already kept its `Madar contact CON-…` reference line there, so the field holds the text, a blank line, then
+that line: the form and page never show the line (`contact-about.ts`), a save keeps it so a lost create can still be
+found, and clearing About leaves only the line. Same roles as adding and editing each kind of contact; everyone who sees
+the contact sees it. Arabic "نبذة" is in the glossary. Contacts search does not match About: the reference line in the
+same field would make short terms like "con" match every contact made in Madar.
+
+Its screens are still missing from docs/Madar.pen: see the design debt below.
+
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets
 
+- Contact About: the About field (label, hint, multi-line box) on the customer and supplier form and the About block
+  (card with title and text) on the contact page, EN + AR, mobile + desktop.
 - Contact bank-details screens: form section, detail block, invalid-IBAN error, bank-not-saved + Retry, EN + AR.
 - Icons on the Home quick actions: all Home frames, EN + AR, mobile, tablet and desktop.
 - Icons on the phone More menu rows, EN + AR.
