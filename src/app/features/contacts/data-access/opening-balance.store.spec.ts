@@ -188,7 +188,6 @@ describe('OpeningBalanceStore', () => {
       account: 'Temporary Opening - RN',
       costCenter: 'Main - RN',
       uom: 'Nos',
-      precision: 2,
     });
     expect([store.state(), store.result()]).toEqual([
       'confirmed',
@@ -307,6 +306,47 @@ describe('OpeningBalanceStore', () => {
     api.record.mockResolvedValue({ name: 'ACC-SINV-1', total: 50 });
     await store.confirm('x');
     expect(api.record.mock.calls[1][0].amount).toBe(50);
+  });
+
+  it('shows no technical error line as ERPNext words, nor a server error without Frappe words', async () => {
+    const { store, api } = await filled('100');
+    api.record.mockRejectedValue(
+      new HttpErrorResponse({ status: 500, error: { exception: 'OperationalError: lock wait' } }),
+    );
+    await store.confirm('x');
+    expect([store.failure(), store.failureMessage()]).toEqual(['error', null]);
+    api.record.mockRejectedValue(
+      new HttpErrorResponse({
+        status: 500,
+        error: { _server_messages: JSON.stringify([JSON.stringify({ message: 'Server said' })]) },
+      }),
+    );
+    await store.confirm('x');
+    expect(store.failureMessage()).toBeNull();
+  });
+
+  it('starts over with a new reference and empty details only after the check found nothing', async () => {
+    const { store, api } = await filled('100');
+    const reference = store.reference();
+    store.startOver();
+    expect(store.reference()).toBe(reference);
+    api.record.mockRejectedValue(new UnresolvedError());
+    await store.confirm('x');
+    store.startOver();
+    expect(store.state()).toBe('unresolved');
+    expect(store.reference()).toBe(reference);
+    api.posted.mockResolvedValue(null);
+    await store.checkResult();
+    store.startOver();
+    expect([
+      store.reference() === reference,
+      store.lost(),
+      store.amountInput(),
+      store.notCreated(),
+    ]).toEqual([false, false, '', false]);
+    expect(store.partyId()).toBe('Lina Haddad');
+    await vi.waitFor(() => expect(store.loaded()).toBe(true));
+    expect(api.target).toHaveBeenCalledTimes(2);
   });
 
   it('keeps a lost task for the same contact after a not-found check, with its reference and details', async () => {

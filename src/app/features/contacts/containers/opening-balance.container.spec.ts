@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import { translocoTesting } from '../../../../testing/real-translator';
 import { SessionService } from '../../../core/auth/session.service';
@@ -124,5 +124,45 @@ describe('OpeningBalanceContainer', () => {
     button?.click();
     await settle(fixture);
     expect(text(el)).toContain('Use at most 2 decimals');
+  });
+
+  it('lets only the page in view react to the store, so cached pages do not reset each other', async () => {
+    const { fixture: a, api } = await setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    (a.componentInstance as unknown as { ionViewDidLeave(): void }).ionViewDidLeave();
+
+    const b = TestBed.createComponent(OpeningBalanceContainer);
+    b.componentRef.setInput('kind', 'customers');
+    b.componentRef.setInput('id', 'Sami Khoury');
+    await settle(b);
+    await settle(a);
+    await settle(b);
+
+    expect(api.target.mock.calls.map((c) => c[1])).toEqual(['Lina Haddad', 'Sami Khoury']);
+    expect(TestBed.inject(OpeningBalanceStore).partyId()).toBe('Sami Khoury');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('offers Start over after a check finds nothing, and starts a fresh task', async () => {
+    const { fixture, el, api, store } = await setup();
+    store.setAmount('100');
+    store.review();
+    const { UnresolvedError } = await import('../../../core/erpnext/confirmation');
+    api.record.mockRejectedValue(new UnresolvedError());
+    await store.confirm('x');
+    api.posted.mockResolvedValue(null);
+    await store.checkResult();
+    await settle(fixture);
+    const reference = store.reference();
+    expect(text(el)).toContain("wasn't found under this reference");
+    const button = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Start over'),
+    );
+    expect(button).toBeTruthy();
+    button?.click();
+    await settle(fixture);
+    expect(store.reference()).not.toBe(reference);
+    expect(text(el)).toContain('Amount');
+    expect(text(el)).not.toContain('Start over');
   });
 });

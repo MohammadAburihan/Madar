@@ -2848,10 +2848,11 @@
       "pending": "Still can't reach ERPNext. Try again in a moment.",
       "notCreated": {
         "title": "Not recorded",
-        "message": "The check found no opening balance under this reference. You can record it again."
+        "message": "The first try wasn't found under this reference. Record the same details again, or start over with a new reference."
       },
       "amountWhole": "Use a whole number, with no decimals",
-      "amountDecimals": "Use at most {{digits}} decimals"
+      "amountDecimals": "Use at most {{digits}} decimals",
+      "startOver": "Start over"
     }
   },
   "settings": {

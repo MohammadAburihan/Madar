@@ -8,6 +8,7 @@ export interface OpeningReviewText {
   record: string;
   recording: string;
   edit: string;
+  startOver: string;
   reference: string;
 }
 
@@ -33,6 +34,11 @@ export interface OpeningReviewText {
         {{ text().edit }}
       </button>
     }
+    @if (canStartOver()) {
+      <button type="button" class="md-btn" [disabled]="busy()" (click)="startOver.emit()">
+        {{ text().startOver }}
+      </button>
+    }
     <p class="muted">{{ text().reference }}</p>
   `,
   styles: `
@@ -49,6 +55,9 @@ export class OpeningBalanceReviewComponent {
   readonly busy = input(false);
   /** The details can be changed again; not after a lost answer, whose request may still land. */
   readonly canEdit = input(true);
+  /** "Check result" found nothing: the user may drop the task instead of recording it again. */
+  readonly canStartOver = input(false);
+  readonly startOver = output<void>();
   readonly record = output<void>();
   readonly edit = output<void>();
 }

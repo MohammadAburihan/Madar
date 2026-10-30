@@ -26,7 +26,6 @@ const request = (overrides: Partial<OpeningRequest> = {}): OpeningRequest => ({
   account: 'Temporary Opening - RN',
   costCenter: 'Main - RN',
   uom: 'Nos',
-  precision: 2,
   ...overrides,
 });
 
@@ -53,7 +52,9 @@ interface Setup {
   submit?: (body: Record<string, unknown>) => unknown;
   stockUom?: string | null | (() => never);
   currencyPrecision?: string;
+  /** System Settings' number format; the read is refused (as for a role without System Manager) when unset. */
   numberFormat?: string;
+  currencyFormat?: string;
 }
 
 function setup(s: Setup = {}) {
@@ -69,17 +70,24 @@ function setup(s: Setup = {}) {
       'frappe.client.get_value': (body) =>
         body['doctype'] === 'Company'
           ? { cost_center: s.costCenter === undefined ? 'Main - RN' : s.costCenter }
-          : { account_currency: s.accountCurrency ?? 'ILS' },
-      'frappe.client.get_single_value': (body) =>
-        body['doctype'] === 'System Settings'
-          ? body['field'] === 'currency_precision'
+          : body['doctype'] === 'Currency'
+            ? { number_format: s.currencyFormat ?? '#,###.##' }
+            : { account_currency: s.accountCurrency ?? 'ILS' },
+      'frappe.client.get_single_value': (body) => {
+        if (body['doctype'] === 'System Settings') {
+          if (s.numberFormat === undefined && s.currencyPrecision === undefined) {
+            return throwError(() => new HttpErrorResponse({ status: 403 }));
+          }
+          return body['field'] === 'currency_precision'
             ? (s.currencyPrecision ?? '')
-            : (s.numberFormat ?? '#,###.##')
-          : typeof s.stockUom === 'function'
-            ? s.stockUom()
-            : s.stockUom === undefined
-              ? 'Unit'
-              : s.stockUom,
+            : (s.numberFormat ?? '');
+        }
+        return typeof s.stockUom === 'function'
+          ? s.stockUom()
+          : s.stockUom === undefined
+            ? 'Unit'
+            : s.stockUom;
+      },
       'frappe.client.insert': s.insert ?? (() => POSTED),
       'frappe.client.submit': s.submit ?? (() => POSTED),
     },
@@ -116,21 +124,33 @@ describe('OpeningBalanceApiService target', () => {
     });
   });
 
-  it('reads the money precision from System Settings, else from the number format, else two', async () => {
-    setup({ currencyPrecision: '3' });
-    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(3);
+  it('reads the money precision from the currency, which every role can read', async () => {
+    const precision = async () =>
+      (await api().target('customers', 'Lina Haddad', BUSINESS)).precision;
+    setup({ currencyFormat: '#.###' });
+    expect(await precision()).toBe(0);
     TestBed.resetTestingModule();
-    setup({ currencyPrecision: '0' });
-    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(0);
+    setup({ currencyFormat: '#,###.###' });
+    expect(await precision()).toBe(3);
     TestBed.resetTestingModule();
-    setup({ numberFormat: '#.###' });
-    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(0);
+    setup({ currencyFormat: '#,###.##' });
+    expect(await precision()).toBe(2);
+  });
+
+  it('falls back to System Settings when the currency has no format, and to two when that is refused', async () => {
+    const precision = async () =>
+      (await api().target('customers', 'Lina Haddad', BUSINESS)).precision;
+    setup({ currencyFormat: '', numberFormat: '#.###' });
+    expect(await precision()).toBe(0);
     TestBed.resetTestingModule();
-    setup({ numberFormat: '#.###,###' });
-    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(3);
+    setup({ currencyFormat: '' });
+    expect(await precision()).toBe(2);
     TestBed.resetTestingModule();
-    setup({ numberFormat: 'something new' });
-    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(2);
+    setup({ currencyFormat: 'something new' });
+    expect(await precision()).toBe(2);
+    TestBed.resetTestingModule();
+    setup({ currencyFormat: '#,###.##', currencyPrecision: '3' });
+    expect(await precision()).toBe(3);
   });
 
   it('blocks the walk-in customer, by id or by name', async () => {
@@ -306,24 +326,21 @@ describe('OpeningBalanceApiService record', () => {
     expect((await api().record(request())).total).toBe(250.5);
   });
 
-  it('does not read a rounding-only difference as a change, at any money precision', async () => {
-    for (const [precision, total, amount] of [
-      [0, 251, 251],
-      [1, 250.5, 250.5],
-      [3, 250.505, 250.505],
+  it('reads any difference under one whole unit as the same, whatever the precision', async () => {
+    for (const [total, amount] of [
+      [251, 251],
+      [250.5, 250.504],
+      [250.505, 250.5],
+      [251.4, 251],
     ] as const) {
       TestBed.resetTestingModule();
       setup({ found: [{ ...POSTED, grand_total: total }] });
-      expect((await api().record(request({ precision, amount }))).total).toBe(total);
+      expect((await api().record(request({ amount }))).total).toBe(total);
     }
-    // ERPNext rounded 250.504 to the cent: still the amount asked for at precision 2.
-    TestBed.resetTestingModule();
-    setup({ found: [{ ...POSTED, grand_total: 250.5 }] });
-    expect((await api().record(request({ amount: 250.504 }))).total).toBe(250.5);
-    // A whole unit apart is a change at precision 0.
+    // A Desk edit of the amount is a whole unit or more.
     TestBed.resetTestingModule();
     setup({ found: [{ ...POSTED, grand_total: 252 }] });
-    await expect(api().record(request({ precision: 0, amount: 251 }))).rejects.toBeInstanceOf(
+    await expect(api().record(request({ amount: 251 }))).rejects.toBeInstanceOf(
       OpeningChangedError,
     );
   });

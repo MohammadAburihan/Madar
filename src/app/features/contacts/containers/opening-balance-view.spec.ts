@@ -71,6 +71,13 @@ describe('opening balance view', () => {
     );
   });
 
+  it("shows ERPNext's posted total, so any rounding is visible", () => {
+    const view = visible(
+      openingRecorded('ACC-SINV-1', 251, { ...CUSTOMER, amount: 250.6 }, 'ILS', 'en', en),
+    );
+    expect(view.title).toBe('ILS 251.00 opening balance recorded');
+  });
+
   it('explains each reason an opening balance is blocked, in both languages', () => {
     for (const block of ['disabled', 'currency', 'setup', 'missing', 'walkIn'] as const) {
       expect(openingBlockNotice(block, en).title).not.toMatch(/contacts\.opening/);

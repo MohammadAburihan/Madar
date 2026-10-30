@@ -86,6 +86,7 @@ describe('OpeningBalanceReviewComponent', () => {
       record: 'Record opening balance',
       recording: 'Recording…',
       edit: 'Edit',
+      startOver: 'Start over',
       reference: 'Reference OPN-0A1B2C3',
     },
     title: 'Lina owes you ILS 250.00',
@@ -120,6 +121,19 @@ describe('OpeningBalanceReviewComponent', () => {
     const { el } = await render(OpeningBalanceReviewComponent, { ...inputs, busy: true });
     expect(buttons(el).every((b) => b.disabled)).toBe(true);
     expect(buttons(el)[0].textContent?.trim()).toBe('Recording…');
+  });
+
+  it('offers Start over only when asked to, and emits it', async () => {
+    const { fixture, el } = await render(OpeningBalanceReviewComponent, inputs);
+    expect(buttons(el).map((b) => b.textContent?.trim())).not.toContain('Start over');
+    fixture.componentRef.setInput('canStartOver', true);
+    await fixture.whenStable();
+    const startOver = vi.fn();
+    fixture.componentInstance.startOver.subscribe(startOver);
+    buttons(el)
+      .find((b) => b.textContent?.trim() === 'Start over')
+      ?.click();
+    expect(startOver).toHaveBeenCalledTimes(1);
   });
 
   it('hides Edit once the details can no longer change', async () => {

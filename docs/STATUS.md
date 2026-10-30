@@ -764,6 +764,8 @@ invoice), kept in `OpeningBalanceStore`.
 
 Review pass 1 (2 medium, 5 low) fixed: the review shows what is typed, not the request of an earlier refused try (the old request is dropped on edit, and used only while busy, lost or confirmed); amounts are checked and compared at the business's money precision (System Settings `currency_precision`, else the number format), more decimals are refused with a message, and a rounding-only difference is never "changed"; a refusal shows ERPNext's own message; the walk-in customer is blocked in the task; a lost task for the same contact is kept (same reference and details) when the user leaves and returns; a mounted page reloads when the store is reset behind it. A dropped connection during the posting already counts as a lost answer (`confirmRequest`), so only a failed lookup before it reads "nothing was recorded".
 
+Review pass 2 (1 high, 1 medium, 3 low) fixed: the money precision comes from the company currency's number format (readable by every role; System Settings is only a best-effort fallback, then two), and a posted invoice counts as the same unless the total differs by a whole unit or more, so ERPNext's rounding never resets the reference; the result shows the total ERPNext posted; only the page in view (`ionViewWillEnter` / `ionViewDidLeave`) reacts to a store reset, so two cached pages no longer reset each other in a loop; after "Check result" finds nothing the review offers "Start over" (new reference, empty details) next to the same-details retry; ERPNext's own words for a refusal are shown only when Frappe sent them (`_server_messages`, on a 4xx), never a bare error line.
+
 Its screens are still missing from docs/Madar.pen: see the design debt below.
 
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets
@@ -771,7 +773,7 @@ Its screens are still missing from docs/Madar.pen: see the design debt below.
 - Opening balance: the "Opening balance" button on the customer and supplier page (phone page and desktop panel), the
   form step (amount, date, note, intro), the review step, the recorded step with "View invoice", the blocked states
   (inactive contact, walk-in customer, other currency, business not set up, no access), the failed and "couldn't confirm / Check result"
-  states, and the "Opening balance" chip on the sales and supplier invoice pages, EN + AR, mobile + desktop.
+  states (with "Start over" after a check finds nothing), and the "Opening balance" chip on the sales and supplier invoice pages, EN + AR, mobile + desktop.
 - Contact About: the About field (label, hint, multi-line box) on the customer and supplier form and the About block
   (card with title and text) on the contact page, EN + AR, mobile + desktop.
 - Contact bank-details screens: form section, detail block, invalid-IBAN error, bank-not-saved + Retry, EN + AR.

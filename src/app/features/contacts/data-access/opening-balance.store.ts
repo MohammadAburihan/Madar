@@ -230,6 +230,15 @@ export class OpeningBalanceStore {
     }
   }
 
+  /** After "Check result" found nothing: drops the task, details and reference, for a fresh one. */
+  startOver(): void {
+    if (this.state() !== 'idle' || !this.lost() || !this.notCreated()) {
+      return;
+    }
+    this.start(this.kind(), this.partyId());
+    void this.load();
+  }
+
   /** After an unresolved confirmation: looks the reference up, never sends. */
   async checkResult(): Promise<'found' | 'not-found' | 'pending'> {
     // Only once the confirmation gave up: while it still runs, finding nothing doesn't mean nothing was posted.
@@ -302,7 +311,12 @@ export class OpeningBalanceStore {
     if (erpnextError.kind === 'forbidden') {
       void this.session.checkExpired();
     }
-    this.failureMessage.set(erpnextError.kind === 'server' ? erpnextError.message : null);
+    // Only Frappe's own words for a refusal; a bare HTTP error line means nothing to the user.
+    this.failureMessage.set(
+      erpnextError.kind === 'server' && erpnextError.status >= 400 && erpnextError.status < 500
+        ? erpnextError.userMessage
+        : null,
+    );
     this.failure.set(
       erpnextError.kind === 'forbidden'
         ? 'permission'
@@ -333,7 +347,6 @@ export class OpeningBalanceStore {
       account: target.account,
       costCenter: target.costCenter,
       uom: target.uom,
-      precision: target.precision,
     };
   }
 }

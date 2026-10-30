@@ -113,8 +113,10 @@ import {
           [rows]="v.rows"
           [busy]="store.state() === 'confirming'"
           [canEdit]="!store.lost()"
+          [canStartOver]="store.lost() && store.notCreated() && store.state() === 'idle'"
           (record)="record()"
           (edit)="store.back()"
+          (startOver)="startOver()"
         />
       } @else {
         <app-page-heading [title]="txt.title" [subtitle]="subtitle()" />
@@ -155,6 +157,8 @@ export class OpeningBalanceContainer {
   protected readonly pending = signal(false);
   private entered = false;
   private started = false;
+  /** Ionic keeps left pages alive: only the page in view reacts to the store, or two pages would keep resetting it. */
+  private readonly active = signal(true);
 
   private readonly contactKind = computed<ContactKind>(() =>
     this.kind() === 'suppliers' ? 'suppliers' : 'customers',
@@ -199,6 +203,7 @@ export class OpeningBalanceContainer {
         record: o('record'),
         recording: o('recording'),
         edit: o('edit'),
+        startOver: o('startOver'),
         reference: o('reference', { reference: this.store.reference() }),
       },
       resultText: {
@@ -303,7 +308,7 @@ export class OpeningBalanceContainer {
       const id = this.id();
       // Also reads where the store is, so a reset behind a mounted page (another user, another business) reloads it.
       const here = this.store.partyId() === id && this.store.kind() === kind;
-      if (this.allowed() && (!this.started || !here)) {
+      if (this.active() && this.allowed() && (!this.started || !here)) {
         this.started = true;
         untracked(() => this.enter(kind, id));
       }
@@ -317,6 +322,7 @@ export class OpeningBalanceContainer {
 
   /** Ionic keeps this page alive when it is left and reopened at the same address: each visit starts clean. */
   ionViewWillEnter(): void {
+    this.active.set(true);
     if (!this.entered) {
       this.entered = true;
       return;
@@ -324,6 +330,10 @@ export class OpeningBalanceContainer {
     if (this.allowed()) {
       this.enter(this.contactKind(), this.id());
     }
+  }
+
+  ionViewDidLeave(): void {
+    this.active.set(false);
   }
 
   private enter(kind: ContactKind, id: string): void {
@@ -346,6 +356,11 @@ export class OpeningBalanceContainer {
   protected toReview(): void {
     this.showErrors.set(true);
     this.store.review();
+  }
+
+  protected startOver(): void {
+    this.showErrors.set(false);
+    this.store.startOver();
   }
 
   protected async record(): Promise<void> {

@@ -39,7 +39,6 @@ export interface OpeningRequest {
   account: string;
   costCenter: string;
   uom: string;
-  precision: number;
 }
 
 export interface OpeningResult {
@@ -128,7 +127,7 @@ export class OpeningBalanceApiService {
         }),
       ),
       this.defaultUom(),
-      this.moneyPrecision(),
+      this.moneyPrecision(business.currency),
     ]);
     const accountCurrency = partyAccount
       ? (
@@ -152,23 +151,39 @@ export class OpeningBalanceApiService {
     return { ...base, account, costCenter: company.cost_center, blocked: null };
   }
 
-  /** Decimals ERPNext rounds money to: System Settings' currency precision, else its number format's. */
-  private async moneyPrecision(): Promise<number> {
-    const read = (field: string) =>
+  /**
+   * Decimals ERPNext keeps for money: the company currency's number format, which every role reads. A blank
+   * format means the system default; the System Settings read (System Manager only) is a best effort, then two.
+   */
+  private async moneyPrecision(currency: string): Promise<number> {
+    const [own, configured, system] = await Promise.all([
       firstValueFrom(
-        this.erpnext.get<string | number | null>('frappe.client.get_single_value', {
-          doctype: 'System Settings',
-          field,
+        this.erpnext.get<{ number_format?: string | null }>('frappe.client.get_value', {
+          doctype: 'Currency',
+          filters: currency,
+          fieldname: JSON.stringify(['number_format']),
         }),
-      ).catch(() => null);
-    const [precision, format] = await Promise.all([
-      read('currency_precision'),
-      read('number_format'),
+      ).catch(() => null),
+      this.systemSetting('currency_precision'),
+      this.systemSetting('number_format'),
     ]);
-    if (precision !== null && precision !== '' && Number.isInteger(Number(precision))) {
-      return Number(precision);
+    if (configured !== null && configured !== '' && Number.isInteger(Number(configured))) {
+      return Number(configured);
     }
-    return NUMBER_FORMAT_DECIMALS[String(format ?? '')] ?? 2;
+    return (
+      NUMBER_FORMAT_DECIMALS[own?.number_format ?? ''] ??
+      NUMBER_FORMAT_DECIMALS[String(system ?? '')] ??
+      2
+    );
+  }
+
+  private systemSetting(field: string): Promise<string | number | null> {
+    return firstValueFrom(
+      this.erpnext.get<string | number | null>('frappe.client.get_single_value', {
+        doctype: 'System Settings',
+        field,
+      }),
+    ).catch(() => null);
   }
 
   /** ERPNext's own default unit for a line without an item; some roles can't read Stock Settings. */
@@ -254,8 +269,8 @@ export class OpeningBalanceApiService {
     const same =
       doc[partyField(request.kind)] === request.party &&
       doc.is_opening === 'Yes' &&
-      // Within half a unit of the money precision: ERPNext rounds to it, which is not a change.
-      Math.abs(invoiceTotal(doc) - request.amount) < 0.5 / 10 ** request.precision + 1e-9;
+      // Only a Desk edit of the amount counts as a change; rounding by ERPNext (under one unit) never does.
+      Math.abs(invoiceTotal(doc) - request.amount) < 1;
     if (!same) {
       throw new OpeningChangedError(doc.name);
     }
