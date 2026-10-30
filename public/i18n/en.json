@@ -2574,6 +2574,8 @@
       "email": "Email",
       "emailError": "Enter an email like name@example.com.",
       "address": "Address",
+      "about": "About (optional)",
+      "aboutHint": "What they supply, or who they are",
       "save": "Save contact",
       "saving": "Saving…",
       "noAccess": {
@@ -2696,6 +2698,9 @@
           "message": "They're back under Active."
         }
       }
+    },
+    "about": {
+      "title": "About"
     },
     "bank": {
       "heading": "Bank details (optional)",

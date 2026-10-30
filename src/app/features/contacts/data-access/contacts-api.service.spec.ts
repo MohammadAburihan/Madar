@@ -159,6 +159,27 @@ describe('ContactsApiService', () => {
     }
   });
 
+  it('reads About from the details field, without the Madar reference line', async () => {
+    fakeErpnext(
+      {},
+      {},
+      {
+        'Customer/Lina Haddad': {
+          name: 'Lina Haddad',
+          customer_name: 'Lina Haddad',
+          customer_details: 'Landscaper\n\nMadar contact CON-0000001',
+        },
+        'Supplier/Green Clay': {
+          name: 'Green Clay',
+          supplier_name: 'Green Clay',
+          supplier_details: 'Madar contact CON-0000002',
+        },
+      },
+    );
+    expect((await api().customer('Lina Haddad', COMPANY, null)).about).toBe('Landscaper');
+    expect((await api().supplier('Green Clay', COMPANY, false)).about).toBeNull();
+  });
+
   it('gathers a customer’s history newest first, scoped to the owner, with payments’ invoices and accounts', async () => {
     const { listCalls } = fakeErpnext({
       'Sales Invoice': () => [

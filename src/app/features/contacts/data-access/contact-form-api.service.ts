@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
+import { joinAbout, splitAbout } from './contact-about';
 import { ContactFormValue, ContactKind } from './contacts.models';
 
 interface PartyDoc {
@@ -58,6 +59,7 @@ export class ContactFormApiService {
       phone: doc.mobile_no ?? '',
       email: doc.email_id ?? '',
       address: address?.address_line1 ?? '',
+      about: splitAbout(doc[party.details]).about,
     };
   }
 
@@ -71,9 +73,10 @@ export class ContactFormApiService {
     existing: string | null,
     reference: string,
     country: string,
+    loadedAbout = '',
   ): Promise<string> {
     if (existing) {
-      await this.update(kind, existing, value, country);
+      await this.update(kind, existing, value, country, loadedAbout);
       return existing;
     }
     const party = PARTY[kind];
@@ -89,7 +92,7 @@ export class ContactFormApiService {
           ...(value.phone.trim() ? { mobile_no: value.phone.trim() } : {}),
           ...(value.email.trim() ? { email_id: value.email.trim() } : {}),
           ...(address ? { address_line1: address, city: address, country } : {}),
-          [party.details]: `Madar contact ${reference}`,
+          [party.details]: joinAbout(value.about, `Madar contact ${reference}`),
         },
       }),
     );
@@ -115,6 +118,7 @@ export class ContactFormApiService {
     id: string,
     value: ContactFormValue,
     country: string,
+    loadedAbout: string,
   ): Promise<void> {
     const party = PARTY[kind];
     const doc = await firstValueFrom(this.erpnext.doc<PartyDoc>(party.doctype, id));
@@ -188,6 +192,8 @@ export class ContactFormApiService {
     }
     // Saving a contact can touch its party, so the party is read again before its own save.
     const latest = await firstValueFrom(this.erpnext.doc<PartyDoc>(party.doctype, id));
+    const stored = splitAbout(latest[party.details]);
+    const about = value.about.trim();
     // Saving the party also refreshes the phone, email and address it shows from them.
     await firstValueFrom(
       this.erpnext.post('frappe.client.save', {
@@ -198,6 +204,11 @@ export class ContactFormApiService {
           [`${party.prefix}_primary_address`]: addressName ?? null,
           // ERPNext keeps the shown address text when the link goes; it must go with it.
           ...(addressName ? {} : { primary_address: '' }),
+          // Only when the user changed it, so an edit made elsewhere since loading isn't overwritten;
+          // the reference line stays so a lost create can still be found.
+          ...(about === loadedAbout.trim()
+            ? {}
+            : { [party.details]: joinAbout(about, stored.marker) }),
         },
       }),
     );
