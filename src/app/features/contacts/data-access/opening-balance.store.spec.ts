@@ -17,6 +17,7 @@ const TARGET = {
   account: 'Temporary Opening - RN',
   costCenter: 'Main - RN',
   uom: 'Nos',
+  precision: 2,
 };
 
 function setup(target: unknown = TARGET) {
@@ -76,11 +77,13 @@ describe('OpeningBalanceStore', () => {
     expect(store.ready()).toBe(true);
   });
 
-  it('reads typed Arabic digits and rounds the amount to the cent it will post', async () => {
+  it('reads typed Arabic digits and posts the amount typed', async () => {
     const { store } = setup();
+    store.setAmount('٣٠٠٫٥');
+    expect(store.postedAmount()).toBe(300.5);
     store.setAmount('٣٠٠٫٥٠٤');
     expect(store.amount()).toBeCloseTo(300.504);
-    expect(store.postedAmount()).toBe(300.5);
+    expect(store.amountProblem()).toBe('decimals');
     store.setAmount('abc');
     expect(store.postedAmount()).toBe(0);
   });
@@ -93,6 +96,36 @@ describe('OpeningBalanceStore', () => {
     expect(store.ready()).toBe(false);
     store.setDate('');
     expect(store.ready()).toBe(false);
+  });
+
+  it('refuses more decimals than the money precision instead of rounding them away', async () => {
+    const ctx = setup({ ...TARGET, precision: 0 });
+    ctx.store.start('customers', 'Lina Haddad');
+    await ctx.store.load();
+    ctx.store.setAmount('10.5');
+    expect([ctx.store.amountProblem(), ctx.store.ready(), ctx.store.postedAmount()]).toEqual([
+      'decimals',
+      false,
+      0,
+    ]);
+    ctx.store.setAmount('10');
+    expect([ctx.store.amountProblem(), ctx.store.ready(), ctx.store.postedAmount()]).toEqual([
+      null,
+      true,
+      10,
+    ]);
+    ctx.store.setAmount('0');
+    expect(ctx.store.amountProblem()).toBe('invalid');
+  });
+
+  it('allows three decimals where ERPNext keeps three, and refuses a fourth', async () => {
+    const ctx = setup({ ...TARGET, precision: 3 });
+    ctx.store.start('customers', 'Lina Haddad');
+    await ctx.store.load();
+    ctx.store.setAmount('10.125');
+    expect([ctx.store.amountProblem(), ctx.store.postedAmount()]).toEqual([null, 10.125]);
+    ctx.store.setAmount('10.1255');
+    expect(ctx.store.amountProblem()).toBe('decimals');
   });
 
   it('is never ready for a blocked contact', async () => {
@@ -155,6 +188,7 @@ describe('OpeningBalanceStore', () => {
       account: 'Temporary Opening - RN',
       costCenter: 'Main - RN',
       uom: 'Nos',
+      precision: 2,
     });
     expect([store.state(), store.result()]).toEqual([
       'confirmed',
@@ -250,6 +284,52 @@ describe('OpeningBalanceStore', () => {
     api.record.mockRejectedValue(new HttpErrorResponse({ status: 417 }));
     await store.confirm('x');
     expect(store.failure()).toBe('error');
+  });
+
+  it("keeps ERPNext's own words for a refusal, and drops the old request when the form is edited", async () => {
+    const { store, api } = await filled('100');
+    api.record.mockRejectedValue(
+      new HttpErrorResponse({
+        status: 417,
+        error: {
+          _server_messages: JSON.stringify([JSON.stringify({ message: 'Credit limit crossed' })]),
+        },
+      }),
+    );
+    await store.confirm('x');
+    expect([store.failure(), store.failureMessage(), store.sent()?.amount]).toEqual([
+      'error',
+      'Credit limit crossed',
+      100,
+    ]);
+    store.setAmount('50');
+    expect([store.failureMessage(), store.sent()]).toEqual([null, null]);
+    api.record.mockResolvedValue({ name: 'ACC-SINV-1', total: 50 });
+    await store.confirm('x');
+    expect(api.record.mock.calls[1][0].amount).toBe(50);
+  });
+
+  it('keeps a lost task for the same contact after a not-found check, with its reference and details', async () => {
+    const { store, api } = await filled('100');
+    const reference = store.reference();
+    api.record.mockRejectedValue(new UnresolvedError());
+    await store.confirm('x');
+    api.posted.mockResolvedValue(null);
+    await store.checkResult();
+    expect(store.resume('customers', 'Lina Haddad')).toBe(false);
+    expect([store.reference(), store.amountInput(), store.lost(), store.state()]).toEqual([
+      reference,
+      '100',
+      true,
+      'idle',
+    ]);
+    // Another contact starts fresh.
+    expect(store.resume('suppliers', 'Green Clay')).toBe(false);
+    expect([store.reference() === reference, store.amountInput(), store.lost()]).toEqual([
+      false,
+      '',
+      false,
+    ]);
   });
 
   it('reports a posted invoice that no longer matches as changed, with a new reference', async () => {

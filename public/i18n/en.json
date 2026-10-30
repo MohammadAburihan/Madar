@@ -2815,6 +2815,10 @@
         "missing": {
           "title": "Contact not found",
           "message": "This customer or supplier doesn't exist in this business."
+        },
+        "walkIn": {
+          "title": "The walk-in customer can't have an opening balance",
+          "message": "Every walk-in sale posts to this customer and is paid on the spot. Record the debt under the customer who owes it."
         }
       },
       "failed": {
@@ -2845,7 +2849,9 @@
       "notCreated": {
         "title": "Not recorded",
         "message": "The check found no opening balance under this reference. You can record it again."
-      }
+      },
+      "amountWhole": "Use a whole number, with no decimals",
+      "amountDecimals": "Use at most {{digits}} decimals"
     }
   },
   "settings": {

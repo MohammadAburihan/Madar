@@ -26,6 +26,7 @@ const request = (overrides: Partial<OpeningRequest> = {}): OpeningRequest => ({
   account: 'Temporary Opening - RN',
   costCenter: 'Main - RN',
   uom: 'Nos',
+  precision: 2,
   ...overrides,
 });
 
@@ -51,6 +52,8 @@ interface Setup {
   insert?: (body: Record<string, unknown>) => unknown;
   submit?: (body: Record<string, unknown>) => unknown;
   stockUom?: string | null | (() => never);
+  currencyPrecision?: string;
+  numberFormat?: string;
 }
 
 function setup(s: Setup = {}) {
@@ -67,12 +70,16 @@ function setup(s: Setup = {}) {
         body['doctype'] === 'Company'
           ? { cost_center: s.costCenter === undefined ? 'Main - RN' : s.costCenter }
           : { account_currency: s.accountCurrency ?? 'ILS' },
-      'frappe.client.get_single_value': () =>
-        typeof s.stockUom === 'function'
-          ? s.stockUom()
-          : s.stockUom === undefined
-            ? 'Unit'
-            : s.stockUom,
+      'frappe.client.get_single_value': (body) =>
+        body['doctype'] === 'System Settings'
+          ? body['field'] === 'currency_precision'
+            ? (s.currencyPrecision ?? '')
+            : (s.numberFormat ?? '#,###.##')
+          : typeof s.stockUom === 'function'
+            ? s.stockUom()
+            : s.stockUom === undefined
+              ? 'Unit'
+              : s.stockUom,
       'frappe.client.insert': s.insert ?? (() => POSTED),
       'frappe.client.submit': s.submit ?? (() => POSTED),
     },
@@ -105,7 +112,46 @@ describe('OpeningBalanceApiService target', () => {
       account: 'Temporary Opening - RN',
       costCenter: 'Main - RN',
       uom: 'Unit',
+      precision: 2,
     });
+  });
+
+  it('reads the money precision from System Settings, else from the number format, else two', async () => {
+    setup({ currencyPrecision: '3' });
+    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(3);
+    TestBed.resetTestingModule();
+    setup({ currencyPrecision: '0' });
+    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(0);
+    TestBed.resetTestingModule();
+    setup({ numberFormat: '#.###' });
+    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(0);
+    TestBed.resetTestingModule();
+    setup({ numberFormat: '#.###,###' });
+    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(3);
+    TestBed.resetTestingModule();
+    setup({ numberFormat: 'something new' });
+    expect((await api().target('customers', 'Lina Haddad', BUSINESS)).precision).toBe(2);
+  });
+
+  it('blocks the walk-in customer, by id or by name', async () => {
+    setup({
+      party: { name: 'Walk-in Customer', customer_name: 'Walk-in Customer' },
+      docs: {
+        'Customer/Walk-in Customer': {
+          name: 'Walk-in Customer',
+          customer_name: 'Walk-in Customer',
+          disabled: 0,
+        },
+      },
+    });
+    expect((await api().target('customers', 'Walk-in Customer', BUSINESS)).blocked).toBe('walkIn');
+    TestBed.resetTestingModule();
+    setup({
+      docs: {
+        'Customer/CUST-7': { name: 'CUST-7', customer_name: 'Walk-in Customer', disabled: 0 },
+      },
+    });
+    expect((await api().target('customers', 'CUST-7', BUSINESS)).blocked).toBe('walkIn');
   });
 
   it("falls back to ERPNext's default unit when Stock Settings can't be read", async () => {
@@ -258,6 +304,33 @@ describe('OpeningBalanceApiService record', () => {
   it('compares the rounded total when ERPNext rounded it', async () => {
     setup({ found: [{ ...POSTED, grand_total: 250.4, rounded_total: 250.5 }] });
     expect((await api().record(request())).total).toBe(250.5);
+  });
+
+  it('does not read a rounding-only difference as a change, at any money precision', async () => {
+    for (const [precision, total, amount] of [
+      [0, 251, 251],
+      [1, 250.5, 250.5],
+      [3, 250.505, 250.505],
+    ] as const) {
+      TestBed.resetTestingModule();
+      setup({ found: [{ ...POSTED, grand_total: total }] });
+      expect((await api().record(request({ precision, amount }))).total).toBe(total);
+    }
+    // ERPNext rounded 250.504 to the cent: still the amount asked for at precision 2.
+    TestBed.resetTestingModule();
+    setup({ found: [{ ...POSTED, grand_total: 250.5 }] });
+    expect((await api().record(request({ amount: 250.504 }))).total).toBe(250.5);
+    // A whole unit apart is a change at precision 0.
+    TestBed.resetTestingModule();
+    setup({ found: [{ ...POSTED, grand_total: 252 }] });
+    await expect(api().record(request({ precision: 0, amount: 251 }))).rejects.toBeInstanceOf(
+      OpeningChangedError,
+    );
+  });
+
+  it('turns a dropped connection into UnresolvedError, not into a refusal', async () => {
+    setup({ insert: () => throwError(() => new HttpErrorResponse({ status: 0 })) });
+    await expect(api().record(request())).rejects.toBeInstanceOf(UnresolvedError);
   });
 
   it('turns a lost answer into UnresolvedError', async () => {

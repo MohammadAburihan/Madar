@@ -5,7 +5,6 @@ import { TextFieldComponent } from '../../../shared/ui/text-field.component';
 export interface OpeningFormText {
   intro: string;
   amount: string;
-  amountError: string;
   date: string;
   dateHint: string;
   dateError: string;
@@ -26,7 +25,7 @@ export interface OpeningFormText {
       [ltr]="true"
       [suffix]="currency()"
       [readonly]="locked()"
-      [error]="showErrors() && !amountValid() ? text().amountError : null"
+      [error]="showErrors() ? amountError() : null"
       [value]="amount()"
       (valueChange)="amount.set($event)"
     />
@@ -65,7 +64,8 @@ export class OpeningBalanceFormComponent {
   readonly amount = model('');
   readonly date = model('');
   readonly note = model('');
-  readonly amountValid = input(true);
+  /** What is wrong with the amount, in words; null when it is fine. */
+  readonly amountError = input<string | null>(null);
   readonly dateValid = input(true);
   /** Show what is wrong with the fields, after Review was tapped once. */
   readonly showErrors = input(false);

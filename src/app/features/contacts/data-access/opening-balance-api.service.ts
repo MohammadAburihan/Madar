@@ -5,12 +5,12 @@ import { confirmRequest } from '../../../core/erpnext/confirmation';
 import { ErpnextClient } from '../../../core/erpnext/erpnext-client';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { invoiceTotal } from '../../../core/erpnext/invoice-total';
-import { round2 } from '../../../core/format/number';
+import { WALK_IN_CUSTOMER } from '../../../core/customers/customer-directory.service';
 import { temporaryOpeningAccount } from '../../../core/money/opening-account';
 import { ContactKind } from './contacts.models';
 
 /** Why an opening balance can't be recorded for this contact right now. */
-export type OpeningBlock = 'disabled' | 'currency' | 'setup' | 'missing';
+export type OpeningBlock = 'disabled' | 'currency' | 'setup' | 'missing' | 'walkIn';
 
 /** What the task needs from ERPNext before it can offer the form. */
 export interface OpeningTarget {
@@ -21,6 +21,8 @@ export interface OpeningTarget {
   account: string;
   costCenter: string;
   uom: string;
+  /** Decimals ERPNext keeps for money in this business. */
+  precision: number;
 }
 
 export interface OpeningRequest {
@@ -37,6 +39,7 @@ export interface OpeningRequest {
   account: string;
   costCenter: string;
   uom: string;
+  precision: number;
 }
 
 export interface OpeningResult {
@@ -57,6 +60,15 @@ interface InvoiceDoc {
   [key: string]: unknown;
 }
 
+/** Decimals of Frappe's number formats; an unknown format keeps the usual two. */
+const NUMBER_FORMAT_DECIMALS: Record<string, number> = {
+  '#.###': 0,
+  '#,###': 0,
+  '#,###.###': 3,
+  '#.###,###': 3,
+  '#,###.##': 2,
+};
+
 const doctypeOf = (kind: ContactKind) =>
   kind === 'customers' ? 'Sales Invoice' : 'Purchase Invoice';
 
@@ -75,7 +87,7 @@ export class OpeningBalanceApiService {
   /** Reads the contact and the business setup. Writes nothing, so any failure here is definite. */
   async target(kind: ContactKind, id: string, business: Business): Promise<OpeningTarget> {
     const partyType = kind === 'customers' ? 'Customer' : 'Supplier';
-    const empty = { id, name: id, account: '', costCenter: '', uom: 'Nos' };
+    const empty = { id, name: id, account: '', costCenter: '', uom: 'Nos', precision: 2 };
     let party: { name: string; disabled: number; default_currency?: string | null } & Record<
       string,
       unknown
@@ -90,13 +102,16 @@ export class OpeningBalanceApiService {
       throw error;
     }
     const name = String(party[kind === 'customers' ? 'customer_name' : 'supplier_name'] ?? id);
+    if (kind === 'customers' && (party.name === WALK_IN_CUSTOMER || name === WALK_IN_CUSTOMER)) {
+      return { ...empty, id: party.name, name, blocked: 'walkIn' };
+    }
     if (party.disabled) {
       return { ...empty, id: party.name, name, blocked: 'disabled' };
     }
     if (party.default_currency && party.default_currency !== business.currency) {
       return { ...empty, id: party.name, name, blocked: 'currency' };
     }
-    const [partyAccount, account, company, uom] = await Promise.all([
+    const [partyAccount, account, company, uom, precision] = await Promise.all([
       firstValueFrom(
         this.erpnext.get<string | null>('erpnext.accounts.party.get_party_account', {
           party_type: partyType,
@@ -113,6 +128,7 @@ export class OpeningBalanceApiService {
         }),
       ),
       this.defaultUom(),
+      this.moneyPrecision(),
     ]);
     const accountCurrency = partyAccount
       ? (
@@ -125,7 +141,7 @@ export class OpeningBalanceApiService {
           )
         )?.account_currency
       : null;
-    const base = { id: party.name, name, uom };
+    const base = { id: party.name, name, uom, precision };
     if (!partyAccount || !account || !company?.cost_center) {
       return { ...base, account: '', costCenter: '', blocked: 'setup' };
     }
@@ -134,6 +150,25 @@ export class OpeningBalanceApiService {
       return { ...base, account, costCenter: company.cost_center, blocked: 'currency' };
     }
     return { ...base, account, costCenter: company.cost_center, blocked: null };
+  }
+
+  /** Decimals ERPNext rounds money to: System Settings' currency precision, else its number format's. */
+  private async moneyPrecision(): Promise<number> {
+    const read = (field: string) =>
+      firstValueFrom(
+        this.erpnext.get<string | number | null>('frappe.client.get_single_value', {
+          doctype: 'System Settings',
+          field,
+        }),
+      ).catch(() => null);
+    const [precision, format] = await Promise.all([
+      read('currency_precision'),
+      read('number_format'),
+    ]);
+    if (precision !== null && precision !== '' && Number.isInteger(Number(precision))) {
+      return Number(precision);
+    }
+    return NUMBER_FORMAT_DECIMALS[String(format ?? '')] ?? 2;
   }
 
   /** ERPNext's own default unit for a line without an item; some roles can't read Stock Settings. */
@@ -219,7 +254,8 @@ export class OpeningBalanceApiService {
     const same =
       doc[partyField(request.kind)] === request.party &&
       doc.is_opening === 'Yes' &&
-      Math.abs(round2(invoiceTotal(doc)) - request.amount) < 0.005;
+      // Within half a unit of the money precision: ERPNext rounds to it, which is not a change.
+      Math.abs(invoiceTotal(doc) - request.amount) < 0.5 / 10 ** request.precision + 1e-9;
     if (!same) {
       throw new OpeningChangedError(doc.name);
     }

@@ -72,7 +72,7 @@ describe('opening balance view', () => {
   });
 
   it('explains each reason an opening balance is blocked, in both languages', () => {
-    for (const block of ['disabled', 'currency', 'setup', 'missing'] as const) {
+    for (const block of ['disabled', 'currency', 'setup', 'missing', 'walkIn'] as const) {
       expect(openingBlockNotice(block, en).title).not.toMatch(/contacts\.opening/);
       expect(openingBlockNotice(block, ar).message).not.toMatch(/contacts\.opening/);
     }

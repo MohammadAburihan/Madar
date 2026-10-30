@@ -230,3 +230,24 @@ test('keeps opening balances to the owner @phone', async ({ page }) => {
   );
   await expect(page.getByLabel('Amount *')).toHaveCount(0);
 });
+
+test('blocks the walk-in customer, and refuses extra decimals @phone', async ({ page }) => {
+  await signIn(page, 'owner');
+  const [walkIn] = await erp(page).list<{ name: string }>(
+    'Customer',
+    ['name'],
+    [['customer_name', '=', 'Walk-in Customer']],
+  );
+  await page.goto(`${contact('customers', walkIn.name)}/opening-balance`);
+  await expect(page.locator('app-feedback-card')).toContainText(
+    "The walk-in customer can't have an opening balance",
+  );
+  await expect(page.getByLabel('Amount *')).toHaveCount(0);
+
+  const id = await party(page, 'Customer', `E2E Opening Decimals ${runId()}`);
+  await page.goto(`${contact('customers', id)}/opening-balance`);
+  await page.getByLabel('Amount *').fill('10.555');
+  await page.getByRole('button', { name: 'Review' }).click();
+  await expect(page.getByText(named('Use at most', '2', 'decimals'))).toBeVisible();
+  await expect(heading(page)).toHaveText('Opening balance');
+});

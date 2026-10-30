@@ -21,7 +21,6 @@ describe('OpeningBalanceFormComponent', () => {
   const text = {
     intro: 'Money owed before Madar.',
     amount: 'Amount *',
-    amountError: 'Enter an amount above 0',
     date: 'Date *',
     dateHint: 'Today or earlier.',
     dateError: 'Pick today or an earlier date',
@@ -54,7 +53,7 @@ describe('OpeningBalanceFormComponent', () => {
     const { fixture, el } = await render(OpeningBalanceFormComponent, {
       text,
       currency: 'ILS',
-      amountValid: false,
+      amountError: 'Enter an amount above 0',
       dateValid: false,
     });
     expect(el.textContent).not.toContain('Enter an amount above 0');

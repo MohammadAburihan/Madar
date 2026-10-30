@@ -127,7 +127,7 @@ import {
           [amount]="store.amountInput()"
           [date]="store.date()"
           [note]="store.note()"
-          [amountValid]="store.postedAmount() > 0"
+          [amountError]="amountError()"
           [dateValid]="store.dateValid()"
           [showErrors]="showErrors()"
           [locked]="store.locked()"
@@ -154,6 +154,7 @@ export class OpeningBalanceContainer {
   protected readonly showErrors = signal(false);
   protected readonly pending = signal(false);
   private entered = false;
+  private started = false;
 
   private readonly contactKind = computed<ContactKind>(() =>
     this.kind() === 'suppliers' ? 'suppliers' : 'customers',
@@ -187,7 +188,6 @@ export class OpeningBalanceContainer {
       formText: {
         intro: o(`intro.${this.contactKind()}`),
         amount: o('amount'),
-        amountError: o('amountError'),
         date: o('date'),
         dateHint: o('dateHint'),
         dateError: o('dateError'),
@@ -209,6 +209,19 @@ export class OpeningBalanceContainer {
     };
   });
 
+  protected readonly amountError = computed(() => {
+    const { t } = this.i18n.tr();
+    const problem = this.store.amountProblem();
+    const digits = this.store.precision();
+    return problem === 'invalid'
+      ? t('contacts.opening.amountError')
+      : problem === 'decimals'
+        ? t(digits === 0 ? 'contacts.opening.amountWhole' : 'contacts.opening.amountDecimals', {
+            digits,
+          })
+        : null;
+  });
+
   protected readonly subtitle = computed(() =>
     openingSubtitle(this.contactKind(), this.store.target()?.name ?? '', this.i18n.tr()),
   );
@@ -224,8 +237,9 @@ export class OpeningBalanceContainer {
     if (!target) {
       return null;
     }
-    // What was sent once a request left, else what is typed.
-    return sent
+    // What was sent only while that request is still the task's; an edited task shows what is typed.
+    const asSent = this.store.busy() || this.store.lost() || this.store.state() === 'confirmed';
+    return sent && asSent
       ? {
           kind: sent.kind,
           name: target.name,
@@ -270,7 +284,9 @@ export class OpeningBalanceContainer {
     if (failure && this.store.state() === 'failed') {
       return {
         title: t(`contacts.opening.failed.${failure}.title`),
-        message: t(`contacts.opening.failed.${failure}.message`),
+        message:
+          (failure === 'error' && this.store.failureMessage()) ||
+          t(`contacts.opening.failed.${failure}.message`),
       };
     }
     return this.store.notCreated()
@@ -285,7 +301,10 @@ export class OpeningBalanceContainer {
     effect(() => {
       const kind = this.contactKind();
       const id = this.id();
-      if (this.allowed()) {
+      // Also reads where the store is, so a reset behind a mounted page (another user, another business) reloads it.
+      const here = this.store.partyId() === id && this.store.kind() === kind;
+      if (this.allowed() && (!this.started || !here)) {
+        this.started = true;
         untracked(() => this.enter(kind, id));
       }
     });

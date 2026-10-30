@@ -4,7 +4,7 @@ import { BusinessService } from '../../../core/business/business.service';
 import { UnresolvedError, newReference } from '../../../core/erpnext/confirmation';
 import { ErpnextError } from '../../../core/erpnext/erpnext-error';
 import { toIsoDate } from '../../../core/format/format';
-import { parseNumber, round2 } from '../../../core/format/number';
+import { parseNumber } from '../../../core/format/number';
 import { OpenTasksService } from '../../../core/tasks/open-tasks.service';
 import { SiteClockService } from '../../../core/time/site-clock.service';
 import {
@@ -45,6 +45,8 @@ export class OpeningBalanceStore {
   readonly step = signal<'form' | 'review'>('form');
   readonly state = signal<OpeningState>('idle');
   readonly failure = signal<OpeningFailure | null>(null);
+  /** ERPNext's own words for a definite refusal (credit limit, frozen customer, closed period). */
+  readonly failureMessage = signal<string | null>(null);
   readonly result = signal<OpeningResult | null>(null);
   /** The result step has shown the invoice; until then, returning to the task must show it. */
   readonly resultShown = signal(false);
@@ -57,9 +59,22 @@ export class OpeningBalanceStore {
   private turn = 0;
 
   readonly amount = computed(() => parseNumber(this.amountInput()));
-  readonly amountValid = computed(() => Number.isFinite(this.amount()) && this.amount() > 0);
-  /** The amount as it will be posted, to the cent. */
-  readonly postedAmount = computed(() => (this.amountValid() ? round2(this.amount()) : 0));
+  readonly precision = computed(() => this.target()?.precision ?? 2);
+  /** What is wrong with the typed amount: not above 0, or more decimals than ERPNext keeps (never rounded silently). */
+  readonly amountProblem = computed<'invalid' | 'decimals' | null>(() => {
+    const amount = this.amount();
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return 'invalid';
+    }
+    const scaled = amount * 10 ** this.precision();
+    return Math.abs(scaled - Math.round(scaled)) > 1e-6 ? 'decimals' : null;
+  });
+  /** The amount as it will be posted. */
+  readonly postedAmount = computed(() =>
+    this.amountProblem()
+      ? 0
+      : Math.round(this.amount() * 10 ** this.precision()) / 10 ** this.precision(),
+  );
   readonly ready = computed(
     () =>
       !!this.target() &&
@@ -109,6 +124,7 @@ export class OpeningBalanceStore {
     this.step.set('form');
     this.state.set('idle');
     this.failure.set(null);
+    this.failureMessage.set(null);
     this.result.set(null);
     this.resultShown.set(false);
     this.sent.set(null);
@@ -121,12 +137,17 @@ export class OpeningBalanceStore {
    * otherwise starts over. Returns whether the task kept is for another contact.
    */
   resume(kind: ContactKind, partyId: string): boolean {
-    const keep = this.busy() || (this.state() === 'confirmed' && !this.resultShown());
+    const same = this.kind() === kind && this.partyId() === partyId;
+    // A lost answer may still land: the task stays as sent, under its reference, for the same contact.
+    const keep =
+      this.busy() ||
+      (this.state() === 'confirmed' && !this.resultShown()) ||
+      (this.lost() && same && this.state() !== 'confirmed');
     if (!keep) {
       this.start(kind, partyId);
       return false;
     }
-    return this.kind() !== kind || this.partyId() !== partyId;
+    return !same;
   }
 
   /** Reads the contact and the business setup, and suggests today's date. */
@@ -188,6 +209,7 @@ export class OpeningBalanceStore {
     }
     this.state.set('confirming');
     this.failure.set(null);
+    this.failureMessage.set(null);
     this.notCreated.set(false);
     const request = await this.request(itemName);
     if (!request) {
@@ -249,6 +271,9 @@ export class OpeningBalanceStore {
     if (this.state() === 'failed') {
       this.state.set('idle');
       this.failure.set(null);
+      this.failureMessage.set(null);
+      // A plain refusal wrote nothing; the old request must not describe the edited task.
+      this.sent.set(null);
     }
     this.notCreated.set(false);
     change();
@@ -277,6 +302,7 @@ export class OpeningBalanceStore {
     if (erpnextError.kind === 'forbidden') {
       void this.session.checkExpired();
     }
+    this.failureMessage.set(erpnextError.kind === 'server' ? erpnextError.message : null);
     this.failure.set(
       erpnextError.kind === 'forbidden'
         ? 'permission'
@@ -307,6 +333,7 @@ export class OpeningBalanceStore {
       account: target.account,
       costCenter: target.costCenter,
       uom: target.uom,
+      precision: target.precision,
     };
   }
 }
