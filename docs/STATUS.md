@@ -766,6 +766,8 @@ Review pass 1 (2 medium, 5 low) fixed: the review shows what is typed, not the r
 
 Review pass 2 (1 high, 1 medium, 3 low) fixed: the money precision comes from the company currency's number format (readable by every role; System Settings is only a best-effort fallback, then two), and a posted invoice counts as the same unless the total differs by a whole unit or more, so ERPNext's rounding never resets the reference; the result shows the total ERPNext posted; only the page in view (`ionViewWillEnter` / `ionViewDidLeave`) reacts to a store reset, so two cached pages no longer reset each other in a loop; after "Check result" finds nothing the review offers "Start over" (new reference, empty details) next to the same-details retry; ERPNext's own words for a refusal are shown only when Frappe sent them (`_server_messages`, on a 4xx), never a bare error line.
 
+Review pass 3 (1 medium) fixed: the page re-enters only when the store was reset (no contact held: a user or business change) and the page is in view, never because the store holds another contact, so a cached page that is still active during a transition can't take it back; `ionViewWillLeave` also clears the flag, and a page coming back loads once (`ionViewWillEnter`). Deferred nits: the under-one-unit tolerance misses small Desk edits of the amount (a change below one unit reads as the same); the Currency number format is preferred even when `use_number_format_from_currency` is off.
+
 Its screens are still missing from docs/Madar.pen: see the design debt below.
 
 ### Design debt — update docs/Madar.pen when the pen.dev quota resets

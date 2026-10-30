@@ -126,11 +126,11 @@ describe('OpeningBalanceContainer', () => {
     expect(text(el)).toContain('Use at most 2 decimals');
   });
 
-  it('lets only the page in view react to the store, so cached pages do not reset each other', async () => {
-    const { fixture: a, api } = await setup();
+  it('does not let a cached page take the store back, even while it is still active', async () => {
+    const { fixture: a, api, user } = await setup();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
-    (a.componentInstance as unknown as { ionViewDidLeave(): void }).ionViewDidLeave();
 
+    // A has not been told it left yet (mid-transition) when B opens another contact.
     const b = TestBed.createComponent(OpeningBalanceContainer);
     b.componentRef.setInput('kind', 'customers');
     b.componentRef.setInput('id', 'Sami Khoury');
@@ -139,6 +139,20 @@ describe('OpeningBalanceContainer', () => {
     await settle(b);
 
     expect(api.target.mock.calls.map((c) => c[1])).toEqual(['Lina Haddad', 'Sami Khoury']);
+    expect(TestBed.inject(OpeningBalanceStore).partyId()).toBe('Sami Khoury');
+    expect(navigate).not.toHaveBeenCalled();
+
+    // A reset (another user signs in) reloads only the page in view.
+    (a.componentInstance as unknown as { ionViewWillLeave(): void }).ionViewWillLeave();
+    user.set({ id: 'lina' });
+    TestBed.tick();
+    await settle(b);
+    await settle(a);
+    expect(api.target.mock.calls.map((c) => c[1])).toEqual([
+      'Lina Haddad',
+      'Sami Khoury',
+      'Sami Khoury',
+    ]);
     expect(TestBed.inject(OpeningBalanceStore).partyId()).toBe('Sami Khoury');
     expect(navigate).not.toHaveBeenCalled();
   });

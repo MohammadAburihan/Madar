@@ -156,7 +156,7 @@ export class OpeningBalanceContainer {
   protected readonly showErrors = signal(false);
   protected readonly pending = signal(false);
   private entered = false;
-  private started = false;
+  private enteredKey = '';
   /** Ionic keeps left pages alive: only the page in view reacts to the store, or two pages would keep resetting it. */
   private readonly active = signal(true);
 
@@ -306,12 +306,17 @@ export class OpeningBalanceContainer {
     effect(() => {
       const kind = this.contactKind();
       const id = this.id();
-      // Also reads where the store is, so a reset behind a mounted page (another user, another business) reloads it.
-      const here = this.store.partyId() === id && this.store.kind() === kind;
-      if (this.active() && this.allowed() && (!this.started || !here)) {
-        this.started = true;
-        untracked(() => this.enter(kind, id));
-      }
+      // A reset (no contact in the store: another user or business) reloads the page in view. The store holding
+      // another contact is not a reason: a cached page that is still active must not take it back.
+      const reset = this.store.partyId() === '';
+      const allowed = this.allowed();
+      untracked(() => {
+        const key = `${kind}/${id}`;
+        if (allowed && (key !== this.enteredKey || (reset && this.active()))) {
+          this.enteredKey = key;
+          this.enter(kind, id);
+        }
+      });
     });
     effect(() => {
       if (this.store.state() === 'confirmed' && this.recorded()) {
@@ -330,6 +335,10 @@ export class OpeningBalanceContainer {
     if (this.allowed()) {
       this.enter(this.contactKind(), this.id());
     }
+  }
+
+  ionViewWillLeave(): void {
+    this.active.set(false);
   }
 
   ionViewDidLeave(): void {
