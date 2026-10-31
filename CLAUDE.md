@@ -280,6 +280,11 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   `ERPNEXT_SITE_HOST=rehannursery.aburehan.net`, `TRUST_FORWARDED_PROTO=1`, `MADAR_DESK_URL=https://desk.rehannursery.aburehan.net`). Host nginx
   (`/etc/nginx/sites-available/madar-rehannursery`, Let's Encrypt via certbot) serves `rehannursery.aburehan.net` →
   Madar and `desk.rehannursery.aburehan.net` → Desk (Host pinned to the site).
+- The other two sites run Madar the same way, without `ASSISTANT_UPSTREAM`: `madar-erp` (127.0.0.1:8091, nginx site
+  `madar-erp`, Desk at `desk.erp.aburehan.net`) and `madar-issam` (127.0.0.1:8092, nginx site `madar-issam`, Desk at
+  `desk.issam.aburehan.net`; since 31 Oct 2026). A madar-web release replaces all three containers.
+- SSH (port 22) may be blocked from the developer's network; the instance is online in AWS SSM, so
+  `aws ssm send-command --document-name AWS-RunShellScript` reaches it.
 - A new image reaches the server with `docker save … | gzip` → rsync to `~` (not `/tmp`, a 1.9 GB tmpfs) →
   `docker load`, until the instance role can pull from ECR. Deploy = `docker rm -f` + `docker run` the container
   with the new tag. Before an ERPNext image change: `bench backup --with-files` per site, an EBS snapshot, then
