@@ -774,10 +774,7 @@ Its screens are in docs/Madar.pen (design catch-up, 1 Nov 2026).
 
 Update the `.pen` only when the user asks; then do the whole list and empty it.
 
-- Opening balance: the "Recording…" busy and "Still can't reach ERPNext" lines, the date error ("Pick today or an
-  earlier date"), contact not found / couldn't load, the no-permission, offline and "was changed" failures; supplier
-  versions of the failed, unresolved, not-found and desktop frames; desktop frames for the other states. EN + AR.
-- Contact bank details: loading and load-failed states on the form and the contact page. EN + AR, mobile + desktop.
+- (none)
 
 ## Not started yet
 
