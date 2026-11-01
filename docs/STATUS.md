@@ -719,7 +719,7 @@ messages); effort low; 20 requests a minute and 50,000 output tokens a day per u
 Optional Bank, IBAN and Account number on the customer and supplier form, shown on the contact page, for roles with
 `editBankDetails` (Owner with Accounts User or Manager). Stored as a Bank Account linked to the party.
 
-Its screens are still missing from docs/Madar.pen: see the design debt below.
+Its screens are in docs/Madar.pen (design catch-up, 1 Nov 2026).
 
 ## Contact About (30 Oct 2026)
 
@@ -733,7 +733,7 @@ same field would make short terms like "con" match every contact made in Madar.
 
 Review pass 1 (1 medium, 1 low, 1 nit) fixed: a save writes About only when the form's text differs from what it loaded (an edit made in Desk meanwhile is no longer overwritten, and the reference line is re-read); the reference line must match `Madar contact CON-` plus 7 characters, the last such line wins; About stays read-only after a bank step fails, because the retry saves only the bank details.
 
-Its screens are still missing from docs/Madar.pen: see the design debt below.
+Its screens are in docs/Madar.pen (design catch-up, 1 Nov 2026).
 
 ## Opening balance (30 Oct 2026)
 
@@ -768,19 +768,7 @@ Review pass 2 (1 high, 1 medium, 3 low) fixed: the money precision comes from th
 
 Review pass 3 (1 medium) fixed: the page re-enters only when the store was reset (no contact held: a user or business change) and the page is in view, never because the store holds another contact, so a cached page that is still active during a transition can't take it back; `ionViewWillLeave` also clears the flag, and a page coming back loads once (`ionViewWillEnter`). Deferred nits: the under-one-unit tolerance misses small Desk edits of the amount (a change below one unit reads as the same); the Currency number format is preferred even when `use_number_format_from_currency` is off.
 
-Its screens are still missing from docs/Madar.pen: see the design debt below.
-
-### Design debt — update docs/Madar.pen when the pen.dev quota resets
-
-- Opening balance: the "Opening balance" button on the customer and supplier page (phone page and desktop panel), the
-  form step (amount, date, note, intro), the review step, the recorded step with "View invoice", the blocked states
-  (inactive contact, walk-in customer, other currency, business not set up, no access), the failed and "couldn't confirm / Check result"
-  states (with "Start over" after a check finds nothing), and the "Opening balance" chip on the sales and supplier invoice pages, EN + AR, mobile + desktop.
-- Contact About: the About field (label, hint, multi-line box) on the customer and supplier form and the About block
-  (card with title and text) on the contact page, EN + AR, mobile + desktop.
-- Contact bank-details screens: form section, detail block, invalid-IBAN error, bank-not-saved + Retry, EN + AR.
-- Icons on the Home quick actions: all Home frames, EN + AR, mobile, tablet and desktop.
-- Icons on the phone More menu rows, EN + AR.
+Its screens are in docs/Madar.pen (design catch-up, 1 Nov 2026).
 
 ## Not started yet
 
