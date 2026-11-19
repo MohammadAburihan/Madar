@@ -273,17 +273,20 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   (`madar-web`, `madar-erpnext`; tags immutable).
 - ERPNext is one shared multi-site bench in `~/erpnext` (`docker-compose.yml` + `.env`; `ERPNEXT_IMAGE` and
   `ERPNEXT_VERSION` pick the image, now `madar-erpnext:v16.50.0-hrms`), serving `erp.aburehan.net`,
-  `issam.aburehan.net` and `rehannursery.aburehan.net` on 127.0.0.1:8080, sites chosen by Host header. Frappe HR is
-  installed on `rehannursery` only. This differs from "one ERPNext stack per business" above: the bench predates
+  `issam.aburehan.net`, `rehannursery.aburehan.net` and `jaber.aburehan.net` on 127.0.0.1:8080, sites chosen by Host
+  header. Frappe HR is installed on `rehannursery` and `jaber`. A new site needs the DB root password from the `db`
+  container's own environment (`docker inspect erpnext-db-1`; `docker-compose.yml` only holds a variable), its name
+  in `SITES` in `~/erpnext/.env` (nightly backups) and a `Daily-<site>-30Days` S3 lifecycle rule. This differs from "one ERPNext stack per business" above: the bench predates
   Madar.
 - Madar for Rehan Nursery is the container `madar-rehannursery` (`madar-web:<version>`, network
   `erpnext_default`, 127.0.0.1:8090, `ERPNEXT_UPSTREAM=http://frontend:8080`,
   `ERPNEXT_SITE_HOST=rehannursery.aburehan.net`, `TRUST_FORWARDED_PROTO=1`, `MADAR_DESK_URL=https://desk.rehannursery.aburehan.net`). Host nginx
   (`/etc/nginx/sites-available/madar-rehannursery`, Let's Encrypt via certbot) serves `rehannursery.aburehan.net` →
   Madar and `desk.rehannursery.aburehan.net` → Desk (Host pinned to the site).
-- The other two sites run Madar the same way, without `ASSISTANT_UPSTREAM`: `madar-erp` (127.0.0.1:8091, nginx site
-  `madar-erp`, Desk at `desk.erp.aburehan.net`) and `madar-issam` (127.0.0.1:8092, nginx site `madar-issam`, Desk at
-  `desk.issam.aburehan.net`; since 31 Oct 2026). A madar-web release replaces all three containers.
+- The other sites run Madar the same way: `madar-erp` (127.0.0.1:8091, nginx site `madar-erp`, Desk at
+  `desk.erp.aburehan.net`) and `madar-issam` (127.0.0.1:8092, `madar-issam`, `desk.issam.aburehan.net`; since 31 Oct
+  2026), both without `ASSISTANT_UPSTREAM`, and `madar-jaber` (127.0.0.1:8093, `madar-jaber`, `desk.jaber.aburehan.net`;
+  since 19 Nov 2026) with its own assistant. A madar-web release replaces all four containers.
 - SSH (port 22) may be blocked from the developer's network; the instance is online in AWS SSM, so
   `aws ssm send-command --document-name AWS-RunShellScript` reaches it.
 - A new image reaches the server with `docker save … | gzip` → rsync to `~` (not `/tmp`, a 1.9 GB tmpfs) →
@@ -297,9 +300,10 @@ Decided 22 Oct 2026; first deploy 0.1.0 (tag `v0.1.0`).
   `docker compose up -d`; append `madar_setup` to the sites volume's `sites/apps.txt` once (the image's own copy is not
   used); once, `bench --site rehannursery.aburehan.net install-app madar_setup` and `bench ... execute
   madar_setup.patches.v0_1.rehan_nursery_items.execute`; then `migrate` every site. Other sites never get the app.
-- The assistant is the container `madar-assistant-rehannursery` (`madar-assistant:<version>` from `assistant/`, network
-  `erpnext_default`; madar-web reaches it through `ASSISTANT_UPSTREAM`). The Anthropic API key lives only in
-  `~/madar-assistant.env` (mode 600) on the server, never in git or an image. With `TRUST_FORWARDED_PROTO=1` the per-IP limit on `/assistant/` keys on the last
+- Each assistant serves one site (`ERPNEXT_SITE_HOST`): `madar-assistant` for rehannursery and `madar-assistant-jaber`
+  for jaber (`madar-assistant:<version>` from `assistant/`, network `erpnext_default`; madar-web reaches it through
+  `ASSISTANT_UPSTREAM`). The Anthropic API key lives only in `~/madar-assistant.env` and `~/madar-assistant-jaber.env`
+  (mode 600, the latter without `ERPNEXT_*` lines) on the server, never in git or an image. With `TRUST_FORWARDED_PROTO=1` the per-IP limit on `/assistant/` keys on the last
   `X-Forwarded-For` hop: the proxy directly in front (host nginx) must append the client address; with another layer
   (an ALB) in front of it, set real IPs there first.
   After deploying the assistant, `curl https://<host>/assistant/healthz` must return `ok`: it only does once the
